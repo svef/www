@@ -1,6 +1,7 @@
 {
   "name": "@svef/component-library",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "start": "start-storybook -p 6006",

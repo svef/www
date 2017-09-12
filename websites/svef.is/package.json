@@ -1,6 +1,7 @@
 {
   "name": "svef.is",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
