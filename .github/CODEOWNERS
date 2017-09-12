@@ -1,0 +1,9 @@
+# https://help.github.com/articles/about-codeowners/
+# Each line is a file pattern followed by one or more owners.
+
+# The @svef/web team will be the default owner for everything
+# in the repo. Unless a later match takes precedence, the team will be
+# requested for review when someone opens a pull request. Order is
+# important. The last matching pattern has the most precedence.
+
+* @svef/web
