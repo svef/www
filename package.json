@@ -1,0 +1,38 @@
+{
+  "name": "@svef/websites",
+  "version": "0.0.0",
+  "private": true,
+  "author": {
+    "name": "Samtök vefiðnaðarins",
+    "email": "svef@svef.is",
+    "url": "https://www.svef.is"
+  },
+  "contributors": [
+    {
+      "name": "Benedikt D Valdez",
+      "email": "hi@valdez.is",
+      "url": "https://www.valdez.is"
+    }
+  ],
+  "workspaces": [
+    "component-library",
+    "websites/*"
+  ],
+  "scripts": {
+    "postinstall": "lerna bootstrap",
+    "publish": "lerna publish --registry=https://registry.npmjs.org/",
+    "publish:ci": "yarn run publish -- --yes",
+    "format:updated": "yarn run format -- --since",
+    "lint:updated": "yarn run lint -- --since",
+    "test:updated": "yarn run test -- --since",
+    "build:updated": "yarn run build -- --since",
+    "format": "lerna run format",
+    "lint": "lerna run lint",
+    "test": "lerna run test",
+    "build": "lerna run build"
+  },
+  "devDependencies": {
+    "lerna": "2.1.2",
+    "prettier": "^1.6.1"
+  }
+}
