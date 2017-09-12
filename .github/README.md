@@ -1,5 +1,7 @@
 # SVEF websites
 
+[![Build Status](https://img.shields.io/travis/svef/www/master.svg?style=flat&label=travis%20status)](https://travis-ci.org/svef/www)
+
 This is a [lerna]() monorepo (single repository for multiple projects) for all things related to the websites SVEF maintains.
 
 Make sure to check out our [Code of Conduct]() if you plan on participating in any way.
