@@ -25,7 +25,8 @@
     "yarn": "^1.0.0"
   },
   "scripts": {
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "test": "echo \"No tests yet\""
   },
   "lint-staged": {
     "*.js": [
