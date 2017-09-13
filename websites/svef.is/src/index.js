@@ -1,8 +1,8 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import registerServiceWorker from './registerServiceWorker';
+import { startClient } from 'react-chain'
+import app from './app'
 
-ReactDOM.render(<App />, document.getElementById('root'));
-registerServiceWorker();
+startClient(app, document.getElementById('app'))
+
+if (module.hot) {
+  module.hot.accept()
+}

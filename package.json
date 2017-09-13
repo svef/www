@@ -1,6 +1,6 @@
 {
   "name": "@svef/websites",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "private": true,
   "author": {
@@ -13,27 +13,38 @@
       "name": "Benedikt D Valdez",
       "email": "hi@valdez.is",
       "url": "https://www.valdez.is"
+    },
+    {
+      "name": "Ægir Þorsteinsson",
+      "email": "aegir@thorsteinsson.is",
+      "url": "https://thorsteinsson.is"
     }
   ],
+  "engines": {
+    "node": "^8.0.0",
+    "yarn": "^1.0.0"
+  },
+  "scripts": {
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --write",
+      "git add"
+    ]
+  },
   "workspaces": [
-    "component-library",
+    "components",
     "websites/*"
   ],
-  "scripts": {
-    "postinstall": "lerna bootstrap",
-    "publish": "lerna publish --registry=https://registry.npmjs.org/",
-    "publish:ci": "yarn run publish -- --yes",
-    "format:updated": "yarn run format -- --since",
-    "lint:updated": "yarn run lint -- --since",
-    "test:updated": "yarn run test -- --since",
-    "build:updated": "yarn run build -- --since",
-    "format": "lerna run format",
-    "lint": "lerna run lint",
-    "test": "lerna run test",
-    "build": "lerna run build"
-  },
   "devDependencies": {
-    "lerna": "2.1.2",
+    "husky": "^0.14.3",
+    "lint-staged": "^4.1.2",
     "prettier": "^1.6.1"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "es5"
   }
 }

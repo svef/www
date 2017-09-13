@@ -1,0 +1,22 @@
+{
+  "name": "@svef/components",
+  "version": "0.0.1",
+  "license": "MIT",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "start": "start-storybook -p 6006",
+    "build": "build-storybook",
+    "test": "echo \"No test script for components\"",
+    "eject": "echo \"No eject script for components\""
+  },
+  "dependencies": {
+    "react": "^16.0.0-rc.2",
+    "react-dom": "^16.0.0-rc.2"
+  },
+  "devDependencies": {
+    "@storybook/react": "^3.2.8",
+    "@storybook/addon-actions": "^3.2.6",
+    "@storybook/addon-links": "^3.2.6"
+  }
+}
