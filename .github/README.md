@@ -12,14 +12,14 @@ Make sure to check out our [Code of Conduct]() if you plan on participating in a
 As of now it is configured for two purposes; npm packages and websites.
 
 
-### [`component-library`]()
+### [`components`]()
 
-This package is published as `@svef/component-library`, and is (as the name might suggest) a library of react components for web related projects.
+This package is published as `@svef/components`, and is (as the name might suggest) a library of react components for web related projects.
 
 The project should be structured as so:
 
 ```
-┌── component-library
+┌── components
 │   └── ComponentName
 │       ├── assets/
 │       ├── index.js
@@ -45,7 +45,7 @@ Make sure to check out our [Code of Conduct]() as well.
 
 <!--Make sure to not edit below this line, unless intentionally updating links 🙃 🙏 -->
 
-[`component-library`]: component-library/
+[`components`]: components/
 [lerna]: https://github.com/lerna/lerna
 [Contribution guidelines]: .github/CONTRIBUTING.md
 [Code of Conduct]: .github/CODE_OF_CONDUCT.md
