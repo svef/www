@@ -16,6 +16,10 @@ If you're using [Visual Studio Code](), we recommend installing the extension fo
 
 Check out our [Issue tracker]() and find an issue that has not been assigned yet. Make sure to consider priority labels and milestones.
 
+You can help in all sorts of ways, for example by developing components (creating new or fixing bugs in existing), improving UX and accessability, or working on content.
+
+**Note:** The actual content is stored in a CMS, so if you'd like to contribute content, create an issue in our [Issue tracker]() and suggest your changes. If you'd like to become a more involved contributor, feel free to contact someone in [@svef/web](), and we might be able to give you some access to our CMS.
+
 
 ## Getting started
 
@@ -56,7 +60,7 @@ You can run these scripts from the root of the project.
 
 All pull requests must be squashed with a commit message matching v1.0.0-beta.1 of the [conventional commits specification]().
 
-We have defined [code owners]() that will be required to review your pull request. Make sure to contact them IRL if the matter is urgent.
+We have defined [code owners]() that will be required to review your pull request. Make sure to contact them IRL if the matter is urgent. As of now, that would be  anyone in [@svef/web]().
 
 ### Commit message format
 
@@ -129,6 +133,7 @@ The footer should contain any information about **Breaking Changes**, and is als
 
 <!--Make sure to not edit below this line, unless intentionally updating links 🙃 🙏 -->
 
+[@svef/web]: https://github.com/orgs/svef/teams/web/members
 [Issue tracker]: https://github.com/svef/www/issues
 [Code of Conduct]: .github/CODE_OF_CONDUCT.md
 [branching strategy]: #branching-strategy
