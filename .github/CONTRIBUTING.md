@@ -1,13 +1,15 @@
 # Contributing guidelines
 
-This is a [lerna]() monorepo, which means it's a single repository that contains multiple projects using `lerna` management tool. If you plan on
+This is a monorepo, which means it's a single repository that contains multiple projects using `yarn workspaces`.
 
 Make sure to check out our [Code of Conduct]() if you plan on participating in any way.
 
 
 **Note: All changes committed to master will automatically publish packages to npm, and deploy websites to production.** Committing directly to master is therefor forbidden (and restricted by GitHub). All contributions to this repository must be made through pull requests that must be reviewed. Please try to follow the [branching strategy]() when creating new features.
 
-All instructions assume using `yarn`, since the setup is configured around that. Make sure to use the latest version of `yarn` since our setup relies on some of the more recent features, like workspaces.
+All instructions assume using `yarn`, since the setup is configured around that. Make sure to use the latest version of `yarn` (v1+) since our setup relies on some of the more recent features, like workspaces.
+
+If you're using [Visual Studio Code](), we recommend installing the extension for prettier, since we use that to format our scripts. If you do this, your editor will automatically format your files as soon as you save them. Either way, we have a `precommit` hook configured that also runs prettier in case you haven't.
 
 
 ## How should I help?
@@ -42,21 +44,12 @@ All projects should have npm scripts for at least `format`, `lint`, `dev`, `test
 
 #### Project wide scripts
 
-You can run these scripts from the root of the project. See [lerna.json]() for configuration on lerna commands.
+You can run these scripts from the root of the project.
 
 | Script                    | Description |
 |---------------------------|-------------|
-| `yarn run postinstall`    | Will run [`lerna bootstrap`]() on all packages. Automatically triggered by `yarn install`. |
-| `yarn run publish`        | Will run [`lerna publish`]() on all packages that have been updated, asking for confirmation. |
-| `yarn run publish:ci`     | Same as `publish`, but without asking for confirmation. |
-| `yarn run format:updated` | Will run `yarn run format` within packages that have been updated since last publish. |
-| `yarn run lint:updated`   | Will run `yarn run lint` within packages that have been updated since last publish. |
-| `yarn run test:updated`   | Will run `yarn run test` within packages that have been updated since last publish. |
-| `yarn run build:updated`   | Will run `yarn run build` within packages that have been updated since last publish. |
-| `yarn run format`         | Will run `yarn run format` within all packages |
 | `yarn run lint`           | Will run `yarn run lint` within all packages |
-| `yarn run test`           | Will run `yarn run test` within all packages |
-| `yarn run build`          | Will run `yarn run build` within all packages |
+| `yarn run test`           | Will run tests |
 
 
 ## Pull requests
@@ -145,10 +138,6 @@ The footer should contain any information about **Breaking Changes**, and is als
 [conventional commits specification]: http://conventionalcommits.org/
 [code owners]: .github/CODEOWNERS
 
-[lerna.json]: lerna.json
-[lerna]: https://github.com/lerna/lerna
-[`lerna bootstrap`]: https://github.com/lerna/lerna#bootstrap
-[`lerna publish`]: https://github.com/lerna/lerna#publish
-[`lerna publish`]: https://github.com/lerna/lerna#publish
+[Visual Studio Code]: https://code.visualstudio.com
 
 [reference GitHub issues]: https://help.github.com/articles/closing-issues-via-commit-messages/
