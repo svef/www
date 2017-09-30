@@ -15,5 +15,4 @@ script:
   - yarn run test
 
 after_success:
-  - yarn global add firebase-tools
   - yarn run deploy:submit.vefverdlaun.is

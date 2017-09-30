@@ -2,16 +2,19 @@
   "name": "submit.vefverdlaun.is",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0",
-    "react-scripts": "1.0.14"
-  },
   "scripts": {
     "deploy": "firebase deploy --token=${FIREBASE_API_TOKEN}",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "react-scripts": "1.0.14"
+  },
+  "devDependencies": {
+    "firebase-tools": "^3.12.0"
   }
 }
