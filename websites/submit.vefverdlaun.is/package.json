@@ -8,6 +8,7 @@
     "react-scripts": "1.0.14"
   },
   "scripts": {
+    "deploy": "firebase deploy --token=${FIREBASE_API_TOKEN}",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
