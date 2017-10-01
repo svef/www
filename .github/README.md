@@ -2,7 +2,7 @@
 
 [![Build Status](https://img.shields.io/travis/svef/www/master.svg?style=flat&label=travis%20status)](https://travis-ci.org/svef/www)
 
-This is a [lerna]() monorepo (single repository for multiple projects) for all things related to the websites SVEF maintains.
+This is a monorepo (single repository for multiple projects) for all things related to the websites SVEF maintains.
 
 Make sure to check out our [Code of Conduct]() if you plan on participating in any way.
 
@@ -20,12 +20,14 @@ The project should be structured as so:
 
 ```
 ┌── components
-│   └── ComponentName
-│       ├── assets/
-│       ├── index.js
-│       ├── index.story.js
-│       └── index.test.js
-│   └── …etc
+│   └── lib
+│       └── ComponentName
+│           ├── assets/
+│           ├── index.js
+│           ├── index.story.js
+│           └── index.test.js
+│       └── …etc
+│       index.js
 ├── package.json
 └── README.md
 ```
@@ -46,6 +48,5 @@ Make sure to check out our [Code of Conduct]() as well.
 <!--Make sure to not edit below this line, unless intentionally updating links 🙃 🙏 -->
 
 [`components`]: components/
-[lerna]: https://github.com/lerna/lerna
 [Contribution guidelines]: .github/CONTRIBUTING.md
 [Code of Conduct]: .github/CODE_OF_CONDUCT.md
