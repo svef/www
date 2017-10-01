@@ -25,6 +25,7 @@
     "yarn": "^1.0.0"
   },
   "scripts": {
+    "deploy:submit.vefverdlaun.is": "cd websites/submit.vefverdlaun.is && yarn run build && yarn run deploy",
     "precommit": "lint-staged",
     "test": "echo \"No tests yet\""
   },
