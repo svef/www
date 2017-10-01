@@ -4,6 +4,8 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "@svef/components": "0.0.1",
+    "contentful": "^4.6.1",
     "react": "^16.0.0-rc.2",
     "react-async-bootstrapper": "^1.1.1",
     "react-async-component": "^1.0.0-beta.3",
@@ -13,8 +15,7 @@
     "react-jobs": "^1.0.0-beta.3",
     "react-router-dom": "^4.2.2",
     "styled-components": "^2.1.2",
-    "tux-scripts": "^0.3.0",
-    "@svef/components": "0.0.1"
+    "tux-scripts": "^0.3.0"
   },
   "scripts": {
     "start": "tux-scripts start",
