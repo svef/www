@@ -15,4 +15,4 @@ script:
   - yarn run test
 
 after_success:
-  - yarn run deploy:submit.vefverdlaun.is
+  - test $TRAVIS_BRANCH = "master" && yarn run deploy:submit.vefverdlaun.is
