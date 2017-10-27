@@ -4,17 +4,35 @@
   "private": true,
   "scripts": {
     "deploy": "firebase deploy --token=${FIREBASE_API_TOKEN}",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start:css": "yarn run build:css && yarn run build:css --watch --recursive",
+    "build:css": "node-sass-chokidar --include-path ./src  --include-path ./src/styles --include-path ../../node_modules src/ -o src/",
+    "start:js": "react-scripts start",
+    "build:js": "react-scripts build",
+    "start": "run-p start:css start:js",
+    "build": "run-s build:css build:js",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
   "dependencies": {
+    "@svef/components": "0.0.1",
+    "classnames": "^2.2.5",
+    "firebase": "^4.4.0",
+    "foundation-sites": "^6.4.4-rc1",
+    "node-sass-chokidar": "^0.0.3",
+    "normalize.css": "^7.0.0",
+    "prop-types": "^15.6.0",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
-    "react-scripts": "1.0.14"
+    "react-flexbox-grid": "^1.1.5",
+    "react-redux": "^5.0.6",
+    "react-scripts": "1.0.14",
+    "redux": "^3.7.2",
+    "redux-devtools-extension": "^2.13.2",
+    "redux-thunk": "^2.2.0",
+    "urlify": "^0.3.6"
   },
   "devDependencies": {
-    "firebase-tools": "^3.12.0"
+    "firebase-tools": "^3.12.0",
+    "npm-run-all": "^4.1.1"
   }
 }

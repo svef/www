@@ -8,6 +8,7 @@ coverage
 
 # production
 build
+websites/submit.vefverdlaun.is/src/**/*.css
 
 # misc
 .DS_Store
