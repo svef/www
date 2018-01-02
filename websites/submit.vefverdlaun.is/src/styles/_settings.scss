@@ -62,11 +62,42 @@
 
 @import "foundation-sites/scss/util/util";
 
+// 0. SVEF
+//--------
+
+$easeout: cubic-bezier(0.2, 0.5, 0.5, 1);
+$color-svef: #e7792b;
+$color-awards: #2b7e99;
+$color-conf: #a63f5b;
+$color-gray: #4c5151;
+$color-gray-light: #757e81;
+$color-gray-lighter: #b2b2b2;
+$color-gray-lightbg: #f9f9f9;
+$color-gray-dark: #1a1a1e;
+$color-primary: $color-awards;
+$color-font: $color-gray-light;
+$color-red: #f05f5a;
+$color-green: #64d7d7;
+$color-yellow: #ffe164;
+$color-blue: #4aa2e2;
+$color-blue-dark: #2b7e99;
+$colorArray: ("primary"    $color-primary    white)
+  ("red"        $color-red        white)
+  ("green"      $color-green      white)
+  ("yellow"     $color-yellow     white)
+  ("blue"       $color-blue       white)
+  ("blue-dark"  $color-blue-dark  white)
+  ("gray-dark"  $color-gray-dark  white)
+  ("svef"       $color-svef       white)
+  ("awards"     $color-awards     white)
+;
+
+
 // 1. Global
 // ---------
 
 $global-font-size: 100%;
-$global-width: rem-calc(1200);
+$global-width: rem-calc(1440);
 $global-lineheight: 1.5;
 $foundation-palette: (
   primary: #1779ba,
@@ -82,7 +113,7 @@ $black: #0a0a0a;
 $white: #fefefe;
 $body-background: $white;
 $body-font-color: $black;
-$body-font-family: "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
+$body-font-family: "Noto Sans", "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
 $body-antialiased: true;
 $global-margin: 1rem;
 $global-padding: 1rem;

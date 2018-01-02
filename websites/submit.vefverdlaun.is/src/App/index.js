@@ -7,7 +7,7 @@ import { auth } from '../Auth/firebase'
 import { appState, appInvalidLogin } from '../store/actions/app'
 import { userSignIn, userSignOut } from '../store/actions/user'
 
-import { Loading, TopBar } from '../components'
+import { Hero, Loading, TopBar } from '../components'
 
 import './App.css'
 
@@ -28,18 +28,78 @@ export class App extends Component {
   render() {
     const { loading } = this.props
 
-    return loading ? (
-      <Loading />
-    ) : (
-      <div className="App">
-        <TopBar />
-        <div className="grid-container">
-          <div className="grid-x grid-margin-x">
-            <div className="cell">
-              <p className="App-intro">
-                This project will be the form to submit projects to the
-                Icelandic Web Awards.
-              </p>
+    const className = ['App']
+
+    if (loading) {
+      className.push('loading')
+    }
+
+    return (
+      <div>
+        {loading && <Loading />}
+        <div className={className.join(' ')}>
+          <Hero title="Innsendingar" />
+          <TopBar />
+          <div className="grid-container">
+            <div className="grid-x grid-margin-x">
+              <div className="cell">
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+                <p className="App-intro">
+                  This project will be the form to submit projects to the
+                  Icelandic Web Awards. lorem
+                </p>
+              </div>
             </div>
           </div>
         </div>

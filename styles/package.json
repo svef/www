@@ -1,0 +1,17 @@
+{
+  "name": "@svef/styles",
+  "version": "0.0.1",
+  "license": "MIT",
+  "private": true,
+  "main": "styles.scss",
+  "scripts": {},
+  "dependencies": {
+    "bootstrap": "^4.0.0-beta.3"
+  },
+  "devDependencies": {},
+  "peerDependencies": {
+    "@epegzz/sass-vars-loader": "^3.2.0",
+    "node-sass": "^4.7.2",
+    "sass-loader": "^6.0.6"
+  }
+}

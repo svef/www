@@ -5,10 +5,9 @@ const helmet = () => session => {
     render()
     const data = Helmet.renderStatic()
     session.helmet = data
-
-    Object.assign(session.htmlProps, data.htmlAttributes.toComponent())
-    Object.assign(session.bodyProps, data.bodyAttributes.toComponent())
-    session.head.push(
+    Object.assign(session.document.htmlProps, data.htmlAttributes.toComponent())
+    Object.assign(session.document.bodyProps, data.bodyAttributes.toComponent())
+    session.document.head.push(
       ...data.title.toComponent(),
       ...data.meta.toComponent(),
       ...data.link.toComponent(),

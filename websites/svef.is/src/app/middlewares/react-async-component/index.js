@@ -13,7 +13,7 @@ const async = () => session => {
 
   session.on('server', next => {
     next()
-    session.window.REACT_ASYNC_COMPONENT_STATE = asyncContext.getState()
+    session.document.window.REACT_ASYNC_COMPONENT_STATE = asyncContext.getState()
   })
 
   return async next => {

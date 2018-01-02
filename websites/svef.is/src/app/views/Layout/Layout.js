@@ -1,8 +1,9 @@
 import React from 'react'
 import { Switch, Route, Link } from 'react-router-dom'
 import Helmet from 'react-helmet'
-import Home from '../../routes/Home'
-import Board from '../../routes/Board'
+
+import Home from 'app/routes/Home'
+import Board from 'app/routes/Board'
 
 const Layout = () => (
   <div>

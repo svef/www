@@ -8,7 +8,7 @@ const async = () => session => {
 
   session.on('server', next => {
     next()
-    session.window.REACT_JOBS_STATE = jobContext.getState()
+    session.document.window.REACT_JOBS_STATE = jobContext.getState()
   })
 
   return async next => {

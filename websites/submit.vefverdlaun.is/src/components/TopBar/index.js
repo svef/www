@@ -15,7 +15,7 @@ export const TopBar = ({
   warning,
   ...props
 }) => {
-  const className = ['App-header top-bar']
+  const className = ['top-bar']
 
   primary && className.push('primary')
   secondary && className.push('secondary')
@@ -24,12 +24,20 @@ export const TopBar = ({
   warning && className.push('warning')
 
   return (
-    <header className={className.join(' ')}>
-      <div className="top-bar-left">
-        <h1>Welcome to React</h1>
-      </div>
-      <div className="top-bar-right">
-        <SignInOut />
+    <header className="Header">
+      <div className="grid-container">
+        <div className="grid-x grid-margin-x">
+          <div className="cell">
+            <div className={className.join(' ')}>
+              <div className="top-bar-left">
+                <h1>Welcome to React</h1>
+              </div>
+              <div className="top-bar-right">
+                <SignInOut />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
   )

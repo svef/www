@@ -20,10 +20,6 @@
       "url": "https://thorsteinsson.is"
     }
   ],
-  "engines": {
-    "node": "^8.0.0",
-    "yarn": "^1.0.0"
-  },
   "scripts": {
     "deploy:submit.vefverdlaun.is": "cd websites/submit.vefverdlaun.is && yarn run build && yarn run deploy",
     "precommit": "lint-staged",
@@ -37,12 +33,15 @@
   },
   "workspaces": [
     "components",
+    "styles",
     "websites/*"
   ],
   "devDependencies": {
+    "buffered-reader": "^1.0.1",
+    "chalk": "^2.3.0",
     "husky": "^0.14.3",
-    "lint-staged": "^4.1.2",
-    "prettier": "^1.6.1"
+    "lint-staged": "^6.0.0",
+    "prettier": "^1.9.2"
   },
   "prettier": {
     "semi": false,

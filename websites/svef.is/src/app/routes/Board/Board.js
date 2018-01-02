@@ -1,7 +1,7 @@
 import React from 'react'
 import Helmet from 'react-helmet'
 import { withJob } from 'react-jobs'
-import api from '../../contentful'
+import api from 'app/contentful'
 
 const AsyncDetails = ({ jobResult: data }) => (
   <div>
