@@ -3,12 +3,14 @@ import Helmet from 'react-helmet'
 import { Button } from '@svef/components'
 
 const Home = () => (
-  <div>
+  <div className="row">
     <Helmet>
       <title>Home</title>
     </Helmet>
-    <span>Hi</span>
-    <Button>Hello World</Button>
+    <div className="col">
+      <span>Hi</span>
+      <Button>Hello World</Button>
+    </div>
   </div>
 )
 

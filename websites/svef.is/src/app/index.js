@@ -1,7 +1,7 @@
 import React from 'react'
 import { createApp } from 'tux'
 
-import '@svef/styles/styles.scss'
+import '@svef/styles/global.scss'
 
 import bootstrapper from 'app/middlewares/react-async-bootstrapper'
 import asyncComponent from 'app/middlewares/react-async-component'

@@ -2,25 +2,33 @@ import React from 'react'
 import { Switch, Route, Link } from 'react-router-dom'
 import Helmet from 'react-helmet'
 
+import TestGrid from 'app/components/TestGrid'
 import Home from 'app/routes/Home'
 import Board from 'app/routes/Board'
+import Members from 'app/routes/Members'
+
+import './Layout.scss'
 
 const Layout = () => (
-  <div>
+  <main className="container" style={{ opacity: 0 }}>
     <Helmet titleTemplate="%s | Samtök Vefiðnaðarins">
       <title>Samtök Vefiðnaðarins</title>
     </Helmet>
-    <p>
+    <TestGrid vertical />
+
+    {/* <p>
       <Link to="/">Heim</Link>
       <Link to="/stjorn">Stjórn</Link>
-    </p>
+      <Link to="/felagar">Félagar</Link>
+    </p> */}
 
     <br />
     <Switch>
-      <Route path="/stjorn" component={Board} />
-      <Route exact path="/" component={Home} />
+      {/* <Route path="/felagar" component={Members} />
+      <Route path="/stjorn" component={Board} /> */}
+      <Route path="/" component={Members} />
     </Switch>
-  </div>
+  </main>
 )
 
 export default Layout

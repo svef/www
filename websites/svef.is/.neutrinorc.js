@@ -59,7 +59,7 @@ module.exports = {
             {
               loader: require.resolve('@epegzz/sass-vars-loader'),
               options: {
-                files: [require.resolve('@svef/styles/variables')],
+                files: [require.resolve('@svef/styles')],
               },
             },
           ],
