@@ -12,7 +12,7 @@ html, body {
   min-height: 100vh;
 
   margin: 0;
-  padding: 0 0 $gutter*4;
+  padding: 0 0;
 
   font-family: font();
 
@@ -23,6 +23,29 @@ html, body {
 
   ::selection {
     color: color(grayLightbg);
-    background-color: color(grayDark);
+    background-color: color(awards);
+  }
+
+  hr {
+    border: none;
+    outline: none;
+    background: color(awards);
+
+    display: block;
+    margin: 0 auto $gutter*2;
+    width: 100%;
+    height: $gutter/4;
+
+    border-radius: $gutter;
+  }
+
+  a {
+    color: color(awards);
+
+    transition: color 250ms;
+
+    &:hover, &:active {
+      color: color(awards, dark);
+    }
   }
 }

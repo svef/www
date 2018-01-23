@@ -26,6 +26,7 @@ h5 {
 
 .h1,
 h1 {
+  word-break: break-all;
   font-size: fontSize(h1, mobile);
   font-size: betweenMobile(mobileMinFontSize(h1), mobileMaxFontSize(h1));
   line-height: 1em;
@@ -58,10 +59,11 @@ h5 {
   line-height: 1.2em;
 }
 
+.p,
 p {
   font-size: fontSize(p, mobile);
   font-size: betweenMobile(mobileMinFontSize(p), mobileMaxFontSize(p));
-  line-height: 1.2em;
+  line-height: 1.6em;
 
   &.large {
     font-size: fontSize(p, mobile) * 1.5;
@@ -105,6 +107,7 @@ p {
     font-size: betweenTablet(tabletMinFontSize(h5), tabletMaxFontSize(h5));
   }
 
+  .p,
   p {
     font-size: fontSize(p, tablet);
     font-size: betweenTablet(tabletMinFontSize(p), tabletMaxFontSize(p));
@@ -116,7 +119,7 @@ p {
         tabletMaxFontSize(p) * 1.5
       );
     }
-    }
+  }
 }
 
 @include media(desktopMin) {
@@ -152,6 +155,7 @@ p {
     font-size: betweenDesktop(desktopMinFontSize(h5), desktopMaxFontSize(h5));
   }
 
+  .p,
   p {
     font-size: fontSize(p, desktop);
     font-size: betweenDesktop(desktopMinFontSize(p), desktopMaxFontSize(p));
@@ -163,5 +167,5 @@ p {
         desktopMaxFontSize(p) * 1.5
       );
     }
-    }
+  }
 }

@@ -51,6 +51,7 @@ module.exports = {
         h2: '48px',
         h3: '32px',
         h4: '32px',
+        h5: '28px',
         p: '16px',
       },
       tablet: {
@@ -58,6 +59,7 @@ module.exports = {
         h2: '95px',
         h3: '76px',
         h4: '61px',
+        h5: '41px',
         p: '18px',
       },
       desktop: {
@@ -65,6 +67,7 @@ module.exports = {
         h2: '140px',
         h3: '95px',
         h4: '76px',
+        h5: '50px',
         p: '20px',
       },
     },
