@@ -6,6 +6,14 @@ ifndef APP
 	APP := svef-is
 endif
 
+ifndef DOCKER_USERNAME
+	DOCKER_USERNAME := _
+endif
+
+ifndef DOCKER_PASSWORD
+	DOCKER_PASSWORD := $(shell heroku auth:token)
+endif
+
 ifndef DOCKER_REGISTRY
 	DOCKER_REGISTRY := registry.heroku.com
 endif
@@ -35,6 +43,8 @@ debug: # print out all the environment variables as they will be used by other c
 	@printf "\
 	WEBSITE: ${WEBSITE} \n\
 	APP: ${APP} \n\
+	DOCKER_USERNAME: ${DOCKER_USERNAME} \n\
+	DOCKER_PASSWORD: ${DOCKER_PASSWORD} \n\
 	DOCKER_REGISTRY: ${DOCKER_REGISTRY} \n\
 	DOCKER_TAG_VERSION: ${DOCKER_TAG_VERSION} \n\
 	DOCKER_IMAGE: ${DOCKER_IMAGE} \n"
@@ -51,6 +61,7 @@ login: # Log into the docker registry with provided credentials
 build: # Build the container with appropriate tags etc
 	docker build \
 		-f ./websites/${WEBSITE}/Dockerfile \
+		--build-arg MONGODB_URI=$MONGODB_URI \
 		-t ${DOCKER_IMAGE} \
 		.
 
