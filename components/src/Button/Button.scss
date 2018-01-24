@@ -1,0 +1,60 @@
+.Button {
+  cursor: pointer;
+  vertical-align: middle;
+  display: inline-block;
+
+  margin: 0 auto;
+  padding: 0 $gutter;
+  height: 54px;
+  min-width: 200px;
+  line-height: 50px;
+
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+  color: white;
+  white-space: nowrap;
+
+  background: color(svef);
+
+  border: none;
+  outline: none;
+  border-radius: 49px;
+
+  opacity: 1;
+
+  transition: opacity 150ms, border 150ms, background 150ms;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.disabled,
+  &[disabled] {
+    // opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  &.svef {
+    background: color(svef);
+  }
+  &.awards {
+    background: color(awards);
+  }
+  &.conf {
+    background: color(conf);
+  }
+  &.red {
+    background: color(red);
+  }
+  &.green {
+    background: color(green);
+  }
+  &.yellow {
+    background: color(yellow);
+  }
+  &.blue {
+    background: color(blue);
+  }
+}

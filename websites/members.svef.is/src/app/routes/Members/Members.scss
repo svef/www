@@ -1,8 +1,14 @@
+.Members {
+  .row.title p {
+    font-weight: 700;
+  }
+}
 
 div.search {
   padding: $gutter*4 0;
 
-  h1 {
+  h1,
+  h2 {
     margin-bottom: $gutter*3;
     text-align: center;
   }

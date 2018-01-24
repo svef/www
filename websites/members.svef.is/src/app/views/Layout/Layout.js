@@ -6,6 +6,7 @@ import TestGrid from 'app/components/TestGrid'
 import Home from 'app/routes/Home'
 import Board from 'app/routes/Board'
 import Members from 'app/routes/Members'
+import ManageMembers from 'app/routes/ManageMembers'
 
 import './Layout.scss'
 
@@ -22,10 +23,10 @@ const Layout = () => (
       <Link to="/felagar">Félagar</Link>
     </p> */}
 
-    <br />
     <Switch>
-      {/* <Route path="/felagar" component={Members} />
-      <Route path="/stjorn" component={Board} /> */}
+      {/* <Route path="/felagar" component={Members} /> */}
+      {/* <Route path="/stjorn" component={Board} /> */}
+      <Route path="/manage" component={ManageMembers} />
       <Route path="/" component={Members} />
     </Switch>
   </main>

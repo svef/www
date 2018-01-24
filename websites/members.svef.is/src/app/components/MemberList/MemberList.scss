@@ -1,0 +1,64 @@
+.MemberList {
+  .row.title p {
+    font-weight: 700;
+  }
+  div.search {
+    padding: $gutter*4 0;
+
+    h1 {
+      margin-bottom: $gutter*3;
+      text-align: center;
+    }
+
+    input.search {
+      display: block;
+      width: 100%;
+      height: auto;
+      line-height: 1.75;
+
+      text-align: center;
+
+      border: none;
+      border-bottom: 1px solid color(grayDark);
+      background: none;
+
+      outline: none;
+
+      &:focus,
+      &:active {
+        border-bottom-color: color(svef);
+      }
+
+      &::placeholder {
+        font-size: 0.5em;
+      }
+    }
+  }
+
+  .member_changes {
+    margin: 0 auto $gutter*4;
+
+    text-align: center;
+    font-style: italic;
+    color: color(red);
+  }
+
+  .member_row {
+    border-bottom: 1px dashed color(grayLight);
+
+    p {
+      margin: 0;
+      padding: $gutter 0;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      height: auto;
+      line-height: 2;
+
+      margin: $gutter auto;
+      padding: 0 $gutter/2;
+    }
+  }
+}

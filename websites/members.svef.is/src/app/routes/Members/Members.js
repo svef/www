@@ -73,7 +73,7 @@ class Members extends Component {
     // )
 
     return [
-      <div key="search" className="row">
+      <div key="search" className="row Members">
         <div className="col-10 offset-1">
           <div className="search">
             <h1>Félagatal</h1>
@@ -90,14 +90,14 @@ class Members extends Component {
           </div>
         </div>
       </div>,
-      <div key="results" className="row">
+      <div key="results" className="row Members">
         <Helmet>
           <title>Félagar</title>
         </Helmet>
 
         <div className="col-12">
           {this.state.members.length > 0 && (
-            <div className="row">
+            <div className="row title">
               <div className="col-10 offset-1">
                 <p className="member_changes">
                   Breytingar á skráningum sendist á{' '}
@@ -106,15 +106,15 @@ class Members extends Component {
                 </p>
               </div>
               <div className="col-4 offset-1">
-                <h5>Nafn einstaklings</h5>
+                <p>Nafn einstaklings</p>
               </div>
               <div className="col-4">
-                <h5>Netfang</h5>
+                <p>Netfang</p>
               </div>
               <div className="col-2">
-                <h5>
+                <p>
                   Kennitala greiðanda <small>(fyrirtæki)</small>
-                </h5>
+                </p>
               </div>
             </div>
           )}
@@ -161,37 +161,5 @@ class Members extends Component {
     ]
   }
 }
-// const AsyncDetails = ({ jobResult: data }) => (
-//   <div className="row">
-//     <Helmet>
-//       <title>Félagar</title>
-//     </Helmet>
-//     {data.map(board => {
-//       console.log(board)
-//       return null
-//       // return (
-//       //   <div className="col-4" key={board.sys.id}>
-//       //     <h4>{board.fields.starfsar}</h4>
-//       //     <ul>
-//       //       {board.fields.stjornarmedlimir.map(person => (
-//       //         <li key={person.sys.id}>
-//       //           {person.fields.nafn} {person.fields.titill}
-//       //         </li>
-//       //       ))}
-//       //     </ul>
-//       //   </div>
-//       // )
-//     })}
-//   </div>
-// )
 
 export default Members
-
-// export default withJob({
-//   work: () => {
-//     console.log('work')
-//     return new Promise((resolve, reject) => {
-//       console.log('new promise')
-//     })
-//   },
-// })(AsyncDetails)

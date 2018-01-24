@@ -1,5 +1,9 @@
 import React from 'react'
 
-const Button = props => <button className="Button" {...props} />
+import './Button.scss'
+
+const Button = ({ theme, ...props }) => (
+  <button className={['Button', theme].join(' ')} {...props} />
+)
 
 export default Button

@@ -1,0 +1,15 @@
+
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 75vh;
+}
+
+.logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: $gutter 0;
+}
