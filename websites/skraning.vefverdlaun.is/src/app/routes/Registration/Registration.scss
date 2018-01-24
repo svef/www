@@ -36,7 +36,11 @@ div.registration {
   z-index: 10;
   padding: $gutter*4 0 $gutter*8;
 
-  h1 {
+  &--manage {
+    padding-bottom: 0;
+  }
+
+  h1, h2 {
     margin-bottom: $gutter*3;
     text-align: center;
 

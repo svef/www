@@ -1,0 +1,50 @@
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 75vh;
+}
+
+.logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: $gutter 0;
+}
+
+.Manage {
+  div.search {
+    padding: $gutter*4 0;
+
+    h1,
+    h2 {
+      margin-bottom: $gutter*3;
+      text-align: center;
+    }
+
+    input.search {
+      display: block;
+      width: 100%;
+      height: auto;
+      line-height: 1.75;
+
+      text-align: center;
+
+      border: none;
+      border-bottom: 1px solid color(grayDark);
+      background: none;
+
+      outline: none;
+
+      &:focus,
+      &:active {
+        border-bottom-color: color(svef);
+      }
+
+      &::placeholder {
+        font-size: 0.5em;
+      }
+    }
+  }
+}

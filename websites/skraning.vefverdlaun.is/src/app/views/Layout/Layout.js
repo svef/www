@@ -4,6 +4,7 @@ import Helmet from 'react-helmet'
 
 import TestGrid from 'app/components/TestGrid'
 import Registration from 'app/routes/Registration'
+import Manage from 'app/routes/Manage'
 
 import './Layout.scss'
 
@@ -12,7 +13,7 @@ const Layout = () => (
     <Helmet titleTemplate="%s | Samtök Vefiðnaðarins">
       <title>Samtök Vefiðnaðarins</title>
     </Helmet>
-    {/* <TestGrid vertical /> */}
+    <TestGrid vertical />
 
     {/* <p>
       <Link to="/">Heim</Link>
@@ -22,6 +23,7 @@ const Layout = () => (
 
     <br />
     <Switch>
+      <Route path="/manage" component={Manage} />
       <Route path="/" component={Registration} />
     </Switch>
   </main>

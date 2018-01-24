@@ -1,0 +1,33 @@
+.List {
+  .row.title p {
+    font-weight: 700;
+  }
+  .item_changes {
+    margin: 0 auto $gutter*4;
+
+    text-align: center;
+    font-style: italic;
+    color: color(red);
+  }
+
+  .item_row {
+    border-bottom: 1px dashed color(grayLight);
+
+    p {
+      margin: 0;
+      padding: $gutter 0;
+
+      word-break: break-all;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      height: auto;
+      line-height: 2;
+
+      margin: $gutter auto;
+      padding: 0 $gutter/2;
+    }
+  }
+}

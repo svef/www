@@ -6,11 +6,12 @@ export const FAILURE = `${PREFIX}/FAILURE`
 export const REQUEST = `${PREFIX}/REQUEST`
 export const SUCCESS = `${PREFIX}/SUCCESS`
 
-export const endpoint = '/api/register/webawards2018'
+export const endpoint = '/api/webawards2018'
 
 export const initialState = {
   isFetching: false,
   isValid: false,
+  registrations: [],
 }
 
 // Reducer
@@ -31,6 +32,7 @@ export default (state = initialState, action = {}) => {
       return Object.assign({}, state, {
         isFetching: false,
         isValid: true,
+        registrations: action.payload,
       })
 
     default:
@@ -39,6 +41,15 @@ export default (state = initialState, action = {}) => {
 }
 
 // Action Creators
+export const getRegistrations = (payload = {}) => {
+  const promise = axios.get(endpoint, payload).then(({ data }) => data)
+
+  return {
+    types: [REQUEST, SUCCESS, FAILURE],
+    promise,
+  }
+}
+
 export const postRegistration = (payload = {}) => {
   const promise = axios.post(endpoint, payload).then(({ data }) => data)
 

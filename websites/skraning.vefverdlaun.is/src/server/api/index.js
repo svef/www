@@ -6,10 +6,16 @@ import { Guest } from './schemas'
 const router = express.Router()
 
 router.get('/webawards2018', (req, res) => {
-  res.send('wat')
+  mongoose.connect(process.env.MONGODB_URI)
+  const db = mongoose.connection
+  Guest.find((err, results) => {
+    db.close(() => {
+      res.send(results)
+    })
+  })
 })
 
-router.post('/register/webawards2018', (req, res) => {
+router.post('/webawards2018', (req, res) => {
   mongoose.connect(process.env.MONGODB_URI)
   const db = mongoose.connection
 
