@@ -258,6 +258,13 @@ class Registration extends Component {
                 />
               </label>
               <h5>Greiðandi</h5>
+              {this.state.form.issvef && (
+                <p>
+                  Ef þú ert í SVEF viljum við engu að síður biðja þig um að
+                  fylla út kennitölu og netfang greiðanda. Engar áhyggjur, þetta
+                  er bara gert svo við séum með réttar upplýsingar okkar megin
+                </p>
+              )}
               <label>
                 <span>
                   Kennitala greiðanda

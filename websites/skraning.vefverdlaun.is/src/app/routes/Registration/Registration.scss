@@ -1,5 +1,4 @@
 .registration-backdrop {
-  overflow: hidden;
   position: absolute;
   top: 0;
   left: 0;
@@ -13,21 +12,21 @@
     word-break: break-all;
 
     font-weight: 700;
-    font-size: fontSize(h1, mobile) * 2;
-    font-size: betweenMobile(mobileMinFontSize(h1)*2, mobileMaxFontSize(h1)*2);
+    font-size: fontSize(h1, mobile) *1.75;
+    font-size: betweenMobile(mobileMinFontSize(h1)*1.75, mobileMaxFontSize(h1)*1.75);
 
     opacity: 0.4;
     padding: 0 10% 0 0;
     color: #EBEBEA;
 
     @include media(tabletMin) {
-      font-size: fontSize(h1, tablet) * 2;
-      font-size: betweenTablet(tabletMinFontSize(h1)*2, tabletMaxFontSize(h1)*2);
+      font-size: fontSize(h1, tablet) *1.75;
+      font-size: betweenTablet(tabletMinFontSize(h1)*1.75, tabletMaxFontSize(h1)*1.75);
     }
 
     @include media(desktopMin) {
-      font-size: fontSize(h1, desktop) * 2;
-      font-size: betweenDesktop(desktopMinFontSize(h1)*2, desktopMaxFontSize(h1)*2);
+      font-size: fontSize(h1, desktop) *1.75;
+      font-size: betweenDesktop(desktopMinFontSize(h1)*1.75, desktopMaxFontSize(h1)*1.75);
     }
   }
 }
@@ -56,6 +55,13 @@ div.registration {
     + p {
       margin-top: -$gutter*2;
     }
+  }
+
+  h5 + p {
+    margin: 0 auto $gutter;
+    padding: 0 $gutter/2;
+    font-size: 16px;
+    text-align: left;
   }
 
   form {
