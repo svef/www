@@ -8,11 +8,18 @@ import { auth, database } from 'app/firebase'
 
 import './ManageMembers.scss'
 
+const allowedAccounts = [
+  'benediktvaldez@gmail.com',
+  'kastaniubrunn@gmail.com',
+  'kjarni@gmail.com',
+]
+
 class ManageMembers extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
+      term: '',
       loaded: false,
       loggedIn: false,
       currentUser: null,
@@ -25,6 +32,14 @@ class ManageMembers extends Component {
     auth.onAuthStateChanged(currentUser => {
       if (currentUser === null) {
         this.setState({ loaded: true, loggedIn: false, currentUser })
+      } else if (
+        currentUser !== null &&
+        !(
+          currentUser.email.endsWith('@svef.is') ||
+          allowedAccounts.includes(currentUser.email)
+        )
+      ) {
+        auth.signOut()
       } else {
         this.setState({ loaded: true, loggedIn: true, currentUser })
       }
