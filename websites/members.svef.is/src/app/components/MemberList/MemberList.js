@@ -65,112 +65,106 @@ class Members extends Component {
   }
 
   render() {
+    const list = this.state.members.filter(
+      m =>
+        this.props.term === ''
+          ? true
+          : m.nafn.toLowerCase().includes(this.props.term) ||
+            m.netfang.toLowerCase().includes(this.props.term) ||
+            m.vinnustadur.toLowerCase().includes(this.props.term) ||
+            m.kennitala.toLowerCase().includes(this.props.term) ||
+            m.kennitala_greidanda.toLowerCase().includes(this.props.term)
+    )
     return (
       <div className="row MemberList">
         <div className="col-12">
-          {this.state.members.length > 0 && (
-            <div className="row title">
-              <div className="col-10 offset-1">
-                <p className="member_changes">
-                  Gætið þess að allar breytingar eru varanlegar! Það er enginn
-                  'Vista' takki, allt uppfærist jafnóðum og því er breytt.
-                </p>
-              </div>
-              <div className="col-2 offset-1">
-                <p>Nafn einstaklings</p>
-              </div>
-              <div className="col-2">
-                <p>Netfang</p>
-              </div>
-              <div className="col-2">
-                <p>Kennitala</p>
-              </div>
-              <div className="col-2">
-                <p>Kennitala greiðanda</p>
-              </div>
-              <div className="col-2">
-                <p>Vinnustaður</p>
-              </div>
+          <div className="row title">
+            <div className="col-10 offset-1">
+              <p className="member_changes">
+                Gætið þess að allar breytingar eru varanlegar! Það er enginn
+                'Vista' takki, allt uppfærist jafnóðum og því er breytt.
+                <br />
+                Félagar: {this.props.term === '' ? '' : `${list.length}/`}
+                {this.state.members.length}
+              </p>
             </div>
-          )}
-          {this.state.members
-            .filter(
-              m =>
-                this.props.term === ''
-                  ? true
-                  : m.nafn.toLowerCase().includes(this.props.term) ||
-                    m.netfang.toLowerCase().includes(this.props.term) ||
-                    m.vinnustadur.toLowerCase().includes(this.props.term) ||
-                    m.kennitala.toLowerCase().includes(this.props.term) ||
-                    m.kennitala_greidanda
-                      .toLowerCase()
-                      .includes(this.props.term)
-            )
-            .map(
-              (member, i) =>
-                member.nafn && (
-                  <div className="row member_row" key={`member-${i}`}>
-                    <div className="col-2 offset-1">
-                      <input
-                        type="text"
-                        name="nafn"
-                        value={member.nafn}
-                        onChange={event =>
-                          this.handleChange(i, 'nafn', event.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="col-2">
-                      <input
-                        type="text"
-                        name="netfang"
-                        value={member.netfang}
-                        onChange={event =>
-                          this.handleChange(i, 'netfang', event.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="col-2">
-                      <input
-                        type="text"
-                        name="kennitala"
-                        value={member.kennitala}
-                        onChange={event =>
-                          this.handleChange(i, 'kennitala', event.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="col-2">
-                      <input
-                        type="text"
-                        name="kennitala_greidanda"
-                        value={member.kennitala_greidanda}
-                        onChange={event =>
-                          this.handleChange(
-                            i,
-                            'kennitala_greidanda',
-                            event.target.value
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="col-2">
-                      <input
-                        type="text"
-                        name="vinnustadur"
-                        value={member.vinnustadur}
-                        onChange={event =>
-                          this.handleChange(
-                            i,
-                            'vinnustadur',
-                            event.target.value
-                          )
-                        }
-                      />
-                    </div>
+            <div className="col-2 offset-1">
+              <p>Nafn einstaklings</p>
+            </div>
+            <div className="col-2">
+              <p>Netfang</p>
+            </div>
+            <div className="col-2">
+              <p>Kennitala</p>
+            </div>
+            <div className="col-2">
+              <p>Kennitala greiðanda</p>
+            </div>
+            <div className="col-2">
+              <p>Vinnustaður</p>
+            </div>
+          </div>
+          {list.map(
+            (member, i) =>
+              member.nafn && (
+                <div className="row member_row" key={`member-${i}`}>
+                  <div className="col-2 offset-1">
+                    <input
+                      type="text"
+                      name="nafn"
+                      value={member.nafn}
+                      onChange={event =>
+                        this.handleChange(i, 'nafn', event.target.value)
+                      }
+                    />
                   </div>
-                )
-            )}
+                  <div className="col-2">
+                    <input
+                      type="text"
+                      name="netfang"
+                      value={member.netfang}
+                      onChange={event =>
+                        this.handleChange(i, 'netfang', event.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="col-2">
+                    <input
+                      type="text"
+                      name="kennitala"
+                      value={member.kennitala}
+                      onChange={event =>
+                        this.handleChange(i, 'kennitala', event.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="col-2">
+                    <input
+                      type="text"
+                      name="kennitala_greidanda"
+                      value={member.kennitala_greidanda}
+                      onChange={event =>
+                        this.handleChange(
+                          i,
+                          'kennitala_greidanda',
+                          event.target.value
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="col-2">
+                    <input
+                      type="text"
+                      name="vinnustadur"
+                      value={member.vinnustadur}
+                      onChange={event =>
+                        this.handleChange(i, 'vinnustadur', event.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+              )
+          )}
         </div>
       </div>
     )
