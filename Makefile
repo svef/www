@@ -88,4 +88,16 @@ shell: # Open a bash shell within the container (ctrl+d to exit)
 		bash
 
 ##
+## --- Shorthands
+
+publish-svef: # build and deploy svef.is
+	WEBSITE=svef.is APP=www-svef-is make build deploy
+
+publish-skraning: # build and deploy skraning.vefverdlaun.is
+	WEBSITE=skraning.vefverdlaun.is APP=skraning-vefverdlaun-is make build deploy
+
+publish-members: # build and deploy members.svef.is
+	WEBSITE=members.svef.is APP=members-svef-is make build deploy
+
+##
 ## --- Environment variables
