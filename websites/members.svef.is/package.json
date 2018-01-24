@@ -1,0 +1,46 @@
+{
+  "name": "members.svef.is",
+  "version": "0.0.1",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "inspect": "tux-scripts inspect",
+    "start": "tux-scripts start",
+    "build": "tux-scripts build",
+    "serve": "tux-scripts serve"
+  },
+  "dependencies": {
+    "@epegzz/sass-vars-loader": "^3.2.0",
+    "@svef/components": "^0.0.1",
+    "@svef/styles": "^0.0.1",
+    "axios": "^0.17.1",
+    "classnames": "^2.2.5",
+    "contentful": "^5.0.5",
+    "firebase": "^4.9.0",
+    "fuse.js": "^3.2.0",
+    "lodash.throttle": "^4.1.1",
+    "node-sass": "^4.7.2",
+    "prop-types": "^15.6.0",
+    "react": "^16.2.0",
+    "react-async-bootstrapper": "^1.1.2",
+    "react-async-component": "^1.0.2",
+    "react-fuzzy": "^0.5.1",
+    "react-helmet": "^5.2.0",
+    "react-jobs": "^1.0.0",
+    "react-redux": "^5.0.6",
+    "react-router-dom": "^4.2.2",
+    "react-router-redux": "^4.0.8",
+    "redux": "^3.7.2",
+    "redux-thunk": "^2.2.0",
+    "sass-loader": "^6.0.6",
+    "tux": "^0.4.0",
+    "tux-scripts": "^0.4.0",
+    "urlify": "^0.3.6"
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-import-resolver-webpack": "^0.8.3",
+    "neutrino-preset-airbnb": "^4.0.0",
+    "redux-devtools-extension": "^2.13.2"
+  }
+}
