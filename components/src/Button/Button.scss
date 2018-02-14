@@ -36,6 +36,14 @@
     cursor: not-allowed;
   }
 
+  &.action {
+    padding: 0;
+    height: 32px;
+    line-height: 30px;
+    width: 32px;
+    min-width: 0;
+  }
+
   &.svef {
     background: color(svef);
   }
