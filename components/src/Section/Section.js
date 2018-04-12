@@ -28,24 +28,10 @@ export const Section = styled.section`
       transition: transform 400ms ease 1250ms;
       transform: rotateY(0deg);
     }
+  `};
 
-    h1:after {
-      content: '';
-      position: absolute;
-      top: 100%;
-      right: 100%;
-      display: block;
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 2px;
-
-      background-color: #222;
-
-      transform: translate3d(10vw, 0, 0);
-      transition: transform 1000ms $easeout 1250ms;
-    }
-
+  ${props => `
+    background-color: ${colors[props.color] || 'inherit'};
   `};
 `
 

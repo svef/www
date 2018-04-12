@@ -25,8 +25,29 @@ export default styled.h1`
     min-height: 775px;
   }
 
+  &:after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 100%;
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 2px;
+
+    background-color: #222;
+
+    transform: translate3d(10vw, 0, 0);
+    transition: transform 1000ms $easeout 1250ms;
+  }
+
   ${props =>
     `
     color: ${colors[props.color] || 'inherit'};
+
+    &:after {
+      background-color: ${colors[props.color] || 'inherit'};
+    }
   `};
 `
