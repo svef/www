@@ -26,7 +26,7 @@ const Layout = () => (
     <Switch>
       {/* <Route path="/felagar" component={Members} />
       <Route path="/stjorn" component={Board} /> */}
-      <Route path="/" component={Members} />
+      <Route path="/" component={Home} />
     </Switch>
   </main>
 )

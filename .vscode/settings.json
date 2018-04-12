@@ -1,11 +1,7 @@
 {
   "editor.formatOnSave": false,
-  "prettier.printWidth": 80,
+  "prettier.printWidth": 100,
   "prettier.singleQuote": true,
   "prettier.trailingComma": "es5",
-  "prettier.semi": false,
-  "npm-intellisense.scanDevDependencies": true,
-  "npm-intellisense.recursivePackageJsonLookup": true,
-  "npm-intellisense.showBuildInLibs": true,
-  "npm-intellisense.importES6": true
+  "prettier.semi": false
 }

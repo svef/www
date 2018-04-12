@@ -11,12 +11,17 @@
     "eject": "echo \"No eject script for components\""
   },
   "dependencies": {
-    "react": "^16.0.0-rc.2",
-    "react-dom": "^16.0.0-rc.2"
+    "@svef/styles": "^0.0.1",
+    "react": "^16.2.0",
+    "react-dom": "^16.0.0-rc.2",
+    "styled-components": "^2.1.2"
   },
   "devDependencies": {
-    "@storybook/react": "^3.2.8",
+    "@epegzz/sass-vars-loader": "^3.2.3",
     "@storybook/addon-actions": "^3.2.6",
-    "@storybook/addon-links": "^3.2.6"
+    "@storybook/addon-links": "^3.2.6",
+    "@storybook/react": "^3.2.8",
+    "sass-loader": "^6.0.7",
+    "tux": "^0.5.2"
   }
 }
