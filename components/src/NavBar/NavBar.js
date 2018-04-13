@@ -9,13 +9,38 @@ export const NavBar = styled.nav`
 
   padding: 0 ${gutter};
 
+  ${props =>
+    props.right
+      ? `
+    text-align: right;
+
+    @media only screen and (min-width: 1025px) {
+      padding-right: 100px;
+    }
+
+    @media only screen and (min-width: 1201px) {
+      padding-right: 120px;
+    }
+  `
+      : `
+    text-align: left;
+
+    @media only screen and (min-width: 1025px) {
+      padding-left: 100px;
+    }
+
+    @media only screen and (min-width: 1201px) {
+      padding-left: 120px;
+    }
+  `};
+
   > a {
     overflow: hidden;
     position: relative;
     vertical-align: middle;
 
     display: inline-block;
-    margin: 0 10px;
+    margin: 0 20px;
     padding: 0;
 
     line-height: 54px;
@@ -28,6 +53,14 @@ export const NavBar = styled.nav`
 
     transition: opacity 750ms, transform 500ms;
     transition-delay: 1s;
+
+    &:first-child {
+      margin-left: 0;
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
 
     &:after {
       content: '';
@@ -55,6 +88,4 @@ export const NavBar = styled.nav`
   }
 `
 
-export default ({ children, ...props }) => (
-  <NavBar {...props}>{children}</NavBar>
-)
+export default NavBar

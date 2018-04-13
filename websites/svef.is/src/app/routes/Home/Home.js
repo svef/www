@@ -9,7 +9,7 @@ const Home = () => (
     </Helmet>
     <div className="col">
       <Section hero>
-        <H1 color="awards">Samtök vefiðnaðarins</H1>
+        <H1 color="svef">Samtök vefiðnaðarins</H1>
       </Section>
       <Section>
         <span>Hi</span>

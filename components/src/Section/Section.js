@@ -5,6 +5,7 @@ import { colors } from '@svef/styles'
 
 export const Section = styled.section`
   position: relative;
+  padding: 40px 0;
 
   h1 {
     position: relative;
@@ -14,6 +15,7 @@ export const Section = styled.section`
   ${props =>
     props.hero &&
     `
+    padding: 0;
     color: ${colors.svef};
 
     &:after {
@@ -23,7 +25,7 @@ export const Section = styled.section`
 
       content: '';
 
-      background-color: ${colors.grayDark};
+      background-color: ${colors.grayLightbg};
 
       transition: transform 400ms ease 1250ms;
       transform: rotateY(0deg);
