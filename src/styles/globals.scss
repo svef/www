@@ -1,0 +1,79 @@
+@use './tokens.scss';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+main {
+  flex: 1;
+}
+
+a {
+  color: inherit;
+}
+
+// Accessibility: keyboard-only skip link
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  padding: 0.5rem 1rem;
+  background: var(--color-violet);
+  color: var(--color-white);
+  z-index: 100;
+
+  &:focus {
+    left: 0;
+  }
+}
+
+// Minimal placeholder chrome — replaced by real components from the design system.
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  flex-wrap: wrap;
+
+  nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__utility {
+    margin-left: auto;
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+.site-logo {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: var(--color-violet);
+}
+
+.site-footer {
+  padding: 2rem 1.5rem;
+  opacity: 0.8;
+}
