@@ -1,0 +1,47 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  background: var(--surface-2);
+  border: 1px solid var(--surface-4);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--fg);
+  transition:
+    border-color 0.16s ease,
+    transform 0.16s ease;
+
+  &:hover {
+    border-color: var(--color-violet);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
+}
+
+.featured {
+  border-color: var(--color-violet);
+  background: linear-gradient(180deg, var(--surface-3), var(--surface-2));
+}
+
+.date {
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-violet-light);
+}
+
+.title {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-xl);
+}
+
+.location {
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}

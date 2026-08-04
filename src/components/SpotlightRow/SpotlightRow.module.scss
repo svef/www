@@ -1,0 +1,44 @@
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-12);
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.title {
+  font-size: var(--text-3xl);
+  max-width: 14ch;
+  margin: 0 0 var(--space-4);
+}
+
+.body {
+  color: var(--fg-muted);
+  max-width: 42ch;
+  margin: 0 0 var(--space-8);
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+// Light "spotlight" image placeholder with diagonal stripes.
+.panel {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(137, 23, 225, 0.12),
+      rgba(137, 23, 225, 0.12) 12px,
+      transparent 12px,
+      transparent 24px
+    ),
+    var(--color-white);
+}

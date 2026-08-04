@@ -1,0 +1,34 @@
+.strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(192, 139, 245, 0.1),
+      rgba(192, 139, 245, 0.1) 12px,
+      transparent 12px,
+      transparent 24px
+    ),
+    var(--surface-3);
+}
+
+.label {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-2);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--fg-muted);
+}

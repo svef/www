@@ -1,0 +1,23 @@
+.eventGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.photosMore {
+  margin-top: var(--space-6);
+}
+
+.moreLink {
+  color: var(--color-violet-light);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,17 @@
+.section {
+  padding: var(--space-16) var(--space-6);
+}
+
+.inner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.head {
+  margin-bottom: var(--space-8);
+}
+
+.title {
+  font-size: var(--text-3xl);
+  margin: 0;
+}
