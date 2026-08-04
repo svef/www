@@ -1,8 +1,9 @@
 import type React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import { Noto_Sans, Overpass } from 'next/font/google'
+import { Header } from '@/components/Header/Header'
+import { Footer } from '@/components/Footer/Footer'
 import {
   ColorSchemeScript,
   MantineProvider,
@@ -38,15 +39,20 @@ export default async function LocaleLayout({
 
   const t = getDictionary(locale)
   const base = locale === 'en' ? '/en' : ''
-  const nav = [
+  const navItems = [
     { href: `${base}/vefverdlaunin`, label: t.nav.awards },
     { href: `${base}/vidburdir`, label: t.nav.events },
     { href: `${base}/frettir`, label: t.nav.news },
     { href: `${base}/um-svef`, label: t.nav.about },
     { href: `${base}/skraning`, label: t.nav.membership },
   ]
-  const otherLocaleHref = locale === 'en' ? '/' : '/en'
-  const otherLocaleLabel = locale === 'en' ? 'IS' : 'EN'
+  // TODO: source socials + blurb from the SiteSettings global once content exists.
+  const socials = [
+    { label: 'FB', href: '#' },
+    { label: 'IG', href: '#' },
+    { label: 'X', href: '#' },
+    { label: 'LI', href: '#' },
+  ]
 
   return (
     <html
@@ -62,28 +68,21 @@ export default async function LocaleLayout({
           <a href="#main" className="skip-link">
             {t.skipToContent}
           </a>
-          <header className="site-header">
-            <Link href={base || '/'} className="site-logo" aria-label="SVEF">
-              SVEF
-            </Link>
-            <nav aria-label="Primary">
-              {nav.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="site-header__utility">
-              <Link href={`${base}/hafa-samband`}>{t.nav.contact}</Link>
-              <Link href={otherLocaleHref} hrefLang={otherLocaleLabel.toLowerCase()}>
-                {otherLocaleLabel}
-              </Link>
-            </div>
-          </header>
+          <Header
+            homeHref={base || '/'}
+            navItems={navItems}
+            contactLabel={t.nav.contact}
+            contactHref={`${base}/hafa-samband`}
+            otherLocaleHref={locale === 'en' ? '/' : '/en'}
+            otherLocaleLabel={locale === 'en' ? 'IS' : 'EN'}
+          />
           <main id="main">{children}</main>
-          <footer className="site-footer">
-            <p>© {new Date().getFullYear()} SVEF — {t.footer.rights}</p>
-          </footer>
+          <Footer
+            blurb={t.footer.blurb}
+            email="svef@svef.is"
+            socials={socials}
+            year={2026}
+          />
         </MantineProvider>
       </body>
     </html>

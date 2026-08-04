@@ -1,0 +1,22 @@
+.motif {
+  display: inline-flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.block {
+  display: block;
+  width: 48px;
+  height: 48px;
+  background: var(--color-violet);
+}
+
+// Signature corner-cut block
+.cut {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0, 40% 40%, 0 40%);
+  background: var(--color-violet-bright);
+}
+
+.dark {
+  background: var(--surface-4);
+}

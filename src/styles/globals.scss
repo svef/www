@@ -58,36 +58,4 @@ a {
   }
 }
 
-// Minimal placeholder chrome — replaced by real components from the design system.
-.site-header {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1rem 1.5rem;
-  flex-wrap: wrap;
-
-  nav {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  &__utility {
-    margin-left: auto;
-    display: flex;
-    gap: 1rem;
-  }
-}
-
-.site-logo {
-  font-family: var(--font-heading), system-ui, sans-serif;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  text-decoration: none;
-  color: var(--color-violet);
-}
-
-.site-footer {
-  padding: 2rem 1.5rem;
-  opacity: 0.8;
-}
+// Site chrome now lives in real components (Header, Footer). See src/components/.

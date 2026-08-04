@@ -1,0 +1,36 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mark {
+  display: grid;
+  grid-template-columns: repeat(2, 10px);
+  grid-auto-rows: 10px;
+  gap: 3px;
+
+  span {
+    background: var(--color-violet);
+  }
+  // top-right block sits offset for the blocky look
+  span:nth-child(2) {
+    grid-column: 2;
+    background: var(--color-violet-bright);
+  }
+  span:nth-child(3) {
+    grid-column: 1 / span 2;
+    background: var(--color-violet);
+  }
+}
+
+.word {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: var(--weight-black);
+  letter-spacing: 0.04em;
+  font-size: var(--text-sm);
+  background: var(--color-violet);
+  color: var(--color-white);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}

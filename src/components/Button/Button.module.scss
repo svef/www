@@ -1,0 +1,44 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-base);
+  line-height: 1;
+  padding: 0.9rem 1.5rem;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
+}
+
+.primary {
+  background: var(--color-violet);
+  color: var(--color-black);
+  border-radius: var(--radius-md);
+
+  &:hover {
+    background: var(--color-violet-bright);
+  }
+}
+
+.secondary {
+  background: transparent;
+  color: var(--fg);
+  padding-left: 0;
+  padding-right: 0;
+  border-radius: 0;
+  border-bottom: 2px solid var(--color-violet);
+
+  &:hover {
+    color: var(--color-violet-light);
+  }
+}

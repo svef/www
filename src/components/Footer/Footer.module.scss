@@ -1,0 +1,85 @@
+.footer {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-16) var(--space-6) var(--space-12);
+  border-top: 1px solid var(--surface-3);
+}
+
+.motif {
+  position: absolute;
+  top: 0;
+  right: var(--space-8);
+  opacity: 0.9;
+}
+
+.inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  justify-content: space-between;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.brand {
+  max-width: 34rem;
+}
+
+.blurb {
+  margin: var(--space-4) 0 0;
+  color: var(--fg-muted);
+}
+
+.contact {
+  text-align: right;
+  min-width: 12rem;
+}
+
+.email {
+  display: inline-block;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-lg);
+  text-decoration: none;
+  color: var(--fg);
+  border-bottom: 2px solid var(--color-violet);
+  padding-bottom: 2px;
+}
+
+.socials {
+  list-style: none;
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding: 0;
+  margin: var(--space-6) 0 0;
+}
+
+.social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  color: var(--fg);
+  background: var(--surface-3);
+  border-radius: var(--radius-sm);
+
+  &:hover {
+    background: var(--color-violet);
+    color: var(--color-black);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 2px;
+  }
+}
+
+.copy {
+  margin: var(--space-6) 0 0;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}

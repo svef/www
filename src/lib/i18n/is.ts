@@ -13,5 +13,7 @@ export const is = {
   },
   footer: {
     rights: 'Öll réttindi áskilin',
+    blurb:
+      'SVEF er félag fólks sem starfar við vefinn á Íslandi. Við miðlum þekkingu og eflum fagleg vinnubrögð í greininni.',
   },
 }
