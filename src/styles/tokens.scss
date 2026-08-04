@@ -1,10 +1,70 @@
-// PLACEHOLDER design tokens — to be replaced when translating the exported design
-// system (.local/svef/SVEF Design System (standalone).html). Values from brand-brief.md.
+// SVEF design tokens — derived from the exported design system
+// (.local/svef/SVEF Design System (standalone).html). Dark, electric-violet brand.
+// Fonts (Overpass body / Noto Sans headings) are provided as CSS vars by next/font
+// in the root layout: --font-body, --font-heading.
 :root {
-  --color-violet: #8917e1; // Electric Violet (primary)
-  --color-black: #09060c; // Blakety Black (canvas)
-  --color-white: #fcfbfe; // Shy White
-  --color-red: #ff0000; // accent
-  --color-pink: #ff0fca; // accent
-  --color-yellow: #fff511; // accent
+  // Brand
+  --color-violet: #8917e1; // Electric Violet — primary
+  --color-violet-bright: #9e2bf7; // hover / emphasis
+  --color-violet-light: #c08bf5; // on-dark accents
+  --color-lavender: #e7dcf5; // muted text on dark
+
+  // Canvas + elevated dark surfaces (violet-tinted ramp)
+  --color-black: #09060c; // page canvas (Blakety Black)
+  --surface-1: #0e0912;
+  --surface-2: #12091c;
+  --surface-3: #1b1522;
+  --surface-4: #241c2d;
+
+  --color-white: #fcfbfe; // Shy White — text / spotlight panels
+
+  // Loud accents (emphasis + large shapes only, not body text)
+  --accent-red: #ff0000;
+  --accent-pink: #ff0fca;
+  --accent-yellow: #fff511;
+
+  // Semantic
+  --bg: var(--color-black);
+  --fg: var(--color-white);
+  --fg-muted: var(--color-lavender);
+  --brand: var(--color-violet);
+
+  // Type scale
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.75rem;
+  --text-display: clamp(2.5rem, 6vw, 4.5rem);
+
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-black: 800;
+
+  --tracking-tight: -0.02em; // large headings
+  --tracking-wide: 0.14em; // uppercase eyebrows / labels
+
+  // Radii
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 18px;
+
+  // Spacing (4px base)
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  // Layout
+  --content-max: 1200px;
 }

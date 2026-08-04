@@ -1,38 +1,39 @@
 import { createTheme, type MantineColorsTuple } from '@mantine/core'
 
-// PLACEHOLDER theme — real tokens come from translating the exported design system
-// (.local/svef/SVEF Design System (standalone).html). Electric Violet + dark canvas.
+// SVEF Mantine theme — mirrors src/styles/tokens.scss (derived from the exported
+// design system). Dark canvas, Electric Violet primary. Refine against visual QA.
 const violet: MantineColorsTuple = [
   '#F4EAFE',
-  '#E5CDFB',
-  '#CE9EF6',
+  '#E7DCF5', // lavender (muted text)
+  '#C08BF5', // violet-light
   '#B76FF1',
   '#A247ED',
-  '#9528E9',
+  '#9E2BF7', // violet-bright (hover)
   '#8917E1', // brand — Electric Violet
   '#7412C0',
   '#5E0E9C',
   '#490B79',
 ]
 
+// Dark ramp: [0] text → [7] canvas. Surfaces map to the design's violet-tinted darks.
 const dark: MantineColorsTuple = [
-  '#C1BFC6',
-  '#9E9BA6',
-  '#7C7986',
-  '#5B5866',
-  '#423F4C',
-  '#2B2833',
-  '#1A1722',
-  '#09060C', // Blakety Black — body background
-  '#070409',
-  '#050307',
+  '#FCFBFE', // text (Shy White)
+  '#E7DCF5',
+  '#C08BF5',
+  '#8E82A0',
+  '#3A3147',
+  '#241C2D', // surface-4 (borders/hover)
+  '#1B1522', // surface-3 (cards)
+  '#09060C', // canvas (body background)
+  '#0B070F',
+  '#060309',
 ]
 
 export const theme = createTheme({
   primaryColor: 'violet',
   primaryShade: 6,
   colors: { violet, dark },
-  white: '#FCFBFE', // Shy White
+  white: '#FCFBFE',
   black: '#09060C',
   fontFamily: 'var(--font-body), system-ui, sans-serif',
   headings: {
@@ -40,4 +41,10 @@ export const theme = createTheme({
     fontWeight: '800',
   },
   defaultRadius: 'md',
+  radius: { sm: '6px', md: '8px', lg: '18px' },
+  other: {
+    accentRed: '#FF0000',
+    accentPink: '#FF0FCA',
+    accentYellow: '#FFF511',
+  },
 })
