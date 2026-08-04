@@ -1,0 +1,40 @@
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-top: 1px solid var(--surface-4);
+  border-left: 1px solid var(--surface-4);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-8);
+  min-height: 8rem;
+  padding: var(--space-4) var(--space-4) var(--space-6);
+  border-right: 1px solid var(--surface-4);
+  border-bottom: 1px solid var(--surface-4);
+}
+
+.num {
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.name {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-lg);
+  line-height: 1.2;
+}

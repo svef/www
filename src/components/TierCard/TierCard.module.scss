@@ -1,0 +1,59 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  background: var(--surface-2);
+  border: 1px solid var(--surface-4);
+}
+
+.featured {
+  border-color: var(--color-violet);
+  background: linear-gradient(180deg, var(--surface-3), var(--surface-2));
+}
+
+.name {
+  font-size: var(--text-xl);
+  margin: 0;
+}
+
+.price {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: var(--weight-black);
+  font-size: var(--text-3xl);
+  color: var(--color-violet-light);
+  margin: 0;
+}
+
+.note {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: var(--weight-regular);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+
+  li {
+    padding-left: var(--space-6);
+    position: relative;
+    color: var(--fg-muted);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.45em;
+      width: 10px;
+      height: 10px;
+      background: var(--color-violet);
+    }
+  }
+}

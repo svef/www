@@ -1,0 +1,41 @@
+.story {
+  max-width: 60ch;
+  font-size: var(--text-lg);
+  color: var(--fg-muted);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  p {
+    margin: 0;
+  }
+}
+
+.boardGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-8) var(--space-6);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.bylaws {
+  max-width: 70ch;
+  color: var(--fg-muted);
+  line-height: 1.7;
+
+  :global(h1),
+  :global(h2),
+  :global(h3) {
+    color: var(--fg);
+  }
+
+  :global(a) {
+    color: var(--color-violet-light);
+  }
+}
