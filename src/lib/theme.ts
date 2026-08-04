@@ -40,8 +40,9 @@ export const theme = createTheme({
     fontFamily: 'var(--font-heading), var(--font-body), system-ui, sans-serif',
     fontWeight: '800',
   },
-  defaultRadius: 'md',
-  radius: { sm: '6px', md: '8px', lg: '18px' },
+  // Sharp/blocky brand — no rounded corners.
+  defaultRadius: 0,
+  radius: { sm: '0', md: '0', lg: '0' },
   other: {
     accentRed: '#FF0000',
     accentPink: '#FF0FCA',
