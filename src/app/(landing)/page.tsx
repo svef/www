@@ -4,14 +4,14 @@ import { BoardMemberCard } from '@/components/BoardMemberCard/BoardMemberCard'
 import styles from './landing.module.scss'
 
 const board = [
-  { name: 'Salena Raquel Kauffman', role: 'Formaður SVEF', photo: '/landing/board-salena.jpg' },
-  { name: 'Sigurður Snær Eiríksson', role: 'Gjaldkeri SVEF & Vefstjóri', photo: '/landing/board-sigurdur.jpg' },
-  { name: 'Sveinn Steinarsson', role: 'Ritari SVEF & Dómarakerfi', photo: '/landing/board-sveinn.jpg' },
-  { name: 'Margrét Rúnarsdóttir', role: 'Markaðsmál og miðlun', photo: '/landing/board-margret.jpg' },
-  { name: 'Kolfinna Pétursdóttir', role: 'Markaðsmál og miðlun', photo: '/landing/board-kolfinna.jpg' },
-  { name: 'Brian Johannessen', role: 'Dómarakerfi', photo: '/landing/board-brian.jpg' },
-  { name: 'Petra Dís Magnúsdóttir', role: 'Vef- og viðburðastjórn', photo: '/landing/board-petra.jpg' },
-  { name: 'Jón Andri Óskarsson', role: 'Verkefnastjóri – Nýr vefur', photo: '/landing/board-jon.jpg' },
+  { name: 'Salena Raquel Kauffman', role: 'Formaður SVEF', photo: '/landing/board-salena.jpg', clip: '/landing/clip-a.svg', frames: ['/landing/frame-0.svg', '/landing/frame-1.svg'] },
+  { name: 'Sigurður Snær Eiríksson', role: 'Gjaldkeri SVEF & Vefstjóri', photo: '/landing/board-sigurdur.jpg', clip: '/landing/clip-b.svg', frames: ['/landing/frame-2.svg'] },
+  { name: 'Sveinn Steinarsson', role: 'Ritari SVEF & Dómarakerfi', photo: '/landing/board-sveinn.jpg', clip: '/landing/clip-c.svg', frames: ['/landing/frame-3.svg'] },
+  { name: 'Margrét Rúnarsdóttir', role: 'Markaðsmál og miðlun', photo: '/landing/board-margret.jpg', clip: '/landing/clip-d.svg', frames: ['/landing/frame-4.svg'] },
+  { name: 'Kolfinna Pétursdóttir', role: 'Markaðsmál og miðlun', photo: '/landing/board-kolfinna.jpg', clip: '/landing/clip-c.svg', frames: ['/landing/frame-3.svg'] },
+  { name: 'Brian Johannessen', role: 'Dómarakerfi', photo: '/landing/board-brian.jpg', clip: '/landing/clip-d.svg', frames: ['/landing/frame-4.svg'] },
+  { name: 'Petra Dís Magnúsdóttir', role: 'Vef- og viðburðastjórn', photo: '/landing/board-petra.jpg', clip: '/landing/clip-a.svg', frames: ['/landing/frame-0.svg', '/landing/frame-1.svg'] },
+  { name: 'Jón Andri Óskarsson', role: 'Verkefnastjóri – Nýr vefur', photo: '/landing/board-jon.jpg', clip: '/landing/clip-b.svg', frames: ['/landing/frame-2.svg'] },
 ]
 
 const heroSocials = [
@@ -80,7 +80,14 @@ export default function LandingPage() {
         </div>
         <div className={styles.boardGrid}>
           {board.map((m) => (
-            <BoardMemberCard key={m.name} name={m.name} role={m.role} photo={m.photo} />
+            <BoardMemberCard
+              key={m.name}
+              name={m.name}
+              role={m.role}
+              photo={m.photo}
+              clip={m.clip}
+              frames={m.frames}
+            />
           ))}
         </div>
       </section>

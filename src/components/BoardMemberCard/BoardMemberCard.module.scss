@@ -2,32 +2,44 @@
   position: relative;
   margin: 0;
   aspect-ratio: 256 / 318;
-  overflow: hidden;
-  outline: 2px solid var(--color-violet);
-  outline-offset: -2px;
 }
 
-.photo {
+// Stepped colored frame (black fill + colored border), stretched to the card.
+.frame {
   position: absolute;
   inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
+}
+
+// Photo sits 2px inside (252×314 within 256×318), clipped to the stepped mask so the
+// frame's colored border shows around it.
+.photo {
+  position: absolute;
+  inset: 0.63% 0.78%;
+  width: auto;
+  height: auto;
   object-fit: cover;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 .caption {
   position: absolute;
   right: 0;
   bottom: 0;
-  left: 0;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 6px;
+  width: 72%;
   padding: 12px 20px 6px 12px;
   text-align: right;
   color: var(--color-white);
-  background: linear-gradient(to top, rgba(9, 6, 12, 0.85) 30%, transparent);
 }
 
 .role {
