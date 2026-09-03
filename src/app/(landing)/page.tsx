@@ -50,15 +50,19 @@ export default function LandingPage() {
 
       <section className={styles.section}>
         <BlockPanel
-          baseW={1104}
-          baseH={848}
-          purpleSrc="/landing/bg-about-purple.svg"
-          purple={{ l: 0, t: 0, w: 1104, h: 520 }}
-          whiteSrc="/landing/bg-about-white.svg"
-          white={{ l: 77, t: 223, w: 1027, h: 625 }}
-          text={{ l: 280, t: 383, w: 731 }}
           title="Um SVEF"
-          titleSize={56}
+          mobileBand="/landing/event-mobile-purple.svg"
+          desktop={{
+            baseW: 1104,
+            baseH: 848,
+            shapes: [
+              { src: '/landing/bg-about-purple.svg', l: 0, t: 0, w: 1104, h: 520 },
+              { src: '/landing/bg-about-white.svg', l: 77, t: 223, w: 1027, h: 625 },
+            ],
+            text: { l: 280, t: 383, w: 731 },
+            titleSize: 56,
+            bodyIndent: 93,
+          }}
         >
           SVEF eru fagsamtök þeirra er starfa að vefmálum á Íslandi. Samtökin hafa það að
           markmiði að miðla þekkingu og efla fagleg vinnubrögð í greininni, vera
@@ -94,15 +98,19 @@ export default function LandingPage() {
 
       <section className={styles.section}>
         <BlockPanel
-          baseW={1200}
-          baseH={847}
-          purpleSrc="/landing/bg-event-purple.svg"
-          purple={{ l: 0, t: 0, w: 1200, h: 471 }}
-          whiteSrc="/landing/bg-event-white.svg"
-          white={{ l: 125, t: 174, w: 1075, h: 673 }}
-          text={{ l: 515, t: 318, w: 544 }}
           title="Fyrsti viðburður SVEF!"
-          titleSize={48}
+          mobileBand="/landing/event-mobile-purple.svg"
+          desktop={{
+            baseW: 1200,
+            baseH: 847,
+            shapes: [
+              { src: '/landing/bg-event-purple.svg', l: 0, t: 0, w: 1200, h: 471 },
+              { src: '/landing/bg-event-white.svg', l: 125, t: 174, w: 1075, h: 673 },
+            ],
+            text: { l: 515, t: 318, w: 544 },
+            titleSize: 48,
+            bodyIndent: 93,
+          }}
         >
           Stjórnin vinnur nú að mótun starfsársins 2025–2026, sem hefst formlega með viðburði
           í október. Nánari upplýsingar um dagskrá og staðsetningu verða birtar á
