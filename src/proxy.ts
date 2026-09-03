@@ -7,6 +7,15 @@ import { NextRequest, NextResponse } from 'next/server'
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Temporary landing mode: serve the one-pager at `/`, hide the WIP full site by
+  // redirecting every other (non-asset) path to `/`. Flip LANDING_ONLY=false to launch.
+  if (process.env.LANDING_ONLY === 'true') {
+    if (pathname === '/') return NextResponse.next()
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    return NextResponse.redirect(url)
+  }
+
   if (pathname === '/en' || pathname.startsWith('/en/')) {
     return NextResponse.next()
   }

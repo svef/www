@@ -1,0 +1,73 @@
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(192, 139, 245, 0.1),
+      rgba(192, 139, 245, 0.1) 12px,
+      transparent 12px,
+      transparent 24px
+    ),
+    var(--surface-3);
+  margin-bottom: var(--space-4);
+}
+
+// Violet corner block (top-left) — the design's signature framing.
+.corner {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 40px;
+  height: 40px;
+  background: var(--color-violet);
+}
+
+// Rotating accent block (bottom-right).
+.accent {
+  position: absolute;
+  right: 0;
+  bottom: 16px;
+  width: 44px;
+  height: 32px;
+}
+.pink {
+  background: var(--accent-pink);
+}
+.yellow {
+  background: var(--accent-yellow);
+}
+.red {
+  background: var(--accent-red);
+}
+.violet {
+  background: var(--color-violet);
+}
+
+.ph {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-2);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--fg-muted);
+}
+
+.role {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}
+
+.name {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-lg);
+}

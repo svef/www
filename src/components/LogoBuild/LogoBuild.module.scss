@@ -1,0 +1,104 @@
+.logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.mark {
+  position: relative;
+  width: 168px;
+  height: 132px;
+}
+
+.b1,
+.b2,
+.b3 {
+  position: absolute;
+  background: var(--color-violet);
+  opacity: 0;
+  animation: blockIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+// Staircase mark (approximation of the SVEF glyph)
+.b1 {
+  top: 0;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  background: var(--color-violet-bright);
+  animation-delay: 0.1s;
+}
+.b2 {
+  top: 34px;
+  left: 8px;
+  width: 96px;
+  height: 56px;
+  animation-delay: 0.25s;
+}
+.b3 {
+  bottom: 0;
+  left: 32px;
+  width: 128px;
+  height: 52px;
+  animation-delay: 0.4s;
+}
+
+.word {
+  position: absolute;
+  bottom: 12px;
+  left: 44px;
+  z-index: 1;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: var(--weight-black);
+  font-size: 2rem;
+  letter-spacing: 0.02em;
+  color: var(--color-white);
+  opacity: 0;
+  animation: revealUp 0.5s ease forwards;
+  animation-delay: 0.7s;
+}
+
+.tagline {
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+  opacity: 0;
+  animation: revealUp 0.5s ease forwards;
+  animation-delay: 0.9s;
+}
+
+@keyframes blockIn {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .b1,
+  .b2,
+  .b3,
+  .word,
+  .tagline {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
