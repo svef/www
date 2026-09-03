@@ -1,5 +1,5 @@
 import { LogoBuild } from '@/components/LogoBuild/LogoBuild'
-import { Panel } from '@/components/Panel/Panel'
+import { BlockPanel } from '@/components/BlockPanel/BlockPanel'
 import { BoardMemberCard } from '@/components/BoardMemberCard/BoardMemberCard'
 import styles from './landing.module.scss'
 
@@ -49,13 +49,23 @@ export default function LandingPage() {
       </section>
 
       <section className={styles.section}>
-        <Panel title="Um SVEF">
+        <BlockPanel
+          baseW={1104}
+          baseH={848}
+          purpleSrc="/landing/bg-about-purple.svg"
+          purple={{ l: 0, t: 0, w: 1104, h: 520 }}
+          whiteSrc="/landing/bg-about-white.svg"
+          white={{ l: 77, t: 223, w: 1027, h: 625 }}
+          text={{ l: 280, t: 383, w: 731 }}
+          title="Um SVEF"
+          titleSize={56}
+        >
           SVEF eru fagsamtök þeirra er starfa að vefmálum á Íslandi. Samtökin hafa það að
           markmiði að miðla þekkingu og efla fagleg vinnubrögð í greininni, vera
           samræðuvettvangur félagsmanna og andlit stéttarinnar út á við. Á meðal verkefna
           samtakanna eru hin árlegu Íslensku vefverðlaun og IceWeb-ráðstefnan, auk fjölda
           smærri viðburða.
-        </Panel>
+        </BlockPanel>
       </section>
 
       <section className={styles.boardSection}>
@@ -76,11 +86,21 @@ export default function LandingPage() {
       </section>
 
       <section className={styles.section}>
-        <Panel title="Fyrsti viðburður SVEF!">
+        <BlockPanel
+          baseW={1200}
+          baseH={847}
+          purpleSrc="/landing/bg-event-purple.svg"
+          purple={{ l: 0, t: 0, w: 1200, h: 471 }}
+          whiteSrc="/landing/bg-event-white.svg"
+          white={{ l: 125, t: 174, w: 1075, h: 673 }}
+          text={{ l: 515, t: 318, w: 544 }}
+          title="Fyrsti viðburður SVEF!"
+          titleSize={48}
+        >
           Stjórnin vinnur nú að mótun starfsársins 2025–2026, sem hefst formlega með viðburði
           í október. Nánari upplýsingar um dagskrá og staðsetningu verða birtar á
           samfélagsmiðlum og hér á vefnum á næstu vikum.
-        </Panel>
+        </BlockPanel>
       </section>
 
       <footer className={styles.footer}>
