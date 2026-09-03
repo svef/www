@@ -17,9 +17,10 @@
 // frame's colored border shows around it.
 .photo {
   position: absolute;
-  inset: 0.63% 0.78%;
-  width: auto;
-  height: auto;
+  top: 0.63%;
+  left: 0.78%;
+  width: 98.44%;
+  height: 98.74%;
   object-fit: cover;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
