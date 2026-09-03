@@ -6,6 +6,8 @@ const r2Host = process.env.R2_PUBLIC_URL
   : 'assets.svef.is'
 
 const nextConfig: NextConfig = {
+  // Don't auto-generate AGENTS.md/CLAUDE.md in the repo.
+  agentRules: false,
   sassOptions: {
     silenceDeprecations: ['legacy-js-api'],
   },

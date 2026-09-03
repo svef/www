@@ -1,27 +1,22 @@
-import clsx from 'clsx'
 import styles from './BoardMemberCard.module.scss'
 
-export type Accent = 'pink' | 'yellow' | 'red' | 'violet'
-
-// Placeholder portrait + rotating accent block + role/name (from the About board design).
+// Real board photo with role + name overlaid bottom-right (matches the Figma landing).
 export function BoardMemberCard({
   name,
   role,
-  accent = 'violet',
+  photo,
 }: {
   name: string
   role: string
-  accent?: Accent
+  photo: string
 }) {
   return (
-    <div className={styles.card}>
-      <div className={styles.photo} aria-hidden="true">
-        <span className={styles.corner} />
-        <span className={clsx(styles.accent, styles[accent])} />
-        <span className={styles.ph}>portrait</span>
-      </div>
-      <p className={styles.role}>{role}</p>
-      <p className={styles.name}>{name}</p>
-    </div>
+    <figure className={styles.card}>
+      <img src={photo} alt={name} className={styles.photo} width={256} height={318} loading="lazy" />
+      <figcaption className={styles.caption}>
+        <span className={styles.role}>{role}</span>
+        <span className={styles.name}>{name}</span>
+      </figcaption>
+    </figure>
   )
 }

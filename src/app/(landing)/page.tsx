@@ -1,50 +1,50 @@
 import { LogoBuild } from '@/components/LogoBuild/LogoBuild'
 import { Panel } from '@/components/Panel/Panel'
-import { BoardMemberCard, type Accent } from '@/components/BoardMemberCard/BoardMemberCard'
-import { BlockMotif } from '@/components/BlockMotif/BlockMotif'
-import { Footer } from '@/components/Footer/Footer'
+import { BoardMemberCard } from '@/components/BoardMemberCard/BoardMemberCard'
 import styles from './landing.module.scss'
 
-const board: { name: string; role: string; accent: Accent }[] = [
-  { name: 'Salena Raquel Kauffman', role: 'Formaður · UX/UI hönnuður hjá JúnÍ Digital', accent: 'violet' },
-  { name: 'Sigurður Snær Eiríksson', role: 'Gjaldkeri & vefstjóri · forritari hjá Dacoda', accent: 'yellow' },
-  { name: 'Sveinn Steinarsson', role: 'Ritari · vefþróun', accent: 'red' },
-  { name: 'Margrét Rúnarsdóttir', role: 'Meðstjórnandi · markaðsmál', accent: 'pink' },
-  { name: 'Kolfinna Pétursdóttir', role: 'Meðstjórnandi · viðburðir', accent: 'violet' },
-  { name: 'Brian Johannessen', role: 'Meðstjórnandi · dómkerfi', accent: 'yellow' },
-  { name: 'Petra Dís Magnúsdóttir', role: 'Meðstjórnandi · stafrænar lausnir', accent: 'red' },
-  { name: 'Jón Andri Óskarsson', role: 'Meðstjórnandi · nýr vefur', accent: 'pink' },
+const board = [
+  { name: 'Salena Raquel Kauffman', role: 'Formaður SVEF', photo: '/landing/board-salena.jpg' },
+  { name: 'Sigurður Snær Eiríksson', role: 'Gjaldkeri SVEF & Vefstjóri', photo: '/landing/board-sigurdur.jpg' },
+  { name: 'Sveinn Steinarsson', role: 'Ritari SVEF & Dómarakerfi', photo: '/landing/board-sveinn.jpg' },
+  { name: 'Margrét Rúnarsdóttir', role: 'Markaðsmál og miðlun', photo: '/landing/board-margret.jpg' },
+  { name: 'Kolfinna Pétursdóttir', role: 'Markaðsmál og miðlun', photo: '/landing/board-kolfinna.jpg' },
+  { name: 'Brian Johannessen', role: 'Dómarakerfi', photo: '/landing/board-brian.jpg' },
+  { name: 'Petra Dís Magnúsdóttir', role: 'Vef- og viðburðastjórn', photo: '/landing/board-petra.jpg' },
+  { name: 'Jón Andri Óskarsson', role: 'Verkefnastjóri – Nýr vefur', photo: '/landing/board-jon.jpg' },
 ]
 
-const socials = [
-  { label: 'FB', href: '#' },
-  { label: 'IG', href: '#' },
-  { label: 'X', href: '#' },
-  { label: 'LI', href: '#' },
+const heroSocials = [
+  { label: 'Facebook', icon: '/landing/ui-facebook.svg', href: '#' },
+  { label: 'Instagram', icon: '/landing/ui-instagram.svg', href: '#' },
+  { label: 'LinkedIn', icon: '/landing/ui-linkedin.svg', href: '#' },
+]
+
+const footerSocials = [
+  { label: 'Facebook', icon: '/landing/ic-facebook.svg', href: '#' },
+  { label: 'Instagram', icon: '/landing/ic-instagram.svg', href: '#' },
+  { label: 'Messenger', icon: '/landing/ic-messenger.svg', href: '#' },
+  { label: 'LinkedIn', icon: '/landing/ic-linkedin.svg', href: '#' },
 ]
 
 export default function LandingPage() {
   return (
     <>
-      <header className={styles.topbar}>
-        <ul className={styles.topSocials}>
-          {socials.slice(0, 3).map((s) => (
+      <section className={styles.hero}>
+        <ul className={styles.heroSocials}>
+          {heroSocials.map((s) => (
             <li key={s.label}>
               <a href={s.href} aria-label={s.label}>
-                {s.label}
+                <img src={s.icon} alt="" width={20} height={20} />
               </a>
             </li>
           ))}
         </ul>
-      </header>
-
-      <section className={styles.hero}>
-        <BlockMotif className={styles.heroMotifLeft} tone="mixed" />
-        <BlockMotif className={styles.heroMotifRight} />
         <LogoBuild />
         <h1 className={styles.headline}>
-          Framtíð SVEF er björt – komdu og vertu memm! Stærsta partý ársins er handan við
-          hornið…
+          Framtíð SVEF er björt – komdu og vertu memm!
+          <br />
+          Stærsta partý ársins er handan við hornið…
         </h1>
       </section>
 
@@ -58,7 +58,7 @@ export default function LandingPage() {
         </Panel>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.boardSection}>
         <div className={styles.boardHead}>
           <h2 className={styles.boardTitle}>Ný stjórn er tekin við</h2>
           <p className={styles.boardIntro}>
@@ -70,7 +70,7 @@ export default function LandingPage() {
         </div>
         <div className={styles.boardGrid}>
           {board.map((m) => (
-            <BoardMemberCard key={m.name} name={m.name} role={m.role} accent={m.accent} />
+            <BoardMemberCard key={m.name} name={m.name} role={m.role} photo={m.photo} />
           ))}
         </div>
       </section>
@@ -83,12 +83,33 @@ export default function LandingPage() {
         </Panel>
       </section>
 
-      <Footer
-        blurb="Samtök vefiðnaðarins (SVEF) eru fagsamtök þeirra er starfa að vefmálum á Íslandi. Samtökin hafa það að markmiði að miðla þekkingu og efla fagleg vinnubrögð í greininni."
-        email="svef@svef.is"
-        socials={socials}
-        year={2025}
-      />
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <div className={styles.footerMain}>
+            <img className={styles.footerLogo} src="/landing/logo.svg" alt="SVEF" width={86} height={56} />
+            <p className={styles.footerBlurb}>
+              Samtök vefiðnaðarins (SVEF) eru fagsamtök þeirra er starfa að vefmálum á Íslandi.
+              Samtökin hafa það að markmiði að miðla þekkingu og efla fagleg vinnubrögð í
+              greininni.
+            </p>
+            <div className={styles.footerContact}>
+              <a className={styles.footerEmail} href="mailto:svef@svef.is">
+                svef@svef.is
+              </a>
+              <ul className={styles.footerSocials}>
+                {footerSocials.map((s) => (
+                  <li key={s.label}>
+                    <a href={s.href} aria-label={s.label}>
+                      <img src={s.icon} alt="" width={24} height={24} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p className={styles.copy}>© SVEF 2025</p>
+        </div>
+      </footer>
     </>
   )
 }
