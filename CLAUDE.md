@@ -122,8 +122,10 @@ CI runs the same checks; local verification is the gate.
 - Branch from **`dev`**. One issue ↔ one PR, squash-merged.
 - Commit messages and PR descriptions are plain and descriptive. **No AI attribution** in
   commits or PR text.
-- PR descriptions say what a human should verify. For UI changes, include **screenshots at
-  desktop and mobile**.
+- PR descriptions say what a human should verify. For UI changes, **describe what you checked
+  at desktop and mobile widths** — which routes, which widths, what you compared against, and
+  what you found. Don't commit screenshots or push them to a side branch; the description is
+  the record.
 - **Search existing issues before filing** — follow-ups belong on the board, not in a comment.
 
 ## Working as an agent in this repo

@@ -7,6 +7,10 @@ const config = [
   prettierConfig,
   {
     ignores: [
+      // Agent worktrees (CLAUDE.md: one worktree per issue under _work/).
+      // ESLint flat config matches relative paths, so no leading slash here —
+      // '/_work/**' would silently match nothing (see #50).
+      '_work/**',
       '.next/**',
       'out/**',
       'build/**',
