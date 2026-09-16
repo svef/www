@@ -28,6 +28,12 @@ const LOCALE_PREFIX = /^\/(is|en)(?=\/|$)/
  * always returns the visible form.
  *
  * A query string and/or hash on the input is carried over unchanged.
+ *
+ * The result is always a single-slash-rooted path: a leading `//` would be a
+ * protocol-relative URL, so `<a href>` would leave the site entirely. Next
+ * normalises `//` away before a page renders, so no caller reaches this today —
+ * the guard is here so a future localised `not-found.tsx`, which would render
+ * the header for arbitrary unnormalised paths, cannot make it reachable.
  */
 export function localePath(path: string, target: Locale): string {
   const hashAt = path.indexOf('#')
@@ -38,8 +44,8 @@ export function localePath(path: string, target: Locale): string {
   const query = queryAt === -1 ? '' : withoutHash.slice(queryAt)
   let pathname = queryAt === -1 ? withoutHash : withoutHash.slice(0, queryAt)
 
-  if (!pathname.startsWith('/')) pathname = `/${pathname}`
-  let rest = pathname.replace(LOCALE_PREFIX, '')
+  pathname = `/${pathname.replace(/^\/+/, '')}`
+  let rest = pathname.replace(LOCALE_PREFIX, '').replace(/^\/+/, '/')
   if (rest === '/') rest = ''
 
   const localized = target === 'en' ? `/en${rest}` : rest || '/'

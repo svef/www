@@ -59,4 +59,15 @@ describe('localePath', () => {
   it('tolerates a path without a leading slash', () => {
     expect(localePath('vidburdir', 'en')).toBe('/en/vidburdir')
   })
+
+  it('never returns a protocol-relative URL', () => {
+    // `//evil.com` in an href navigates off-site. Unreachable today (Next
+    // normalises `//` before render), guarded so it stays that way.
+    expect(localePath('//evil.com', 'is')).toBe('/evil.com')
+    expect(localePath('//evil.com', 'en')).toBe('/en/evil.com')
+    expect(localePath('/en//evil.com', 'is')).toBe('/evil.com')
+    expect(localePath('/is//evil.com', 'en')).toBe('/en/evil.com')
+    expect(localePath('///evil.com', 'is')).toBe('/evil.com')
+    expect(localePath('//evil.com?a=1#b', 'is')).toBe('/evil.com?a=1#b')
+  })
 })

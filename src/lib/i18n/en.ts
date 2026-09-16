@@ -1,6 +1,7 @@
 // English UI microcopy. Mirrors the shape of `is.ts`.
 export const en = {
   languageName: 'English',
+  switchLanguage: 'Switch to Icelandic',
   skipToContent: 'Skip to content',
   nav: {
     awards: 'Web Awards',
