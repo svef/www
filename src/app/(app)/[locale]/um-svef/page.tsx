@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { isLocale, type Locale } from '@/lib/i18n'
-import { getBylawsMarkdown } from '@/lib/bylaws'
+import { getBylaws, LAWS_REPO_URL } from '@/lib/bylaws'
+import { remarkHeadingLevels } from '@/lib/remark-heading-levels'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { Section } from '@/components/Section/Section'
 import { BoardCard, type Accent } from '@/components/BoardCard/BoardCard'
@@ -19,6 +20,7 @@ const content: Record<
     boardTitle: string
     board: { name: string; role: string }[]
     bylawsTitle: string
+    bylawsUnavailable: string
     faqTitle: string
     faq: { question: string; answer: string }[]
   }
@@ -41,6 +43,8 @@ const content: Record<
       { name: 'Jón Andri Óskarsson', role: 'Meðstjórnandi · vefverkefni' },
     ],
     bylawsTitle: 'Lög SVEF',
+    bylawsUnavailable:
+      'Ekki tókst að sækja lög SVEF að svo stöddu. Lögin eru óbreytt og má lesa í heild sinni hjá upprunanum:',
     faqTitle: 'Spurt og svarað',
     faq: [
       { question: 'Hvernig skrái ég mig í SVEF?', answer: 'Þú getur skráð þig hér á vefnum undir Skráning.' },
@@ -67,6 +71,8 @@ const content: Record<
       { name: 'Jón Andri Óskarsson', role: 'Board member · web projects' },
     ],
     bylawsTitle: 'Bylaws',
+    bylawsUnavailable:
+      'The bylaws could not be loaded right now. They are unchanged and can be read in full at the source:',
     faqTitle: 'FAQ',
     faq: [
       { question: 'How do I join SVEF?', answer: 'You can sign up here on the site under Membership.' },
@@ -85,7 +91,7 @@ export default async function AboutPage({
   const { locale } = await params
   if (!isLocale(locale)) notFound()
   const c = content[locale]
-  const bylaws = await getBylawsMarkdown()
+  const bylaws = await getBylaws()
 
   return (
     <>
@@ -107,9 +113,18 @@ export default async function AboutPage({
       </Section>
 
       <Section title={c.bylawsTitle}>
-        <div className={styles.bylaws}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{bylaws}</ReactMarkdown>
-        </div>
+        {bylaws.status === 'ok' ? (
+          <div className={styles.bylaws}>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkHeadingLevels]}>
+              {bylaws.markdown}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          <p className={styles.bylawsNotice} role="status">
+            {c.bylawsUnavailable}{' '}
+            <a href={LAWS_REPO_URL}>{LAWS_REPO_URL.replace('https://', '')}</a>
+          </p>
+        )}
       </Section>
 
       <Section title={c.faqTitle}>

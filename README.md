@@ -59,6 +59,26 @@ src/
   the Mantine theme, then build real components (current chrome is placeholder).
 - **Storybook** — planned (`@storybook/nextjs-vite` + a11y addon); init pending.
 - **CI** — GitHub Actions (typecheck · lint · test · build · e2e).
-- **Bylaws** — build-time fetch from `svef/Laws` + deploy-hook rebuild.
+
+## Bylaws
+
+The bylaws (Lög SVEF) on `/um-svef` are fetched at build time from the README of the
+public [`svef/Laws`](https://github.com/svef/Laws) repository, which is the association's
+single source of truth for them. This repo deliberately keeps no second copy. A GitHub
+Action on `svef/Laws` pings a Vercel Deploy Hook, so editing the bylaws rebuilds the site.
+
+- **The source URL is not configurable.** It is pinned to the `HEAD` ref of `svef/Laws` in
+  `src/lib/bylaws.ts`. `HEAD` follows whatever that repo's default branch is (it is
+  `master`), so it is self-correcting. Do not add an environment override: a stale value in
+  a hosting dashboard is exactly how this page silently broke.
+- **A failed fetch fails the build, on purpose.** A page that quietly renders without the
+  association's governing document is worse than a build that fails.
+- **Transient failures are retried** (3 attempts, 500 ms linear backoff), because
+  `raw.githubusercontent.com` is unauthenticated and rate-limits by IP, and Vercel build IPs
+  are shared. A 404/410 is not retried — it means the source moved, and should fail fast.
+- **`BYLAWS_ALLOW_DEGRADED=1` is the escape hatch**, off by default. During a GitHub
+  incident, set it to unblock an unrelated deploy: the build warns instead of failing, and
+  the page renders a visible notice linking to `svef/Laws` in place of the text. Unset it as
+  soon as the incident is over.
 
 Planning docs live outside this repo in the personal working tree (`.local/svef/`).
