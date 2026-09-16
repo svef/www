@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { LANDING_ONLY } from '@/lib/site-mode'
 
 // Next.js 16 Proxy (formerly middleware). Icelandic is served at the root
 // (unprefixed); English lives under /en. Internally every request maps to a
@@ -7,9 +8,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Temporary landing mode: serve the one-pager at `/`, hide the WIP full site by
-  // redirecting every other (non-asset) path to `/`. Flip LANDING_ONLY=false to launch.
-  if (process.env.LANDING_ONLY === 'true') {
+  // Landing mode (main branch): serve the one-pager at `/`, hide the WIP full site by
+  // redirecting every other (non-asset) path to `/`. `dev` sets LANDING_ONLY=false.
+  if (LANDING_ONLY) {
     if (pathname === '/') return NextResponse.next()
     const url = request.nextUrl.clone()
     url.pathname = '/'
