@@ -19,12 +19,16 @@ Public brand site + self-hosted CMS. Bilingual (Icelandic-first, English).
 ## Getting started
 
 ```bash
-npm install
+npm install                  # also generates src/payload-types.ts (postinstall)
 cp .env.example .env.local   # fill in Neon + R2 + PAYLOAD_SECRET
                              # (local-only setup: see "Development fixtures")
-npm run generate:types       # regenerate Payload types (gitignored)
 npm run dev                  # site + Payload admin at /admin
 ```
+
+`src/payload-types.ts` is generated and gitignored, and the app imports it, so
+`npm install` writes it via `postinstall` — that is what keeps a fresh checkout,
+CI and a deploy able to typecheck. Re-run `npm run generate:types` after
+changing a collection or a global.
 
 ## Scripts
 
