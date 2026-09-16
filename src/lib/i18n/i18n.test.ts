@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getDictionary, isLocale, DEFAULT_LOCALE } from './index'
+import { getDictionary, isLocale, localePath, DEFAULT_LOCALE } from './index'
 
 describe('i18n', () => {
   it('recognizes valid locales only', () => {
@@ -16,5 +16,47 @@ describe('i18n', () => {
   it('falls back to the default locale for unknown input', () => {
     // @ts-expect-error intentionally passing an invalid locale
     expect(getDictionary('xx')).toBe(getDictionary(DEFAULT_LOCALE))
+  })
+})
+
+describe('localePath', () => {
+  it('adds the /en prefix when switching to English', () => {
+    expect(localePath('/', 'en')).toBe('/en')
+    expect(localePath('/vidburdir', 'en')).toBe('/en/vidburdir')
+    expect(localePath('/frettir/eitthvad', 'en')).toBe('/en/frettir/eitthvad')
+  })
+
+  it('strips the /en prefix when switching to Icelandic', () => {
+    expect(localePath('/en', 'is')).toBe('/')
+    expect(localePath('/en/vidburdir', 'is')).toBe('/vidburdir')
+    expect(localePath('/en/frettir/eitthvad', 'is')).toBe('/frettir/eitthvad')
+  })
+
+  it('never emits the internal /is prefix', () => {
+    expect(localePath('/is', 'is')).toBe('/')
+    expect(localePath('/is/vidburdir', 'is')).toBe('/vidburdir')
+    expect(localePath('/is/vidburdir', 'en')).toBe('/en/vidburdir')
+  })
+
+  it('is idempotent for the locale it is already in', () => {
+    expect(localePath('/en/um-svef', 'en')).toBe('/en/um-svef')
+    expect(localePath('/um-svef', 'is')).toBe('/um-svef')
+  })
+
+  it('only treats a whole segment as a locale prefix', () => {
+    expect(localePath('/england', 'en')).toBe('/en/england')
+    expect(localePath('/island', 'en')).toBe('/en/island')
+    expect(localePath('/en/england', 'is')).toBe('/england')
+  })
+
+  it('preserves the query string and hash', () => {
+    expect(localePath('/vidburdir?ar=2026', 'en')).toBe('/en/vidburdir?ar=2026')
+    expect(localePath('/en/vidburdir#naesti', 'is')).toBe('/vidburdir#naesti')
+    expect(localePath('/myndir?ar=2025#topp', 'en')).toBe('/en/myndir?ar=2025#topp')
+    expect(localePath('/?x=1', 'is')).toBe('/?x=1')
+  })
+
+  it('tolerates a path without a leading slash', () => {
+    expect(localePath('vidburdir', 'en')).toBe('/en/vidburdir')
   })
 })

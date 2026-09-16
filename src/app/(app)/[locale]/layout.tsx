@@ -73,8 +73,7 @@ export default async function LocaleLayout({
             navItems={navItems}
             contactLabel={t.nav.contact}
             contactHref={`${base}/hafa-samband`}
-            otherLocaleHref={locale === 'en' ? '/' : '/en'}
-            otherLocaleLabel={locale === 'en' ? 'IS' : 'EN'}
+            locale={locale}
           />
           <main id="main">{children}</main>
           <Footer
