@@ -15,7 +15,14 @@ const content: Record<
     featured: { title: string; body: string; primary: string; secondary: string }
     upcomingTitle: string
     cta: string
-    events: { day: string; month: string; title: string; description: string }[]
+    events: {
+      day: string
+      month: string
+      dateTime: string
+      dateLabel: string
+      title: string
+      description: string
+    }[]
   }
 > = {
   is: {
@@ -31,9 +38,30 @@ const content: Record<
     upcomingTitle: 'Framundan',
     cta: 'Nánar',
     events: [
-      { day: '09', month: 'okt', title: 'Klúðurkvöld', description: 'Grandi 101 · 20:00 — afslappað kvöld um að læra af mistökum.' },
-      { day: '21', month: 'sep', title: 'Hádegisfyrirlestur: Aðgengi í raunheimum', description: 'Zoom · 12:00 — hvernig WCAG lítur út í daglegri vinnu.' },
-      { day: '05', month: 'sep', title: 'Vinnustofa: Hönnunarkerfi frá grunni', description: 'Kvosin · 13:00 — hálfsdagsvinnustofa, 20 sæti.' },
+      {
+        day: '09',
+        month: 'okt',
+        dateTime: '2026-10-09',
+        dateLabel: '9. október 2026',
+        title: 'Klúðurkvöld',
+        description: 'Grandi 101 · 20:00 — afslappað kvöld um að læra af mistökum.',
+      },
+      {
+        day: '21',
+        month: 'sep',
+        dateTime: '2026-09-21',
+        dateLabel: '21. september 2026',
+        title: 'Hádegisfyrirlestur: Aðgengi í raunheimum',
+        description: 'Zoom · 12:00 — hvernig WCAG lítur út í daglegri vinnu.',
+      },
+      {
+        day: '05',
+        month: 'sep',
+        dateTime: '2026-09-05',
+        dateLabel: '5. september 2026',
+        title: 'Vinnustofa: Hönnunarkerfi frá grunni',
+        description: 'Kvosin · 13:00 — hálfsdagsvinnustofa, 20 sæti.',
+      },
     ],
   },
   en: {
@@ -49,9 +77,31 @@ const content: Record<
     upcomingTitle: 'Upcoming',
     cta: 'Details',
     events: [
-      { day: '09', month: 'oct', title: 'Klúðurkvöld (Mistakes Night)', description: 'Grandi 101 · 20:00 — a relaxed evening about learning from mistakes.' },
-      { day: '21', month: 'sep', title: 'Lunch talk: Accessibility in the real world', description: 'Zoom · 12:00 — what WCAG looks like in daily work.' },
-      { day: '05', month: 'sep', title: 'Workshop: Design systems from scratch', description: 'Kvosin · 13:00 — half-day workshop, 20 seats.' },
+      {
+        day: '09',
+        month: 'oct',
+        dateTime: '2026-10-09',
+        dateLabel: 'October 9, 2026',
+        title: 'Klúðurkvöld (Mistakes Night)',
+        description:
+          'Grandi 101 · 20:00 — a relaxed evening about learning from mistakes.',
+      },
+      {
+        day: '21',
+        month: 'sep',
+        dateTime: '2026-09-21',
+        dateLabel: 'September 21, 2026',
+        title: 'Lunch talk: Accessibility in the real world',
+        description: 'Zoom · 12:00 — what WCAG looks like in daily work.',
+      },
+      {
+        day: '05',
+        month: 'sep',
+        dateTime: '2026-09-05',
+        dateLabel: 'September 5, 2026',
+        title: 'Workshop: Design systems from scratch',
+        description: 'Kvosin · 13:00 — half-day workshop, 20 seats.',
+      },
     ],
   },
 }
@@ -84,6 +134,8 @@ export default async function EventsPage({
               key={e.title}
               day={e.day}
               month={e.month}
+              dateTime={e.dateTime}
+              dateLabel={e.dateLabel}
               title={e.title}
               description={e.description}
               href={`${base}/vidburdir`}

@@ -16,3 +16,4 @@ type Story = StoryObj<typeof EventCard>
 
 export const Default: Story = {}
 export const Featured: Story = { args: { featured: true } }
+export const NestedHeadingLevel: Story = { args: { headingLevel: 4 } }

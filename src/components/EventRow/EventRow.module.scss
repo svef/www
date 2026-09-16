@@ -26,6 +26,18 @@
   }
 }
 
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .badge {
   display: flex;
   flex-direction: column;
@@ -58,6 +70,11 @@
   font-weight: var(--weight-bold);
   font-size: var(--text-xl);
   transition: color 0.16s ease;
+  // Rendered as a heading; neutralise the global heading defaults so the card
+  // keeps the exact size, weight, rhythm and spacing it had as a <span>.
+  margin: 0;
+  line-height: inherit;
+  letter-spacing: inherit;
 }
 
 .desc {
