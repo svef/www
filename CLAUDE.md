@@ -42,7 +42,10 @@ per branch rather than by environment variable:
 - **`main`** — `LANDING_ONLY = true` → the temporary landing one-pager. Vercel production → svef.is.
 - **`dev`** — `LANDING_ONLY = false` → the full site under construction. **Default branch**; branch from here.
 
-`dev` is `main` plus that one-line flip. Launch is a deliberate cutover, not a drift.
+`dev` carries the full-site work and diverges from `main` as that work lands; `main` holds
+only the landing. **Never rebase or reset `dev` to match `main`** — the two branches are not
+meant to stay one commit apart, and forcing it discards merged work. Launch is a deliberate
+cutover: `dev` merges into `main` and the constant flips.
 
 ## Routing and language
 
