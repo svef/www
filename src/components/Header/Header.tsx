@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { Logo } from '@/components/Logo/Logo'
+import { LocaleToggle } from './LocaleToggle'
+import type { Locale } from '@/lib/i18n'
 import styles from './Header.module.scss'
 
 export interface HeaderNavItem {
@@ -12,15 +14,13 @@ export function Header({
   navItems,
   contactLabel,
   contactHref,
-  otherLocaleHref,
-  otherLocaleLabel,
+  locale,
 }: {
   homeHref: string
   navItems: HeaderNavItem[]
   contactLabel: string
   contactHref: string
-  otherLocaleHref: string
-  otherLocaleLabel: string
+  locale: Locale
 }) {
   return (
     <header className={styles.header}>
@@ -38,13 +38,7 @@ export function Header({
         <Link href={contactHref} className={styles.navLink}>
           {contactLabel}
         </Link>
-        <Link
-          href={otherLocaleHref}
-          className={styles.langPill}
-          hrefLang={otherLocaleLabel.toLowerCase()}
-        >
-          <span aria-hidden="true">🌐</span> {otherLocaleLabel}
-        </Link>
+        <LocaleToggle locale={locale} />
       </div>
     </header>
   )
