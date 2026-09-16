@@ -39,3 +39,20 @@
     color: var(--color-violet-light);
   }
 }
+
+// Shown only in the deliberate BYLAWS_ALLOW_DEGRADED escape hatch, when the bylaws
+// source could not be reached. Visible on purpose — the point is that nobody mistakes
+// a degraded page for a complete one.
+.bylawsNotice {
+  max-width: 70ch;
+  margin: 0;
+  padding: var(--space-4) var(--space-6);
+  border-left: 4px solid var(--color-violet);
+  background: rgba(137, 23, 225, 0.12);
+  color: var(--fg);
+  line-height: 1.7;
+
+  a {
+    color: var(--color-violet-light);
+  }
+}
