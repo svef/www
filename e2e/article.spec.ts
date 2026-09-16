@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { LOCALES, settle, urlFor } from './pages'
+import { collectPageErrors, describeProblem, LOCALES, settle, urlFor } from './pages'
+import { RSC_PREFETCH_404 } from './known-console-errors'
 import { triage } from './a11y/known-issues'
 
 /**
@@ -40,13 +41,11 @@ async function firstArticleUrl(page: Page, locale: (typeof LOCALES)[number]): Pr
 test.describe('news article route', () => {
   for (const locale of LOCALES) {
     test(`${locale}: an article renders, is accessible and stays quiet`, async ({ page }) => {
-      const errors: string[] = []
-      page.on('console', (m) => {
-        if (m.type() === 'error') errors.push(m.text())
-      })
-      page.on('pageerror', (e) => errors.push(e.message))
-
+      // Resolve the slug first, then start listening: the collector would
+      // otherwise also pick up whatever the news index logged on the way here,
+      // and this test is about the article route.
       const url = await firstArticleUrl(page, locale)
+      const errors = collectPageErrors(page)
 
       const response = await page.goto(url)
       expect(response?.status(), `status for ${url}`).toBe(200)
@@ -77,7 +76,15 @@ test.describe('news article route', () => {
       const skips = levels.filter((level, i) => i > 0 && level > levels[i - 1] + 1)
       expect(skips, `skipped heading levels on ${url}`).toEqual([])
 
-      expect(errors, `console errors on ${url}`).toEqual([])
+      // The article page reproduces svef/www#60 like every other English page:
+      // the locale toggle points at the unprefixed Icelandic path, Next
+      // prefetches it as an RSC request, and `src/proxy.ts`'s rewrite 404s.
+      // It cannot be listed in `known-console-errors.ts`, which is keyed by
+      // visible URL — the slug here is resolved from the fixtures at runtime.
+      // Filtering on the entry's own predicate keeps the two in step: fixing
+      // #60 deletes the entry, and this file stops compiling.
+      const unexpectedErrors = errors.filter((problem) => !RSC_PREFETCH_404.matches(problem))
+      expect(unexpectedErrors.map(describeProblem), `console errors on ${url}`).toEqual([])
 
       const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
       const { unexpected } = triage(results.violations, url)
