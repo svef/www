@@ -3,6 +3,7 @@ export const en = {
   languageName: 'English',
   switchLanguage: 'Switch to Icelandic',
   skipToContent: 'Skip to content',
+  close: 'Close',
   nav: {
     awards: 'Web Awards',
     events: 'Events',

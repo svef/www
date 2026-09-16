@@ -6,6 +6,8 @@ export const is = {
   // the locale it switches to.
   switchLanguage: 'Skipta yfir í ensku',
   skipToContent: 'Fara beint í efni',
+  // Accessible name for the close button of a dialog (the photo lightbox).
+  close: 'Loka',
   nav: {
     awards: 'Vefverðlaunin',
     events: 'Viðburðir',

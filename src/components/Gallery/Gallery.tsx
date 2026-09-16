@@ -11,11 +11,13 @@ export function Gallery({
   viewLabel,
   prevLabel,
   nextLabel,
+  closeLabel,
 }: {
   count?: number
   viewLabel: string
   prevLabel: string
   nextLabel: string
+  closeLabel: string
 }) {
   const [index, setIndex] = useState<number | null>(null)
   const open = index !== null
@@ -56,6 +58,7 @@ export function Gallery({
         size="xl"
         radius={0}
         withCloseButton
+        closeButtonProps={{ 'aria-label': closeLabel }}
         title={open ? `${index! + 1} / ${count}` : ''}
       >
         <div className={styles.stage}>
