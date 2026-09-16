@@ -1,0 +1,131 @@
+# CLAUDE.md — svef.is
+
+Conventions for this repository, for both people and coding agents.
+
+## What this is
+
+The website for **SVEF — Samtök vefiðnaðarins**, the Icelandic Web Industry Association.
+
+SVEF exists to share knowledge and raise professional standards in Icelandic web work, and
+runs the Icelandic Web Awards — including an award for accessibility. This codebase is the
+association's own shop window, so it is held to the standards the association advocates:
+accessible, fast, well tested, and readable by someone seeing it for the first time. When a
+trade-off comes up, favour the choice that would hold up as an example.
+
+## Stack
+
+- **Next.js 16** (App Router) + **React 19**, TypeScript `strict`
+- **Payload CMS 3**, embedded — admin at `/admin`, API at `/api`
+- **Neon Postgres** via `@payloadcms/db-postgres`; **Cloudflare R2** media via `@payloadcms/storage-s3`
+- **Mantine v8 + CSS Modules (SCSS)** — no Tailwind
+- **Vitest** + Testing Library, **Playwright** + axe, **Storybook**
+- **npm** only (never pnpm/yarn). Hosting: Vercel.
+
+## Layout
+
+```
+src/
+  app/(app)/[locale]/   # public site (is | en)
+  app/(payload)/        # Payload admin + API (framework files)
+  app/(landing)/        # temporary landing one-pager
+  payload/              # collections, globals
+  components/           # colocated .tsx + .module.scss + .stories.tsx
+  lib/                  # payload client, i18n, theme, site-mode
+  styles/               # tokens.scss + globals.scss
+```
+
+## Branches and what each renders
+
+`src/lib/site-mode.ts` holds a compile-time `LANDING_ONLY` constant, so behaviour is pinned
+per branch rather than by environment variable:
+
+- **`main`** — `LANDING_ONLY = true` → the temporary landing one-pager. Vercel production → svef.is.
+- **`dev`** — `LANDING_ONLY = false` → the full site under construction. **Default branch**; branch from here.
+
+`dev` is `main` plus that one-line flip. Launch is a deliberate cutover, not a drift.
+
+## Routing and language
+
+- Icelandic is served at the root (unprefixed); English lives under `/en`. Handled in
+  `src/proxy.ts` (Next 16 Proxy — the rename of `middleware.ts`), which rewrites to an
+  internal `[locale]` segment.
+- Payload uses field-level localization: `is` default, `en` with fallback.
+- Some content is Icelandic-only by decision: the awards winners archive, press, and the bylaws.
+- **Interface copy is Icelandic. Code, comments, commits, issues and PRs are English.**
+
+## Design system
+
+Tokens live in `src/styles/tokens.scss` and are mirrored by the Mantine theme in
+`src/lib/theme.ts`. Use tokens; don't hard-code values.
+
+- Dark canvas `#09060C`, Shy White `#FCFBFE`, Electric Violet `#8917E1`, with red / pink /
+  yellow accents for emphasis and large shapes — not body text.
+- **The brand is sharp/blocky: no rounded corners.** The radius tokens are `0` deliberately.
+- Type: Overpass (body) and Noto Sans (headings), loaded with `next/font`.
+- The recurring violet block motif is the brand's signature device; use it to frame and
+  punctuate, not as wallpaper.
+
+### Working from a design
+
+- Designs come from Figma. **Pull them with Figma's design-to-code (`get_design_context`)**
+  so you get the real geometry and the exported assets. Rebuilding from a screenshot loses
+  the actual shapes, spacing and assets, and will not match.
+- **Check the result in a browser at desktop and mobile widths** and compare against the
+  design before calling it done.
+- CSS Modules fail silently: a class that doesn't exist resolves to `undefined` and the
+  element renders unstyled. Confirm styling visually rather than assuming.
+
+## Accessibility
+
+Treated as a requirement, not a pass at the end:
+
+- Semantic HTML, full keyboard operability, visible focus states, a skip link.
+- AA contrast on the dark canvas — verify accent colours rather than assuming.
+- Honour `prefers-reduced-motion`; meaningful `alt` text on media.
+- axe runs in Storybook and in the Playwright sweeps; keep both clean.
+
+## Content and CMS
+
+- Collections and globals live in `src/payload/`. Read content in Server Components through
+  Payload's **Local API** (`payload.find()`), not over HTTP.
+- `src/payload-types.ts` and `src/app/(payload)/admin/importMap.js` are **generated**
+  (`npm run generate:types`, `npm run generate:importmap`). Regenerate them; never hand-edit.
+- If a field the design needs doesn't exist in the content model, extend the model or open an
+  issue — don't approximate it in the UI.
+
+## The local gate
+
+Run before opening a PR:
+
+```bash
+npm run typecheck && npm run lint && npm run test:ci && npm run build
+npm run e2e          # where the change touches rendered pages
+```
+
+CI runs the same checks; local verification is the gate.
+
+## Git and pull requests
+
+- Branch from **`dev`**. One issue ↔ one PR, squash-merged.
+- Commit messages and PR descriptions are plain and descriptive. **No AI attribution** in
+  commits or PR text.
+- PR descriptions say what a human should verify. For UI changes, include **screenshots at
+  desktop and mobile**.
+- **Search existing issues before filing** — follow-ups belong on the board, not in a comment.
+
+## Working as an agent in this repo
+
+- Work in a **git worktree per issue** (`_work/www-<issue>`), never in a shared checkout.
+  **Never `git stash`** — the stash is shared.
+- Move the issue on the project board as you go: starting → In progress, PR open → In review.
+- **Never merge.** A person merges, and sets the issue Done.
+- Run the full local gate before pushing.
+- If you're blocked, stop and say precisely what and why. Don't improvise around it.
+- Report what you actually did, including what didn't work.
+
+## Planning
+
+The plan of record is **GitHub issues** on this repo plus the
+[SVEF web project board](https://github.com/orgs/svef/projects/2) — not documents.
+Labels: `area:*`, `size:*`, `blocked`. Milestones: `v1 - full-site launch`, `v2 - member portal`.
+Decisions are recorded as a comment on the issue they affect.
