@@ -19,7 +19,7 @@ describe('EventCard', () => {
     ).toBeInTheDocument()
   })
 
-  it('keeps the heading when rendered without a link', () => {
+  it('keeps the heading when the card is wrapped in a link', () => {
     render(<EventCard {...props} href="/vidburdir" />)
     expect(screen.getByRole('heading', { level: 3 })).toBeInTheDocument()
   })

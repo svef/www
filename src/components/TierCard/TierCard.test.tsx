@@ -20,9 +20,9 @@ describe('TierCard', () => {
   })
 
   it('honours an explicit heading level', () => {
-    render(<TierCard {...props} headingLevel={3} />)
+    render(<TierCard {...props} headingLevel={4} />)
     expect(
-      screen.getByRole('heading', { level: 3, name: props.name }),
+      screen.getByRole('heading', { level: 4, name: props.name }),
     ).toBeInTheDocument()
   })
 })
