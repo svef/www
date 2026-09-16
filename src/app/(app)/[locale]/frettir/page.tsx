@@ -10,19 +10,26 @@ import { NewsCard } from '@/components/NewsCard/NewsCard'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import styles from './news.module.scss'
 
-// TEMPORARY, tracked in #58. Not a pattern to copy.
-//
-// This route has `generateStaticParams` above it in the layout, so without this
-// directive Next tries to prerender /is/frettir and /en/frettir at build time —
-// which reads Payload, which needs a database. CI builds with a fake
-// DATABASE_URL, so the build fails. Forcing dynamic buys a green build at the
-// price of the full-route cache: every visit re-queries Postgres.
-//
-// The fix is #58 — a real Postgres in CI, then `generateStaticParams` plus
-// `revalidate` here — and it lands before the rest of the pages are built. Do
-// not reach for `force-dynamic` on a new page; it is a workaround with an
-// expiry date, not the house style.
-export const dynamic = 'force-dynamic'
+/**
+ * Statically prerendered for both locales (`generateStaticParams` lives in the
+ * `[locale]` layout) and refreshed by ISR.
+ *
+ * Five minutes. The association publishes a handful of posts a year, so the
+ * point of the number is not throughput — it is the two moments where a stale
+ * index is actually wrong. An editor who hits publish wants to see the post on
+ * the site while still looking at the site, and a post scheduled with a future
+ * `publishedAt` has no cron behind it: it appears on the first regeneration
+ * after its date passes. Five minutes is a short enough wait to feel like
+ * "done" in both cases and still leaves the page a cached file for the other
+ * 99.99% of the year. Revalidation is lazy, so a route nobody is reading costs
+ * nothing at all.
+ *
+ * On-demand revalidation — a Payload `afterChange` hook calling
+ * `revalidatePath` — would make the editor's case instant. It is worth doing,
+ * but it does not replace this: no hook fires when a scheduled date simply
+ * arrives, so the interval stays either way. Tracked separately.
+ */
+export const revalidate = 300
 
 export default async function NewsPage({
   params,

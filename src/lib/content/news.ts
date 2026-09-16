@@ -103,3 +103,29 @@ export const findNewsArticle = cache(async function findNewsArticle(
   const doc = docs[0] as unknown as NewsAllLocales | undefined
   return doc ? toNewsArticle(doc, locale) : null
 })
+
+/**
+ * The slugs of every article whose publication date has arrived.
+ *
+ * Feeds `generateStaticParams` on `/frettir/[slug]`, so it deliberately applies
+ * the same `publishedAt <= now` filter as every other read: a scheduled article
+ * must not be prerendered into the build output, because a prerendered page is
+ * a file that exists whether or not its date has passed. Leaving it out of this
+ * list is what keeps it on the `dynamicParams` path, where the filter is
+ * re-evaluated against the time of the request and it still 404s.
+ *
+ * `slug` is not localized, so this is one list for both locales.
+ */
+export const listNewsSlugs = cache(async function listNewsSlugs(): Promise<string[]> {
+  const payload = await getPayload()
+  const { docs } = await payload.find({
+    collection: 'news',
+    ...publicReadArgs,
+    where: publishedByNow(),
+    select: { slug: true },
+    sort: '-publishedAt',
+    pagination: false,
+    depth: 0,
+  })
+  return docs.map((doc) => doc.slug).filter((slug): slug is string => Boolean(slug))
+})

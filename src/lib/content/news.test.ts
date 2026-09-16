@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { listNews, findNewsArticle } from './news'
+import { listNews, findNewsArticle, listNewsSlugs } from './news'
 
 /**
  * The reading layer, with Payload's Local API stubbed.
@@ -90,5 +90,34 @@ describe('findNewsArticle', () => {
   it('is null when nothing matches, so the route can 404', async () => {
     find.mockResolvedValue({ docs: [] })
     expect(await findNewsArticle('ekki-til', 'is')).toBeNull()
+  })
+})
+
+describe('listNewsSlugs', () => {
+  it('applies the same publication-date filter as every other read', async () => {
+    // This feeds `generateStaticParams`, so the filter is doing more work here
+    // than elsewhere: a prerendered page is a file written at build time, and a
+    // scheduled article listed here would go live when the build ran rather
+    // than when its date arrived.
+    await listNewsSlugs()
+    const { where, collection } = find.mock.calls[0][0]
+    expect(collection).toBe('news')
+    expect(publishedAtClause(where)?.less_than_equal).toBeDefined()
+  })
+
+  it('asks for slugs and nothing else', async () => {
+    await listNewsSlugs()
+    const { select, depth } = find.mock.calls[0][0]
+    expect(select).toEqual({ slug: true })
+    expect(depth).toBe(0)
+  })
+
+  it('returns plain slugs', async () => {
+    expect(await listNewsSlugs()).toEqual(['ny-stjorn-er-tekin-vid'])
+  })
+
+  it('drops a document with no slug rather than prerendering /undefined', async () => {
+    find.mockResolvedValue({ docs: [doc, { id: 2, slug: null }] })
+    expect(await listNewsSlugs()).toEqual(['ny-stjorn-er-tekin-vid'])
   })
 })

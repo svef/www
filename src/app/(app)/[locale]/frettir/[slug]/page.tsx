@@ -5,13 +5,46 @@ import { notFound } from 'next/navigation'
 import { getDictionary, isLocale, localePath, type Locale } from '@/lib/i18n'
 import { formatLongDate } from '@/lib/dates'
 import { resolveContentLocale } from '@/lib/localized'
-import { findNewsArticle } from '@/lib/content/news'
+import { findNewsArticle, listNewsSlugs } from '@/lib/content/news'
 import { RichText } from '@/components/RichText/RichText'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { ShareRow } from '@/components/ShareRow/ShareRow'
 import styles from './article.module.scss'
 
 type Params = Promise<{ locale: string; slug: string }>
+
+/**
+ * Same five minutes as the index, for the same two reasons: an editor fixing a
+ * typo should see it within the minute or two they are still looking, and a
+ * scheduled article has nothing but this interval to bring it to life once its
+ * date passes. See the note in `../page.tsx`.
+ */
+export const revalidate = 300
+
+/**
+ * Prerender every article that is already published.
+ *
+ * The parent `[locale]` layout generates the locale params, so this returns
+ * only its own segment; Next crosses the two, giving one prerendered page per
+ * article per locale.
+ *
+ * **Future-dated articles are deliberately excluded.** `listNewsSlugs` applies
+ * the same `publishedAt <= now` filter as every other read, and it has to: a
+ * prerendered page is a file written at build time, so a scheduled article
+ * included here would be published the moment the build ran rather than the
+ * moment its date arrived — the exact failure the filter exists to prevent.
+ *
+ * Leaving it out is not a hole. `dynamicParams` stays at its default of `true`,
+ * so a slug that was not prerendered is rendered on demand, where
+ * `findNewsArticle` re-runs the filter against the time of the *request* and
+ * `notFound()` still fires. The article therefore keeps 404ing until its date
+ * passes, and starts rendering within one revalidation window afterwards —
+ * without a rebuild.
+ */
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  const slugs = await listNewsSlugs()
+  return slugs.map((slug) => ({ slug }))
+}
 
 /** Resolve the params once, 404ing on an unknown locale or slug. */
 async function loadArticle(params: Params) {
