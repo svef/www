@@ -7,16 +7,30 @@ const config = [
   prettierConfig,
   {
     ignores: [
-      '.next/**',
-      'out/**',
-      'build/**',
-      'coverage/**',
-      'storybook-static/**',
-      'playwright-report/**',
-      'test-results/**',
+      '/.next/**',
+      '/out/**',
+      '/build/**',
+      '/coverage/**',
+      '/storybook-static/**',
+      '/playwright-report/**',
+      '/test-results/**',
       'src/payload-types.ts',
       'src/app/(payload)/admin/importMap.js',
     ],
+  },
+  {
+    // These paths render exported SVG/brand assets and masked photos where
+    // next/image adds nothing (fixed decorative assets, CSS mask-image
+    // targets) — <img> is deliberate here, not an oversight.
+    files: [
+      'src/app/(landing)/**',
+      'src/components/LogoBuild/**',
+      'src/components/BlockPanel/**',
+      'src/components/BoardMemberCard/**',
+    ],
+    rules: {
+      '@next/next/no-img-element': 'off',
+    },
   },
 ]
 
