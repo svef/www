@@ -11,6 +11,24 @@ export const en = {
     membership: 'Membership',
     contact: 'Contact',
   },
+  news: {
+    title: 'News',
+    lead: 'Everything we announce appears here first — social posts always link back.',
+    readArticle: 'Read the article',
+    backToIndex: 'News',
+    empty: {
+      title: 'No news yet',
+      body: 'Announcements from SVEF appear here as soon as they are made.',
+    },
+    share: {
+      label: 'Share',
+      facebook: 'Share on Facebook',
+      x: 'Share on X',
+      linkedin: 'Share on LinkedIn',
+      copyLink: 'Copy link',
+      copied: 'Link copied',
+    },
+  },
   footer: {
     rights: 'All rights reserved',
     blurb:

@@ -51,7 +51,7 @@ type LexicalBlockNode = {
   indent: 0
   tag?: 'h2'
   textFormat: 0
-  type: 'paragraph' | 'heading'
+  type: 'paragraph' | 'heading' | 'quote'
   version: 1
 }
 
@@ -66,8 +66,8 @@ export type RichTextValue = {
   }
 }
 
-/** A paragraph, or `{ h2 }` for a section heading. */
-export type Block = string | { h2: string }
+/** A paragraph, `{ h2 }` for a section heading, or `{ quote }` for a pull quote. */
+export type Block = string | { h2: string } | { quote: string }
 
 const textNode = (text: string): LexicalTextNode => ({
   detail: 0,
@@ -79,19 +79,26 @@ const textNode = (text: string): LexicalTextNode => ({
   version: 1,
 })
 
+const blockText = (block: Block): string =>
+  typeof block === 'string' ? block : 'h2' in block ? block.h2 : block.quote
+
+const blockType = (block: Block) => {
+  if (typeof block === 'string') return { type: 'paragraph' as const }
+  if ('h2' in block) return { type: 'heading' as const, tag: 'h2' as const }
+  return { type: 'quote' as const }
+}
+
 /** Builds the Lexical editor state that Payload's richText fields store. */
 export const richText = (blocks: Block[]): RichTextValue => ({
   root: {
     children: blocks.map((block) => ({
-      children: [textNode(typeof block === 'string' ? block : block.h2)],
+      children: [textNode(blockText(block))],
       direction: 'ltr' as const,
       format: '' as const,
       indent: 0 as const,
       textFormat: 0 as const,
       version: 1 as const,
-      ...(typeof block === 'string'
-        ? { type: 'paragraph' as const }
-        : { type: 'heading' as const, tag: 'h2' as const }),
+      ...blockType(block),
     })),
     direction: 'ltr',
     format: '',
@@ -201,7 +208,10 @@ export const news: NewsFixture[] = [
       'Á fundinum var farið yfir starfsárið sem er að baki: átta viðburði, tvö Klúðurkvöld og vefverðlaun sem seldust upp á tíu dögum. Fráfarandi stjórn var þökkuð vel unnin störf.',
       { h2: 'Áherslur næsta starfsárs' },
       'Stjórnin ætlar að leggja áherslu á aðgengismál, fjölbreyttari viðburði utan höfuðborgarsvæðisins og að efla tengsl við menntastofnanir. Fyrsti viðburður starfsársins verður í október.',
-      '„Við hlökkum mikið til starfsársins með ykkur og getum ekki beðið eftir að halda vefverðlaunin í 26. sinn.“',
+      {
+        quote:
+          '„Við hlökkum mikið til starfsársins með ykkur og getum ekki beðið eftir að halda vefverðlaunin í 26. sinn.“',
+      },
       'Nánari upplýsingar um dagskrá og staðsetningu verða birtar á samfélagsmiðlum og hér á vefnum á næstu vikum.',
     ],
   },

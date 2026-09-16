@@ -1,37 +1,28 @@
 import { notFound } from 'next/navigation'
-import { isLocale, type Locale } from '@/lib/i18n'
+import { getDictionary, isLocale } from '@/lib/i18n'
+import { formatLongDate } from '@/lib/dates'
+import { resolveContentLocale } from '@/lib/localized'
+import { listNews } from '@/lib/content/news'
+import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { Section } from '@/components/Section/Section'
 import { NewsCard } from '@/components/NewsCard/NewsCard'
+import { EmptyState } from '@/components/EmptyState/EmptyState'
 import styles from './news.module.scss'
 
-const content: Record<
-  Locale,
-  {
-    title: string
-    lead: string
-    articles: { date: string; title: string; excerpt: string }[]
-  }
-> = {
-  is: {
-    title: 'Fréttir',
-    lead: 'Fréttir af starfi SVEF — hér er heimildin, samfélagsmiðlar deila héðan.',
-    articles: [
-      { date: '22. maí 2026', title: 'Ný stjórn tekin við', excerpt: 'Ný stjórn SVEF tók við á aðalfundi. Við kynnum hópinn og áherslur ársins.' },
-      { date: '12. mars 2026', title: 'Vefur ársins 2025 verðlaunaður', excerpt: 'Íslensku vefverðlaunin voru afhent í Hörpu. Sjá alla verðlaunahafa.' },
-      { date: '4. feb 2026', title: 'Klúðurkvöld — takk fyrir komuna', excerpt: 'Vel heppnað kvöld um að læra af mistökum. Nokkur gullkorn úr salnum.' },
-    ],
-  },
-  en: {
-    title: 'News',
-    lead: 'News from SVEF — this is the source; social posts link back here.',
-    articles: [
-      { date: 'May 22, 2026', title: 'A new board takes over', excerpt: 'A new SVEF board took office at the AGM. Meet the team and this year’s focus.' },
-      { date: 'March 12, 2026', title: 'Site of the Year 2025 awarded', excerpt: 'The Icelandic Web Awards were presented at Harpa. See all the winners.' },
-      { date: 'Feb 4, 2026', title: 'Klúðurkvöld — thanks for coming', excerpt: 'A great evening about learning from mistakes. A few gems from the room.' },
-    ],
-  },
-}
+// TEMPORARY, tracked in #58. Not a pattern to copy.
+//
+// This route has `generateStaticParams` above it in the layout, so without this
+// directive Next tries to prerender /is/frettir and /en/frettir at build time —
+// which reads Payload, which needs a database. CI builds with a fake
+// DATABASE_URL, so the build fails. Forcing dynamic buys a green build at the
+// price of the full-route cache: every visit re-queries Postgres.
+//
+// The fix is #58 — a real Postgres in CI, then `generateStaticParams` plus
+// `revalidate` here — and it lands before the rest of the pages are built. Do
+// not reach for `force-dynamic` on a new page; it is a workaround with an
+// expiry date, not the house style.
+export const dynamic = 'force-dynamic'
 
 export default async function NewsPage({
   params,
@@ -40,24 +31,44 @@ export default async function NewsPage({
 }) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
-  const base = locale === 'en' ? '/en' : ''
-  const c = content[locale]
 
+  const t = getDictionary(locale)
+  const articles = await listNews(locale)
+  const contentLocale = resolveContentLocale(
+    articles.flatMap((a) => [a.contentLocale, a.excerptLocale]),
+    locale,
+  )
+
+  // The note is the first thing inside `<main>`, so the skip link lands on it
+  // rather than past it. One line per page; `TranslationNote` renders nothing
+  // when the content is already in the locale that was asked for.
   return (
     <>
-      <PageHeader title={c.title} lead={c.lead} />
+      <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
+      <PageHeader title={t.news.title} lead={t.news.lead} />
       <Section>
-        <div className={styles.grid}>
-          {c.articles.map((a) => (
-            <NewsCard
-              key={a.title}
-              date={a.date}
-              title={a.title}
-              excerpt={a.excerpt}
-              href={`${base}/frettir`}
-            />
-          ))}
-        </div>
+        {articles.length === 0 ? (
+          <EmptyState title={t.news.empty.title} body={t.news.empty.body} />
+        ) : (
+          <div className={styles.grid}>
+            {articles.map((article) => (
+              <NewsCard
+                key={article.slug}
+                href={article.href}
+                date={formatLongDate(article.publishedAt, locale)}
+                dateTime={article.publishedAt}
+                title={article.title}
+                excerpt={article.excerpt}
+                cover={article.cover}
+                cta={t.news.readArticle}
+                titleLang={article.contentLocale === locale ? undefined : article.contentLocale}
+                excerptLang={
+                  article.excerptLocale === locale ? undefined : article.excerptLocale
+                }
+              />
+            ))}
+          </div>
+        )}
       </Section>
     </>
   )

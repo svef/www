@@ -75,6 +75,14 @@ export default async function LocaleLayout({
             contactHref={`${base}/hafa-samband`}
             locale={locale}
           />
+          {/*
+            The fallback-language note is *not* rendered here. It belongs
+            inside `<main>`, as the page's own first child, so the skip link
+            lands before it — a skip-link user is exactly the reader who needs
+            to be told the page is showing Icelandic, and a note above `<main>`
+            is the one thing they would jump straight past. See
+            `TranslationNote`.
+          */}
           <main id="main">{children}</main>
           <Footer
             blurb={t.footer.blurb}

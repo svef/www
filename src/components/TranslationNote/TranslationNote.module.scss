@@ -1,0 +1,14 @@
+.wrap {
+  // Same gutter as PageHeader and Section, so the note lines up with the page
+  // heading underneath it rather than floating in from the edge.
+  padding-inline: var(--space-6);
+}
+
+.note {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid rgb(252 251 254 / 8%);
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}
