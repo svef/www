@@ -44,7 +44,8 @@ export function EventRow({
         <span className={styles.month} aria-hidden="true">
           {month}
         </span>
-        <span className={styles.srOnly}>{dateLabel}</span>
+        {/* Global visually-hidden helper — see .sr-only in src/styles/globals.scss. */}
+        <span className="sr-only">{dateLabel}</span>
       </time>
       <div className={styles.body}>
         <Heading className={styles.title}>{title}</Heading>
