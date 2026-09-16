@@ -34,6 +34,27 @@ npm run dev                  # site + Payload admin at /admin
 | `test` / `test:ci` | Vitest (watch / run + coverage) |
 | `e2e` / `e2e:a11y` | Playwright (+ axe sweeps) |
 | `generate:types` / `generate:importmap` | Payload codegen |
+| `seed:dev` | Fill a **local** database with development fixtures (see below) |
+
+## Development fixtures
+
+Every content table starts empty, so nothing that reads from Payload can be looked
+at until something is in the database. `npm run seed:dev` fills a local database
+through Payload's Local API:
+
+```bash
+npm run seed:dev
+```
+
+It is idempotent — re-running updates the same rows rather than adding new ones —
+and it refuses to run against any host that is not local. The copy lives in
+`src/scripts/seed-data.ts` and is transcribed from the Claude Design export that is
+the design of record, so what renders locally matches the design rather than
+invented placeholder text.
+
+These are **fixtures, not content.** Real content entry is a separate piece of work.
+Uploads are skipped entirely (R2 is not provisioned), and English is seeded only
+where the export actually has English, so the `is` → `en` fallback is exercised.
 
 ## Localization
 
