@@ -4,8 +4,10 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getDictionary, isLocale, localePath, type Locale } from '@/lib/i18n'
 import { formatLongDate } from '@/lib/dates'
+import { resolveContentLocale } from '@/lib/localized'
 import { findNewsArticle } from '@/lib/content/news'
 import { RichText } from '@/components/RichText/RichText'
+import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { ShareRow } from '@/components/ShareRow/ShareRow'
 import styles from './article.module.scss'
 
@@ -46,14 +48,21 @@ export default async function NewsArticlePage({ params }: { params: Params }) {
   // Headline, summary and body are marked separately, because Payload localizes
   // them independently — a translated headline over an untranslated body, or an
   // English title with no English summary, are both states this model allows.
-  // The page-level note above <main> is the layout's, from
-  // `@translationNote/frettir/[slug]/page.tsx`.
   const titleLang = article.contentLocale === locale ? undefined : article.contentLocale
   const excerptLang = article.excerptLocale === locale ? undefined : article.excerptLocale
   const bodyLang = article.bodyLocale === locale ? undefined : article.bodyLocale
 
+  // The page-level note is the first thing inside `<main>`, so the skip link
+  // lands on it rather than past it. Whether it appears at all is
+  // `resolveContentLocale`'s decision, made the same way on every page.
+  const contentLocale = resolveContentLocale(
+    [article.contentLocale, article.excerptLocale, article.bodyLocale],
+    locale,
+  )
+
   return (
     <>
+      <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
       <article className={styles.article}>
         <Link className={styles.back} href={localePath('/frettir', locale)}>
           <span aria-hidden="true">←</span> {t.news.backToIndex}

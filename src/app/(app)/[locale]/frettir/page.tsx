@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
 import { getDictionary, isLocale } from '@/lib/i18n'
 import { formatLongDate } from '@/lib/dates'
+import { resolveContentLocale } from '@/lib/localized'
 import { listNews } from '@/lib/content/news'
+import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { Section } from '@/components/Section/Section'
 import { NewsCard } from '@/components/NewsCard/NewsCard'
@@ -32,11 +34,17 @@ export default async function NewsPage({
 
   const t = getDictionary(locale)
   const articles = await listNews(locale)
+  const contentLocale = resolveContentLocale(
+    articles.flatMap((a) => [a.contentLocale, a.excerptLocale]),
+    locale,
+  )
 
-  // The fallback note for this page is rendered by the layout, from
-  // `@translationNote/frettir/page.tsx`.
+  // The note is the first thing inside `<main>`, so the skip link lands on it
+  // rather than past it. One line per page; `TranslationNote` renders nothing
+  // when the content is already in the locale that was asked for.
   return (
     <>
+      <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
       <PageHeader title={t.news.title} lead={t.news.lead} />
       <Section>
         {articles.length === 0 ? (

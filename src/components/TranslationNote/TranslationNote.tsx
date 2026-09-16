@@ -49,6 +49,15 @@ export interface TranslationNoteProps {
  *
  * Renders nothing when the content is in the locale that was asked for, so a
  * page can always render it and never has to reason about when it applies.
+ *
+ * Render it as the first child of the page, i.e. the first thing inside
+ * `<main id="main">`. The design export draws it above the content area, and
+ * putting it above `<main>` instead would match that DOM exactly — but the
+ * skip link targets `#main`, so a keyboard or screen-reader user skipping the
+ * header would land *after* the note and never hear it. They are the readers
+ * who most need to be told the page is showing Icelandic. Inside `<main>` the
+ * rendered result is the same strip in the same place, and the skip link lands
+ * before it.
  */
 export function TranslationNote({
   pageLocale,

@@ -29,21 +29,9 @@ export function generateStaticParams() {
 
 export default async function LocaleLayout({
   children,
-  translationNote,
   params,
 }: {
   children: React.ReactNode
-  /**
-   * The fallback-language strip, above `<main>` as a sibling of the header —
-   * where the design export puts it.
-   *
-   * It is a parallel route (`@translationNote/`) because only the route knows
-   * whether its own content fell back, and a slot is how a route hands a layout
-   * something to render outside `children`. Routes with nothing to say fall
-   * through to `@translationNote/default.tsx`, so this is never conditional
-   * here: the strip is placed once, and each route decides whether it appears.
-   */
-  translationNote: React.ReactNode
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
@@ -87,7 +75,14 @@ export default async function LocaleLayout({
             contactHref={`${base}/hafa-samband`}
             locale={locale}
           />
-          {translationNote}
+          {/*
+            The fallback-language note is *not* rendered here. It belongs
+            inside `<main>`, as the page's own first child, so the skip link
+            lands before it — a skip-link user is exactly the reader who needs
+            to be told the page is showing Icelandic, and a note above `<main>`
+            is the one thing they would jump straight past. See
+            `TranslationNote`.
+          */}
           <main id="main">{children}</main>
           <Footer
             blurb={t.footer.blurb}

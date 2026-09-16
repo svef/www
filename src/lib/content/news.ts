@@ -57,8 +57,10 @@ function publishedByNow() {
  * and a cut-off list with no paging control would quietly make older articles
  * unreachable. Paging is worth adding the day the archive outgrows one page.
  *
- * Cached per request: the page renders the grid and the layout decides whether
- * to show the translation note, and those are two separate calls into here.
+ * Cached per request. The news index is currently the only caller, so today
+ * that is one query either way; the cache is what lets a second reader — the
+ * home page's latest-news block, a feed route — call this without anyone
+ * having to thread the result through, and without it costing another query.
  */
 export const listNews = cache(async function listNews(
   locale: Locale,
@@ -82,9 +84,9 @@ export const listNews = cache(async function listNews(
  * An article dated in the future 404s rather than rendering, so a leaked link
  * to a scheduled post shows nothing before its date.
  *
- * Cached per request: the route renders the article, generates its metadata
- * from the same document and decides on the translation note, and those are
- * three separate calls into this module.
+ * Cached per request, and here that is load-bearing: `generateMetadata` and
+ * the page body each resolve the article independently, so without the cache
+ * every article view would query Postgres twice for the same document.
  */
 export const findNewsArticle = cache(async function findNewsArticle(
   slug: string,
