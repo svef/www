@@ -42,6 +42,11 @@
   font-weight: var(--weight-bold);
   font-size: var(--text-xl);
   transition: color 0.16s ease;
+  // Rendered as a heading; neutralise the global heading defaults so the card
+  // keeps the exact size, weight, rhythm and spacing it had as a <span>.
+  margin: 0;
+  line-height: inherit;
+  letter-spacing: inherit;
 }
 
 .excerpt {
