@@ -19,7 +19,6 @@ const content: Record<
     boardTitle: string
     board: { name: string; role: string }[]
     bylawsTitle: string
-    bylawsFallback: string
     faqTitle: string
     faq: { question: string; answer: string }[]
   }
@@ -42,8 +41,6 @@ const content: Record<
       { name: 'Jón Andri Óskarsson', role: 'Meðstjórnandi · vefverkefni' },
     ],
     bylawsTitle: 'Lög SVEF',
-    bylawsFallback:
-      'Lög SVEF eru geymd á GitHub og birtast hér sjálfkrafa. (Ekki tókst að sækja þau í augnablikinu.)',
     faqTitle: 'Spurt og svarað',
     faq: [
       { question: 'Hvernig skrái ég mig í SVEF?', answer: 'Þú getur skráð þig hér á vefnum undir Skráning.' },
@@ -70,8 +67,6 @@ const content: Record<
       { name: 'Jón Andri Óskarsson', role: 'Board member · web projects' },
     ],
     bylawsTitle: 'Bylaws',
-    bylawsFallback:
-      "SVEF's bylaws live on GitHub and render here automatically. (Could not fetch them right now.)",
     faqTitle: 'FAQ',
     faq: [
       { question: 'How do I join SVEF?', answer: 'You can sign up here on the site under Membership.' },
@@ -112,13 +107,9 @@ export default async function AboutPage({
       </Section>
 
       <Section title={c.bylawsTitle}>
-        {bylaws ? (
-          <div className={styles.bylaws}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{bylaws}</ReactMarkdown>
-          </div>
-        ) : (
-          <p style={{ color: 'var(--fg-muted)' }}>{c.bylawsFallback}</p>
-        )}
+        <div className={styles.bylaws}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{bylaws}</ReactMarkdown>
+        </div>
       </Section>
 
       <Section title={c.faqTitle}>
