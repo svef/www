@@ -92,6 +92,90 @@ These are **fixtures, not content.** Real content entry is a separate piece of w
 Uploads are skipped entirely (R2 is not provisioned), and English is seeded only
 where the export actually has English, so the `is` → `en` fallback is exercised.
 
+## End-to-end tests
+
+`npm run e2e` runs the Playwright suite in `e2e/`: a smoke pass over every public
+route in both locales (200, one `<h1>`, a content body, no console errors), a
+heading-outline check, locale-routing assertions, a nav label → href contract,
+internal-link integrity, the news article route, keyboard operability (skip link,
+gallery lightbox), a check that the route table matches the filesystem, and
+`e2e/a11y/` — axe sweeps against `wcag2a` / `wcag2aa` / `wcag21a` / `wcag21aa`,
+including the gallery lightbox in its **open** state. `npm run e2e:a11y` runs only
+the sweeps.
+
+It needs the same **seeded local database** as `npm run dev` (see above).
+Playwright builds the app and serves it on port `3100` itself — override with
+`PLAYWRIGHT_PORT`, or set `PLAYWRIGHT_TEST_BASE_URL` to test an already-running app
+(a preview deployment, say) and the build/start is skipped entirely.
+
+```bash
+npx playwright install chromium   # once
+npm run e2e
+```
+
+A local run always builds the current tree. To point it at a server you started
+yourself on the same port, set `PLAYWRIGHT_REUSE_SERVER=1` — without it, a stale
+server is not silently reused, because a green run against someone else's build
+proves nothing about your change.
+
+### What these tests do NOT cover
+
+The suite is a **route-level regression net**, and it is worth being plain about the
+ceiling so it is not trusted further than it deserves:
+
+- **No copy is asserted.** A page must render its expected `<h1>` and at least one
+  `<section>` or `<article>` — enough to catch a gutted page — but nothing checks
+  what it says. Replace every paragraph with lorem ipsum and the suite stays green.
+- **No layout or visual checks.** No snapshots, no visual regression.
+- **Link targets are checked for existence, not correctness.** A link is verified to
+  resolve to a route the site has; that it is the *right* route is only pinned where
+  `locale-routing.spec.ts` or `links.spec.ts` says so explicitly.
+- **Chromium only, desktop only.** No Firefox, WebKit or mobile viewport.
+- **No form submission**, and no authenticated or `/admin` surface.
+- **Only one article is visited.** `article.spec.ts` takes the first card on the
+  news index; it does not sweep every article, and it does not cover the
+  `EmptyState` (the fixtures always have news) or the `publishedAt <= now` filter.
+
+That is a deliberate scope. Per-page content assertions belong with the PR that
+builds the page.
+
+### Adding a route
+
+A new page under `src/app/(app)/[locale]/` belongs in the `PAGES` table in
+`e2e/pages.ts`, and `routes.spec.ts` fails if you forget — it walks the app
+directory in both directions, so it also catches a `PAGES` entry whose page has
+been deleted.
+
+A route with a **dynamic segment** cannot be a fixed path, so it is declared in
+`DYNAMIC_ROUTES` instead and covered by a spec of its own that resolves a real
+value at runtime (`article.spec.ts` does this for `/frettir/[slug]`, taking the
+first card on the news index rather than hard-coding a fixture slug). Declaring it
+is not optional either: an undeclared dynamic shape is treated as a dead link.
+
+### Tracked exceptions
+
+Three allowlists, all the same shape and all carrying the same bargain — an entry
+names the issue that will remove it, and a guard test asserts the problem **still
+reproduces**, so fixing the issue turns the suite red until the entry is deleted.
+An exclusion cannot quietly outlive its reason.
+
+| File | Holds |
+|---|---|
+| `e2e/a11y/known-issues.ts` | Accepted axe violations, scoped to one rule, the specific elements that produce them, and an exact node count per URL (`#34`) |
+| `e2e/known-links.ts` | Links that are knowingly dead — placeholders for pages not yet built (`#19`, `#20`, `#26`, `#23`) |
+| `e2e/known-console-errors.ts` | Accepted console errors (`#60`) |
+
+Anything outside these fails the run. The mechanism works: entries for `#59` (the
+lightbox close button) and `#24` (news card self-links) were deleted when those
+issues landed, because their guard tests went red and said so.
+
+### CI
+
+`.github/workflows/ci.yml` runs the suite as a second job on every pull request.
+**It is not a required check**: `dev` has no branch protection rule and the repo has
+no rulesets, so a red run does not block a merge. Making it required is a repository
+settings change that has not been done.
+
 ## Localization
 
 Icelandic is served at the root (`/`); English lives under `/en`. Routing is handled
@@ -115,7 +199,6 @@ src/
 - **Design system** — translate the exported design into `src/styles/tokens.scss` +
   the Mantine theme, then build real components (current chrome is placeholder).
 - **Storybook** — planned (`@storybook/nextjs-vite` + a11y addon); init pending.
-- **CI** — GitHub Actions (typecheck · lint · test · build · e2e).
 
 ## Bylaws
 

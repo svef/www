@@ -1,5 +1,12 @@
 name: CI
 
+# Both jobs run on every pull request and on pushes to main and dev.
+#
+# They are NOT required checks. `dev` has no branch protection rule and the repo
+# has no rulesets, so a red CI run does not stop a merge — it is a signal a human
+# has to look at, not a gate. Making either job required is a repository settings
+# change (Settings → Branches, or a ruleset) that has not been done.
+
 on:
   push:
     branches: [main, dev]
@@ -48,3 +55,70 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  e2e:
+    name: Playwright e2e + axe
+    runs-on: ubuntu-latest
+
+    # A Postgres service container plus `npm run seed:dev`, which keeps the job
+    # self-contained: no preview URL to wait for, and the same fixtures a
+    # maintainer sees locally.
+    #
+    # This is now genuinely load-bearing: #24 wired `/frettir` and the article
+    # route to Payload, so the news sweeps, the link integrity check and
+    # `article.spec.ts` all read real rows. `npm run seed:dev` and
+    # `e2e/payload-api.spec.ts` depend on it too.
+    #
+    # The other pages still render from hard-coded dictionaries and would pass
+    # against a dead database — worth knowing before assuming the whole suite
+    # covers the CMS.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: svef
+          POSTGRES_PASSWORD: svef
+          POSTGRES_DB: svef
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U svef"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      # Overrides the workflow-level placeholder: this job really connects.
+      DATABASE_URL: postgresql://svef:svef@localhost:5432/svef
+      DATABASE_URL_UNPOOLED: postgresql://svef:svef@localhost:5432/svef
+      PLAYWRIGHT_PORT: 3100
+      NEXT_PUBLIC_SITE_URL: http://localhost:3100
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Seed development fixtures
+        run: npm run seed:dev
+
+      # `playwright.config.ts` builds the app and starts it on PLAYWRIGHT_PORT.
+      - name: Run e2e + axe sweeps
+        run: npm run e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

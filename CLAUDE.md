@@ -115,17 +115,29 @@ npm run typecheck && npm run lint && npm run test:ci && npm run build
 npm run e2e          # where the change touches rendered pages
 ```
 
-CI runs the same checks; local verification is the gate.
+`npm run e2e` builds the app and serves it itself and needs a seeded local database
+(README, "Development fixtures"). It covers every public route in both locales; a new
+page belongs in the `PAGES` table in `e2e/pages.ts`, or in `DYNAMIC_ROUTES` with a
+spec of its own if it has a dynamic segment — a test enumerates the filesystem and
+fails if you forget.
+
+It is a **route-level** net: it checks a page loads, is accessible, has a sound
+heading outline and links only to real routes. It does **not** assert page copy
+beyond the `<h1>` and the presence of a content body. Content assertions
+belong with the PR that builds the page. See the README for the full list of what it
+does not cover, and for the three tracked-exception allowlists.
+
+CI runs the same checks. **CI is not a required check** — `dev` has no branch
+protection and the repo has no rulesets, so a red run does not block a merge. Local
+verification is the gate; that is not a figure of speech.
 
 ## Git and pull requests
 
 - Branch from **`dev`**. One issue ↔ one PR, squash-merged.
 - Commit messages and PR descriptions are plain and descriptive. **No AI attribution** in
   commits or PR text.
-- PR descriptions say what a human should verify. For UI changes, **describe what you checked
-  at desktop and mobile widths** — which routes, which widths, what you compared against, and
-  what you found. Don't commit screenshots or push them to a side branch; the description is
-  the record.
+- PR descriptions say what a human should verify. For UI changes, include **screenshots at
+  desktop and mobile**.
 - **Search existing issues before filing** — follow-ups belong on the board, not in a comment.
 
 ## Working as an agent in this repo
