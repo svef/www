@@ -1,37 +1,18 @@
 import { notFound } from 'next/navigation'
-import { isLocale, type Locale } from '@/lib/i18n'
+import { DEFAULT_LOCALE, getDictionary, isLocale } from '@/lib/i18n'
+import { formatLongDate } from '@/lib/dates'
+import { listNews } from '@/lib/content/news'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { Section } from '@/components/Section/Section'
 import { NewsCard } from '@/components/NewsCard/NewsCard'
+import { EmptyState } from '@/components/EmptyState/EmptyState'
+import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import styles from './news.module.scss'
 
-const content: Record<
-  Locale,
-  {
-    title: string
-    lead: string
-    articles: { date: string; title: string; excerpt: string }[]
-  }
-> = {
-  is: {
-    title: 'Fréttir',
-    lead: 'Fréttir af starfi SVEF — hér er heimildin, samfélagsmiðlar deila héðan.',
-    articles: [
-      { date: '22. maí 2026', title: 'Ný stjórn tekin við', excerpt: 'Ný stjórn SVEF tók við á aðalfundi. Við kynnum hópinn og áherslur ársins.' },
-      { date: '12. mars 2026', title: 'Vefur ársins 2025 verðlaunaður', excerpt: 'Íslensku vefverðlaunin voru afhent í Hörpu. Sjá alla verðlaunahafa.' },
-      { date: '4. feb 2026', title: 'Klúðurkvöld — takk fyrir komuna', excerpt: 'Vel heppnað kvöld um að læra af mistökum. Nokkur gullkorn úr salnum.' },
-    ],
-  },
-  en: {
-    title: 'News',
-    lead: 'News from SVEF — this is the source; social posts link back here.',
-    articles: [
-      { date: 'May 22, 2026', title: 'A new board takes over', excerpt: 'A new SVEF board took office at the AGM. Meet the team and this year’s focus.' },
-      { date: 'March 12, 2026', title: 'Site of the Year 2025 awarded', excerpt: 'The Icelandic Web Awards were presented at Harpa. See all the winners.' },
-      { date: 'Feb 4, 2026', title: 'Klúðurkvöld — thanks for coming', excerpt: 'A great evening about learning from mistakes. A few gems from the room.' },
-    ],
-  },
-}
+// Rendered per request. The content comes from Payload, so a build-time
+// prerender would need a database — and the deployed build deliberately does
+// not connect to one (see the CI workflow).
+export const dynamic = 'force-dynamic'
 
 export default async function NewsPage({
   params,
@@ -40,24 +21,43 @@ export default async function NewsPage({
 }) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
-  const base = locale === 'en' ? '/en' : ''
-  const c = content[locale]
+
+  const t = getDictionary(locale)
+  const articles = await listNews(locale)
+
+  // One article still waiting for its translation is enough to say so: the note
+  // is about the page, and a page of half-Icelandic cards needs the explanation
+  // as much as an entirely Icelandic one.
+  const contentLocale = articles.every((a) => a.contentLocale === locale)
+    ? locale
+    : DEFAULT_LOCALE
 
   return (
     <>
-      <PageHeader title={c.title} lead={c.lead} />
+      <TranslationNote pageLocale={locale} contentLocale={contentLocale}>
+        {t.translationNote}
+      </TranslationNote>
+      <PageHeader title={t.news.title} lead={t.news.lead} />
       <Section>
-        <div className={styles.grid}>
-          {c.articles.map((a) => (
-            <NewsCard
-              key={a.title}
-              date={a.date}
-              title={a.title}
-              excerpt={a.excerpt}
-              href={`${base}/frettir`}
-            />
-          ))}
-        </div>
+        {articles.length === 0 ? (
+          <EmptyState title={t.news.empty.title} body={t.news.empty.body} />
+        ) : (
+          <div className={styles.grid}>
+            {articles.map((article) => (
+              <NewsCard
+                key={article.slug}
+                href={article.href}
+                date={formatLongDate(article.publishedAt, locale)}
+                dateTime={article.publishedAt}
+                title={article.title}
+                excerpt={article.excerpt}
+                cover={article.cover}
+                cta={t.news.readArticle}
+                lang={article.contentLocale === locale ? undefined : article.contentLocale}
+              />
+            ))}
+          </div>
+        )}
       </Section>
     </>
   )

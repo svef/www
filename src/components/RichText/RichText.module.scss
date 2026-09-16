@@ -1,0 +1,83 @@
+// Prose styling for Payload rich text. The converter emits bare semantic
+// elements, so these are element selectors on purpose — there are no classes to
+// hook onto, and editors should not have to know about any.
+.prose {
+  color: rgb(252 251 254 / 68%);
+  font-size: var(--text-lg);
+  line-height: 1.75;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  p {
+    margin: 0 0 var(--space-6);
+  }
+
+  // The opening paragraph carries the article's lead, a size up and brighter.
+  > p:first-of-type {
+    font-size: 1.1875rem; // 19px
+    line-height: 1.7;
+    color: rgb(252 251 254 / 82%);
+  }
+
+  h2,
+  h3 {
+    color: var(--fg);
+    margin: var(--space-12) 0 var(--space-4);
+  }
+
+  h2 {
+    font-size: 1.625rem; // 26px
+    line-height: 1.15;
+  }
+
+  h3 {
+    font-size: var(--text-xl);
+  }
+
+  blockquote {
+    margin: var(--space-8) 0;
+    padding: var(--space-6) var(--space-8);
+    background: var(--surface-2);
+    border-left: 8px solid var(--color-violet);
+    color: var(--fg);
+    font-family: var(--font-body), system-ui, sans-serif;
+    font-size: 1.25rem; // 20px
+    font-weight: var(--weight-semibold);
+    line-height: 1.5;
+  }
+
+  ul,
+  ol {
+    margin: 0 0 var(--space-6);
+    padding-left: var(--space-6);
+  }
+
+  li {
+    margin-bottom: var(--space-2);
+  }
+
+  a {
+    color: var(--color-violet-light);
+    text-underline-offset: 0.2em;
+
+    &:hover {
+      color: var(--fg);
+    }
+  }
+
+  strong {
+    color: var(--fg);
+    font-weight: var(--weight-bold);
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
