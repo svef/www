@@ -21,4 +21,8 @@ export const Default: Story = {}
 export const NestedHeadingLevel: Story = { args: { headingLevel: 3 } }
 export const WithoutCallToAction: Story = { args: { cta: undefined } }
 /** An article on the English site that has no English translation yet. */
-export const FallbackLanguage: Story = { args: { lang: 'is' } }
+export const FallbackLanguage: Story = {
+  args: { titleLang: 'is', excerptLang: 'is' },
+}
+/** A translated headline whose summary has not been translated yet. */
+export const PartiallyTranslated: Story = { args: { excerptLang: 'is' } }

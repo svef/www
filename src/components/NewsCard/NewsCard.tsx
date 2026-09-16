@@ -26,12 +26,22 @@ export interface NewsCardProps {
    */
   headingLevel?: 2 | 3 | 4
   /**
-   * Language of the article's own words — title and excerpt — when it is not
-   * the page's. Set for content that fell back to Icelandic on the English
-   * site. The date and the call to action are the site's own chrome and stay in
-   * the page's language, so they are deliberately outside it.
+   * Language of the title, when it is not the page's. Set for content that fell
+   * back to Icelandic on the English site.
+   *
+   * The date and the call to action are the site's own chrome and stay in the
+   * page's language, so they are deliberately outside it.
    */
-  lang?: string
+  titleLang?: string
+  /**
+   * Language of the excerpt, when it is not the page's.
+   *
+   * Separate from `titleLang` because the two are separately localized fields:
+   * an article can have an English headline and no English summary, and marking
+   * the summary as English would have a screen reader read Icelandic in an
+   * English voice.
+   */
+  excerptLang?: string
 }
 
 export function NewsCard({
@@ -43,7 +53,8 @@ export function NewsCard({
   cover,
   cta,
   headingLevel = 2,
-  lang,
+  titleLang,
+  excerptLang,
 }: NewsCardProps) {
   const Heading = `h${headingLevel}` as const
 
@@ -67,11 +78,11 @@ export function NewsCard({
         <time className={styles.date} dateTime={dateTime}>
           {date}
         </time>
-        <Heading className={styles.title} lang={lang}>
+        <Heading className={styles.title} lang={titleLang}>
           {title}
         </Heading>
         {excerpt && (
-          <span className={styles.excerpt} lang={lang}>
+          <span className={styles.excerpt} lang={excerptLang}>
             {excerpt}
           </span>
         )}

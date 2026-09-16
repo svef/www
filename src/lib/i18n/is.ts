@@ -14,10 +14,6 @@ export const is = {
     membership: 'Skráning',
     contact: 'Hafa samband',
   },
-  // Fallback notice. Shown on the English site when the content underneath has
-  // no English translation yet and Icelandic is standing in; the wording comes
-  // from the design export, and it is English because only English readers see it.
-  translationNote: 'English copy is not available for this page yet — showing Icelandic.',
   news: {
     title: 'Fréttir',
     lead: 'Allt sem við tilkynnum birtist hér fyrst — samfélagsmiðlar vísa alltaf hingað.',

@@ -7,12 +7,15 @@ const meta: Meta<typeof TranslationNote> = {
   args: {
     pageLocale: 'en',
     contentLocale: 'is',
-    children: 'English copy is not available for this page yet — showing Icelandic.',
   },
 }
 export default meta
 
 type Story = StoryObj<typeof TranslationNote>
 
-export const Fallback: Story = {}
+export const NotTranslatedYet: Story = {}
+/** Pages that are Icelandic-only by editorial decision, not by backlog. */
+export const IcelandicByDesign: Story = {
+  args: { reason: 'icelandic-by-design' },
+}
 export const Translated: Story = { args: { contentLocale: 'en' } }

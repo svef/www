@@ -48,8 +48,17 @@ describe('NewsCard', () => {
   })
 
   it('marks the article text with its own language when it differs', () => {
-    render(<NewsCard {...props} lang="is" />)
+    render(<NewsCard {...props} titleLang="is" excerptLang="is" />)
     expect(screen.getByRole('heading', { level: 2 })).toHaveAttribute('lang', 'is')
+    expect(screen.getByText(props.excerpt)).toHaveAttribute('lang', 'is')
+  })
+
+  it('marks the title and the excerpt independently', () => {
+    // A translated headline over an untranslated summary is a real state:
+    // Payload localizes the two fields separately. Marking the summary as
+    // English would have a screen reader read Icelandic in an English voice.
+    render(<NewsCard {...props} excerptLang="is" />)
+    expect(screen.getByRole('heading', { level: 2 })).not.toHaveAttribute('lang')
     expect(screen.getByText(props.excerpt)).toHaveAttribute('lang', 'is')
   })
 

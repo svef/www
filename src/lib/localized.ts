@@ -40,3 +40,21 @@ export function pickLocalized<T>(
   if (own !== null && own !== undefined && own !== '') return { value: own, locale }
   return { value: field?.[DEFAULT_LOCALE] ?? null, locale: DEFAULT_LOCALE }
 }
+
+/**
+ * The one decision behind the fallback strip.
+ *
+ * A page is "in" the locale that was asked for only when every piece of its
+ * content is — one untranslated field is enough to say so, because a page of
+ * half-Icelandic copy needs the explanation as much as an entirely Icelandic
+ * one. Otherwise the page reports Icelandic, the language the fallback is in.
+ *
+ * Every page that renders localized content resolves its strip through here, so
+ * "when does the note show" is answered once rather than per page.
+ */
+export function resolveContentLocale(
+  fieldLocales: readonly Locale[],
+  pageLocale: Locale,
+): Locale {
+  return fieldLocales.every((l) => l === pageLocale) ? pageLocale : DEFAULT_LOCALE
+}

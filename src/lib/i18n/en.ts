@@ -11,7 +11,6 @@ export const en = {
     membership: 'Membership',
     contact: 'Contact',
   },
-  translationNote: 'English copy is not available for this page yet — showing Icelandic.',
   news: {
     title: 'News',
     lead: 'Everything we announce appears here first — social posts always link back.',

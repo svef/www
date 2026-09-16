@@ -2,22 +2,12 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import {
-  DEFAULT_LOCALE,
-  getDictionary,
-  isLocale,
-  localePath,
-  type Locale,
-} from '@/lib/i18n'
+import { getDictionary, isLocale, localePath, type Locale } from '@/lib/i18n'
 import { formatLongDate } from '@/lib/dates'
 import { findNewsArticle } from '@/lib/content/news'
 import { RichText } from '@/components/RichText/RichText'
 import { ShareRow } from '@/components/ShareRow/ShareRow'
-import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import styles from './article.module.scss'
-
-// Rendered per request; see the note on the index route.
-export const dynamic = 'force-dynamic'
 
 type Params = Promise<{ locale: string; slug: string }>
 
@@ -53,18 +43,17 @@ export default async function NewsArticlePage({ params }: { params: Params }) {
 
   // The article's own words may be Icelandic on the English site; the chrome
   // around them (date, back link, share row) is always the page's language.
-  // Headline and body are marked separately: a translated headline over an
-  // untranslated body is a state this content model allows.
+  // Headline, summary and body are marked separately, because Payload localizes
+  // them independently — a translated headline over an untranslated body, or an
+  // English title with no English summary, are both states this model allows.
+  // The page-level note above <main> is the layout's, from
+  // `@translationNote/frettir/[slug]/page.tsx`.
   const titleLang = article.contentLocale === locale ? undefined : article.contentLocale
+  const excerptLang = article.excerptLocale === locale ? undefined : article.excerptLocale
   const bodyLang = article.bodyLocale === locale ? undefined : article.bodyLocale
-  const pageContentLocale =
-    titleLang || bodyLang ? DEFAULT_LOCALE : locale
 
   return (
     <>
-      <TranslationNote pageLocale={locale} contentLocale={pageContentLocale}>
-        {t.translationNote}
-      </TranslationNote>
       <article className={styles.article}>
         <Link className={styles.back} href={localePath('/frettir', locale)}>
           <span aria-hidden="true">←</span> {t.news.backToIndex}
@@ -100,7 +89,7 @@ export default async function NewsArticlePage({ params }: { params: Params }) {
           // Not every article has a body written out — some are a headline and a
           // summary. Showing the summary beats showing a title over nothing.
           article.excerpt && (
-            <p className={styles.lead} lang={titleLang}>
+            <p className={styles.lead} lang={excerptLang}>
               {article.excerpt}
             </p>
           )
