@@ -15,8 +15,8 @@
  *   npm run seed:dev
  *
  * It is idempotent: every document is matched on a stable, non-localized key
- * (slug / year / name / title) and updated in place, so re-running changes row
- * contents but never row counts. Globals are single documents, so their arrays
+ * (slug / year / name / title, and site name + edition for award winners) and
+ * updated in place, so re-running changes row contents but never row counts. Globals are single documents, so their arrays
  * (FAQ, membership tiers) are replaced wholesale rather than appended to.
  *
  * It refuses to run against anything that does not look like a local database,
@@ -202,11 +202,19 @@ async function seed(payload: Payload): Promise<void> {
   }
 
   // --- Award winners ------------------------------------------------------
+  // Keyed on site name *and* edition: the same site can win in more than one
+  // year, and the historical archive import (#31) will bring those rows in.
+  // Matching on siteName alone would silently overwrite the earlier year.
   for (const winner of awardWinners) {
     await upsert(
       payload,
       'award-winners',
-      { siteName: { equals: winner.siteName } },
+      {
+        and: [
+          { siteName: { equals: winner.siteName } },
+          { edition: { equals: editionIds.get(winner.year) } },
+        ],
+      },
       {
         blurb: winner.blurb ?? null,
         category: categoryIds.get(winner.categorySlug),

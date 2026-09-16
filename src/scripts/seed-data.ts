@@ -153,23 +153,30 @@ export const events: EventFixture[] = [
     location: 'Kvosin',
     description: ['Hálfsdagsvinnustofa, 20 sæti.'],
   },
+  // `location` on the next two comes from the export's `albums` metas
+  // ("KVOSIN · 22. MAÍ 2026", "GRANDI 101 · 13. MAR 2026") — its `eventsPast`
+  // rows carry no venue.
   {
     slug: 'adalfundur-svef-2026',
     title: 'Aðalfundur SVEF',
     startDate: '2026-05-22T12:00:00.000Z',
+    location: 'Kvosin',
     description: ['Ný stjórn kjörin og starfsárið gert upp.'],
   },
   {
     slug: 'kludurkvold-mars-2026',
     title: 'Klúðurkvöld',
     startDate: '2026-03-13T12:00:00.000Z',
+    location: 'Grandi 101',
     description: ['Sjö sögur af mistökum, ein af þeim mjög dýr.'],
   },
   {
     slug: 'islensku-vefverdlaunin-2025',
     title: 'Íslensku vefverðlaunin 2025',
     titleEn: 'The Icelandic Web Awards 2025',
-    startDate: '2025-11-15T19:30:00.000Z',
+    // The export gives "15. NÓV 2025" with no clock time, so the 12:00Z rule
+    // above applies — the 2026 ceremony's 19:30 is not attested for 2025.
+    startDate: '2025-11-15T12:00:00.000Z',
     location: 'Harpa',
     description: ['Uppselt hús og 13 verðlaunahafar.'],
   },
@@ -289,7 +296,7 @@ export type AwardEditionFixture = { year: number; ceremonyDate?: string; venue?:
 /** The years the export's archive tabs offer, plus the upcoming 2026 ceremony. */
 export const awardEditions: AwardEditionFixture[] = [
   { year: 2026, ceremonyDate: '2026-11-14T19:30:00.000Z', venue: 'Harpa, Silfurberg' },
-  { year: 2025, ceremonyDate: '2025-11-15T19:30:00.000Z', venue: 'Harpa' },
+  { year: 2025, ceremonyDate: '2025-11-15T12:00:00.000Z', venue: 'Harpa' },
   { year: 2024 },
   { year: 2023 },
   { year: 2022 },
@@ -310,6 +317,11 @@ export type AwardWinnerFixture = {
  * archive rows for 2020–2024 carry only a placeholder blurb ("Umsögn dómnefndar
  * birtist hér þegar söguleg gögn hafa verið flutt inn"), so they are not seeded —
  * the historical import owns those.
+ *
+ * `isSpecial` has no counterpart in the export. It is derived from the field's
+ * own label in `AwardWinners.ts` ("Special recognition (Design & interface,
+ * Accessibility, Project of the year…)"), which names exactly the categories
+ * flagged here — it is not a value read from the export.
  */
 export const awardWinners: AwardWinnerFixture[] = [
   {
