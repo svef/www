@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { isLocale, type Locale } from '@/lib/i18n'
+import { getDictionary, isLocale, type Locale } from '@/lib/i18n'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { Section } from '@/components/Section/Section'
 import { Gallery } from '@/components/Gallery/Gallery'
@@ -34,12 +34,18 @@ export default async function PhotosPage({
   const { locale } = await params
   if (!isLocale(locale)) notFound()
   const c = content[locale]
+  const t = getDictionary(locale)
 
   return (
     <>
       <PageHeader title={c.title} lead={c.lead} />
       <Section title={c.albumTitle}>
-        <Gallery viewLabel={c.view} prevLabel={c.prev} nextLabel={c.next} />
+        <Gallery
+          viewLabel={c.view}
+          prevLabel={c.prev}
+          nextLabel={c.next}
+          closeLabel={t.close}
+        />
       </Section>
     </>
   )
