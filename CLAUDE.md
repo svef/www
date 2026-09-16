@@ -67,10 +67,20 @@ Tokens live in `src/styles/tokens.scss` and are mirrored by the Mantine theme in
 
 ### Working from a design
 
-- Designs come from Figma. **Pull them with Figma's design-to-code (`get_design_context`)**
-  so you get the real geometry and the exported assets. Rebuilding from a screenshot loses
-  the actual shapes, spacing and assets, and will not match.
-- **Check the result in a browser at desktop and mobile widths** and compare against the
+The design of record depends on the surface:
+
+- **The full site** (pages and the design system) — Claude Design exports, kept as
+  self-contained HTML alongside the maintainer's working notes. They carry the real markup,
+  CSS values and assets, so work from the export itself.
+- **The temporary landing page** — a Figma file. Extract it with Figma's design-to-code
+  (`get_design_context`) to get the real geometry and exported assets; those assets are
+  committed under `public/landing/`.
+
+Whichever it is:
+
+- **Never rebuild a design from a screenshot.** Screenshots lose the real shapes, spacing
+  and assets, and the result will not match. Go to the export.
+- **Check the result in a browser at desktop and mobile widths** and compare it against the
   design before calling it done.
 - CSS Modules fail silently: a class that doesn't exist resolves to `undefined` and the
   element renders unstyled. Confirm styling visually rather than assuming.
