@@ -44,6 +44,7 @@ import {
   press,
   richText,
   siteSettings,
+  siteSettingsEn,
 } from './seed-data'
 
 type Data = Record<string, unknown>
@@ -235,6 +236,15 @@ async function seed(payload: Payload): Promise<void> {
   await payload.updateGlobal({
     data: siteSettings as never,
     locale: 'is',
+    slug: 'site-settings',
+  })
+
+  // The footer blurb is chrome: it is on every page, so it is seeded in both
+  // languages rather than left to fall back. No row ids to read back first —
+  // unlike `membership-page` this global has no arrays.
+  await payload.updateGlobal({
+    data: siteSettingsEn as never,
+    locale: 'en',
     slug: 'site-settings',
   })
 

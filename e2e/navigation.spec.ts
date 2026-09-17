@@ -36,13 +36,20 @@ test.describe('site chrome links', () => {
         href: urlFor(locale, path),
       }))
 
-      const actual = await page.evaluate(() =>
-        Array.from(
-          document.querySelectorAll<HTMLAnchorElement>('header nav[aria-label="Primary"] a[href]'),
-        ).map((a) => ({
-          label: (a.textContent ?? '').trim(),
-          href: a.getAttribute('href') ?? '',
-        })),
+      // The nav's accessible name is localized chrome copy like everything else
+      // in the header, so the selector reads it from the dictionary rather than
+      // pinning the English string it used to have.
+      const actual = await page.evaluate(
+        (navLabel) =>
+          Array.from(
+            document.querySelectorAll<HTMLAnchorElement>(
+              `header nav[aria-label="${navLabel}"] a[href]`,
+            ),
+          ).map((a) => ({
+            label: (a.textContent ?? '').trim(),
+            href: a.getAttribute('href') ?? '',
+          })),
+        t.nav.primary,
       )
 
       expect(actual, 'the primary nav label → href pairing').toEqual(expected)

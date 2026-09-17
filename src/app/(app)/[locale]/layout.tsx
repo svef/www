@@ -11,6 +11,7 @@ import {
 } from '@mantine/core'
 import { theme } from '@/lib/theme'
 import { getDictionary, isLocale, LOCALES } from '@/lib/i18n'
+import { getSiteChrome } from '@/lib/content/site-settings'
 import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
 
@@ -22,6 +23,11 @@ export const metadata: Metadata = {
   description: 'Samtök vefiðnaðarins — fagfélag fólksins sem býr til vefinn á Íslandi.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
 }
+
+// The layout reads the `site-settings` global for the footer, so it is a route
+// segment that touches Payload and takes the site's revalidation window like
+// any other. See "Rendering: static plus ISR" in CLAUDE.md.
+export const revalidate = 300
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
@@ -46,13 +52,7 @@ export default async function LocaleLayout({
     { href: `${base}/um-svef`, label: t.nav.about },
     { href: `${base}/skraning`, label: t.nav.membership },
   ]
-  // TODO: source socials + blurb from the SiteSettings global once content exists.
-  const socials = [
-    { label: 'FB', href: '#' },
-    { label: 'IG', href: '#' },
-    { label: 'X', href: '#' },
-    { label: 'LI', href: '#' },
-  ]
+  const chrome = await getSiteChrome(locale)
 
   return (
     <html
@@ -73,6 +73,8 @@ export default async function LocaleLayout({
             navItems={navItems}
             contactLabel={t.nav.contact}
             contactHref={`${base}/hafa-samband`}
+            menuLabel={t.nav.menu}
+            navLabel={t.nav.primary}
             locale={locale}
           />
           {/*
@@ -84,10 +86,21 @@ export default async function LocaleLayout({
             `TranslationNote`.
           */}
           <main id="main">{children}</main>
+          {/*
+            The dictionary's sentence is the empty-database fallback only: both
+            languages are seeded into the global, and an untranslated blurb
+            falls back to Icelandic and is marked with `lang` like any other
+            fallback copy. See the note on `SiteChrome.footerBlurb`.
+          */}
           <Footer
-            blurb={t.footer.blurb}
-            email="svef@svef.is"
-            socials={socials}
+            blurb={chrome.footerBlurb ?? t.footer.blurb}
+            blurbLang={
+              chrome.footerBlurb && chrome.footerBlurbLocale !== locale
+                ? chrome.footerBlurbLocale
+                : undefined
+            }
+            email={chrome.contactEmail}
+            socials={chrome.socials}
             year={2026}
           />
         </MantineProvider>

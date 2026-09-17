@@ -9,12 +9,20 @@ export const is = {
   // Accessible name for the close button of a dialog (the photo lightbox).
   close: 'Loka',
   nav: {
+    // Accessible name of the primary `<nav>`. The design export names it
+    // "Aðalvalmynd"; it is announced to screen-reader users, so it is interface
+    // copy and belongs in Icelandic like the rest of the chrome.
+    primary: 'Aðalvalmynd',
     awards: 'Vefverðlaunin',
     events: 'Viðburðir',
     news: 'Fréttir',
     about: 'Um SVEF',
     membership: 'Skráning',
     contact: 'Hafa samband',
+    // Visible label on the small-screen menu toggle. It is the button's whole
+    // accessible name — `aria-expanded` carries the state, so the name does not
+    // change when the menu opens.
+    menu: 'Valmynd',
   },
   events: {
     title: 'Viðburðir',

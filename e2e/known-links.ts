@@ -5,12 +5,14 @@
  * `links.spec.ts` asserts that every internal link on every page goes somewhere
  * real. The site today has a number of links that do not, because the page they
  * should point at has not been built yet: the awards year links go nowhere, and
- * the social icons are `href="#"` placeholders.
+ * the contact page's social icons are `href="#"` placeholders.
  *
- * The news cards used to be listed here too, and so did the event rows. #24
- * built the article route and #19 built `/vidburdir/[slug]`; each time the
- * guard test below went red and the entry was deleted — which is exactly the
- * lifecycle this file is designed to force.
+ * Three entries have already been retired. #24 built the article route and the
+ * news cards went; #19 built `/vidburdir/[slug]` and the event rows went; #26
+ * sourced the footer's four social placeholders from the `site-settings`
+ * global — omitting a network with no URL rather than linking it to nothing —
+ * and they went too. Each time the guard test below went red first, which is
+ * exactly the lifecycle this file is designed to force.
  *
  * Those were undocumented. Listing them here does two things: it makes them
  * visible, and — via the guard test that asserts each one *still reproduces* —
@@ -61,17 +63,6 @@ function bothLocales(paths: readonly string[], count: number): Record<string, nu
   return out
 }
 
-const ALL_PAGE_PATHS = [
-  '',
-  '/vidburdir',
-  '/vefverdlaunin',
-  '/um-svef',
-  '/skraning',
-  '/hafa-samband',
-  '/frettir',
-  '/myndir',
-] as const
-
 // The awards page lists past editions as links, but the winners archive has no
 // route yet (#20 builds it, #31 imports the data).
 const AWARDS_YEAR_SELF_LINK: KnownDeadLink = {
@@ -80,16 +71,6 @@ const AWARDS_YEAR_SELF_LINK: KnownDeadLink = {
   problem: 'self-link',
   urls: bothLocales(['/vefverdlaunin'], 3),
   matches: (link) => link.where === 'main',
-}
-
-// `layout.tsx` hard-codes four `href: '#'` social links into the footer. They
-// come from SiteSettings once #26 lands.
-const FOOTER_SOCIAL_PLACEHOLDERS: KnownDeadLink = {
-  issue: 26,
-  why: 'Footer social links are hard-coded `href="#"` placeholders; they come from SiteSettings in svef/www#26.',
-  problem: 'placeholder-hash',
-  urls: bothLocales(ALL_PAGE_PATHS, 4),
-  matches: (link) => link.where === 'footer',
 }
 
 // `hafa-samband/page.tsx` repeats the same four placeholders in the page body.
@@ -103,7 +84,6 @@ const CONTACT_SOCIAL_PLACEHOLDERS: KnownDeadLink = {
 
 export const KNOWN_DEAD_LINKS: readonly KnownDeadLink[] = [
   AWARDS_YEAR_SELF_LINK,
-  FOOTER_SOCIAL_PLACEHOLDERS,
   CONTACT_SOCIAL_PLACEHOLDERS,
 ]
 

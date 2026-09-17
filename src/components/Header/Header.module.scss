@@ -1,7 +1,17 @@
+// The width at which the nav collapses into a menu. Mirrored by
+// `NAV_BREAKPOINT` in `SiteNav.tsx`, which closes an open menu on the way up.
+$nav-breakpoint: 900px;
+
 .header {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
+  // The export draws two different gaps: clamp(16px, 2.5vw, 32px) between the
+  // logo and the nav, and 14px inside the right-hand group of "Hafa samband"
+  // and the language pill. The panel is `display: contents`, so the contact
+  // link is a direct child here and would otherwise take the header's gap —
+  // which is how the right-hand pair drifted to 32px. The header carries the
+  // smaller gap and `.nav` makes up the difference on its own side.
+  gap: var(--space-4);
   padding: var(--space-4) var(--space-6);
   background: var(--bg);
   flex-wrap: wrap;
@@ -12,23 +22,47 @@
   flex-shrink: 0;
 }
 
-.nav {
-  display: flex;
-  gap: var(--space-6);
-  flex-wrap: wrap;
+// The focus-trap wrapper and the disclosure panel both take part in the
+// header's own flex layout at desktop width rather than nesting inside it, so
+// the row reads logo → nav → contact → controls exactly as the design draws it
+// while the markup stays a single grouped menu for small screens.
+.menu {
+  display: contents;
 }
 
-.utility {
-  margin-left: auto;
+.panel {
+  display: contents;
+}
+
+.nav {
+  flex: 1;
+  margin-left: var(--space-4);
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.controls {
   display: flex;
   align-items: center;
   gap: var(--space-4);
 }
 
 .navLink {
+  display: inline-block;
   color: var(--fg);
   text-decoration: none;
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
+  // The design marks the current section with a violet underline; the border is
+  // always there so the item does not move when it becomes current.
+  padding-bottom: var(--space-1);
+  border-bottom: 3px solid transparent;
   transition: color 0.16s ease;
 
   &:hover {
@@ -38,6 +72,34 @@
   &:focus-visible {
     outline: 2px solid var(--color-violet-light);
     outline-offset: 3px;
+  }
+
+  &[aria-current='page'] {
+    border-bottom-color: var(--color-violet);
+  }
+}
+
+.contactLink {
+  color: var(--fg-muted);
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+  transition: color 0.16s ease;
+
+  &:hover {
+    color: var(--fg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
+
+  &[aria-current='page'] {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-color: var(--color-violet);
+    text-decoration-thickness: 3px;
+    text-underline-offset: 4px;
   }
 }
 
@@ -60,5 +122,172 @@
   &:focus-visible {
     outline: 2px solid var(--color-violet-light);
     outline-offset: 2px;
+  }
+}
+
+// Hidden above the breakpoint, where the nav is a row and there is nothing to
+// disclose. `display: none` rather than `visibility`, so it is out of the tab
+// ring too.
+.toggle {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  background: none;
+  border: 1px solid var(--surface-4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  min-height: 44px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-violet);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 2px;
+  }
+
+  // Shy White on Electric Violet is 6.05:1 — AA for this size, and the one
+  // place the brand violet carries text.
+  &[aria-expanded='true'] {
+    background: var(--color-violet);
+    border-color: var(--color-violet);
+  }
+}
+
+.bars {
+  position: relative;
+  display: block;
+  width: 16px;
+  height: 12px;
+  flex: none;
+
+  span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: currentcolor;
+    transition:
+      transform 0.16s ease,
+      opacity 0.16s ease;
+
+    &:nth-child(1) {
+      top: 0;
+    }
+
+    &:nth-child(2) {
+      top: 5px;
+    }
+
+    &:nth-child(3) {
+      top: 10px;
+    }
+  }
+}
+
+.toggle[aria-expanded='true'] .bars span {
+  &:nth-child(1) {
+    transform: translateY(5px) rotate(45deg);
+  }
+
+  &:nth-child(2) {
+    opacity: 0;
+  }
+
+  &:nth-child(3) {
+    transform: translateY(-5px) rotate(-45deg);
+  }
+}
+
+@media (max-width: $nav-breakpoint) {
+  .header {
+    padding: var(--space-4);
+  }
+
+  .toggle {
+    display: inline-flex;
+  }
+
+  .controls {
+    margin-left: auto;
+  }
+
+  // The panel stops being a pass-through and becomes the header's second row:
+  // full width, in normal flow, so opening it pushes the page down instead of
+  // covering it and nothing can overflow sideways.
+  .panel {
+    display: none;
+    order: 2;
+    flex-basis: 100%;
+    width: 100%;
+    border-top: 1px solid var(--surface-3);
+    animation: menuIn 0.18s ease-out;
+
+    &[data-open='true'] {
+      display: block;
+    }
+  }
+
+  .nav {
+    flex: none;
+    margin-left: 0;
+  }
+
+  .list {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .navLink,
+  .contactLink {
+    display: block;
+    // Comfortably past the 44px target size the association's own award asks
+    // for, on the axis where a thumb misses.
+    padding: var(--space-4);
+    border: 0;
+    border-bottom: 1px solid var(--surface-3);
+    border-left: 3px solid transparent;
+    color: var(--fg);
+    text-decoration: none;
+
+    &[aria-current='page'] {
+      border-left-color: var(--color-violet);
+      background: var(--surface-1);
+    }
+  }
+
+  .contactLink {
+    border-bottom: 0;
+  }
+}
+
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+
+  .navLink,
+  .contactLink,
+  .bars span {
+    transition: none;
   }
 }
