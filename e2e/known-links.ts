@@ -4,12 +4,12 @@
  *
  * `links.spec.ts` asserts that every internal link on every page goes somewhere
  * real. The site today has a number of links that do not, because the page they
- * should point at has not been built yet: event rows link to the events index
- * instead of the event, the awards year links go nowhere, and the social icons
- * are `href="#"` placeholders.
+ * should point at has not been built yet: the awards year links go nowhere, and
+ * the social icons are `href="#"` placeholders.
  *
- * The news cards used to be listed here too. #24 built the article route, the
- * guard test below went red, and the entry was deleted — which is exactly the
+ * The news cards used to be listed here too, and so did the event rows. #24
+ * built the article route and #19 built `/vidburdir/[slug]`; each time the
+ * guard test below went red and the entry was deleted — which is exactly the
  * lifecycle this file is designed to force.
  *
  * Those were undocumented. Listing them here does two things: it makes them
@@ -72,16 +72,6 @@ const ALL_PAGE_PATHS = [
   '/myndir',
 ] as const
 
-// `vidburdir/page.tsx` does the same for every EventRow, plus the "about the
-// event" CTA. The event detail route is #19, not yet started.
-const EVENT_ROWS_SELF_LINK: KnownDeadLink = {
-  issue: 19,
-  why: 'Event rows and the event CTA link to the events index instead of the event; detail route is svef/www#19.',
-  problem: 'self-link',
-  urls: bothLocales(['/vidburdir'], 4),
-  matches: (link) => link.where === 'main',
-}
-
 // The awards page lists past editions as links, but the winners archive has no
 // route yet (#20 builds it, #31 imports the data).
 const AWARDS_YEAR_SELF_LINK: KnownDeadLink = {
@@ -112,7 +102,6 @@ const CONTACT_SOCIAL_PLACEHOLDERS: KnownDeadLink = {
 }
 
 export const KNOWN_DEAD_LINKS: readonly KnownDeadLink[] = [
-  EVENT_ROWS_SELF_LINK,
   AWARDS_YEAR_SELF_LINK,
   FOOTER_SOCIAL_PLACEHOLDERS,
   CONTACT_SOCIAL_PLACEHOLDERS,

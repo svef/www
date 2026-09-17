@@ -162,6 +162,15 @@ test.describe('internal links', () => {
   // Fix the issue and this goes red, which is the prompt to delete the entry.
   for (const known of KNOWN_DEAD_LINKS) {
     test(`known dead links for #${known.issue} still reproduce`, async ({ page }) => {
+      // One test, but up to 16 page loads inside it — an entry that lists every
+      // page (the footer placeholders, #26) does the work of sixteen of the
+      // per-page tests above while sharing their 30s budget, and each load ends
+      // in a `settle()` that may wait 5s. It measures ~11s alone and has timed
+      // out on a loaded machine, so the budget is scaled to the work rather
+      // than the assertion being weakened: this still fails on a real hang,
+      // just not on a busy laptop.
+      test.setTimeout(120_000)
+
       const wrong: string[] = []
 
       for (const [url, expected] of Object.entries(known.urls)) {

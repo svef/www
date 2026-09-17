@@ -119,6 +119,12 @@ export type EventFixture = {
   startDate: string
   endDate?: string
   location?: string
+  /** Street line under `location` — the export's sidebar prints both. */
+  venueAddress?: string
+  /** ISK. The export gives these only for the 2026 awards. */
+  ticketPrice?: number
+  memberPrice?: number
+  accessibility?: string
   description?: Block[]
 }
 
@@ -130,13 +136,27 @@ export const events: EventFixture[] = [
     startDate: '2026-11-14T19:30:00.000Z',
     endDate: '2026-11-15T01:00:00.000Z',
     location: 'Harpa, Silfurberg',
+    // The four below are transcribed from the HAGNÝTAR UPPLÝSINGAR sidebar on
+    // the export's `event` page, which is where the export itself puts them.
+    //
+    // They arrive together with the removal of an `{ h2: 'Hagnýtar upplýsingar' }`
+    // heading and two sentences from `description` below, and that removal moves
+    // this fixture *towards* the export rather than away from it: the export's
+    // event body is exactly the three paragraphs that remain, and its facts are
+    // a `<dl>` in the sidebar, not prose. The two sentences were an
+    // approximation written when `events` had no field to hold them (svef/www#19
+    // adds the fields). Nothing here is invented and nothing attested is lost —
+    // every value below is the sidebar's own text.
+    //
+    // 20% off is not stored: it is what 15.120 is off 18.900.
+    venueAddress: 'Austurbakki 2, 101 Reykjavík',
+    ticketPrice: 18900,
+    memberPrice: 15120,
+    accessibility: 'Hjólastólaaðgengi, tónmöskvi og táknmálstúlkun í boði.',
     description: [
       'Íslensku vefverðlaunin eru haldin í 26. sinn og eru stærsta hátíð vefiðnaðarins á Íslandi. Verðlaunað er í 13 flokkum og dómnefnd skipuð fagfólki úr greininni velur sigurvegara.',
       'Kvöldið hefst með fordrykk klukkan 19:30, verðlaunaafhending hefst 20:30 og að henni lokinni tekur við eftirpartý með plötusnúð. Klæðnaður: það sem þér líður vel í.',
       'Innsendingar eru opnar til 10. október. Félagar í SVEF fá 20% afslátt af innsendingum og miðum, og fyrirtækjafélagar fá fimm frímiða.',
-      { h2: 'Hagnýtar upplýsingar' },
-      'Staðsetning: Harpa, Silfurberg, Austurbakki 2, 101 Reykjavík. Miðaverð 18.900 kr., félagar 15.120 kr.',
-      'Aðgengi: hjólastólaaðgengi, tónmöskvi og táknmálstúlkun í boði. Spurningar: svef@svef.is.',
     ],
   },
   {

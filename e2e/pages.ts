@@ -85,6 +85,11 @@ export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
     name: 'news article',
     matches: (path) => /^\/frettir\/[^/]+$/.test(path),
   },
+  {
+    pattern: '/vidburdir/[slug]',
+    name: 'event',
+    matches: (path) => /^\/vidburdir\/[^/]+$/.test(path),
+  },
 ]
 
 /** Visible URL for a page in a locale. Never emits the internal `/is` prefix. */

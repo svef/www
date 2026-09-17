@@ -16,6 +16,35 @@ export const is = {
     membership: 'Skráning',
     contact: 'Hafa samband',
   },
+  events: {
+    title: 'Viðburðir',
+    lead: 'Fyrirlestrar, vinnustofur og hátíðir fyrir fólkið í vefiðnaðinum. Félagar komast frítt á alla viðburði nema vefverðlaunin.',
+    nextEvent: 'Næsti viðburður',
+    upcomingTitle: 'Framundan',
+    pastTitle: 'Liðnir viðburðir',
+    details: 'Nánar',
+    aboutEvent: 'Nánar um viðburðinn',
+    buyTickets: 'Kaupa miða',
+    photosFromEvent: 'Myndir frá viðburði',
+    photosFromLastYear: 'Myndir frá síðasta ári',
+    photosTitle: 'Myndir frá viðburðinum',
+    backToIndex: 'Viðburðir',
+    // `{percent}` is filled in from the two prices, so the sentence cannot
+    // disagree with the numbers printed beside it.
+    memberDiscount: 'Félagar fá {percent}% afslátt',
+    practical: {
+      title: 'Hagnýtar upplýsingar',
+      venue: 'Staðsetning',
+      price: 'Miðaverð',
+      members: 'félagar',
+      accessibility: 'Aðgengi',
+      questions: 'Spurningar',
+    },
+    empty: {
+      title: 'Engir viðburðir framundan',
+      body: 'Næsti viðburður birtist hér um leið og dagsetning liggur fyrir.',
+    },
+  },
   news: {
     title: 'Fréttir',
     lead: 'Allt sem við tilkynnum birtist hér fyrst — samfélagsmiðlar vísa alltaf hingað.',

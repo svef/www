@@ -9,10 +9,37 @@
   }
 }
 
+// `SpotlightRow.tsx` has always rendered `<div className={styles.text}>`, but
+// there was no `.text` rule, so it resolved to `undefined` and the element came
+// out with no class attribute at all — the silent CSS Modules failure CLAUDE.md
+// warns about, sitting unnoticed in a shared component.
+//
+// The missing rule matters: a grid item defaults to `min-width: auto`, so this
+// column refused to shrink below the intrinsic width of its longest word and
+// pushed the row past the viewport at narrow widths (measured: scrollWidth 380
+// at clientWidth 320, where every other page held 320). `min-width: 0` lets it
+// shrink, which is also what lets `overflow-wrap` on the title take effect.
+.text {
+  min-width: 0;
+}
+
 .title {
   font-size: var(--text-3xl);
   max-width: 14ch;
   margin: 0 0 var(--space-4);
+  // Icelandic compounds are longer than the 14ch measure — "Hádegisfyrirlestur"
+  // is 18 characters and, at this size, ~428px, wider than a 390px phone.
+  // Without this the word pushes the whole document past the viewport and the
+  // page scrolls sideways (measured: scrollWidth 428 at clientWidth 390).
+  //
+  // The cost is that a title longer than the measure breaks mid-stem rather
+  // than at a space. Two better-looking fixes were tried and rejected:
+  // `hyphens: auto` does nothing, because Chromium ships no Icelandic
+  // dictionary; and a `min-content` floor on `max-width` licenses the word its
+  // full width and so stops this rule applying at all, restoring the scroll.
+  // Sideways scroll on a phone beats an ugly line break, so this stays.
+  // Tracked as svef/www#82.
+  overflow-wrap: break-word;
 }
 
 .body {

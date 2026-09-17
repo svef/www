@@ -1,0 +1,8 @@
+// "Liðnir viðburðir". `auto-fit`/`minmax` rather than fixed column counts,
+// because this grid holds however many events the association has run — and the
+// design's own past section is written the same way.
+.pastGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-6);
+}
