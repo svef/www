@@ -5,12 +5,14 @@ export const en = {
   skipToContent: 'Skip to content',
   close: 'Close',
   nav: {
+    primary: 'Main menu',
     awards: 'Web Awards',
     events: 'Events',
     news: 'News',
     about: 'About SVEF',
     membership: 'Membership',
     contact: 'Contact',
+    menu: 'Menu',
   },
   events: {
     title: 'Events',
