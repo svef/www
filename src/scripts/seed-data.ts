@@ -488,6 +488,21 @@ export const homePage = {
   showPhotos: true,
 }
 
+/**
+ * English for the home page's two localized fields.
+ *
+ * Seeded, unlike most English on this site, because the home `<h1>` *is*
+ * `heroSentence`: left to fall back, `/en` would open on an Icelandic headline
+ * and every reader of the English site would meet the translation note before
+ * anything else. The `is` → `en` fallback is still exercised on the same page by
+ * the events, whose titles are Icelandic-only in these fixtures.
+ */
+export const homePageEn = {
+  heroSentence: 'The association of people who build the web in Iceland.',
+  heroHook:
+    'Around 300 designers, developers, marketers and UX folk. We run events, present the Icelandic Web Awards, and make our web better — together.',
+}
+
 export const aboutStory: Block[] = [
   'SVEF — Samtök vefiðnaðarins — voru stofnuð árið 2005 og eru félag fólks sem starfar við vefinn á Íslandi. Í dag eru félagar um 300 talsins: forritarar, hönnuðir, markaðsfólk, verkefnastjórar og UX-fólk.',
   'Við miðlum þekkingu og eflum fagleg vinnubrögð í greininni — með viðburðum, Íslensku vefverðlaununum og samtali milli fólks sem annars myndi aldrei hittast. Samtökin eru rekin af sex manna sjálfboðaliðastjórn.',

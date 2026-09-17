@@ -39,6 +39,7 @@ import {
   faq,
   galleries,
   homePage,
+  homePageEn,
   membership,
   membershipEn,
   news,
@@ -257,6 +258,7 @@ async function seed(payload: Payload): Promise<void> {
   })
 
   await payload.updateGlobal({ data: homePage as never, locale: 'is', slug: 'home-page' })
+  await payload.updateGlobal({ data: homePageEn as never, locale: 'en', slug: 'home-page' })
 
   await payload.updateGlobal({
     data: { faq, press, story: richText(aboutStory) } as never,

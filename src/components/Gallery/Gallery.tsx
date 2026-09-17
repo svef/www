@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, type CSSProperties } from 'react'
+import clsx from 'clsx'
 import Image from 'next/image'
 import { Modal } from '@mantine/core'
 import styles from './Gallery.module.scss'
@@ -28,6 +29,20 @@ export interface GalleryProps {
    */
   placeholderCount?: number
   /** Prefix for a thumbnail's accessible name, e.g. "Skoða mynd". */
+  /**
+   * Draw exactly this many columns instead of reflowing by tile width.
+   *
+   * Purely presentational, and the one thing that differs between the two
+   * places this grid appears. `/myndir` shows a whole album of unknown size, so
+   * its tiles reflow by width. The home page's strip shows a fixed four and the
+   * export draws them across the content width — which a reflowing grid cannot
+   * do, because it fills the row with tracks whether or not there are tiles for
+   * them and leaves four small tiles bunched to the left.
+   *
+   * Collapses to two columns on a phone, as the reflowing grid does at the same
+   * widths.
+   */
+  columns?: number
   viewLabel: string
   prevLabel: string
   nextLabel: string
@@ -49,6 +64,7 @@ export interface GalleryProps {
 export function Gallery({
   photos = [],
   placeholderCount = 8,
+  columns,
   viewLabel,
   prevLabel,
   nextLabel,
@@ -78,7 +94,14 @@ export function Gallery({
 
   return (
     <>
-      <ul className={styles.grid}>
+      <ul
+        className={clsx(styles.grid, columns !== undefined && styles.fixedColumns)}
+        style={
+          columns !== undefined
+            ? ({ '--gallery-columns': columns } as CSSProperties)
+            : undefined
+        }
+      >
         {/*
           Keyed by position rather than by photo: the same upload can legitimately
           be added to an album twice, and a URL key would then collide.
