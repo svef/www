@@ -37,7 +37,13 @@ test.describe('keyboard operability', () => {
     test('opens, traps focus, moves with the arrow keys and closes on Esc', async ({ page }) => {
       await page.goto(urlFor('is', '/myndir'))
 
-      const thumbs = page.getByRole('button', { name: /^Skoða mynd \d+$/ })
+      // The page lists every album, each as its own named region with its own
+      // grid and its own lightbox, so this scopes to one album by name — the
+      // counter in the dialog belongs to that album, not to the page. Named
+      // rather than positional: `.first()` would silently retarget if anything
+      // above it ever gained an accessible name.
+      const album = page.getByRole('region', { name: 'Íslensku vefverðlaunin 2025' })
+      const thumbs = album.getByRole('button', { name: /^Skoða mynd/ })
       const count = await thumbs.count()
       expect(count, 'gallery rendered no thumbnails').toBeGreaterThan(1)
 
@@ -70,7 +76,11 @@ test.describe('keyboard operability', () => {
 
     test('the previous/next controls are reachable and labelled', async ({ page }) => {
       await page.goto(urlFor('en', '/myndir'))
-      await page.getByRole('button', { name: 'View photo 1' }).click()
+      await page
+        .getByRole('region', { name: 'Íslensku vefverðlaunin 2025' })
+        .getByRole('button', { name: /^View photo/ })
+        .first()
+        .click()
 
       const dialog = page.getByRole('dialog')
       await expect(dialog.getByRole('button', { name: 'Previous photo' })).toBeVisible()

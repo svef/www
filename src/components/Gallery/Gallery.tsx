@@ -1,26 +1,65 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
+import Image from 'next/image'
 import { Modal } from '@mantine/core'
 import styles from './Gallery.module.scss'
 
-// Click-to-enlarge gallery. Mantine Modal gives focus-trap + Esc + ARIA; we add
-// arrow-key prev/next. Placeholders now — real images come from Galleries (R2).
-export function Gallery({
-  count = 9,
-  viewLabel,
-  prevLabel,
-  nextLabel,
-  closeLabel,
-}: {
-  count?: number
+/** One photo in an album, already resolved for the page's locale. */
+export interface GalleryImage {
+  url: string
+  /** Meaningful description — the row caption, or the media item's own alt. */
+  alt: string
+  /** The row caption, shown under the enlarged photo. */
+  caption?: string | null
+  width?: number | null
+  height?: number | null
+}
+
+export interface GalleryProps {
+  /** The album's photos. Empty renders `placeholderCount` placeholder tiles. */
+  photos?: GalleryImage[]
+  /**
+   * Tiles to draw when the album has no images yet.
+   *
+   * Albums are created before the photos are uploaded, and an album with an
+   * empty grid reads as a broken page rather than as one waiting for content.
+   * Eight is what the design's own placeholder run shows.
+   */
+  placeholderCount?: number
+  /** Prefix for a thumbnail's accessible name, e.g. "Skoða mynd". */
   viewLabel: string
   prevLabel: string
   nextLabel: string
   closeLabel: string
-}) {
+}
+
+/**
+ * Click-to-enlarge photo grid.
+ *
+ * The lightbox is the point of the page: the association's current site cannot
+ * enlarge a photo at all. Mantine's `Modal` supplies the focus trap, Esc and
+ * the dialog ARIA; the arrow-key prev/next below is ours, and it wraps rather
+ * than dead-ending so holding an arrow key walks the album.
+ *
+ * Client-side because of that interaction, and only because of it — the page
+ * around it stays a prerendered, revalidated Server Component and hands this
+ * already-resolved plain data.
+ */
+export function Gallery({
+  photos = [],
+  placeholderCount = 8,
+  viewLabel,
+  prevLabel,
+  nextLabel,
+  closeLabel,
+}: GalleryProps) {
+  // With no images the grid still draws tiles, so the count that the lightbox
+  // and its counter walk is the placeholder run instead.
+  const count = photos.length > 0 ? photos.length : placeholderCount
   const [index, setIndex] = useState<number | null>(null)
   const open = index !== null
+  const current = index !== null ? photos[index] : undefined
 
   const go = useCallback(
     (delta: number) => setIndex((i) => (i === null ? i : (i + delta + count) % count)),
@@ -40,16 +79,35 @@ export function Gallery({
   return (
     <>
       <ul className={styles.grid}>
-        {Array.from({ length: count }).map((_, i) => (
-          <li key={i}>
-            <button
-              type="button"
-              className={styles.thumb}
-              onClick={() => setIndex(i)}
-              aria-label={`${viewLabel} ${i + 1}`}
-            />
-          </li>
-        ))}
+        {/*
+          Keyed by position rather than by photo: the same upload can legitimately
+          be added to an album twice, and a URL key would then collide.
+        */}
+        {Array.from({ length: count }).map((_, i) => {
+          const photo = photos[i]
+          return (
+            <li key={i}>
+              <button
+                type="button"
+                className={styles.thumb}
+                onClick={() => setIndex(i)}
+                // The button carries the description, so the image inside it is
+                // marked decorative — otherwise the name is announced twice.
+                aria-label={photo?.alt ? `${viewLabel}: ${photo.alt}` : `${viewLabel} ${i + 1}`}
+              >
+                {photo && (
+                  <Image
+                    className={styles.thumbImage}
+                    src={photo.url}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
+                  />
+                )}
+              </button>
+            </li>
+          )
+        })}
       </ul>
       {/*
         Composed from Modal.* rather than the `Modal` shorthand so the header can be a
@@ -78,7 +136,20 @@ export function Gallery({
               >
                 ‹
               </button>
-              <div className={styles.full} aria-hidden="true" />
+              {current ? (
+                <Image
+                  className={styles.fullImage}
+                  src={current.url}
+                  alt={current.alt}
+                  width={current.width ?? 1200}
+                  height={current.height ?? 800}
+                  sizes="(max-width: 1024px) 90vw, 960px"
+                />
+              ) : (
+                // No image to show yet — the striped placeholder stands in, and
+                // carries nothing for a screen reader to announce.
+                <div className={styles.placeholder} aria-hidden="true" />
+              )}
               <button
                 type="button"
                 className={styles.nav}
@@ -88,6 +159,7 @@ export function Gallery({
                 ›
               </button>
             </div>
+            {current?.caption && <p className={styles.caption}>{current.caption}</p>}
           </Modal.Body>
         </Modal.Content>
       </Modal.Root>

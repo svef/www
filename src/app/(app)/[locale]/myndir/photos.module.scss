@@ -1,0 +1,51 @@
+.album + .album {
+  margin-top: var(--space-16);
+}
+
+// Title, meta and a rule that fills whatever width is left — the export's
+// album header, which is what keeps three albums reading as three albums
+// rather than as one long run of tiles.
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.title {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: var(--weight-black);
+  font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+  line-height: 1.15;
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+
+.meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.12em;
+  color: rgb(252 251 254 / 50%);
+  // Uppercased here rather than in the copy, so a screen reader still says
+  // "nóvember" rather than announcing a shouted abbreviation.
+  //
+  // 50% rather than the export's 45%. Measured against the canvas, 45% is
+  // 4.37:1 and misses AA for text this size; 46% is the first value that clears
+  // it, at 4.53:1. 50% is 5.19:1 — chosen over 46% because sitting one point
+  // above the threshold leaves nothing for a future tweak to the canvas colour,
+  // and it is still half the departure from the design that a larger bump
+  // would be.
+  text-transform: uppercase;
+}
+
+.rule {
+  flex: 1;
+  min-width: 40px;
+  height: 1px;
+  background: rgb(252 251 254 / 12%);
+}
