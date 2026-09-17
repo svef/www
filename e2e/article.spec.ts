@@ -76,13 +76,25 @@ test.describe('news article route', () => {
       const skips = levels.filter((level, i) => i > 0 && level > levels[i - 1] + 1)
       expect(skips, `skipped heading levels on ${url}`).toEqual([])
 
-      // The article page reproduces svef/www#60 like every other English page:
-      // the locale toggle points at the unprefixed Icelandic path, Next
-      // prefetches it as an RSC request, and `src/proxy.ts`'s rewrite 404s.
-      // It cannot be listed in `known-console-errors.ts`, which is keyed by
-      // visible URL — the slug here is resolved from the fixtures at runtime.
-      // Filtering on the entry's own predicate keeps the two in step: fixing
-      // #60 deletes the entry, and this file stops compiling.
+      // This route is exempt from svef/www#60 rather than subject to it, and the
+      // exemption is expressed the same way the allowlist expresses a count:
+      // a filter for the #60 signature, plus an exact number, because a filter
+      // on its own would wave through five of them as happily as none.
+      //
+      // The number is 0, measured, on both locales. The English locale toggle
+      // does point at the unprefixed Icelandic path here as it does everywhere
+      // else, and Next does prefetch it — but `/frettir/<slug>?_rsc=…` comes
+      // back 200, where `/frettir?_rsc=…` on the index comes back 404. So #60
+      // reproduces one level up and not on this route.
+      //
+      // The entry is still imported rather than the assertion just being
+      // `errors == []`, and that is the point: this is the page that would
+      // start logging it if the proxy rewrite shifted, and fixing #60 deletes
+      // the entry and stops this file compiling, which is the prompt to come
+      // back and check that claim rather than leave it rotting.
+      const prefetch404s = errors.filter((problem) => RSC_PREFETCH_404.matches(problem))
+      expect(prefetch404s.length, `#60 prefetch 404s on ${url}`).toBe(0)
+
       const unexpectedErrors = errors.filter((problem) => !RSC_PREFETCH_404.matches(problem))
       expect(unexpectedErrors.map(describeProblem), `console errors on ${url}`).toEqual([])
 

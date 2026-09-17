@@ -47,12 +47,14 @@ export const RSC_PREFETCH_404: KnownConsoleError = {
     '/en/hafa-samband': 1,
     '/en/myndir': 1,
   },
-  // `matches` is exported with the entry because `/frettir/[slug]` reproduces
-  // this too and cannot be a key here: `urls` holds visible URLs, and the
-  // article route's slug is resolved from the fixtures at runtime rather than
-  // hard-coded (see `article.spec.ts`). That spec filters on this predicate
-  // instead, which keeps the bargain intact from the other direction — fixing
-  // #60 and deleting this entry stops that file compiling.
+  // `matches` is exported with the entry for `/frettir/[slug]`, which cannot be
+  // a key here: `urls` holds visible URLs, and the article route's slug is
+  // resolved from the fixtures at runtime rather than hard-coded. That route
+  // turns out *not* to reproduce this — its toggle prefetch of
+  // `/frettir/<slug>?_rsc=…` returns 200, where `/frettir?_rsc=…` on the index
+  // returns 404 — so `article.spec.ts` asserts a count of 0 through this
+  // predicate rather than listing a URL. The bargain still holds from the other
+  // direction: fixing #60 and deleting this entry stops that file compiling.
   matches: (problem) =>
     problem.kind === 'console' &&
     problem.text.includes('Failed to load resource') &&

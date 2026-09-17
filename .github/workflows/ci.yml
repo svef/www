@@ -89,13 +89,23 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Proof, not assertion: the build only reaches `●` for these routes if it
-      # actually read rows. A build against a dead database would either fail or
-      # silently fall back to a dynamic route, and both show up here.
-      - name: Show prerendered news routes
+      # Assert that the build actually read rows, rather than just printing what
+      # it produced. A dead database fails the build on its own, but a database
+      # that connects with an empty or half-migrated `news` table does not: the
+      # build stays green, the route table still shows `●`, and there simply
+      # are no article pages. A seed that silently no-ops, a migration landing
+      # ahead of its fixtures, or `publishedByNow()` regressing to zero rows all
+      # look like that, and this is the job that is supposed to catch them.
+      #
+      # The floor is 2 because the index alone contributes `/frettir` in both
+      # locales; anything above that is article pages.
+      - name: Assert news pages were prerendered
         run: |
           echo "Prerendered /frettir pages:"
           find .next/server/app -path '*frettir*' -name '*.html' | sort
+          count="$(find .next/server/app -path '*frettir*' -name '*.html' | wc -l)"
+          echo "count: $count"
+          test "$count" -gt 2
 
   e2e:
     name: Playwright e2e + axe
