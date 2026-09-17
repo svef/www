@@ -21,3 +21,15 @@ type Story = StoryObj<typeof EventRow>
 
 export const Default: Story = {}
 export const WithoutDescription: Story = { args: { description: undefined } }
+
+// On /en, an event with no English translation yet: the chrome is English and
+// the event's own words are marked as Icelandic.
+export const FallbackToIcelandic: Story = {
+  args: {
+    month: 'oct',
+    dateLabel: '9 October 2026',
+    ctaLabel: 'Details',
+    titleLang: 'is',
+    descriptionLang: 'is',
+  },
+}

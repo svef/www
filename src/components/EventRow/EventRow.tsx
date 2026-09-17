@@ -19,6 +19,20 @@ export interface EventRowProps {
    * the "Framundan" list on /vidburdir, which sits under a section <h2>.
    */
   headingLevel?: 2 | 3 | 4
+  /**
+   * Language of the title, when it is not the page's. Set for an event whose
+   * English translation has not landed, so a screen reader on `/en` does not
+   * read Icelandic in an English voice.
+   */
+  titleLang?: string
+  /**
+   * Language of the description, when it is not the page's.
+   *
+   * Separate from `titleLang` because the venue and the body are separately
+   * localized fields — an event can have an English title and an Icelandic
+   * summary underneath it.
+   */
+  descriptionLang?: string
 }
 
 // "Framundan" list row: date badge + title/desc + Nánar link.
@@ -32,6 +46,8 @@ export function EventRow({
   href,
   ctaLabel,
   headingLevel = 3,
+  titleLang,
+  descriptionLang,
 }: EventRowProps) {
   const Heading = `h${headingLevel}` as const
 
@@ -48,8 +64,14 @@ export function EventRow({
         <span className="sr-only">{dateLabel}</span>
       </time>
       <div className={styles.body}>
-        <Heading className={styles.title}>{title}</Heading>
-        {description && <span className={styles.desc}>{description}</span>}
+        <Heading className={styles.title} lang={titleLang}>
+          {title}
+        </Heading>
+        {description && (
+          <span className={styles.desc} lang={descriptionLang}>
+            {description}
+          </span>
+        )}
       </div>
       <span className={styles.cta}>{ctaLabel} →</span>
     </Link>
