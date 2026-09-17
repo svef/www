@@ -29,16 +29,41 @@ export type Localized<T> = { value: T; locale: Locale }
  * a `lang` attribute, and the design's "English copy is not available for this
  * page yet" note — rather than presenting Icelandic as English.
  *
- * An empty string counts as missing: Payload writes `''` for a localized text
- * field that was opened in the admin and left blank.
+ * An empty string counts as missing — **in both branches**. Payload writes `''`
+ * for a localized text field that was opened in the admin and left blank, and
+ * it does that for Icelandic as readily as for English. Guarding only the
+ * requested locale left `{ is: '', en: '' }` resolving to `''` rather than
+ * `null`, which every caller then had to undo for itself: three separate
+ * workarounds had grown by the time svef/www#88 counted them, and the one place
+ * that had not noticed silently dropped a media item's alt text
+ * (`content/galleries-mapping.ts`, where a blank caption short-circuited `??`).
+ * The rule belongs here, where the doc comment already claimed it was.
  */
 export function pickLocalized<T>(
   field: AllLocales<T>,
   locale: Locale,
 ): Localized<T | null> {
   const own = field?.[locale]
-  if (own !== null && own !== undefined && own !== '') return { value: own, locale }
-  return { value: field?.[DEFAULT_LOCALE] ?? null, locale: DEFAULT_LOCALE }
+  if (!isBlank(own)) return { value: own as T, locale }
+  const fallback = field?.[DEFAULT_LOCALE]
+  return { value: isBlank(fallback) ? null : (fallback as T), locale: DEFAULT_LOCALE }
+}
+
+/**
+ * Has this field been filled in?
+ *
+ * Whitespace counts as blank, not just `''`. A field someone tabbed through and
+ * left with a stray space in it is the same editorial accident as one left
+ * empty, and treating the two differently is what made `content/site-settings.ts`
+ * re-test every value with `.trim()` after asking here.
+ *
+ * The value itself is never trimmed — only the test is. `pickLocalized` is
+ * generic and localized fields are not all strings: a rich-text body arrives as
+ * an object, and the only thing that can be blank about it is being absent.
+ */
+function isBlank(value: unknown): boolean {
+  if (value === null || value === undefined) return true
+  return typeof value === 'string' && value.trim() === ''
 }
 
 /**

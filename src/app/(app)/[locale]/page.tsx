@@ -1,6 +1,12 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { DEFAULT_LOCALE, getDictionary, isLocale, localePath, type Locale } from '@/lib/i18n'
+import {
+  DEFAULT_LOCALE,
+  getDictionary,
+  isLocale,
+  localePath,
+  type Locale,
+} from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
 import {
   findSpotlightWinner,
@@ -9,6 +15,7 @@ import {
   listHomePhotos,
   listRecentWinners,
 } from '@/lib/content/home'
+import { planEventSection } from '@/lib/content/home-mapping'
 import { listEvents, type EventSummary } from '@/lib/content/events'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { Hero } from '@/components/Hero/Hero'
@@ -40,7 +47,9 @@ export const revalidate = 300
 
 /** `date · time · venue — summary`, the export's spotlight line. */
 function spotlightBody(event: EventSummary): string {
-  const facts = [event.dateLabel, event.startTime, event.location].filter(Boolean).join(' · ')
+  const facts = [event.dateLabel, event.startTime, event.location]
+    .filter(Boolean)
+    .join(' · ')
   return [facts || null, event.summary].filter(Boolean).join(' — ')
 }
 
@@ -92,7 +101,8 @@ export default async function HomePage({
   // and only when one of the two actually wants it — a board that has switched
   // the spotlight to a winner and turned the events section off should not be
   // paying for a query whose result nothing renders.
-  const wantsEvents = settings.showUpcomingEvents || settings.spotlightMode === 'nextEvent'
+  const wantsEvents =
+    settings.showUpcomingEvents || settings.spotlightMode === 'nextEvent'
   const upcoming = wantsEvents ? (await listEvents(locale)).upcoming : []
 
   const [spotlightWinner, winners, photos] = await Promise.all([
@@ -102,28 +112,26 @@ export default async function HomePage({
   ])
 
   /**
-   * The spotlight is the next event, a chosen winner, or nothing.
+   * How the upcoming events are split between the spotlight and the list, and
+   * whether the list renders at all.
    *
-   * "Nothing" is a real outcome rather than a failure: the block announces what
-   * is happening now, and an association with no event on the calendar has
-   * nothing to announce. A panel with blanks in it would be worse than its
-   * absence, which is the same call `/vefverdlaunin` makes about its ceremony.
-   */
-  const spotlightEvent = settings.spotlightMode === 'nextEvent' ? upcoming[0] : undefined
-
-  /**
-   * The list under "Næstu viðburðir", minus whatever the spotlight already
-   * showed.
+   * The decision is in `planEventSection` rather than in the JSX below, because
+   * it is the one piece of this page that can be wrong in a way nobody sees in
+   * review: with a single event upcoming the spotlight takes it and the list is
+   * left empty, and an empty state fired off the *list* puts "Engir viðburðir
+   * framundan" directly below a block announcing an event. It is unit tested
+   * there.
    *
-   * The same rule as `/vidburdir`: the design shows the next event once, large,
-   * not twice. It is also what carries the export's "NÆSTI VIÐBURÐUR" emphasis
-   * here — see the note in the PR about `EventRow` having no pin badge.
+   * A spotlight of `null` is a real outcome rather than a failure: the block
+   * announces what is happening now, and an association with nothing on the
+   * calendar has nothing to announce. That is the same call `/vefverdlaunin`
+   * makes about its ceremony.
    */
-  const eventRows = settings.showUpcomingEvents
-    ? spotlightEvent
-      ? upcoming.slice(1)
-      : upcoming
-    : []
+  const events = planEventSection(upcoming, {
+    spotlightNextEvent: settings.spotlightMode === 'nextEvent',
+    showSection: settings.showUpcomingEvents,
+  })
+  const spotlightEvent = events.spotlight
 
   /**
    * Which language the reader is actually being shown.
@@ -138,7 +146,7 @@ export default async function HomePage({
    * the note permanent on `/en` and turn "not translated yet" into a lie. It is
    * marked inline with `blurbLang` instead, exactly as `/vefverdlaunin` does.
    */
-  const shownEvents = [...(spotlightEvent ? [spotlightEvent] : []), ...eventRows]
+  const shownEvents = [...(spotlightEvent ? [spotlightEvent] : []), ...events.rows]
   const contentLocale = resolveContentLocale(
     [
       ...(settings.heroSentence ? [settings.heroSentenceLocale] : []),
@@ -163,7 +171,9 @@ export default async function HomePage({
         // stands in when nobody has, so the page always has an `<h1>` without
         // inventing a sentence for it. See `t.home.fallbackTitle`.
         title={settings.heroSentence ?? c.fallbackTitle}
-        titleLang={settings.heroSentence ? langOf(settings.heroSentenceLocale) : undefined}
+        titleLang={
+          settings.heroSentence ? langOf(settings.heroSentenceLocale) : undefined
+        }
         lead={settings.heroHook ?? undefined}
         leadLang={settings.heroHook ? langOf(settings.heroHookLocale) : undefined}
         primary={{ label: c.joinCta, href: localePath('/skraning', locale) }}
@@ -205,22 +215,35 @@ export default async function HomePage({
         </Section>
       )}
 
-      {settings.showUpcomingEvents && (
-        <Section>
-          <SectionHead
-            title={c.eventsTitle}
-            href={localePath('/vidburdir', locale)}
-            linkLabel={c.allEvents}
-          />
-          {eventRows.length === 0 ? (
+      {events.section !== 'hidden' &&
+        (events.section === 'empty' ? (
+          <Section>
+            <SectionHead
+              title={c.eventsTitle}
+              href={localePath('/vidburdir', locale)}
+              linkLabel={c.allEvents}
+            />
+            {/*
+              The header stays in this branch, unlike on `/vidburdir`, because
+              "Allir viðburðir →" is the one thing worth offering a reader who
+              has just been told there is nothing coming up — the archive of past
+              events is still there.
+            */}
             <EmptyState
               title={t.events.empty.title}
               body={t.events.empty.body}
               headingLevel={3}
             />
-          ) : (
+          </Section>
+        ) : (
+          <Section>
+            <SectionHead
+              title={c.eventsTitle}
+              href={localePath('/vidburdir', locale)}
+              linkLabel={c.allEvents}
+            />
             <div>
-              {eventRows.map((event) => (
+              {events.rows.map((event) => (
                 <EventRow
                   key={event.slug}
                   day={event.badge.day}
@@ -236,9 +259,8 @@ export default async function HomePage({
                 />
               ))}
             </div>
-          )}
-        </Section>
-      )}
+          </Section>
+        ))}
 
       {settings.showRecentWinners && (
         <Section>
@@ -307,8 +329,9 @@ export default async function HomePage({
               // for the same album, rather than contradicting the page it links
               // to with an empty state.
               placeholderCount={HOME_PHOTO_COUNT}
-              // The export's strip is four tiles across the content width,
-              // rather than the album grid's reflowing run of small ones.
+              // The export's strip is four tiles across the content width. Its
+              // `auto-fit` gives that for free; `Gallery`'s `auto-fill` — a
+              // deviation made for `/myndir` — does not, so the count is named.
               columns={HOME_PHOTO_COUNT}
               viewLabel={c.enlargePhoto}
               prevLabel={t.photos.prevPhoto}

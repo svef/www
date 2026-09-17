@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  planEventSection,
   pickRecentWinners,
   recentPhotos,
   toHomeSettings,
@@ -180,5 +181,73 @@ describe('recentPhotos', () => {
 
   it('returns nothing when no album has a photo in it yet', () => {
     expect(recentPhotos([album(1, []), album(2, [])], 4)).toEqual([])
+  })
+})
+
+describe('planEventSection', () => {
+  const opts = { spotlightNextEvent: true, showSection: true }
+
+  it('spotlights the soonest event and lists the rest', () => {
+    const plan = planEventSection(['a', 'b', 'c'], opts)
+    expect(plan.spotlight).toBe('a')
+    expect(plan.rows).toEqual(['b', 'c'])
+    expect(plan.section).toBe('list')
+  })
+
+  it('does not contradict itself when there is exactly one event', () => {
+    // The bug this function was extracted for. The spotlight takes the only
+    // event, so the list has nothing left — and an empty state fired off the
+    // *list* would render "Engir viðburðir framundan" two blocks below a
+    // spotlight announcing that very event.
+    const plan = planEventSection(['a'], opts)
+    expect(plan.spotlight).toBe('a')
+    expect(plan.rows).toEqual([])
+    expect(plan.section).toBe('hidden')
+  })
+
+  it('never returns a spotlight and an empty state at the same time', () => {
+    // The invariant, stated directly: whatever the inputs, the page cannot
+    // announce an event and say there are none.
+    for (const count of [0, 1, 2, 5]) {
+      for (const spotlightNextEvent of [true, false]) {
+        const plan = planEventSection(Array.from({ length: count }, (_, i) => i), {
+          spotlightNextEvent,
+          showSection: true,
+        })
+        expect(
+          plan.spotlight !== null && plan.section === 'empty',
+          `spotlight + empty state with ${count} event(s), spotlight=${spotlightNextEvent}`,
+        ).toBe(false)
+      }
+    }
+  })
+
+  it('says the calendar is empty when it is', () => {
+    const plan = planEventSection([], opts)
+    expect(plan.spotlight).toBeNull()
+    expect(plan.section).toBe('empty')
+  })
+
+  it('lists every event when the spotlight is showing something else', () => {
+    // `winner` or `hidden` mode: nothing has taken the first event, so the list
+    // starts at it.
+    const plan = planEventSection(['a', 'b'], { spotlightNextEvent: false, showSection: true })
+    expect(plan.spotlight).toBeNull()
+    expect(plan.rows).toEqual(['a', 'b'])
+    expect(plan.section).toBe('list')
+  })
+
+  it('keeps the spotlight when the section is switched off', () => {
+    // `showUpcomingEvents` hides the list, not the "happening now" block.
+    const plan = planEventSection(['a', 'b'], { spotlightNextEvent: true, showSection: false })
+    expect(plan.spotlight).toBe('a')
+    expect(plan.rows).toEqual([])
+    expect(plan.section).toBe('hidden')
+  })
+
+  it('does not mutate what it was given', () => {
+    const upcoming = ['a', 'b']
+    planEventSection(upcoming, { spotlightNextEvent: false, showSection: true })
+    expect(upcoming).toEqual(['a', 'b'])
   })
 })

@@ -32,11 +32,18 @@ test.describe('home', () => {
           .filter((d) => d.querySelector(':scope > h2') && d.querySelector(':scope > a'))
           .map((d) => d.querySelector(':scope > a')?.getAttribute('href') ?? ''),
       )
-      expect(sectionLinks).toEqual([
+      // The winners and photos sections always render; the events section drops
+      // out when the spotlight has taken the only upcoming event, so it is
+      // asserted as an ordered subsequence rather than a fixed list — pinning
+      // all three would make this test a hostage to the fixture dates.
+      const expected = [
         urlFor(locale, '/vidburdir'),
         urlFor(locale, '/vefverdlaunin'),
         urlFor(locale, '/myndir'),
-      ])
+      ]
+      expect(sectionLinks).toEqual(expected.filter((href) => sectionLinks.includes(href)))
+      expect(sectionLinks).toContain(urlFor(locale, '/vefverdlaunin'))
+      expect(sectionLinks).toContain(urlFor(locale, '/myndir'))
 
       // The hero's primary call to action.
       await expect(main.locator(`a[href="${urlFor(locale, '/skraning')}"]`)).toHaveCount(1)
@@ -68,6 +75,27 @@ test.describe('home', () => {
       expect(new Set(hrefs).size, `an event was listed twice: ${hrefs.join(', ')}`).toBe(
         hrefs.length,
       )
+    })
+
+    test(`${locale}: never announces an event and says there are none`, async ({ page }) => {
+      await page.goto(urlFor(locale, ''))
+      await settle(page)
+
+      // The contradiction the events section is shaped to prevent: with one
+      // event upcoming the spotlight takes it and the list is left empty, and an
+      // empty state fired off the list would sit two blocks below a spotlight
+      // announcing that very event. `planEventSection` owns the rule and is unit
+      // tested on every input; this is the assertion against the rendered page.
+      const spotlightEvent = await page
+        .locator('main#main a[href*="/vidburdir/"]')
+        .count()
+      const emptyState = await page
+        .getByRole('heading', { name: /Engir viðburðir framundan|No upcoming events/ })
+        .count()
+      expect(
+        spotlightEvent > 0 && emptyState > 0,
+        'the page linked to an event and also said there were none',
+      ).toBe(false)
     })
 
     test(`${locale}: the winners strip shows at most three cards`, async ({ page }) => {

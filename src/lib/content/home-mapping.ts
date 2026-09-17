@@ -61,13 +61,9 @@ export function toHomeSettings(doc: HomePageAllLocales, locale: Locale): HomeSet
   const winner = doc.happeningNow?.winner
 
   return {
-    // `|| null`, not `?? null`: `pickLocalized` falls back to Icelandic and
-    // Icelandic can itself be `''` — a field opened in the admin and left blank
-    // — and an empty string here would render an empty `<h1>` instead of the
-    // page's fallback title.
-    heroSentence: sentence.value || null,
+    heroSentence: sentence.value ?? null,
     heroSentenceLocale: sentence.locale,
-    heroHook: hook.value || null,
+    heroHook: hook.value ?? null,
     heroHookLocale: hook.locale,
     spotlightMode: mode,
     spotlightWinnerId:
@@ -123,4 +119,50 @@ export function recentPhotos(
     }
   }
   return photos
+}
+
+/** What the home page does with the upcoming events it was given. */
+export type EventSectionPlan<T> = {
+  /** The event the spotlight announces, or null when it shows something else. */
+  spotlight: T | null
+  /** The rows under "Næstu viðburðir". Empty unless `section` is `'list'`. */
+  rows: T[]
+  /**
+   * Whether the section renders, and as what.
+   *
+   * - `'list'` — the heading and the rows.
+   * - `'empty'` — the heading and "Engir viðburðir framundan".
+   * - `'hidden'` — nothing at all.
+   */
+  section: 'list' | 'empty' | 'hidden'
+}
+
+/**
+ * Split the upcoming events between the spotlight and the list.
+ *
+ * A decision rather than a lookup, so it lives here and is tested directly —
+ * and this one earned that. The rule that matters is the third line: **the
+ * empty state is about the calendar, not about the list.** With exactly one
+ * event upcoming the spotlight takes it and the list is left with nothing, and
+ * an earlier version drew "Engir viðburðir framundan" two blocks below a
+ * spotlight announcing that very event. One event on the calendar is the
+ * ordinary state for this association, and this is the front page.
+ *
+ * So: the empty state fires on `upcoming` being empty, and a list that has been
+ * emptied by the spotlight drops the section instead of contradicting it.
+ * `/vidburdir` makes the same distinction for the same reason.
+ *
+ * Generic in the event type because none of this reads a field — it is entirely
+ * about how many there are and who took the first one.
+ */
+export function planEventSection<T>(
+  upcoming: readonly T[],
+  options: { spotlightNextEvent: boolean; showSection: boolean },
+): EventSectionPlan<T> {
+  const spotlight = options.spotlightNextEvent ? (upcoming[0] ?? null) : null
+  if (!options.showSection) return { spotlight, rows: [], section: 'hidden' }
+  if (upcoming.length === 0) return { spotlight, rows: [], section: 'empty' }
+
+  const rows = spotlight === null ? [...upcoming] : upcoming.slice(1)
+  return { spotlight, rows, section: rows.length > 0 ? 'list' : 'hidden' }
 }

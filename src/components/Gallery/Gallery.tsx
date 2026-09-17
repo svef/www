@@ -28,21 +28,25 @@ export interface GalleryProps {
    * Eight is what the design's own placeholder run shows.
    */
   placeholderCount?: number
-  /** Prefix for a thumbnail's accessible name, e.g. "Skoða mynd". */
   /**
    * Draw exactly this many columns instead of reflowing by tile width.
    *
-   * Purely presentational, and the one thing that differs between the two
-   * places this grid appears. `/myndir` shows a whole album of unknown size, so
-   * its tiles reflow by width. The home page's strip shows a fixed four and the
-   * export draws them across the content width — which a reflowing grid cannot
-   * do, because it fills the row with tracks whether or not there are tiles for
-   * them and leaves four small tiles bunched to the left.
+   * Purely presentational, and it works around *this component's* deviation
+   * from the export rather than a limitation of reflowing grids. The export
+   * draws both grids with `repeat(auto-fit, minmax(…, 1fr))`, and `auto-fit`
+   * collapses the tracks it does not fill — so the home page's four tiles span
+   * the content width in the export exactly as drawn. `.grid` uses `auto-fill`
+   * instead, a deliberate choice made for `/myndir` and documented there: an
+   * album of unknown size must not have three photos stretched across the page.
+   * That choice is right for an album and wrong for a fixed strip of four,
+   * which `auto-fill` leaves bunched to the left in a six-track row at 1440.
+   * Naming the count is the narrower fix — it changes nothing for `/myndir`.
    *
    * Collapses to two columns on a phone, as the reflowing grid does at the same
    * widths.
    */
   columns?: number
+  /** Prefix for a thumbnail's accessible name, e.g. "Skoða mynd". */
   viewLabel: string
   prevLabel: string
   nextLabel: string
