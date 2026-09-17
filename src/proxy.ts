@@ -5,6 +5,16 @@ import { LANDING_ONLY } from '@/lib/site-mode'
 // (unprefixed); English lives under /en. Internally every request maps to a
 // `[locale]` segment: /foo → rewrite to /is/foo (URL stays clean), /en/foo →
 // served as-is. /is/* is canonicalised back to /*.
+//
+// Because the rewrite changes the shape of the path, a URL here does not
+// describe its own route, and the App Router client cannot work one out
+// without asking the server. That is why `experimental.optimisticRouting` is
+// turned off in `next.config.ts` — see the comment there (svef/www#60).
+//
+// Note that this cannot be handled by branching on the request instead: Next
+// strips the Flight headers (`RSC`, `Next-Router-Prefetch`,
+// `Next-Router-Segment-Prefetch`) from `request.headers` in Proxy by design, so
+// an RSC prefetch is indistinguishable from a document request in here.
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
