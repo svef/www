@@ -50,7 +50,7 @@ const CONTACT_SUBMIT = /\bContactForm-module[\w-]*__submit\b/
 //
 // It reproduces on 4 routes × 2 locales = 8 URLs, and it comes from *two*
 // components, not one:
-//   - Button.module.scss `.primary`  — /, /vidburdir, /skraning
+//   - Button.module.scss `.primary`  — /, /vidburdir, /skraning (twice)
 //   - ContactForm.module.scss `.submit` — /hafa-samband
 // A fix to Button.module.scss alone would not clear /hafa-samband.
 const VIOLET_ON_BLACK_CONTRAST: KnownIssue = {
@@ -63,11 +63,12 @@ const VIOLET_ON_BLACK_CONTRAST: KnownIssue = {
     // Home renders two primary buttons ("Ganga í SVEF" and "Kaupa miða").
     '/': 2,
     '/vidburdir': 1,
-    '/skraning': 1,
+    // The featured tier's CTA and the application form's submit button.
+    '/skraning': 2,
     '/hafa-samband': 1,
     '/en': 2,
     '/en/vidburdir': 1,
-    '/en/skraning': 1,
+    '/en/skraning': 2,
     '/en/hafa-samband': 1,
   },
   matches: (node) =>

@@ -8,3 +8,9 @@
     grid-template-columns: 1fr;
   }
 }
+
+// The application panel sits directly under the tier grid, so the section's
+// own top padding would double the gap the export draws.
+.apply {
+  padding-top: 0;
+}

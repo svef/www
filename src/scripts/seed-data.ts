@@ -474,7 +474,12 @@ export const press: PressFixture[] = [
   { title: 'Ný stjórn tekin við hjá SVEF', outlet: 'Kjarninn' },
 ]
 
-export type TierFixture = { name: string; priceISK: number; benefits: string[] }
+export type TierFixture = {
+  name: string
+  priceISK: number
+  benefits: string[]
+  featured?: boolean
+}
 
 export const membership = {
   intro:
@@ -493,6 +498,8 @@ export const membership = {
     {
       name: 'Fyrirtækjaaðild',
       priceISK: 149000,
+      // The export draws this tier on the light panel with the yellow block.
+      featured: true,
       benefits: [
         'Nær yfir alla starfsmenn fyrirtækisins',
         'Frítt á viðburði SVEF',
@@ -502,6 +509,43 @@ export const membership = {
       ],
     },
   ] satisfies TierFixture[],
+}
+
+/**
+ * The English membership copy.
+ *
+ * Every other global is seeded in Icelandic only and lets Payload's field-level
+ * fallback show Icelandic on `/en`, behind the translation note. Membership is
+ * the exception because the English copy already exists — it was written into
+ * the page as a literal before the page read Payload, and moving the page onto
+ * the CMS should not lose it. It is keyed positionally against
+ * `membership.tiers`, so a tier added above must be added here too; the
+ * fixtures test asserts the two stay the same length.
+ */
+export const membershipEn = {
+  intro:
+    'Members get into SVEF events free, get a discount on the Web Awards and support professional work in the industry.',
+  signupCtaLabel: 'Apply for membership',
+  tiers: [
+    {
+      name: 'Individual',
+      benefits: [
+        'Free entry to all SVEF events (except the Web Awards)',
+        '20% off Icelandic Web Awards tickets',
+        'Access to the members’ community and mailing list',
+      ],
+    },
+    {
+      name: 'Company',
+      benefits: [
+        'Covers every employee of the company',
+        'Free entry to SVEF events',
+        '20% off submissions and tickets',
+        '5 free Icelandic Web Awards tickets',
+        'Priority access to events with limited seats',
+      ],
+    },
+  ],
 }
 
 export const awardsIntro: Block[] = [

@@ -1,77 +1,35 @@
 import { notFound } from 'next/navigation'
-import { isLocale, type Locale } from '@/lib/i18n'
+import { getDictionary, isLocale } from '@/lib/i18n'
+import { resolveContentLocale } from '@/lib/localized'
+import { getMembership } from '@/lib/content/membership'
+import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { Section } from '@/components/Section/Section'
 import { TierCard } from '@/components/TierCard/TierCard'
+import { MembershipForm } from '@/components/MembershipForm/MembershipForm'
+import { membershipLocales } from '@/lib/content/membership-mapping'
 import styles from './membership.module.scss'
 
-const content: Record<
-  Locale,
-  {
-    title: string
-    lead: string
-    perYear: string
-    cta: string
-    tiers: { name: string; price: string; benefits: string[]; featured?: boolean }[]
-  }
-> = {
-  is: {
-    title: 'Skráning',
-    lead: 'Fyrirtæki og einstaklingar sem starfa í vefmálum á Íslandi geta gengið í SVEF. Félagsgjaldið stendur undir viðburðum og starfi samtakanna.',
-    perYear: 'á ári',
-    cta: 'Ganga í SVEF',
-    tiers: [
-      {
-        name: 'Einstaklingsaðild',
-        price: '23.900 kr.',
-        benefits: [
-          'Frítt á alla viðburði (nema vefverðlaunin)',
-          '20% afsláttur af miðum á Íslensku vefverðlaunin',
-        ],
-      },
-      {
-        name: 'Fyrirtækjaaðild',
-        price: '149.000 kr.',
-        featured: true,
-        benefits: [
-          'Nær yfir alla starfsmenn fyrirtækisins',
-          'Frítt á alla viðburði',
-          '20% afsláttur af innsendingum og miðum',
-          '5 frímiðar á Íslensku vefverðlaunin',
-          'Forgangur á viðburði',
-        ],
-      },
-    ],
-  },
-  en: {
-    title: 'Membership',
-    lead: 'Companies and individuals working with the web in Iceland can join SVEF. Membership fees fund the events and work of the association.',
-    perYear: 'per year',
-    cta: 'Join SVEF',
-    tiers: [
-      {
-        name: 'Individual',
-        price: '23,900 ISK',
-        benefits: [
-          'Free entry to all events (except the Web Awards)',
-          '20% off Icelandic Web Awards tickets',
-        ],
-      },
-      {
-        name: 'Company',
-        price: '149,000 ISK',
-        featured: true,
-        benefits: [
-          'Covers all company employees',
-          'Free entry to all events',
-          '20% off submissions and tickets',
-          '5 free Web Awards tickets',
-          'Priority access to events',
-        ],
-      },
-    ],
-  },
-}
+/**
+ * Statically prerendered for both locales (`generateStaticParams` lives in the
+ * `[locale]` layout) and refreshed by ISR. No dynamic segment of its own, so
+ * there is nothing else to generate.
+ *
+ * Five minutes, the site-wide figure: the fee and the tier benefits change
+ * about once a year, so this page is a cached file in practice, and the number
+ * is only about how long a treasurer who has just corrected the fee has to look
+ * at the old one. The application panel below is a client component, which does
+ * not make the route dynamic — it is prerendered with the page and hydrated.
+ */
+export const revalidate = 300
+
+/**
+ * The tier CTAs jump here; the form panel carries the same id. A bare fragment
+ * rather than a path: the form is on this page, so linking to `/skraning#umsokn`
+ * from `/skraning` would be a self-link — a full navigation for a scroll, and a
+ * different href in each locale for the same destination.
+ */
+const FORM_ANCHOR = 'umsokn'
 
 export default async function MembershipPage({
   params,
@@ -80,27 +38,41 @@ export default async function MembershipPage({
 }) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
-  const base = locale === 'en' ? '/en' : ''
-  const c = content[locale]
+
+  const t = getDictionary(locale)
+  const membership = await getMembership(locale)
+  const contentLocale = resolveContentLocale(membershipLocales(membership), locale)
 
   return (
     <>
-      <PageHeader title={c.title} lead={c.lead} />
+      <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
+      <PageHeader title={t.membership.title} lead={membership.intro ?? undefined} />
       <Section>
         <div className={styles.tiers}>
-          {c.tiers.map((t) => (
+          {membership.tiers.map((tier) => (
             <TierCard
-              key={t.name}
-              name={t.name}
-              price={t.price}
-              priceNote={c.perYear}
-              benefits={t.benefits}
-              featured={t.featured}
-              ctaLabel={c.cta}
-              ctaHref={`${base}/hafa-samband`}
+              key={tier.name}
+              name={tier.name}
+              price={tier.price}
+              priceNote={t.membership.perYear}
+              benefits={tier.benefits.map((benefit) => benefit.text)}
+              featured={tier.featured}
+              ctaLabel={membership.ctaLabel ?? t.membership.form.title}
+              ctaHref={`#${FORM_ANCHOR}`}
             />
           ))}
         </div>
+      </Section>
+      <Section className={styles.apply}>
+        <MembershipForm
+          id={FORM_ANCHOR}
+          labels={t.membership.form}
+          // `site-settings.contactEmail` is the source of truth and defaults to
+          // this address; reading that global here would be a second query for
+          // one string, so it is passed in and swapped for the read when the
+          // site settings get a content module of their own.
+          contactEmail="svef@svef.is"
+        />
       </Section>
     </>
   )

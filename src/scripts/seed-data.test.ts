@@ -8,6 +8,7 @@ import {
   faq,
   galleries,
   membership,
+  membershipEn,
   news,
   press,
   richText,
@@ -75,6 +76,20 @@ describe('seed fixtures', () => {
       'islensku-vefverdlaunin-2026',
       'islensku-vefverdlaunin-2025',
     ])
+  })
+
+  it('keeps the English membership copy aligned with the Icelandic', () => {
+    // `membershipEn` is matched to `membership.tiers` by position when the
+    // fixtures are written, so a tier added to one and not the other would
+    // silently seed the wrong translation.
+    expect(membershipEn.tiers).toHaveLength(membership.tiers.length)
+    membership.tiers.forEach((tier, index) => {
+      expect(membershipEn.tiers[index]?.benefits).toHaveLength(tier.benefits.length)
+    })
+  })
+
+  it('carries the design’s highlighted tier', () => {
+    expect(membership.tiers.map((t) => Boolean(t.featured))).toEqual([false, true])
   })
 
   it('builds Lexical editor state with paragraphs and headings', () => {
