@@ -393,6 +393,23 @@ export const siteSettings = {
   // `social` group is left empty rather than pointed at guessed profiles.
 }
 
+/**
+ * English for the footer blurb, for the same reason as `membershipEn`: the
+ * copy already existed as a literal in the app (the i18n dictionary, which the
+ * footer used before it read Payload) and moving the footer onto the CMS should
+ * not lose it.
+ *
+ * It matters more here than elsewhere. The footer is on all sixteen pages, and
+ * a chrome string that lives only in a source file is one an editor cannot
+ * reach: rewriting the blurb in the admin would change every Icelandic page and
+ * silently change nothing in English. Seeding both locales means the ordinary
+ * field-level fallback applies and the footer behaves like every other surface.
+ */
+export const siteSettingsEn = {
+  footerBlurb:
+    'SVEF is the association of people who build the web in Iceland. We share knowledge and raise professional standards in the field.',
+}
+
 export const homePage = {
   heroSentence: 'Félag fólksins sem býr til vefinn á Íslandi.',
   heroHook:

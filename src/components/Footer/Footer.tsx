@@ -8,11 +8,19 @@ export type FooterSocial = SocialLink
 
 export function Footer({
   blurb,
+  blurbLang,
   email,
   socials,
   year,
 }: {
   blurb: string
+  /**
+   * Set only when `blurb` is not in the page's language — an English page
+   * whose blurb has not been translated yet. Marking it is the same rule the
+   * content pages follow: fallback copy is announced as what it is rather than
+   * read out in the wrong voice.
+   */
+  blurbLang?: string
   email: string
   /**
    * Only the networks the association actually has a URL for. An empty list is
@@ -28,7 +36,9 @@ export function Footer({
       <div className={styles.inner}>
         <div className={styles.brand}>
           <Logo />
-          <p className={styles.blurb}>{blurb}</p>
+          <p className={styles.blurb} lang={blurbLang}>
+            {blurb}
+          </p>
         </div>
         <div className={styles.contact}>
           <a href={`mailto:${email}`} className={styles.email}>

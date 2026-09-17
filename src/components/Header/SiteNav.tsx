@@ -69,18 +69,31 @@ export function SiteNav({
   children?: ReactNode
 }) {
   const pathname = usePathname()
-  /**
-   * The path the menu was opened on, or `null` for closed.
-   *
-   * Storing the path rather than a boolean is what closes the menu on
-   * navigation: following a link inside it changes `pathname`, so `open` is
-   * false on the very next render with no effect and no extra pass. Focus is
-   * deliberately not pulled back to the toggle — the reader has just moved to
-   * another page and belongs at the top of it.
-   */
-  const [openedAt, setOpenedAt] = useState<string | null>(null)
-  const open = openedAt !== null && openedAt === pathname
+  const [open, setOpen] = useState(false)
   const toggleRef = useRef<HTMLButtonElement>(null)
+
+  /**
+   * Close on navigation, by comparing the path against the last one rendered.
+   *
+   * This is React's documented way to reset state when an input changes, and
+   * the reason it is not an effect is that an effect would let one frame of the
+   * new page render with the menu still open. It is also not the obvious
+   * shortcut of storing *which* path the menu was opened on and deriving `open`
+   * from `openedAt === pathname`: that reads as stateless and tidy, and it is
+   * wrong, because the path is compared and never cleared. Going Back to a page
+   * the menu had been opened on would make the comparison true again and the
+   * menu would reopen by itself — with the focus trap re-arming and focus
+   * yanked onto the first item, on a page the reader did not ask for a menu on.
+   * A boolean cannot do that.
+   *
+   * Focus is deliberately not pulled back to the toggle here: the reader has
+   * just moved to another page and belongs at the top of it.
+   */
+  const [lastPath, setLastPath] = useState(pathname)
+  if (lastPath !== pathname) {
+    setLastPath(pathname)
+    setOpen(false)
+  }
 
   /**
    * `usePathname()` returns the internally rewritten `/is/...` until a
@@ -93,7 +106,7 @@ export function SiteNav({
   const isCurrent = (href: string) => (href || '/') === currentPath
 
   const close = useCallback((returnFocus: boolean) => {
-    setOpenedAt(null)
+    setOpen(false)
     if (returnFocus) toggleRef.current?.focus()
   }, [])
 
@@ -130,6 +143,14 @@ export function SiteNav({
     <FocusTrap active={open}>
       <div className={styles.menu}>
         {/*
+          Every link closes the menu on activation. The path reset above cannot
+          do it alone: tapping the item for the page you are already on — the
+          one carrying `aria-current` — does not change `pathname`, so without
+          this the menu would sit there open having apparently done nothing.
+          That link returns focus to the toggle, because the link it was on is
+          about to be `display: none`; the others do not, since the reader is
+          leaving the page anyway.
+
           The panel precedes the controls in the DOM, and sits below them on
           screen. That is not a focus-order problem: closed, it is
           `display: none` and out of the tab ring entirely; open, focus is
@@ -146,6 +167,7 @@ export function SiteNav({
                     className={styles.navLink}
                     aria-current={isCurrent(item.href) ? 'page' : undefined}
                     data-autofocus={index === 0 ? true : undefined}
+                    onClick={() => close(isCurrent(item.href))}
                   >
                     {item.label}
                   </Link>
@@ -157,6 +179,7 @@ export function SiteNav({
             href={contactHref}
             className={styles.contactLink}
             aria-current={isCurrent(contactHref) ? 'page' : undefined}
+            onClick={() => close(isCurrent(contactHref))}
           >
             {contactLabel}
           </Link>
@@ -169,7 +192,7 @@ export function SiteNav({
             className={styles.toggle}
             aria-expanded={open}
             aria-controls={PANEL_ID}
-            onClick={() => (open ? close(false) : setOpenedAt(pathname))}
+            onClick={() => (open ? close(false) : setOpen(true))}
           >
             <span className={styles.bars} aria-hidden="true">
               <span />

@@ -19,7 +19,10 @@ vi.mock('@/lib/payload', async () => {
 const settings = {
   id: 1,
   tagline: { is: 'Samtök vefiðnaðarins', en: null },
-  footerBlurb: { is: 'SVEF er félag fólks sem starfar við vefinn.', en: null },
+  footerBlurb: {
+    is: 'SVEF er félag fólks sem starfar við vefinn.',
+    en: 'SVEF is the association of people who build the web.',
+  },
   contactEmail: 'svef@svef.is',
   social: { facebook: null, instagram: null, x: null, linkedin: null },
 }
@@ -39,13 +42,28 @@ describe('getSiteChrome', () => {
   })
 
   it('returns the blurb written in the locale that was asked for', async () => {
-    expect((await getSiteChrome('is')).footerBlurb).toBe(settings.footerBlurb.is)
+    const chrome = await getSiteChrome('is')
+    expect(chrome.footerBlurb).toBe(settings.footerBlurb.is)
+    expect(chrome.footerBlurbLocale).toBe('is')
   })
 
-  it('reports no blurb rather than falling back to Icelandic', async () => {
-    // The chrome is not the page's content: the caller has a real English
-    // sentence of its own, which beats Icelandic under an English heading.
-    expect((await getSiteChrome('en')).footerBlurb).toBeNull()
+  it('uses the English blurb on an English page', async () => {
+    // Both locales are seeded, so this is the ordinary path rather than a
+    // fallback — the footer is on every page and an editor has to be able to
+    // change both halves of it.
+    const chrome = await getSiteChrome('en')
+    expect(chrome.footerBlurb).toBe(settings.footerBlurb.en)
+    expect(chrome.footerBlurbLocale).toBe('en')
+  })
+
+  it('falls back to Icelandic and says so when English is missing', async () => {
+    findGlobal.mockResolvedValue({
+      ...settings,
+      footerBlurb: { is: settings.footerBlurb.is, en: null },
+    })
+    const chrome = await getSiteChrome('en')
+    expect(chrome.footerBlurb).toBe(settings.footerBlurb.is)
+    expect(chrome.footerBlurbLocale).toBe('is')
   })
 
   it('treats a field left blank in the admin as unwritten', async () => {

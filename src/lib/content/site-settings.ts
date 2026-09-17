@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import { getPayload, publicReadArgs } from '@/lib/payload'
-import type { Locale } from '@/lib/i18n'
-import type { AllLocales } from '@/lib/localized'
+import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n'
+import { pickLocalized, type AllLocales } from '@/lib/localized'
 import type { SiteSetting } from '@/payload-types'
 
 /**
@@ -34,18 +34,29 @@ export interface SocialLink {
 
 export interface SiteChrome {
   /**
-   * The footer blurb for this locale, or `null` when the editor has not written
-   * one in it.
+   * The footer blurb, or `null` when the global has no blurb in any language.
    *
-   * Deliberately *not* run through `pickLocalized`: everywhere else an
-   * untranslated field falls back to Icelandic and the page says so with `lang`
-   * and a `TranslationNote`. That is right for an article, and wrong for the
-   * footer of every English page — the chrome is not the page's content, and
-   * there is a perfectly good English sentence in the dictionary. So the caller
-   * gets `null` and substitutes its own copy. The Icelandic text is still
-   * reachable: it is what an Icelandic read returns.
+   * Resolved through `pickLocalized` like every other localized field, so an
+   * English page with no English blurb shows the Icelandic one. Both languages
+   * are seeded (`siteSettingsEn` in `seed-data.ts`), so in practice the
+   * fallback is a safety net rather than the normal path — and that is the
+   * point. The footer is on all sixteen pages; sourcing its English half from a
+   * source file no editor can open would mean rewriting the blurb in the admin
+   * changed every Icelandic page and silently changed nothing in English.
+   *
+   * `null` is the empty-database case only, and the caller substitutes the
+   * dictionary's sentence so a fresh checkout still renders a footer.
    */
   footerBlurb: string | null
+  /**
+   * The language `footerBlurb` is actually written in.
+   *
+   * Reported for the same reason `NewsSummary.contentLocale` is: fallback copy
+   * is marked with `lang` rather than presented as the page's language. There
+   * is no `TranslationNote` to go with it — that belongs to the page's own
+   * content, inside `<main>`, and the footer is chrome.
+   */
+  footerBlurbLocale: Locale
   contactEmail: string
   /** Only the networks that have a real URL; see `toSocialLink`. */
   socials: SocialLink[]
@@ -81,9 +92,12 @@ function toSocialLink(network: (typeof NETWORKS)[number], raw: unknown): SocialL
 /**
  * Site-wide chrome content, cached per request.
  *
- * The cache matters here: this is called from the `[locale]` layout, which
- * renders above every page, and the contact page reads the same global for the
- * socials it shows in its body. One query per render either way.
+ * One caller today — the `[locale]` layout — so the cache buys nothing yet. It
+ * is here because this global is the natural home for anything association-wide
+ * and the second caller is already named: the contact page repeats the footer's
+ * address and social icons as `href="#"` placeholders, and svef/www#23 moves
+ * them onto this read. When it does, the layout renders above the page, so the
+ * two reads land in the same render and the cache is what keeps them one query.
  */
 export const getSiteChrome = cache(async function getSiteChrome(
   locale: Locale,
@@ -94,11 +108,14 @@ export const getSiteChrome = cache(async function getSiteChrome(
     ...publicReadArgs,
   })) as unknown as SiteSettingsAllLocales
 
-  const blurb = settings.footerBlurb?.[locale]
+  // `pickLocalized` already treats `''` — what Payload writes for a field
+  // opened in the admin and left blank — as missing.
+  const blurb = pickLocalized(settings.footerBlurb, locale)
   const email = settings.contactEmail?.trim()
 
   return {
-    footerBlurb: typeof blurb === 'string' && blurb.trim() !== '' ? blurb : null,
+    footerBlurb: blurb.value?.trim() ? blurb.value : null,
+    footerBlurbLocale: blurb.value?.trim() ? blurb.locale : DEFAULT_LOCALE,
     contactEmail: email || FALLBACK_EMAIL,
     socials: NETWORKS.map((network) =>
       toSocialLink(network, settings.social?.[network.field]),

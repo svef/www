@@ -1,6 +1,11 @@
+import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { getDictionary } from '@/lib/i18n'
 import { LOCALES, PAGES, settle, urlFor } from './pages'
+import { triage } from './a11y/known-issues'
+
+// The same rule sets the page sweep uses.
+const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 
 /**
  * The header at phone width.
@@ -77,6 +82,83 @@ test.describe('header at 390px', () => {
       await expect(page).toHaveURL(new RegExp(`${urlFor(locale, '/frettir')}$`))
       await expect(panel(page)).toBeHidden()
       await expect(toggle(page)).toHaveAttribute('aria-expanded', 'false')
+    })
+
+    /**
+     * Going Back must not reopen the menu.
+     *
+     * The first version of this component derived `open` from a stored path
+     * (`openedAt === pathname`), which is true again the moment you return to
+     * that path. Open the menu, tap through to two pages, press Back, and the
+     * menu was waiting for you: expanded, pushing the page down, the focus trap
+     * re-armed and focus on the first item. Nothing in the unit tests could see
+     * it — a mocked `usePathname` has no history — so the regression test has
+     * to be here, with a real Back button.
+     */
+    test(`${locale}: Back does not reopen the menu`, async ({ page }) => {
+      await page.goto(urlFor(locale, ''))
+      await settle(page)
+
+      await toggle(page).click()
+      await panel(page).getByRole('link', { name: t.nav.news }).click()
+      await expect(page).toHaveURL(new RegExp(`${urlFor(locale, '/frettir')}$`))
+
+      await toggle(page).click()
+      await panel(page).getByRole('link', { name: t.nav.events }).click()
+      await expect(page).toHaveURL(new RegExp(`${urlFor(locale, '/vidburdir')}$`))
+
+      await page.goBack()
+      await expect(page).toHaveURL(new RegExp(`${urlFor(locale, '/frettir')}$`))
+      await expect(panel(page)).toBeHidden()
+      await expect(toggle(page)).toHaveAttribute('aria-expanded', 'false')
+      // Nothing inside the menu may hold focus on a page nobody opened it on.
+      expect(
+        await page.evaluate(() =>
+          Boolean(document.getElementById('site-menu')?.contains(document.activeElement)),
+        ),
+      ).toBe(false)
+    })
+
+    // Tapping the item for the page you are already on does not change the
+    // path, so the close cannot come from the navigation.
+    test(`${locale}: the current page's own item closes the menu`, async ({ page }) => {
+      await page.goto(urlFor(locale, '/frettir'))
+      await settle(page)
+      await toggle(page).click()
+      await panel(page).getByRole('link', { name: t.nav.news }).click()
+
+      await expect(panel(page)).toBeHidden()
+      await expect(toggle(page)).toBeFocused()
+    })
+
+    /**
+     * axe over the *open* menu.
+     *
+     * `playwright.config.ts` pins `devices['Desktop Chrome']` and the page
+     * sweep sets no viewport of its own, so it only ever sees this header as a
+     * plain row — the toggle is `display: none` and the panel is
+     * `display: contents`. The biggest new surface in svef/www#26 would
+     * otherwise never be swept in a real browser at all. Same reasoning as the
+     * open-lightbox test in `a11y/axe.spec.ts`, which svef/www#59 added for
+     * exactly this gap and which found a real violation when it landed.
+     */
+    test(`${locale}: the open menu has no axe violations at 390px`, async ({ page }) => {
+      const url = urlFor(locale, '/um-svef')
+      await page.goto(url)
+      await settle(page)
+      await toggle(page).click()
+      await expect(panel(page)).toBeVisible()
+      // Sweep the settled panel: axe reads computed colours, and mid-animation
+      // they are whatever the compositor happened to blend.
+      await expect
+        .poll(() => panel(page).evaluate((node) => getComputedStyle(node).opacity), {
+          message: 'the menu never finished its open animation',
+        })
+        .toBe('1')
+
+      const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
+      const { unexpected } = triage(results.violations, url)
+      expect(unexpected.join('\n\n'), `axe violations in the open menu on ${url}`).toBe('')
     })
   }
 

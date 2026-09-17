@@ -1,3 +1,4 @@
+import type React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { axe } from 'vitest-axe'
 import { render, screen, waitFor } from '@testing-library/react'
@@ -21,9 +22,8 @@ const items = [
   { href: '/frettir', label: is.nav.news },
 ]
 
-function renderNav(path = '/is') {
-  pathname.current = path
-  return render(
+function markup() {
+  return (
     <MantineProvider forceColorScheme="dark">
       <header>
         <SiteNav
@@ -40,8 +40,19 @@ function renderNav(path = '/is') {
       <main>
         <button type="button">Annað</button>
       </main>
-    </MantineProvider>,
+    </MantineProvider>
   )
+}
+
+function renderNav(path = '/is') {
+  pathname.current = path
+  return render(markup())
+}
+
+/** A client-side navigation: `usePathname()` changes and the tree re-renders. */
+function navigate(rerender: (ui: React.ReactElement) => void, path: string) {
+  pathname.current = path
+  rerender(markup())
 }
 
 const toggle = () => screen.getByRole('button', { name: is.nav.menu })
@@ -137,6 +148,48 @@ describe('SiteNav', () => {
 
     await user.click(screen.getByRole('button', { name: 'Annað' }))
     expect(toggle()).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('closes when a link inside it is followed', async () => {
+    const user = userEvent.setup()
+    const { rerender } = renderNav('/is')
+    await user.click(toggle())
+    await user.click(screen.getByRole('link', { name: is.nav.news }))
+
+    navigate(rerender, '/is/frettir')
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('stays closed when the reader goes Back to a page it was opened on', async () => {
+    // The bug this replaced derived `open` from `openedAt === pathname`, which
+    // is true again the moment you return to that path: the menu reopened by
+    // itself, re-armed the focus trap and pulled focus onto the first item.
+    const user = userEvent.setup()
+    const { rerender } = renderNav('/is/frettir')
+    await user.click(toggle())
+    expect(toggle()).toHaveAttribute('aria-expanded', 'true')
+
+    navigate(rerender, '/is/vidburdir')
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false')
+
+    navigate(rerender, '/is/frettir')
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false')
+    // Whether focus is *also* released is a browser question — jsdom has no
+    // layout, so nothing is blurred by becoming `display: none`. The e2e suite
+    // presses Back for real and checks the panel is hidden there.
+  })
+
+  it('closes when the item for the current page is activated', async () => {
+    // No navigation happens, so nothing changes `pathname` — without the
+    // link's own `onClick` the menu would sit there having done nothing.
+    const user = userEvent.setup()
+    renderNav('/is/frettir')
+    await user.click(toggle())
+    await user.click(screen.getByRole('link', { name: is.nav.news }))
+
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false')
+    // That link is about to be `display: none`, so focus has to go somewhere.
+    expect(toggle()).toHaveFocus()
   })
 
   it('marks the current page with aria-current', () => {

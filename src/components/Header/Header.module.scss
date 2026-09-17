@@ -5,7 +5,13 @@ $nav-breakpoint: 900px;
 .header {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
+  // The export draws two different gaps: clamp(16px, 2.5vw, 32px) between the
+  // logo and the nav, and 14px inside the right-hand group of "Hafa samband"
+  // and the language pill. The panel is `display: contents`, so the contact
+  // link is a direct child here and would otherwise take the header's gap —
+  // which is how the right-hand pair drifted to 32px. The header carries the
+  // smaller gap and `.nav` makes up the difference on its own side.
+  gap: var(--space-4);
   padding: var(--space-4) var(--space-6);
   background: var(--bg);
   flex-wrap: wrap;
@@ -30,6 +36,7 @@ $nav-breakpoint: 900px;
 
 .nav {
   flex: 1;
+  margin-left: var(--space-4);
 }
 
 .list {
@@ -200,7 +207,6 @@ $nav-breakpoint: 900px;
 
 @media (max-width: $nav-breakpoint) {
   .header {
-    gap: var(--space-4);
     padding: var(--space-4);
   }
 
@@ -230,6 +236,7 @@ $nav-breakpoint: 900px;
 
   .nav {
     flex: none;
+    margin-left: 0;
   }
 
   .list {

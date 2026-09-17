@@ -87,12 +87,18 @@ export default async function LocaleLayout({
           */}
           <main id="main">{children}</main>
           {/*
-            `footerBlurb` is only used when the editor has written it in *this*
-            locale; otherwise the dictionary's own sentence is used rather than
-            the Icelandic fallback. See the note on `SiteChrome.footerBlurb`.
+            The dictionary's sentence is the empty-database fallback only: both
+            languages are seeded into the global, and an untranslated blurb
+            falls back to Icelandic and is marked with `lang` like any other
+            fallback copy. See the note on `SiteChrome.footerBlurb`.
           */}
           <Footer
             blurb={chrome.footerBlurb ?? t.footer.blurb}
+            blurbLang={
+              chrome.footerBlurb && chrome.footerBlurbLocale !== locale
+                ? chrome.footerBlurbLocale
+                : undefined
+            }
             email={chrome.contactEmail}
             socials={chrome.socials}
             year={2026}
