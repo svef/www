@@ -302,30 +302,93 @@ export const boardMembers: BoardMemberFixture[] = [
   { name: 'Jón Andri Óskarsson', role: 'Varamaður · nýir vefir', order: 8 },
 ]
 
-export type AwardCategoryFixture = { slug: string; name: string; order: number }
+export type AwardCategoryFixture = {
+  slug: string
+  name: string
+  /**
+   * The English name, where the repo already had one.
+   *
+   * The export is Icelandic only, so these are not read from it — they are the
+   * strings the awards page carried as a literal before it was wired to Payload,
+   * kept so that switching the source of truth is not a downgrade for an English
+   * reader. `Efnistök & texti` and `Nýliði ársins` are new: the literal never had
+   * them, so their English is new too and the board should confirm it.
+   */
+  nameEn: string
+  order: number
+}
 
 /** The 13 categories, in the export's order. */
 export const awardCategories: AwardCategoryFixture[] = [
-  { slug: 'vefur-arsins', name: 'Vefur ársins', order: 1 },
-  { slug: 'honnun-og-vidmot', name: 'Hönnun & viðmót', order: 2 },
-  { slug: 'fyrirtaekjavefur-litid', name: 'Fyrirtækjavefur — lítið', order: 3 },
-  { slug: 'fyrirtaekjavefur-medalstort', name: 'Fyrirtækjavefur — meðalstórt', order: 4 },
-  { slug: 'fyrirtaekjavefur-stort', name: 'Fyrirtækjavefur — stórt', order: 5 },
-  { slug: 'markadsvefur', name: 'Markaðsvefur', order: 6 },
-  { slug: 'soluvefur', name: 'Söluvefur', order: 7 },
-  { slug: 'snjalllausn', name: 'Snjalllausn', order: 8 },
-  { slug: 'vefkerfi', name: 'Vefkerfi', order: 9 },
-  { slug: 'app-arsins', name: 'App ársins', order: 10 },
-  { slug: 'adgengi', name: 'Aðgengi', order: 11 },
-  { slug: 'efnistok-og-texti', name: 'Efnistök & texti', order: 12 },
-  { slug: 'nylidi-arsins', name: 'Nýliði ársins', order: 13 },
+  { slug: 'vefur-arsins', name: 'Vefur ársins', nameEn: 'Site of the Year', order: 1 },
+  { slug: 'honnun-og-vidmot', name: 'Hönnun & viðmót', nameEn: 'Design & Interface', order: 2 },
+  {
+    slug: 'fyrirtaekjavefur-litid',
+    name: 'Fyrirtækjavefur — lítið',
+    nameEn: 'Corporate site — small',
+    order: 3,
+  },
+  {
+    slug: 'fyrirtaekjavefur-medalstort',
+    name: 'Fyrirtækjavefur — meðalstórt',
+    nameEn: 'Corporate site — medium',
+    order: 4,
+  },
+  {
+    slug: 'fyrirtaekjavefur-stort',
+    name: 'Fyrirtækjavefur — stórt',
+    nameEn: 'Corporate site — large',
+    order: 5,
+  },
+  { slug: 'markadsvefur', name: 'Markaðsvefur', nameEn: 'Marketing site', order: 6 },
+  { slug: 'soluvefur', name: 'Söluvefur', nameEn: 'Sales site', order: 7 },
+  { slug: 'snjalllausn', name: 'Snjalllausn', nameEn: 'Digital solution', order: 8 },
+  { slug: 'vefkerfi', name: 'Vefkerfi', nameEn: 'Web system', order: 9 },
+  { slug: 'app-arsins', name: 'App ársins', nameEn: 'App of the Year', order: 10 },
+  { slug: 'adgengi', name: 'Aðgengi', nameEn: 'Accessibility', order: 11 },
+  { slug: 'efnistok-og-texti', name: 'Efnistök & texti', nameEn: 'Content & copy', order: 12 },
+  { slug: 'nylidi-arsins', name: 'Nýliði ársins', nameEn: 'Newcomer of the Year', order: 13 },
 ]
 
-export type AwardEditionFixture = { year: number; ceremonyDate?: string; venue?: string }
+export type AwardEditionFixture = {
+  year: number
+  ceremonyDate?: string
+  venue?: string
+  headline?: string
+  headlineEn?: string
+  submissionDeadline?: string
+  submissionUrl?: string
+  ticketsOnSaleFrom?: string
+  ticketUrl?: string
+}
 
-/** The years the export's archive tabs offer, plus the upcoming 2026 ceremony. */
+/**
+ * The years the export's archive tabs offer, plus the upcoming 2026 ceremony.
+ *
+ * Only 2026 carries ceremony detail, because only 2026 has any in the export:
+ * its awards page draws one ceremony block, for the edition that has not
+ * happened yet. 2020–2024 are years and nothing else until the historical import
+ * (#31) fills them in, and the archive renders them that way rather than
+ * pretending otherwise.
+ *
+ * The two URLs are fixture stand-ins on the association's own domain. The export
+ * draws both buttons as `href="#"`, so there is no real destination to copy; the
+ * board sets the real ones in the CMS. They are here rather than omitted because
+ * a ceremony block with no buttons would not be the block the design specifies,
+ * and the buttons are what most of the work is.
+ */
 export const awardEditions: AwardEditionFixture[] = [
-  { year: 2026, ceremonyDate: '2026-11-14T19:30:00.000Z', venue: 'Harpa, Silfurberg' },
+  {
+    year: 2026,
+    ceremonyDate: '2026-11-14T19:30:00.000Z',
+    venue: 'Harpa, Silfurberg',
+    headline: '14. nóvember í Hörpu',
+    headlineEn: '14 November at Harpa',
+    submissionDeadline: '2026-10-10T23:59:00.000Z',
+    submissionUrl: 'https://svef.is/innsending',
+    ticketsOnSaleFrom: '2026-09-01T09:00:00.000Z',
+    ticketUrl: 'https://svef.is/midar',
+  },
   { year: 2025, ceremonyDate: '2025-11-15T12:00:00.000Z', venue: 'Harpa' },
   { year: 2024 },
   { year: 2023 },
@@ -590,7 +653,16 @@ export const membershipEn = {
   ],
 }
 
+/**
+ * The awards page's lead paragraph.
+ *
+ * One paragraph, not two. The export's second sentence — the ceremony date,
+ * the submission deadline and the ticket on-sale date — is what the ceremony
+ * block directly below now renders, from the 2026 edition's own fields. Leaving
+ * it here too would print the same three facts twice on one screen, and would
+ * mean an editor who moved the ceremony had to remember to edit prose as well
+ * as the date.
+ */
 export const awardsIntro: Block[] = [
   'Árleg verðlaun SVEF fyrir framúrskarandi vefi, öpp og stafrænar lausnir. Dómnefnd fagfólks metur innsendingar í 13 flokkum — og verðlaunin eru afhent í Hörpu.',
-  'Hátíðin 2026 fer fram 14. nóvember í Hörpu. Innsendingar eru opnar til 10. október og miðar á hátíðina fara í sölu 1. september.',
 ]

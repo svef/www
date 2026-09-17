@@ -4,14 +4,15 @@
  *
  * `links.spec.ts` asserts that every internal link on every page goes somewhere
  * real. The site today has a number of links that do not, because the page they
- * should point at has not been built yet: the awards year links go nowhere, and
- * the contact page's social icons are `href="#"` placeholders.
+ * should point at has not been built yet: the contact page's social icons are
+ * `href="#"` placeholders.
  *
- * Three entries have already been retired. #24 built the article route and the
+ * Four entries have already been retired. #24 built the article route and the
  * news cards went; #19 built `/vidburdir/[slug]` and the event rows went; #26
  * sourced the footer's four social placeholders from the `site-settings`
  * global — omitting a network with no URL rather than linking it to nothing —
- * and they went too. Each time the guard test below went red first, which is
+ * and they went too; #20 built the winners archive and the awards year links
+ * went with it. Each time the guard test below went red first, which is
  * exactly the lifecycle this file is designed to force.
  *
  * Those were undocumented. Listing them here does two things: it makes them
@@ -63,16 +64,6 @@ function bothLocales(paths: readonly string[], count: number): Record<string, nu
   return out
 }
 
-// The awards page lists past editions as links, but the winners archive has no
-// route yet (#20 builds it, #31 imports the data).
-const AWARDS_YEAR_SELF_LINK: KnownDeadLink = {
-  issue: 20,
-  why: 'Awards year links point at the awards index; the winners archive route is svef/www#20.',
-  problem: 'self-link',
-  urls: bothLocales(['/vefverdlaunin'], 3),
-  matches: (link) => link.where === 'main',
-}
-
 // `hafa-samband/page.tsx` repeats the same four placeholders in the page body.
 const CONTACT_SOCIAL_PLACEHOLDERS: KnownDeadLink = {
   issue: 23,
@@ -82,10 +73,7 @@ const CONTACT_SOCIAL_PLACEHOLDERS: KnownDeadLink = {
   matches: (link) => link.where === 'main',
 }
 
-export const KNOWN_DEAD_LINKS: readonly KnownDeadLink[] = [
-  AWARDS_YEAR_SELF_LINK,
-  CONTACT_SOCIAL_PLACEHOLDERS,
-]
+export const KNOWN_DEAD_LINKS: readonly KnownDeadLink[] = [CONTACT_SOCIAL_PLACEHOLDERS]
 
 export function findKnownDeadLink(
   problem: LinkProblem,

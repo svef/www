@@ -1,0 +1,227 @@
+// The page's lead paragraph, set larger than body prose the way the export's
+// hero paragraph is, and measured so it stays readable at full width.
+// The export keeps the lead in the hero, directly under the <h1>. The page
+// renders it as a <Section> instead, because it is CMS rich text and <Section>
+// is where prose lives everywhere else on the site — so the section drops its
+// own top padding and the two read as one block again.
+.leadSection {
+  padding-top: 0;
+}
+
+.lead {
+  max-width: 54ch;
+  font-size: var(--text-lg);
+}
+
+// ---------------------------------------------------------------------------
+// Ceremony block
+// ---------------------------------------------------------------------------
+
+// Its own <section> rather than a <Section>, because <Section> owns the page's
+// heading rhythm and this block is a panel with its own heading inside it.
+// Matches <Section>'s horizontal padding so the panel lines up with the grids
+// above and below it.
+.ceremonySection {
+  padding: 0 var(--space-6) var(--space-16);
+}
+
+.ceremonyWrap {
+  position: relative;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.ceremonyMotif {
+  position: absolute;
+  right: -20px;
+  top: -28px;
+  width: 160px;
+  height: 84px;
+  background: var(--color-violet);
+
+  @media (max-width: 640px) {
+    right: 0;
+    width: 120px;
+    height: 56px;
+  }
+}
+
+.ceremony {
+  position: relative;
+  display: grid;
+  // `min()` floor for the same reason as CategoryGrid: a bare 260px track
+  // cannot collapse below itself on a 320px screen.
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: var(--space-8);
+  align-items: center;
+  background: var(--color-white);
+  color: var(--color-black);
+  padding: var(--space-12);
+
+  @media (max-width: 640px) {
+    padding: var(--space-8) var(--space-6);
+  }
+}
+
+.ceremonyEyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-violet);
+}
+
+.ceremonyTitle {
+  margin: var(--space-3) 0 0;
+  overflow-wrap: break-word;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: var(--weight-black);
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-black);
+}
+
+.ceremonyLine {
+  margin: var(--space-3) 0 0;
+  max-width: 44ch;
+  line-height: 1.65;
+  // The panel is Shy White, so the muted text token (built for the dark canvas)
+  // would fail contrast here. This is the export's own value.
+  color: rgb(9 6 12 / 68%);
+}
+
+.ceremonyActions {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  // One column at narrow widths: pushed right under the heading the buttons read
+  // as belonging to nothing.
+  @media (max-width: 640px) {
+    justify-content: flex-start;
+  }
+}
+
+// The two calls to action sit on white, where the site's dark-canvas button
+// styles invert. Violet on white and an outlined dark button are what the export
+// draws, and both clear AA against Shy White.
+.ceremonyCta {
+  background: var(--color-violet);
+  color: var(--color-white);
+  border-color: var(--color-violet);
+
+  &:hover {
+    background: var(--color-violet-bright);
+    border-color: var(--color-violet-bright);
+    color: var(--color-white);
+  }
+}
+
+.ceremonyCtaGhost {
+  color: var(--color-black);
+  border: 2px solid var(--color-black);
+
+  &:hover {
+    background: rgb(9 6 12 / 8%);
+    color: var(--color-black);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Winners archive
+// ---------------------------------------------------------------------------
+
+.archiveHead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.archiveTitle {
+  margin: 0;
+  // Matches <Section>'s own title, which this head replaces so the
+  // "Íslenska eingöngu" marker can sit on the baseline beside it.
+  font-size: var(--text-3xl);
+  // "verðlaunahafa" set at 2.75rem is wider than a 320px screen on its own, so
+  // without this the heading pushed the page 19px sideways — Icelandic only,
+  // because "Winners archive" is two short words.
+  //
+  // `min-width: 0` is the half that actually does the work. As a flex item the
+  // heading's automatic minimum size is its min-content width, and
+  // `overflow-wrap: break-word` deliberately does not reduce min-content — so
+  // the wrapping rules alone left the box its full 315px and the page still
+  // scrolled sideways.
+  min-width: 0;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+.icelandicOnly {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}
+
+.years {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin: 0 0 var(--space-8);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid rgb(252 251 254 / 12%);
+}
+
+.year {
+  background: none;
+  color: var(--fg);
+  border: 1px solid rgb(252 251 254 / 20%);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: border-color 0.16s ease;
+
+  &:hover {
+    border-color: var(--color-violet);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.yearActive {
+  background: var(--color-violet);
+  border-color: var(--color-violet);
+}
+
+// The row's height comes from its tallest card; these two lines pass it down so
+// every card in the row is that tall.
+.winners > li {
+  display: flex;
+}
+
+.winners > li > * {
+  flex: 1;
+}
+
+.winners {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: var(--space-6);
+}

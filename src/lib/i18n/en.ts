@@ -78,6 +78,30 @@ export const en = {
     },
     icelandicOnly: 'Published in Icelandic only',
   },
+  awards: {
+    title: 'The Icelandic Web Awards',
+    eyebrow: (year: number) => `Since 2000 · year ${year - 2000}`,
+    categoriesTitle: 'Categories',
+    ceremony: {
+      eyebrow: (year: number) => `The ${year} ceremony`,
+      headline: (date: string, venue: string | null) =>
+        venue ? `${date} · ${venue}` : date,
+      submissions: (date: string) => `Submissions are open until ${date}.`,
+      ticketsOnSale: (date: string) => `Tickets go on sale ${date}.`,
+      submit: 'Submit a site',
+      buyTickets: 'Buy tickets',
+    },
+    archive: {
+      title: 'Winners archive',
+      yearsLabel: 'Award year',
+      winnersLabel: (year: number) => `${year} winners`,
+      empty: {
+        title: (year: number) => `No winners recorded for ${year}`,
+        body: 'Past winners appear here once the historical archive has been imported.',
+      },
+    },
+    icelandicOnly: 'Published in Icelandic only',
+  },
   photos: {
     title: 'Photos',
     lead: 'Photo albums from SVEF events. Click a photo to enlarge — arrow keys move between photos, Esc closes.',
