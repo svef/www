@@ -73,6 +73,8 @@ export const is = {
     empty: {
       title: 'Engin myndasöfn enn',
       body: 'Hér birtast myndir frá viðburðum SVEF um leið og þær eru komnar í hús.',
+    },
+  },
   membership: {
     title: 'Skráning',
     // The design writes the fee as "23.900 kr. / ár".

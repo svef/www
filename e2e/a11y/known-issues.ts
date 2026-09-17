@@ -6,16 +6,16 @@ type Node = Result['nodes'][number]
  * Accepted, *tracked* axe violations.
  *
  * The rule here is deliberately narrow. A blanket `disableRules(['color-contrast'])`
- * would hide every future contrast regression as well as this one, and a suite
- * everybody learns to ignore is worse than no suite. So an entry names one rule,
- * one colour pair, *which elements* may carry it, the exact number of them on each
- * URL, and the issue that will remove it.
+ * would hide every future regression as well as the one being excused, and a
+ * suite everybody learns to ignore is worse than no suite. So an entry names one
+ * rule, one colour pair, *which elements* may carry it, the exact number of them
+ * on each URL, and the issue that will remove it.
  *
- * The element predicate matters. Matching on the colour pair alone would accept
- * `--color-black` on `--color-violet` anywhere — and that is the site's most-used
- * brand combination, so a plain `<p>` in those colours would have been waved
- * through on any allowlisted URL. The predicate pins the violation to the two
- * components that actually produce it, and the count pins how many.
+ * The element predicate matters. Matching on a colour pair alone accepts that
+ * pair anywhere, including on elements that had nothing to do with the issue —
+ * a plain `<p>` in the site's brand colours would be waved through on any
+ * allowlisted URL. The predicate pins the violation to the components that
+ * actually produce it, and the count pins how many.
  *
  * Three tests enforce it (see `axe.spec.ts`):
  *
@@ -38,54 +38,23 @@ export interface KnownIssue {
   matches: (node: Node) => boolean
 }
 
-// `.primary` in Button.module.scss — `color: var(--color-black)` on
-// `background: var(--color-violet)`.
-const PRIMARY_BUTTON = /\bButton-module[\w-]*__primary\b/
-// `.submit` in ContactForm.module.scss — a *separate* component that happens to
-// set the same two tokens by hand. Fixing Button.module.scss alone leaves this one.
-const CONTACT_SUBMIT = /\bContactForm-module[\w-]*__submit\b/
+/**
+ * Empty, and that is the point.
+ *
+ * The one entry this file ever held — svef/www#34, `--color-black` on
+ * `--color-violet` in `Button.module.scss` `.primary` and
+ * `ContactForm.module.scss` `.submit` — is gone because the violation is
+ * fixed. It was never a design decision to make: the export writes those
+ * buttons as `background:#8917E1;color:#FCFBFE`, so the implementation had
+ * simply transcribed the wrong token. The guard tests in `axe.spec.ts` went
+ * red the moment it was corrected, which is exactly what they are for.
+ *
+ * With nothing listed, every axe violation on every swept URL fails the run.
+ * Keep it that way: an entry here is a debt, and it needs an issue number, a
+ * predicate narrow enough to name the elements that produce it, and a count.
+ */
+export const KNOWN_ISSUES: readonly KnownIssue[] = []
 
-// #09060C on #8917E1 is 3.13:1, short of the 4.5:1 AA needs for text this size.
-// It is a design-token decision rather than a page bug, so it is fixed once in #34.
-//
-// It reproduces on 4 routes × 2 locales = 8 URLs, and it comes from *two*
-// components, not one:
-//   - Button.module.scss `.primary`  — /, /vidburdir, /skraning (twice)
-//   - ContactForm.module.scss `.submit` — /hafa-samband
-// A fix to Button.module.scss alone would not clear /hafa-samband.
-const VIOLET_ON_BLACK_CONTRAST: KnownIssue = {
-  issue: 34,
-  rule: 'color-contrast',
-  why:
-    '#09060C on #8917E1 is 3.13:1 (needs 4.5:1), from Button.module.scss `.primary` ' +
-    'and ContactForm.module.scss `.submit`. Design-token fix, tracked in svef/www#34.',
-  urls: {
-    // Home renders two primary buttons ("Ganga í SVEF" and "Kaupa miða").
-    '/': 2,
-    '/vidburdir': 1,
-    // The featured tier's CTA and the application form's submit button.
-    '/skraning': 2,
-    '/hafa-samband': 1,
-    '/en': 2,
-    '/en/vidburdir': 1,
-    '/en/skraning': 2,
-    '/en/hafa-samband': 1,
-  },
-  matches: (node) =>
-    (PRIMARY_BUTTON.test(node.html) || CONTACT_SUBMIT.test(node.html)) &&
-    node.any.some(
-      (check) =>
-        check.id === 'color-contrast' &&
-        normaliseColour(check.data?.fgColor) === '#09060c' &&
-        normaliseColour(check.data?.bgColor) === '#8917e1',
-    ),
-}
-
-export const KNOWN_ISSUES: readonly KnownIssue[] = [VIOLET_ON_BLACK_CONTRAST]
-
-function normaliseColour(value: unknown): string {
-  return typeof value === 'string' ? value.trim().toLowerCase() : ''
-}
 
 export interface Triage {
   /** Violations that match a known, tracked issue on a URL that allows it. */

@@ -15,6 +15,7 @@ const doc = {
       id: 'a',
       priceISK: 23900,
       featured: false,
+      ctaLabel: { is: 'Skrá mig', en: 'Sign me up' },
       name: { is: 'Einstaklingsaðild', en: 'Individual' },
       benefits: [
         { id: 'b1', benefit: { is: 'Frítt á viðburði', en: 'Free entry' } },
@@ -26,6 +27,8 @@ const doc = {
       id: 'b',
       priceISK: 149000,
       featured: true,
+      // No CTA of its own — falls back to the page-wide label.
+      ctaLabel: { is: '', en: '' },
       name: { is: 'Fyrirtækjaaðild', en: null },
       benefits: null,
     },
@@ -55,6 +58,23 @@ describe('toMembership', () => {
       'Fyrirtækjaaðild',
     ])
     expect(membership.tiers.map((t) => t.price)).toEqual(['23.900 kr.', '149.000 kr.'])
+  })
+
+  it('gives each tier its own call to action', () => {
+    // Two adjacent links to the same anchor: identical names would read as
+    // "Sækja um aðild, Sækja um aðild" in a screen reader's link list.
+    expect(toMembership(doc, 'is').tiers.map((t) => t.ctaLabel)).toEqual([
+      'Skrá mig',
+      'Sækja um aðild',
+    ])
+    expect(toMembership(doc, 'en').tiers.map((t) => t.ctaLabel)).toEqual(['Sign me up', 'Apply'])
+  })
+
+  it('reports the locale of the label it actually used', () => {
+    const [individual, company] = toMembership(doc, 'en').tiers
+    expect(individual.ctaLabelLocale).toBe('en')
+    // Fell back to the page-wide label, which does have English.
+    expect(company.ctaLabelLocale).toBe('en')
   })
 
   it('carries the featured flag through from the CMS', () => {

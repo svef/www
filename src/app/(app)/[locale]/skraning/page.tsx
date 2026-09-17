@@ -57,7 +57,7 @@ export default async function MembershipPage({
               priceNote={t.membership.perYear}
               benefits={tier.benefits.map((benefit) => benefit.text)}
               featured={tier.featured}
-              ctaLabel={membership.ctaLabel ?? t.membership.form.title}
+              ctaLabel={tier.ctaLabel || t.membership.form.title}
               ctaHref={`#${FORM_ANCHOR}`}
             />
           ))}

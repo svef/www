@@ -22,7 +22,10 @@
 
 .primary {
   background: var(--color-violet);
-  color: var(--color-black);
+  // Shy White, not Blakety Black. The export writes every solid violet button
+  // as `background:#8917E1;color:#FCFBFE` — 6.22:1, comfortably AA. Black on
+  // violet is 3.14:1 and was a transcription slip, not a brand decision.
+  color: var(--color-white);
   border-radius: var(--radius-md);
 
   &:hover {

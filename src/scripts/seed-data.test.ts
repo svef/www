@@ -92,6 +92,11 @@ describe('seed fixtures', () => {
     expect(membership.tiers.map((t) => Boolean(t.featured))).toEqual([false, true])
   })
 
+  it('gives each tier the call to action the export writes for it', () => {
+    expect(membership.tiers.map((t) => t.ctaLabel)).toEqual(['Skrá mig', 'Skrá fyrirtæki'])
+    expect(membershipEn.tiers.every((t) => t.ctaLabel)).toBe(true)
+  })
+
   it('builds Lexical editor state with paragraphs and headings', () => {
     const value = richText(['Halló', { h2: 'Fyrirsögn' }])
     expect(value.root.type).toBe('root')

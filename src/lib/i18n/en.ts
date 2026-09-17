@@ -59,6 +59,8 @@ export const en = {
     empty: {
       title: 'No albums yet',
       body: 'Photos from SVEF events appear here as soon as they are in.',
+    },
+  },
   membership: {
     title: 'Membership',
     perYear: '/ year',

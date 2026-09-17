@@ -22,8 +22,9 @@ export type MembershipAllLocales = Omit<
   intro: AllLocales<string>
   signupCtaLabel: AllLocales<string>
   tiers?:
-    | (Omit<TierArray, 'name' | 'benefits'> & {
+    | (Omit<TierArray, 'name' | 'ctaLabel' | 'benefits'> & {
         name: AllLocales<string>
+        ctaLabel: AllLocales<string>
         benefits?: (Omit<BenefitArray, 'benefit'> & { benefit: AllLocales<string> })[] | null
       })[]
     | null
@@ -38,6 +39,9 @@ export type MembershipBenefit = {
 export type MembershipTier = {
   name: string
   nameLocale: Locale
+  /** The tier's own CTA, or the page-wide one when the tier has none. */
+  ctaLabel: string
+  ctaLabelLocale: Locale
   /** Already formatted for the locale, e.g. `23.900 kr.` / `23,900 ISK`. */
   price: string
   benefits: MembershipBenefit[]
@@ -85,9 +89,15 @@ export function toMembership(doc: MembershipAllLocales, locale: Locale): Members
     ctaLabelLocale: ctaLabel.value ? ctaLabel.locale : locale,
     tiers: (doc.tiers ?? []).map((tier) => {
       const name = pickLocalized(tier.name, locale)
+      // A tier with no CTA of its own falls back to the page-wide label rather
+      // than rendering a button with no words on it.
+      const tierCta = pickLocalized(tier.ctaLabel, locale)
+      const cta = tierCta.value ? tierCta : ctaLabel
       return {
         name: name.value ?? '',
         nameLocale: name.locale,
+        ctaLabel: cta.value ?? '',
+        ctaLabelLocale: cta.value ? cta.locale : locale,
         price: formatFee(tier.priceISK, locale),
         featured: Boolean(tier.featured),
         benefits: (tier.benefits ?? [])
@@ -115,6 +125,7 @@ export function membershipLocales(membership: Membership): Locale[] {
     membership.ctaLabelLocale,
     ...membership.tiers.flatMap((tier) => [
       tier.nameLocale,
+      tier.ctaLabelLocale,
       ...tier.benefits.map((benefit) => benefit.locale),
     ]),
   ]

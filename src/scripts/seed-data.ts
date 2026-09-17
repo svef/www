@@ -479,6 +479,7 @@ export type TierFixture = {
   priceISK: number
   benefits: string[]
   featured?: boolean
+  ctaLabel: string
 }
 
 export const membership = {
@@ -489,6 +490,7 @@ export const membership = {
     {
       name: 'Einstaklingsaðild',
       priceISK: 23900,
+      ctaLabel: 'Skrá mig',
       benefits: [
         'Frítt á alla viðburði SVEF (nema vefverðlaunin)',
         '20% afsláttur af miðum á Íslensku vefverðlaunin',
@@ -500,6 +502,7 @@ export const membership = {
       priceISK: 149000,
       // The export draws this tier on the light panel with the yellow block.
       featured: true,
+      ctaLabel: 'Skrá fyrirtæki',
       benefits: [
         'Nær yfir alla starfsmenn fyrirtækisins',
         'Frítt á viðburði SVEF',
@@ -529,6 +532,7 @@ export const membershipEn = {
   tiers: [
     {
       name: 'Individual',
+      ctaLabel: 'Sign me up',
       benefits: [
         'Free entry to all SVEF events (except the Web Awards)',
         '20% off Icelandic Web Awards tickets',
@@ -537,6 +541,7 @@ export const membershipEn = {
     },
     {
       name: 'Company',
+      ctaLabel: 'Register a company',
       benefits: [
         'Covers every employee of the company',
         'Free entry to SVEF events',

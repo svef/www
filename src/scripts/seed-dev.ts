@@ -248,6 +248,7 @@ async function seed(payload: Payload): Promise<void> {
       signupCtaLabel: membership.signupCtaLabel,
       tiers: membership.tiers.map((tier) => ({
         benefits: tier.benefits.map((benefit) => ({ benefit })),
+        ctaLabel: tier.ctaLabel,
         featured: tier.featured ?? false,
         name: tier.name,
         priceISK: tier.priceISK,
@@ -276,6 +277,7 @@ async function seed(payload: Payload): Promise<void> {
           id: benefit.id,
           benefit: membershipEn.tiers[index]?.benefits[benefitIndex] ?? benefit.benefit,
         })),
+        ctaLabel: membershipEn.tiers[index]?.ctaLabel ?? tier.ctaLabel,
         name: membershipEn.tiers[index]?.name ?? tier.name,
       })),
     } as never,

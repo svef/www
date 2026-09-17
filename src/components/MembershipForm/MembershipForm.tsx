@@ -127,9 +127,17 @@ export function MembershipForm({ labels, contactEmail, id }: MembershipFormProps
 
   // Clearing the field's error as it is corrected, rather than only on the next
   // submit, keeps the message from outliving the problem.
+  //
+  // The key is *removed*, not set to `undefined`. `Object.keys` counts a key
+  // whose value is `undefined`, so leaving one behind kept the live region
+  // announcing "something is missing" over a form with nothing missing — a
+  // screen-reader user told the form is broken when it is not. `hasErrors`
+  // below reads the values rather than the keys for the same reason.
   const set = (patch: Partial<Values>, cleared?: keyof FieldErrors) => {
     setValues((v) => ({ ...v, ...patch }))
-    if (cleared) setErrors((e) => ({ ...e, [cleared]: undefined }))
+    if (cleared) {
+      setErrors(({ [cleared]: _removed, ...rest }) => rest)
+    }
     setOpened(false)
   }
 
@@ -139,7 +147,7 @@ export function MembershipForm({ labels, contactEmail, id }: MembershipFormProps
     event.preventDefault()
     const found = validate(values, labels)
     setErrors(found)
-    if (Object.keys(found).length > 0) {
+    if (Object.values(found).some(Boolean)) {
       setOpened(false)
       setMailto(null)
       // In the order the fields are read, not the order they were checked.
@@ -153,6 +161,8 @@ export function MembershipForm({ labels, contactEmail, id }: MembershipFormProps
     setOpened(true)
     window.location.href = href
   }
+
+  const hasErrors = Object.values(errors).some(Boolean)
 
   const describedBy = (field: 'name' | 'email' | 'company', extra?: string) =>
     [errors[field] ? `${ids[field]}-error` : null, extra].filter(Boolean).join(' ') || undefined
@@ -270,7 +280,7 @@ export function MembershipForm({ labels, contactEmail, id }: MembershipFormProps
         {/* One live region for both outcomes, so a screen reader hears the
             result of a submit wherever it landed. */}
         <div className={styles.status} aria-live="polite">
-          {Object.keys(errors).length > 0 && <p className={styles.error}>{labels.errors.summary}</p>}
+          {hasErrors && <p className={styles.error}>{labels.errors.summary}</p>}
           {opened && (
             <p className={styles.opened}>
               {labels.opened}{' '}

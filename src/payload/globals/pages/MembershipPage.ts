@@ -26,6 +26,23 @@ export const MembershipPage: GlobalConfig = {
           admin: { description: 'Give this tier the highlighted treatment.' },
         },
         {
+          /**
+           * The tier's own call to action — "Skrá mig" on the individual tier,
+           * "Skrá fyrirtæki" on the company one, as the export writes them.
+           *
+           * Per tier rather than one label for the page because the two CTAs
+           * sit side by side and point at the same form: identical names on
+           * adjacent links read as "Sækja um aðild, Sækja um aðild" in a screen
+           * reader's link list, with nothing to choose between them.
+           *
+           * Optional — `signupCtaLabel` below is the fallback, so a tier added
+           * without one still renders a button.
+           */
+          name: 'ctaLabel',
+          type: 'text',
+          localized: true,
+        },
+        {
           name: 'benefits',
           type: 'array',
           fields: [{ name: 'benefit', type: 'text', required: true, localized: true }],
