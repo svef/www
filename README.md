@@ -163,11 +163,12 @@ An exclusion cannot quietly outlive its reason.
 |---|---|
 | `e2e/a11y/known-issues.ts` | Accepted axe violations, scoped to one rule, the specific elements that produce them, and an exact node count per URL (`#34`) |
 | `e2e/known-links.ts` | Links that are knowingly dead — placeholders for pages not yet built (`#19`, `#20`, `#26`, `#23`) |
-| `e2e/known-console-errors.ts` | Accepted console errors (`#60`) |
+| `e2e/known-console-errors.ts` | Accepted console errors — currently empty |
 
 Anything outside these fails the run. The mechanism works: entries for `#59` (the
-lightbox close button) and `#24` (news card self-links) were deleted when those
-issues landed, because their guard tests went red and said so.
+lightbox close button), `#24` (news card self-links) and `#60` (the RSC prefetch
+404 on English pages) were deleted when those issues landed, because their guard
+tests went red and said so.
 
 ### CI
 
