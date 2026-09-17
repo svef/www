@@ -39,6 +39,7 @@ import {
   galleries,
   homePage,
   membership,
+  membershipEn,
   news,
   press,
   richText,
@@ -247,11 +248,40 @@ async function seed(payload: Payload): Promise<void> {
       signupCtaLabel: membership.signupCtaLabel,
       tiers: membership.tiers.map((tier) => ({
         benefits: tier.benefits.map((benefit) => ({ benefit })),
+        ctaLabel: tier.ctaLabel,
+        featured: tier.featured ?? false,
         name: tier.name,
         priceISK: tier.priceISK,
       })),
     } as never,
     locale: 'is',
+    slug: 'membership-page',
+  })
+
+  // English for the membership page only. Writing a second locale means reading
+  // the row ids back first: Payload matches array rows by `id`, so posting the
+  // English rows without them would replace the Icelandic array rather than
+  // translate it, and the localized fields written a moment ago would be gone.
+  const membershipIs = await payload.findGlobal({
+    slug: 'membership-page',
+    locale: 'is',
+    depth: 0,
+  })
+  await payload.updateGlobal({
+    data: {
+      intro: membershipEn.intro,
+      signupCtaLabel: membershipEn.signupCtaLabel,
+      tiers: (membershipIs.tiers ?? []).map((tier, index) => ({
+        id: tier.id,
+        benefits: (tier.benefits ?? []).map((benefit, benefitIndex) => ({
+          id: benefit.id,
+          benefit: membershipEn.tiers[index]?.benefits[benefitIndex] ?? benefit.benefit,
+        })),
+        ctaLabel: membershipEn.tiers[index]?.ctaLabel ?? tier.ctaLabel,
+        name: membershipEn.tiers[index]?.name ?? tier.name,
+      })),
+    } as never,
+    locale: 'en',
     slug: 'membership-page',
   })
 

@@ -75,6 +75,41 @@ export const is = {
       body: 'Hér birtast myndir frá viðburðum SVEF um leið og þær eru komnar í hús.',
     },
   },
+  membership: {
+    title: 'Skráning',
+    // The design writes the fee as "23.900 kr. / ár".
+    perYear: '/ ár',
+    form: {
+      title: 'Sækja um aðild',
+      note: 'Við sendum greiðsluupplýsingar í tölvupósti innan tveggja virkra daga.',
+      // Says, before anything is typed, that the button opens an email rather
+      // than filing an application. The form must not imply a submission
+      // channel that does not exist yet.
+      emailOnly:
+        'Umsóknir berast okkur í tölvupósti sem stendur. Þegar þú sendir umsóknina opnast hún tilbúin í tölvupóstforritinu þínu — hún telst ekki móttekin fyrr en þú sendir póstinn sjálf/ur.',
+      name: 'Nafn',
+      email: 'Netfang',
+      company: 'Fyrirtæki',
+      companyHint: 'Valfrjálst fyrir einstaklingsaðild',
+      type: 'Tegund aðildar',
+      typeIndividual: 'Einstaklingsaðild',
+      typeCompany: 'Fyrirtækjaaðild',
+      submit: 'Senda umsókn',
+      errors: {
+        summary: 'Það vantar eitthvað í umsóknina:',
+        name: 'Sláðu inn nafn.',
+        email: 'Sláðu inn netfang.',
+        emailInvalid: 'Netfangið virðist ekki vera rétt skrifað.',
+        company: 'Sláðu inn nafn fyrirtækisins.',
+      },
+      // Shown after the mail client has been opened. Deliberately never says
+      // the application was received.
+      opened:
+        'Umsóknin ætti að hafa opnast í tölvupóstforritinu þínu. Hún berst okkur ekki fyrr en þú sendir póstinn.',
+      fallback: 'Opnaðist ekkert? Opna umsóknina handvirkt',
+      mailSubject: 'Umsókn um aðild að SVEF',
+    },
+  },
   footer: {
     rights: 'Öll réttindi áskilin',
     blurb:

@@ -61,6 +61,35 @@ export const en = {
       body: 'Photos from SVEF events appear here as soon as they are in.',
     },
   },
+  membership: {
+    title: 'Membership',
+    perYear: '/ year',
+    form: {
+      title: 'Apply for membership',
+      note: 'We send payment details by email within two working days.',
+      emailOnly:
+        'Applications reach us by email for now. Sending opens the finished application in your email app — it does not reach us until you send that email yourself.',
+      name: 'Name',
+      email: 'Email',
+      company: 'Company',
+      companyHint: 'Optional for individual membership',
+      type: 'Membership type',
+      typeIndividual: 'Individual',
+      typeCompany: 'Company',
+      submit: 'Send application',
+      errors: {
+        summary: 'Something is missing from the application:',
+        name: 'Enter a name.',
+        email: 'Enter an email address.',
+        emailInvalid: 'That email address does not look right.',
+        company: 'Enter the company name.',
+      },
+      opened:
+        'The application should have opened in your email app. It does not reach us until you send that email.',
+      fallback: 'Nothing opened? Open the application manually',
+      mailSubject: 'SVEF membership application',
+    },
+  },
   footer: {
     rights: 'All rights reserved',
     blurb:
