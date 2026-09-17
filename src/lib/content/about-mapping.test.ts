@@ -133,7 +133,6 @@ describe('toAboutContent', () => {
         label: 'PNG',
         url: 'https://assets.svef.is/logo.png',
         filesize: 2048,
-        mimeType: 'image/png',
       },
     ])
   })

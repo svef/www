@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { getDictionary, isLocale, DEFAULT_LOCALE } from '@/lib/i18n'
+import { formatFileSize } from '@/lib/filesize'
 import { getBylaws, LAWS_REPO_URL } from '@/lib/bylaws'
 import { remarkHeadingLevels } from '@/lib/remark-heading-levels'
 import { resolveContentLocale } from '@/lib/localized'
@@ -67,6 +68,36 @@ export default async function AboutPage({
   const storyLang = about.storyLocale === locale ? undefined : about.storyLocale
   const langOf = (of: typeof locale) => (of === locale ? undefined : of)
 
+  /**
+   * The inline "Icelandic only" marker beside the bylaws and the press list —
+   * on the English page only.
+   *
+   * There it tells an English reader why those two sections are not in their
+   * language. On the Icelandic page it has nothing to say: every section is
+   * already in the reader's language, so the marker states the obvious at best
+   * and reads as "these sections are restricted" at worst.
+   *
+   * The design export is not an argument for showing it there. Its equivalents
+   * are annotations written in English — "Icelandic-only, rendered from Markdown"
+   * beside Lög SVEF, "Press, IS-only" beside Fjölmiðlar — in the same muted
+   * style and position as "FAQ accordion" beside Spurt og svarað, which is
+   * plainly a note to the implementer rather than copy.
+   */
+  const icelandicOnly =
+    locale === DEFAULT_LOCALE ? null : (
+      <p className={styles.icelandicOnly}>{t.about.icelandicOnly}</p>
+    )
+
+  /**
+   * "hjá" / "at", joining a board role to the employer it belongs to.
+   *
+   * Taken from the role's own language rather than the page's: on `/en` a role
+   * that fell back to Icelandic keeps an Icelandic connector, so the phrase reads
+   * as one language instead of half-translated. It sits inside the same
+   * `lang`-marked span as the role for the same reason.
+   */
+  const companyPrefix = (of: typeof locale) => getDictionary(of).about.boardCompanyPrefix
+
   // The note is the first thing inside `<main>`, so the skip link lands on it
   // rather than past it.
   return (
@@ -85,6 +116,8 @@ export default async function AboutPage({
               key={member.name}
               name={member.name}
               role={member.role}
+              company={member.company}
+              companyPrefix={companyPrefix(member.roleLocale)}
               portrait={member.portrait}
               roleLang={langOf(member.roleLocale)}
               accent={ACCENTS[i % ACCENTS.length]}
@@ -115,7 +148,7 @@ export default async function AboutPage({
           <div className={styles.bylawsColumn}>
             <div className={styles.sectionHead}>
               <h2 className={styles.sectionTitle}>{t.about.bylawsTitle}</h2>
-              <p className={styles.icelandicOnly}>{t.about.icelandicOnly}</p>
+              {icelandicOnly}
             </div>
             {bylaws.status === 'ok' ? (
               <div className={styles.bylaws} lang={DEFAULT_LOCALE}>
@@ -135,7 +168,7 @@ export default async function AboutPage({
             <div>
               <div className={styles.sectionHead}>
                 <h2 className={styles.sectionTitle}>{t.about.pressTitle}</h2>
-                <p className={styles.icelandicOnly}>{t.about.icelandicOnly}</p>
+                {icelandicOnly}
               </div>
               {about.press.length === 0 ? (
                 <p className={styles.asideEmpty}>{t.about.press.empty}</p>
@@ -174,13 +207,22 @@ export default async function AboutPage({
                 <p className={styles.asideEmpty}>{t.about.brand.empty}</p>
               ) : (
                 <ul className={styles.brandDownloads}>
-                  {about.brandAssets.map((asset) => (
-                    <li key={asset.url}>
-                      <a className={styles.download} href={asset.url} download>
-                        {asset.label} <span aria-hidden="true">↓</span>
-                      </a>
-                    </li>
-                  ))}
+                  {about.brandAssets.map((asset) => {
+                    // `filesize` is what Payload recorded for the upload. It can
+                    // be missing on a media document restored from a dump, and a
+                    // button that claimed "0 B" would be worse than one that says
+                    // nothing, so the size is dropped rather than guessed.
+                    const size = formatFileSize(asset.filesize, locale)
+                    return (
+                      <li key={asset.url}>
+                        <a className={styles.download} href={asset.url} download>
+                          {asset.label}
+                          {size && <span className={styles.downloadSize}>{size}</span>}
+                          <span aria-hidden="true">↓</span>
+                        </a>
+                      </li>
+                    )
+                  })}
                 </ul>
               )}
             </div>

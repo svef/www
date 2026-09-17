@@ -33,6 +33,7 @@ export const en = {
   about: {
     title: 'About SVEF',
     boardTitle: 'The board',
+    boardCompanyPrefix: 'at',
     faqTitle: 'FAQ',
     bylawsTitle: 'Bylaws',
     bylawsUnavailable:

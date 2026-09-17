@@ -177,8 +177,20 @@ a.pressLink:focus-visible .pressTitle {
   gap: var(--space-3);
 }
 
+// The size sits beside the label, in the same muted grey as other secondary
+// text. `text-transform: none` because `.download` uppercases its label and
+// "12 kB" must not become "12 KB" — that is a different unit.
+.downloadSize {
+  color: var(--fg-muted);
+  font-weight: var(--weight-regular);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 .download {
-  display: inline-block;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
   border: 1px solid rgb(252 251 254 / 25%);
   padding: var(--space-3) var(--space-4);
   color: var(--fg);

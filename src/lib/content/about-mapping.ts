@@ -75,9 +75,14 @@ export type PressLinkView = {
 export type BrandAssetView = {
   label: string
   url: string
-  /** Bytes, when Payload recorded it — shown so a download says what it costs. */
+  /**
+   * Bytes as Payload recorded them, or `null` when it did not.
+   *
+   * The page prints this beside the download label, so someone on a phone can
+   * see what a logo pack costs before tapping it. The export's buttons carry no
+   * size, so this is an addition to the design rather than a transcription of it.
+   */
   filesize: number | null
-  mimeType: string | null
 }
 
 export type AboutContent = {
@@ -159,7 +164,6 @@ function toBrandAsset(
     label: row.label,
     url: file.url,
     filesize: file.filesize ?? null,
-    mimeType: file.mimeType ?? null,
   }
 }
 

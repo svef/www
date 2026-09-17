@@ -37,6 +37,8 @@ export const is = {
   about: {
     title: 'Um SVEF',
     boardTitle: 'Stjórn SVEF',
+    // Joins a board role to the employer it belongs to: "… hjá Dacoda".
+    boardCompanyPrefix: 'hjá',
     faqTitle: 'Spurt og svarað',
     bylawsTitle: 'Lög SVEF',
     bylawsUnavailable:

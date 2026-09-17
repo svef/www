@@ -26,6 +26,20 @@ export interface BoardCardProps {
   accent?: Accent
   /** Portrait from Payload/R2. A striped placeholder stands in when there is none. */
   portrait?: BoardCardPortrait | null
+  /**
+   * Employer, appended to the role the way the design draws it —
+   * "Formaður · UX/UI hönnuður hjá JúnÍ Digital".
+   *
+   * Optional because most of the board has no employer recorded; those cards
+   * show the role on its own, unchanged.
+   */
+  company?: string | null
+  /**
+   * The word joining role and employer, in the role's own language ("hjá" /
+   * "at"). Only used when `company` is set; without it the two are simply
+   * juxtaposed rather than joined by a word from the wrong language.
+   */
+  companyPrefix?: string
   /** Language of `role`, when it is not the page's. */
   roleLang?: string
 }
@@ -50,8 +64,14 @@ export function BoardCard({
   role,
   accent = 'violet',
   portrait,
+  company,
+  companyPrefix,
   roleLang,
 }: BoardCardProps) {
+  // One line, not two: the employer is part of what the person does, and the
+  // design sets the whole clause in the same muted caption type.
+  const roleLine = company ? [role, companyPrefix, company].filter(Boolean).join(' ') : role
+
   return (
     <figure className={styles.card}>
       <div className={styles.photo} aria-hidden={portrait ? undefined : 'true'}>
@@ -70,7 +90,7 @@ export function BoardCard({
       </div>
       <figcaption className={styles.caption}>
         <span className={styles.role} lang={roleLang}>
-          {role}
+          {roleLine}
         </span>
         <span className={styles.name}>{name}</span>
       </figcaption>
