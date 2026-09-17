@@ -34,6 +34,26 @@ export const is = {
       copied: 'Hlekkur afritaður',
     },
   },
+  about: {
+    title: 'Um SVEF',
+    boardTitle: 'Stjórn SVEF',
+    faqTitle: 'Spurt og svarað',
+    bylawsTitle: 'Lög SVEF',
+    bylawsUnavailable:
+      'Ekki tókst að sækja lög SVEF að svo stöddu. Lögin eru óbreytt og má lesa í heild sinni hjá upprunanum:',
+    pressTitle: 'Fjölmiðlar',
+    press: {
+      empty: 'Engin umfjöllun skráð enn.',
+    },
+    brand: {
+      title: 'Merki og efni',
+      blurb: 'Merki SVEF í svörtu og hvítu, ásamt litapallettu.',
+      empty: 'Skráarsafnið er í vinnslu. Hafðu samband við svef@svef.is ef þig vantar merkið.',
+    },
+    // Marks a section that is published in Icelandic only as an editorial
+    // decision — not a translation that is on its way.
+    icelandicOnly: 'Íslenska eingöngu',
+  },
   footer: {
     rights: 'Öll réttindi áskilin',
     blurb:

@@ -456,6 +456,24 @@ export const faq: FaqFixture[] = [
   },
 ]
 
+export type PressFixture = { title: string; outlet: string; url?: string }
+
+/**
+ * The three press mentions the export's "Fjölmiðlar" list shows, verbatim.
+ *
+ * The export draws every row as `href="#"`, so it carries headline and outlet
+ * but no URL — the same situation as the footer's social icons, and handled the
+ * same way: the fixtures transcribe what the design has rather than inventing
+ * links to RÚV, Vísir and Kjarninn that may not exist. `url` is optional in the
+ * model and the page renders an unlinked row without it, so the section is
+ * exercised as it will look once real links are entered.
+ */
+export const press: PressFixture[] = [
+  { title: 'Vefur ársins 2025 valinn í Hörpu', outlet: 'RÚV' },
+  { title: 'Aðgengi á íslenskum vefjum batnar hægt', outlet: 'Vísir' },
+  { title: 'Ný stjórn tekin við hjá SVEF', outlet: 'Kjarninn' },
+]
+
 export type TierFixture = { name: string; priceISK: number; benefits: string[] }
 
 export const membership = {
