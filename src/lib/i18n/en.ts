@@ -49,6 +49,18 @@ export const en = {
     },
     icelandicOnly: 'Published in Icelandic only',
   },
+  photos: {
+    title: 'Photos',
+    lead: 'Photo albums from SVEF events. Click a photo to enlarge — arrow keys move between photos, Esc closes.',
+    viewPhoto: 'View photo',
+    prevPhoto: 'Previous photo',
+    nextPhoto: 'Next photo',
+    photoCount: (n: number) => `${n} ${n === 1 ? 'photo' : 'photos'}`,
+    empty: {
+      title: 'No albums yet',
+      body: 'Photos from SVEF events appear here as soon as they are in.',
+    },
+  },
   footer: {
     rights: 'All rights reserved',
     blurb:

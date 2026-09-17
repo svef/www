@@ -33,8 +33,14 @@ test.describe('axe sweep', () => {
       await page.goto(url)
       await settle(page)
 
+      // One album per region, each with its own grid and its own lightbox, so
+      // this opens a named album's rather than matching a thumbnail label that
+      // now repeats down the page. The label is a pattern because a photo with
+      // a caption is named "Skoða mynd: <caption>" rather than by position.
       await page
-        .getByRole('button', { name: locale === 'is' ? 'Skoða mynd 1' : 'View photo 1' })
+        .getByRole('region', { name: 'Íslensku vefverðlaunin 2025' })
+        .getByRole('button', { name: locale === 'is' ? /^Skoða mynd/ : /^View photo/ })
+        .first()
         .click()
       const dialog = page.getByRole('dialog')
       await expect(dialog).toBeVisible()

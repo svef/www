@@ -2,42 +2,51 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  // The export's grid: square tiles that reflow by width rather than by a fixed
+  // column count, so one rule covers phone and desktop.
+  //
+  // `auto-fill` rather than the export's `auto-fit`, which collapses the tracks
+  // it does not fill and stretches the rest — an album of three photos would
+  // draw three tiles the width of the page. The export never shows that because
+  // its placeholder run is always eight; a real album is whatever was uploaded.
+  // The two behave identically from seven photos up at this width, which is why
+  // the difference is invisible in the export — it is not a correction waiting
+  // to be reverted.
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-4);
-
-  @media (max-width: 640px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
 }
 
 .thumb {
+  position: relative; // `next/image` with `fill` positions against this.
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1;
+  overflow: hidden;
   border: 0;
   padding: 0;
-  cursor: pointer;
+  cursor: zoom-in;
   background:
     repeating-linear-gradient(
-      45deg,
-      rgba(192, 139, 245, 0.1),
-      rgba(192, 139, 245, 0.1) 12px,
-      transparent 12px,
-      transparent 24px
-    ),
-    var(--surface-3);
+      135deg,
+      var(--surface-3) 0 8px,
+      var(--surface-4) 8px 16px
+    );
   transition: outline 0.12s ease;
 
   &:hover {
-    outline: 2px solid var(--color-violet);
-    outline-offset: -2px;
+    outline: 3px solid var(--color-violet);
+    outline-offset: -3px;
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-violet-light);
-    outline-offset: -2px;
+    outline: 3px solid var(--color-violet-light);
+    outline-offset: -3px;
   }
+}
+
+.thumbImage {
+  object-fit: cover;
 }
 
 .stage {
@@ -46,18 +55,47 @@
   gap: var(--space-4);
 }
 
-.full {
+// The enlarged photo. Deliberately carries neither an aspect ratio nor a
+// background: event albums are a mix of portraits, landscapes and the
+// occasional panorama, and a fixed ratio letterboxes every one of them that is
+// not that ratio. `max-height` is what keeps a tall portrait from pushing the
+// dialog past the viewport, and `contain` then fits the picture inside whatever
+// box is left — against the dialog's own surface, not against placeholder
+// texture.
+.fullImage {
+  // `0 1 auto` rather than `flex: 1`: the box hugs the picture instead of
+  // stretching to the full stage width and leaving empty gutters beside a
+  // portrait. `margin-inline: auto` then centres whatever is left over.
+  flex: 0 1 auto;
+  min-width: 0;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: min(70vh, 40rem);
+  margin-inline: auto;
+  object-fit: contain;
+}
+
+// The stand-in for an album whose photos are not uploaded yet. This is the only
+// element the striped texture belongs on, and the 3:2 box is what gives the
+// dialog a shape when there is no picture to take one from.
+.placeholder {
   flex: 1;
-  aspect-ratio: 4 / 3;
+  min-width: 0;
+  aspect-ratio: 3 / 2;
   background:
     repeating-linear-gradient(
-      45deg,
-      rgba(137, 23, 225, 0.12),
-      rgba(137, 23, 225, 0.12) 14px,
-      transparent 14px,
-      transparent 28px
-    ),
-    var(--surface-2);
+      135deg,
+      var(--surface-3) 0 10px,
+      var(--surface-4) 10px 20px
+    );
+}
+
+.caption {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--fg-muted);
 }
 
 .nav {
