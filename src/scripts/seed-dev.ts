@@ -33,6 +33,7 @@ import {
   awardEditions,
   awardWinners,
   awardsIntro,
+  awardsIntroEn,
   boardMembers,
   events,
   faq,
@@ -188,6 +189,7 @@ async function seed(payload: Payload): Promise<void> {
       'award-categories',
       { slug: { equals: category.slug } },
       { name: category.name, order: category.order, slug: category.slug },
+      { name: category.nameEn },
     )
     categoryIds.set(category.slug, id)
   }
@@ -201,9 +203,15 @@ async function seed(payload: Payload): Promise<void> {
       { year: { equals: edition.year } },
       {
         ceremonyDate: edition.ceremonyDate ?? null,
+        headline: edition.headline ?? null,
+        submissionDeadline: edition.submissionDeadline ?? null,
+        submissionUrl: edition.submissionUrl ?? null,
+        ticketUrl: edition.ticketUrl ?? null,
+        ticketsOnSaleFrom: edition.ticketsOnSaleFrom ?? null,
         venue: edition.venue ?? null,
         year: edition.year,
       },
+      edition.headlineEn ? { headline: edition.headlineEn } : undefined,
     )
     editionIds.set(edition.year, id)
   }
@@ -302,6 +310,11 @@ async function seed(payload: Payload): Promise<void> {
   await payload.updateGlobal({
     data: { intro: richText(awardsIntro) } as never,
     locale: 'is',
+    slug: 'awards-page',
+  })
+  await payload.updateGlobal({
+    data: { intro: richText(awardsIntroEn) } as never,
+    locale: 'en',
     slug: 'awards-page',
   })
 }

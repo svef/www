@@ -1,18 +1,21 @@
+// `auto-fit` with a floor, which is what the export draws: five tracks at the
+// full 1200px measure, three on a tablet, one on a phone, with no breakpoints to
+// keep in step with the type scale.
+//
+// The floor is wrapped in `min()` deliberately. A bare `minmax(220px, 1fr)`
+// cannot go below 220px even when the container is narrower, so at 320px the
+// grid was 53px wider than the viewport and pushed the whole page sideways —
+// Icelandic only, because "Fyrirtækjavefur — meðalstórt" is the widest thing on
+// the page and English never reached the floor. `min(220px, 100%)` lets the
+// track collapse to the container instead.
 .grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   border-top: 1px solid var(--surface-4);
   border-left: 1px solid var(--surface-4);
-
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  @media (max-width: 640px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 .cell {
@@ -20,6 +23,10 @@
   flex-direction: column;
   justify-content: space-between;
   gap: var(--space-8);
+  // A grid item's automatic minimum size is its *content's* minimum — one long
+  // unbreakable Icelandic compound — not zero. Without this the cell refuses to
+  // shrink below that word and takes the page with it.
+  min-width: 0;
   min-height: 8rem;
   padding: var(--space-4) var(--space-4) var(--space-6);
   border-right: 1px solid var(--surface-4);
@@ -37,4 +44,13 @@
   font-weight: var(--weight-bold);
   font-size: var(--text-lg);
   line-height: 1.2;
+  // Belt and braces with `min-width: 0` above: the track can now shrink, and a
+  // compound longer than the track breaks rather than spilling out of it.
+  //
+  // `overflow-wrap` alone, deliberately. `hyphens: auto` would break at nicer
+  // points, but `SpotlightRow.module.scss` records it tested and doing nothing:
+  // Chromium ships no Icelandic dictionary, so it is a declaration that reads
+  // like a safety net and is not one. The cost is that a name longer than the
+  // track breaks mid-stem.
+  overflow-wrap: break-word;
 }

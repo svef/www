@@ -93,6 +93,42 @@ export const is = {
     // decision — not a translation that is on its way.
     icelandicOnly: 'Íslenska eingöngu',
   },
+  awards: {
+    title: 'Íslensku vefverðlaunin',
+    /**
+     * "Síðan 2000 · 26. árið".
+     *
+     * The ordinal is the featured edition's year minus 2000, which is how the
+     * design arrives at 26 for 2026. Derived rather than written down so the
+     * page does not quietly claim the wrong number next November.
+     */
+    eyebrow: (year: number) => `Síðan 2000 · ${year - 2000}. árið`,
+    categoriesTitle: 'Flokkar',
+    ceremony: {
+      eyebrow: (year: number) => `Hátíðin ${year}`,
+      /** Fallback heading when no edition headline has been written. */
+      headline: (date: string, venue: string | null) =>
+        venue ? `${date} · ${venue}` : date,
+      submissions: (date: string) => `Innsendingar opnar til ${date}.`,
+      ticketsOnSale: (date: string) => `Miðar á hátíðina fara í sölu ${date}.`,
+      submit: 'Senda inn vef',
+      buyTickets: 'Kaupa miða',
+    },
+    archive: {
+      title: 'Safn verðlaunahafa',
+      /** Accessible name for the group of year buttons. */
+      yearsLabel: 'Verðlaunaár',
+      /** Accessible name for the grid below them: "Verðlaunahafar 2025". */
+      winnersLabel: (year: number) => `Verðlaunahafar ${year}`,
+      empty: {
+        title: (year: number) => `Engir verðlaunahafar skráðir fyrir ${year}`,
+        body: 'Verðlaunahafar fyrri ára birtast hér þegar sögulega safnið hefur verið flutt inn.',
+      },
+    },
+    // Marks the winners archive, which is published in Icelandic only as an
+    // editorial decision — not a translation that is on its way.
+    icelandicOnly: 'Íslenska eingöngu',
+  },
   photos: {
     title: 'Myndir',
     // The hint is the design's, and it is the only place the keyboard shortcuts
