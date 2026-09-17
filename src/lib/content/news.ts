@@ -43,8 +43,12 @@ const SUMMARY_FIELDS = {
  * `publishedAt` is a date an editor sets, and setting it in the future is how
  * you schedule a post. Without this filter the post is live the moment it is
  * saved and the date reads as a lie. There is no cron here: the comparison is
- * against the time of the request, so a scheduled article appears on the first
- * request after its date passes.
+ * against the time the page is *rendered*, which on a prerendered, revalidated
+ * route is not the time of the request. A scheduled article therefore appears
+ * one revalidation window after its date passes, plus the one request that
+ * finds the cached entry stale and is still served it. The same lag applies in
+ * reverse, so this is not an embargo — see the note on `revalidate` in
+ * `CLAUDE.md`.
  */
 function publishedByNow() {
   return { publishedAt: { less_than_equal: new Date().toISOString() } }
@@ -102,4 +106,37 @@ export const findNewsArticle = cache(async function findNewsArticle(
   })
   const doc = docs[0] as unknown as NewsAllLocales | undefined
   return doc ? toNewsArticle(doc, locale) : null
+})
+
+/**
+ * The slugs of every article whose publication date has arrived.
+ *
+ * Feeds `generateStaticParams` on `/frettir/[slug]`, so it deliberately applies
+ * the same `publishedAt <= now` filter as every other read: a scheduled article
+ * must not be prerendered into the build output, because a prerendered page is
+ * a file that exists whether or not its date has passed. Leaving it out of this
+ * list is what keeps it on the `dynamicParams` path, where the filter is
+ * re-evaluated on render and it 404s until its date passes — subject to the
+ * caching lag documented on the route.
+ *
+ * `slug` is not localized, so this is one list for both locales.
+ *
+ * `pagination: false` is load-bearing rather than tidy: Payload's `find`
+ * defaults to `limit: 10`, and without it a collection any larger than that
+ * would prerender its first ten pages and hand the rest to `dynamicParams`
+ * silently — green build, `●` in the route table, no symptom. Six fixtures
+ * would never have shown it.
+ */
+export const listNewsSlugs = cache(async function listNewsSlugs(): Promise<string[]> {
+  const payload = await getPayload()
+  const { docs } = await payload.find({
+    collection: 'news',
+    ...publicReadArgs,
+    where: publishedByNow(),
+    select: { slug: true },
+    sort: '-publishedAt',
+    pagination: false,
+    depth: 0,
+  })
+  return docs.map((doc) => doc.slug).filter((slug): slug is string => Boolean(slug))
 })

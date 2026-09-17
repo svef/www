@@ -106,6 +106,71 @@ Treated as a requirement, not a pass at the end:
 - If a field the design needs doesn't exist in the content model, extend the model or open an
   issue — don't approximate it in the UI.
 
+### Rendering: static plus ISR, not `force-dynamic`
+
+Public pages are **prerendered and revalidated**, and CI builds against a real Postgres
+service container so a page that reads Payload at build time works there too:
+
+- `export const revalidate = 300` on any route that reads Payload. Five minutes — long
+  enough that the page is a cached file in practice, short enough that an editor who hits
+  publish sees the change while still looking. Revalidation is lazy, so an unread route
+  costs nothing. Read "Five minutes" as a floor, not a deadline — see below.
+- **Most public pages have no dynamic segment of their own.** Seven of the eight page
+  pairs are this case: `/frettir`, `/vidburdir`, `/um-svef` and the rest. They need
+  `revalidate` and nothing else — no `generateStaticParams`, because the only segment
+  that varies is `[locale]` and the layout above already generates it.
+- A route that *adds* a dynamic segment gets its own `generateStaticParams`. Next calls
+  it **once per parent param set, passing those params in** (`{ params: { locale: 'is' } }`,
+  then `{ locale: 'en' }`), and crosses what you return with them. So:
+  - **Use the parent params when the segment varies by locale.** Some content is
+    Icelandic-only by decision — the awards winners archive, press, the bylaws. Returning
+    the same list for both locales prerenders an `/en/…` page for every item that has no
+    English; return the params for `is` and an empty array for `en`.
+  - **Ignore them when it doesn't.** News slugs are not localized, so `/frettir/[slug]`
+    returns one list and lets Next do the crossing.
+- **Pass `pagination: false` to the `payload.find()` behind `generateStaticParams`.**
+  Payload's `find` defaults to `limit: 10`. Without it a collection of hundreds
+  prerenders its first ten pages and serves the rest through `dynamicParams` — green
+  build, `●` in the route table, every page working, nobody any the wiser. The dev
+  fixtures are too small to reproduce it, so the rule has to catch it.
+- Apply the same visibility filter the page applies (`publishedAt <= now` for news): a
+  prerendered page is a file written at build time, so anything scheduled must be left
+  out and left to `dynamicParams`.
+- **Never `export const dynamic = 'force-dynamic'`.** It opts the route out of the
+  full-route cache and disables `revalidate`, so every visit is a function invocation plus
+  a database round-trip plus a Payload init. If a page seems to need it, say why rather
+  than reaching for it.
+
+#### `revalidate` is a staleness floor, in both directions
+
+`publishedAt <= now` is evaluated when a page is *rendered*, not when it is *requested*,
+and a `notFound()` is cached exactly like a 200 — the full-route cache stores the 404
+response with the route's `revalidate`:
+
+```
+$ curl -sI localhost:3000/frettir/framtidar-frett-2027
+HTTP/1.1 404 Not Found
+x-nextjs-cache: HIT
+Cache-Control: s-maxage=300, stale-while-revalidate=31535700
+```
+
+So the request that crosses a boundary **gets the stale answer** and only triggers the
+regeneration; the request after it gets the fresh one. Crossing a date therefore costs
+one revalidation window **plus one throwaway request**, and on a site with this little
+traffic that second request can be a long time coming.
+
+This cuts both ways, and the second direction is the one to worry about:
+
+- **Publishing by date is late.** An article whose date passes keeps 404ing for the
+  window, and the first request afterwards still gets the cached 404.
+- **Unpublishing by date does not work.** An article moved back into the future — or
+  otherwise pulled — **stays publicly readable, and stays listed on the index**, for the
+  window plus a request. `publishedAt` is not an embargo and not a takedown.
+
+On-demand revalidation from a Payload `afterChange` hook (svef/www#67) is what makes
+either direction immediate. Until it lands, do not lean on `publishedAt` for anything
+that has to happen at a particular moment.
+
 ## The local gate
 
 Run before opening a PR:
@@ -115,9 +180,14 @@ npm run typecheck && npm run lint && npm run test:ci && npm run build
 npm run e2e          # where the change touches rendered pages
 ```
 
-`npm run e2e` builds the app and serves it itself and needs a seeded local database
-(README, "Development fixtures"). It covers every public route in both locales; a new
-page belongs in the `PAGES` table in `e2e/pages.ts`, or in `DYNAMIC_ROUTES` with a
+**`npm run build` and `npm run e2e` both need a running, seeded local database**
+(README, "Development fixtures"). The build is not exempt: public pages are prerendered,
+and prerendering a page that reads Payload means connecting to Postgres at build time. A
+stopped or unseeded database fails the build with a connection error from deep inside
+Payload, which reads like a code problem and is not one — start the database and seed it.
+
+`npm run e2e` builds the app and serves it itself. It covers every public route in both
+locales; a new page belongs in the `PAGES` table in `e2e/pages.ts`, or in `DYNAMIC_ROUTES` with a
 spec of its own if it has a dynamic segment — a test enumerates the filesystem and
 fails if you forget.
 
