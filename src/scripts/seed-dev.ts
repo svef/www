@@ -33,6 +33,7 @@ import {
   awardEditions,
   awardWinners,
   awardsIntro,
+  awardsIntroEn,
   boardMembers,
   events,
   faq,
@@ -309,6 +310,11 @@ async function seed(payload: Payload): Promise<void> {
   await payload.updateGlobal({
     data: { intro: richText(awardsIntro) } as never,
     locale: 'is',
+    slug: 'awards-page',
+  })
+  await payload.updateGlobal({
+    data: { intro: richText(awardsIntroEn) } as never,
+    locale: 'en',
     slug: 'awards-page',
   })
 }

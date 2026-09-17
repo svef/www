@@ -1,6 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { WinnerCard } from './WinnerCard'
 
+/**
+ * A local stand-in for a real screenshot.
+ *
+ * A file already in `public/` rather than a remote placeholder service: the app's
+ * `next/image` `remotePatterns` allows the R2 bucket and nothing else, so an
+ * off-site URL would be the one thing that behaves differently in Storybook than
+ * it does in the app.
+ */
+const SCREENSHOT = '/landing/bg-event-purple.svg'
+
 const meta: Meta<typeof WinnerCard> = {
   title: 'Content/WinnerCard',
   component: WinnerCard,
@@ -37,6 +47,34 @@ export const Accents: Story = {
  */
 export const HistoricalRow: Story = {
   args: { blurb: null, url: null, siteName: 'arid20.is', year: 2020, category: 'Aðgengi' },
+}
+
+/**
+ * With a screenshot, which is the shape the archive takes once the historical
+ * import (svef/www#31) brings the shots in. This is the only story that renders
+ * the `next/image` branch — without it that path ships unseen.
+ */
+export const WithScreenshot: Story = {
+  args: {
+    screenshot: {
+      url: SCREENSHOT,
+      alt: '',
+      width: 1600,
+      height: 1000,
+    },
+  },
+}
+
+/** A screenshot whose media document carries real alt text, so it is announced. */
+export const ScreenshotWithAltText: Story = {
+  args: {
+    screenshot: {
+      url: SCREENSHOT,
+      alt: 'Forsíða nafn.is: stór fyrirsögn á dökkum grunni.',
+      width: 1600,
+      height: 1000,
+    },
+  },
 }
 
 /** No link recorded — the card is a static block rather than a dead link. */

@@ -6,6 +6,20 @@ import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { WinnerCard, WINNER_ACCENTS, type WinnerCardProps } from '@/components/WinnerCard/WinnerCard'
 import styles from './awards.module.scss'
 
+/**
+ * One card, plus the document id it came from.
+ *
+ * The id is carried for React's `key` and for nothing else, which is why it is
+ * added here rather than on `WinnerCardProps` — the card renders what a winner
+ * *is*, and a database id is not part of that.
+ *
+ * Keying on `siteName` would be wrong the day svef/www#31 lands: one site
+ * winning two categories in the same year is ordinary in these awards, and the
+ * duplicate key would surface as a console error that `e2e/known-console-errors.ts`
+ * turns red — a long way from the import that caused it.
+ */
+export type ArchiveWinner = WinnerCardProps & { id: number }
+
 export interface ArchiveYear {
   year: number
   /** Accessible name for the grid — "Verðlaunahafar 2025". */
@@ -13,7 +27,7 @@ export interface ArchiveYear {
   /** Empty-state heading for this year, when nothing has been recorded for it. */
   emptyTitle: string
   /** Fully resolved card props; the page does the localization, not this component. */
-  winners: readonly WinnerCardProps[]
+  winners: readonly ArchiveWinner[]
 }
 
 export interface WinnersArchiveProps {
@@ -73,9 +87,9 @@ export function WinnersArchive({ years, yearsLabel, emptyBody }: WinnersArchiveP
         <EmptyState title={active.emptyTitle} body={emptyBody} headingLevel={3} />
       ) : (
         <ul className={styles.winners} aria-label={active.winnersLabel}>
-          {active.winners.map((winner, i) => (
-            <li key={winner.siteName}>
-              <WinnerCard {...winner} accent={WINNER_ACCENTS[i % WINNER_ACCENTS.length]} />
+          {active.winners.map(({ id, ...card }, i) => (
+            <li key={id}>
+              <WinnerCard {...card} accent={WINNER_ACCENTS[i % WINNER_ACCENTS.length]} />
             </li>
           ))}
         </ul>

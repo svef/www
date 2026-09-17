@@ -371,11 +371,18 @@ export type AwardEditionFixture = {
  * (#31) fills them in, and the archive renders them that way rather than
  * pretending otherwise.
  *
- * The two URLs are fixture stand-ins on the association's own domain. The export
- * draws both buttons as `href="#"`, so there is no real destination to copy; the
- * board sets the real ones in the CMS. They are here rather than omitted because
- * a ceremony block with no buttons would not be the block the design specifies,
- * and the buttons are what most of the work is.
+ * No `submissionUrl` and no `ticketUrl`. The export draws both calls to action
+ * as bare `<button>` elements with no href and no handler, so there is nothing
+ * to transcribe — and a plausible-looking `https://svef.is/midar` in a fixture
+ * is worse than nothing, because it renders as a live anchor on the
+ * association's real production domain and reads as researched. `/um-svef`'s
+ * press list set the precedent in #21 by deliberately carrying no URLs for
+ * exactly this reason.
+ *
+ * The ceremony block renders no button for a URL that is not set, which is an
+ * honest picture of "the board has not filled these in yet" and exercises a path
+ * nothing else covers. The button-present path is covered by `CeremonyBlock`'s
+ * own tests and by the `WinnerCard`/ceremony stories instead.
  */
 export const awardEditions: AwardEditionFixture[] = [
   {
@@ -385,9 +392,7 @@ export const awardEditions: AwardEditionFixture[] = [
     headline: '14. nóvember í Hörpu',
     headlineEn: '14 November at Harpa',
     submissionDeadline: '2026-10-10T23:59:00.000Z',
-    submissionUrl: 'https://svef.is/innsending',
     ticketsOnSaleFrom: '2026-09-01T09:00:00.000Z',
-    ticketUrl: 'https://svef.is/midar',
   },
   { year: 2025, ceremonyDate: '2025-11-15T12:00:00.000Z', venue: 'Harpa' },
   { year: 2024 },
@@ -665,4 +670,21 @@ export const membershipEn = {
  */
 export const awardsIntro: Block[] = [
   'Árleg verðlaun SVEF fyrir framúrskarandi vefi, öpp og stafrænar lausnir. Dómnefnd fagfólks metur innsendingar í 13 flokkum — og verðlaunin eru afhent í Hörpu.',
+]
+
+/**
+ * The English lead.
+ *
+ * Not a translation written here: this is the sentence `vefverdlaunin/page.tsx`
+ * carried as a literal before the page was wired to Payload, moved into the
+ * fixture with the Icelandic it sat beside. Seeding the Icelandic alone would
+ * have left an English reader with an Icelandic lead *and* a page-level
+ * "English copy is not available yet" note on a page whose heading, eyebrow,
+ * thirteen categories and ceremony block are all in English — a true statement
+ * about one field and an untrue one about the page. Same reasoning as the
+ * English category names: switching the source of truth should not be a
+ * downgrade for anyone.
+ */
+export const awardsIntroEn: Block[] = [
+  "SVEF's annual awards for outstanding websites, apps and digital solutions. A jury of professionals judges entries across 13 categories — and the awards are presented at Harpa.",
 ]

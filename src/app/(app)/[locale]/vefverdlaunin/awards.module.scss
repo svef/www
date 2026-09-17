@@ -156,8 +156,11 @@
   // `overflow-wrap: break-word` deliberately does not reduce min-content — so
   // the wrapping rules alone left the box its full 315px and the page still
   // scrolled sideways.
+  //
+  // `overflow-wrap` without `hyphens: auto` for the reason
+  // `SpotlightRow.module.scss` records: Chromium has no Icelandic dictionary, so
+  // `hyphens` is inert here and only looks like it is helping.
   min-width: 0;
-  hyphens: auto;
   overflow-wrap: break-word;
 }
 

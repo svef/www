@@ -95,6 +95,7 @@ export default async function AwardsPage({
     winnersLabel: t.awards.archive.winnersLabel(year.year),
     emptyTitle: t.awards.archive.empty.title(year.year),
     winners: year.winners.map((winner) => ({
+      id: winner.id,
       siteName: winner.siteName,
       category: winner.category,
       year: winner.year,
@@ -133,7 +134,6 @@ export default async function AwardsPage({
           // the venue as recorded, so it is in the reader's language; only an
           // editor's written headline can have fallen back.
           headlineLang={ceremony.headline ? langOf(ceremony.headlineLocale) : undefined}
-          ceremonyDate={ceremony.ceremonyDate}
           lines={ceremonyLines}
           submit={
             ceremony.submissionUrl

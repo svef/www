@@ -171,6 +171,10 @@ export function toWinner(
  * depending on which side of the window the reader landed. The latest dated
  * edition is the same answer all year and changes exactly when the board creates
  * next year's edition, which is the moment they mean it to change.
+ *
+ * The cost is that the block outlives its own ceremony, and that the featured
+ * year's winners have nowhere to render while it does — `toArchive` excludes it.
+ * Tracked as svef/www#86 with three ways out; it first bites in November 2026.
  */
 export function pickCeremonyEdition(
   editions: readonly AwardEditionAllLocales[],
@@ -205,6 +209,10 @@ export function toCeremony(doc: AwardEditionAllLocales, locale: Locale): Ceremon
  * say "nothing recorded for 2026" directly below a block announcing that the 2026
  * ceremony is in November — which reads as missing data rather than as a year
  * that has not happened. The design's tabs stop at 2025 for the same reason.
+ *
+ * The flip side is svef/www#86: once that ceremony has happened, its winners are
+ * excluded from the archive too, and stay invisible until the next dated edition
+ * exists.
  *
  * Years with no winners are kept. 2020–2024 exist as editions and are genuinely
  * empty until the historical import (svef/www#31, blocked on svef/Skjalasafn#1)

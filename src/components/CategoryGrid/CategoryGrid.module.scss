@@ -46,8 +46,11 @@
   line-height: 1.2;
   // Belt and braces with `min-width: 0` above: the track can now shrink, and a
   // compound longer than the track breaks rather than spilling out of it.
-  // `hyphens` does the tidy version where the browser knows the language (the
-  // page sets `lang`), `overflow-wrap` catches the rest.
-  hyphens: auto;
+  //
+  // `overflow-wrap` alone, deliberately. `hyphens: auto` would break at nicer
+  // points, but `SpotlightRow.module.scss` records it tested and doing nothing:
+  // Chromium ships no Icelandic dictionary, so it is a declaration that reads
+  // like a safety net and is not one. The cost is that a name longer than the
+  // track breaks mid-stem.
   overflow-wrap: break-word;
 }

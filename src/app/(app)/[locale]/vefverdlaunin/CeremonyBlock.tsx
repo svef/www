@@ -8,8 +8,6 @@ export interface CeremonyBlockProps {
   headline: string
   /** Language of `headline`, when it is not the page's. */
   headlineLang?: string
-  /** ISO instant of the ceremony, for `<time dateTime>` on the heading. */
-  ceremonyDate: string
   /**
    * The two facts under the heading: the submission deadline and when tickets go
    * on sale. Either can be missing — the board fixes them at different times of
@@ -24,17 +22,27 @@ export interface CeremonyBlockProps {
  * The white ceremony panel: when and where the next awards night is, how long
  * there is left to enter, and the two things a reader can do about it.
  *
- * A button is rendered only when the edition carries a URL for it. The design
- * draws both as `href="#"`, and a call to action that goes nowhere is the exact
- * failure the old archive had — `e2e/known-links.ts` exists to stop it coming
- * back. Both are external destinations (an entry form, a ticket shop), so they
- * are plain anchors rather than `next/link` routes.
+ * A button is rendered only when the edition carries a URL for it, and the dev
+ * fixtures deliberately carry neither — the export draws both calls to action as
+ * bare `<button>` elements with no destination, so there is none to transcribe.
+ * A call to action that goes nowhere is the exact failure the old archive had,
+ * and `e2e/known-links.ts` exists to stop it coming back.
+ *
+ * There is no `<time dateTime>` on the heading. `headline` is free text whose
+ * entire justification is that it is prose an editor writes — "Tuttugasta
+ * hátíðin" is a perfectly good heading — and wrapping that in a
+ * machine-readable timestamp would mark a sentence up as a date. The
+ * ceremony's own instant stays on the `award-editions` document.
+ *
+ * Both calls to action go through `<Button href>`, which renders `next/link`. That is fine for
+ * an off-site destination — Next leaves an absolute URL alone — and it is what
+ * every other call to action on the site uses, so they stay consistent rather
+ * than being special-cased.
  */
 export function CeremonyBlock({
   eyebrow,
   headline,
   headlineLang,
-  ceremonyDate,
   lines,
   submit,
   tickets,
@@ -49,7 +57,7 @@ export function CeremonyBlock({
           <div>
             <p className={styles.ceremonyEyebrow}>{eyebrow}</p>
             <h2 className={styles.ceremonyTitle} lang={headlineLang}>
-              <time dateTime={ceremonyDate}>{headline}</time>
+              {headline}
             </h2>
             {lines.map((line) => (
               <p key={line} className={styles.ceremonyLine}>
