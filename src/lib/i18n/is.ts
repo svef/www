@@ -24,6 +24,45 @@ export const is = {
     // change when the menu opens.
     menu: 'Valmynd',
   },
+  home: {
+    // Above the `<h1>`. Chrome rather than content: it states what the
+    // association is and when it started, which is not something an editor
+    // rewrites per visit, and the export prints it as a fixed label.
+    eyebrow: 'Samtök vefiðnaðarins · Síðan 2005',
+    /**
+     * The `<h1>` when `home-page.heroSentence` has not been written.
+     *
+     * A page with no `<h1>` is an accessibility failure and an e2e failure, so
+     * there has to be something — but it must not be invented content standing
+     * in for the association's own words. The association's name is the one
+     * thing that is true without anyone writing it, and it is already on the
+     * page in the header and the footer.
+     */
+    fallbackTitle: 'Samtök vefiðnaðarins',
+    joinCta: 'Gerast félagi',
+    eventsCta: 'Sjá viðburði',
+    happeningNow: 'Það sem er að gerast núna',
+    // Shown on the winner spotlight, which links out to the winning site.
+    visitSite: 'Skoða vefinn',
+    aboutAwards: 'Um verðlaunin',
+    eventsTitle: 'Næstu viðburðir',
+    allEvents: 'Allir viðburðir',
+    winnersTitle: 'Verðlaunavefir',
+    winnersEmpty: {
+      title: 'Engir verðlaunahafar skráðir enn',
+      body: 'Verðlaunavefir síðustu ára birtast hér þegar safnið hefur verið flutt inn.',
+    },
+    photosTitle: 'Myndir frá viðburðum',
+    allPhotos: 'Allar myndir',
+    // Accessible-name prefix for a tile in the strip, which is the export's own
+    // label for it. `/myndir` says "Skoða mynd"; here the tile is a teaser and
+    // the action it offers is the enlargement itself.
+    enlargePhoto: 'Stækka mynd',
+    photosEmpty: {
+      title: 'Engar myndir enn',
+      body: 'Myndir frá viðburðum SVEF birtast hér um leið og þær eru komnar í hús.',
+    },
+  },
   events: {
     title: 'Viðburðir',
     lead: 'Fyrirlestrar, vinnustofur og hátíðir fyrir fólkið í vefiðnaðinum. Félagar komast frítt á alla viðburði nema vefverðlaunin.',

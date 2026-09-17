@@ -17,6 +17,18 @@
   gap: var(--space-3);
 }
 
+// A fixed column count, for a caller that knows how many tiles there are — see
+// `columns` on `GalleryProps`. This is what the export's `auto-fit` would give
+// that this file's `auto-fill` does not; the deviation is `.grid`'s, not the
+// export's.
+.fixedColumns {
+  grid-template-columns: repeat(var(--gallery-columns), 1fr);
+
+  @media (max-width: 760px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .thumb {
   position: relative; // `next/image` with `fill` positions against this.
   display: block;

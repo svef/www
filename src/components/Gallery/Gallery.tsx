@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, type CSSProperties } from 'react'
+import clsx from 'clsx'
 import Image from 'next/image'
 import { Modal } from '@mantine/core'
 import styles from './Gallery.module.scss'
@@ -27,6 +28,24 @@ export interface GalleryProps {
    * Eight is what the design's own placeholder run shows.
    */
   placeholderCount?: number
+  /**
+   * Draw exactly this many columns instead of reflowing by tile width.
+   *
+   * Purely presentational, and it works around *this component's* deviation
+   * from the export rather than a limitation of reflowing grids. The export
+   * draws both grids with `repeat(auto-fit, minmax(…, 1fr))`, and `auto-fit`
+   * collapses the tracks it does not fill — so the home page's four tiles span
+   * the content width in the export exactly as drawn. `.grid` uses `auto-fill`
+   * instead, a deliberate choice made for `/myndir` and documented there: an
+   * album of unknown size must not have three photos stretched across the page.
+   * That choice is right for an album and wrong for a fixed strip of four,
+   * which `auto-fill` leaves bunched to the left in a six-track row at 1440.
+   * Naming the count is the narrower fix — it changes nothing for `/myndir`.
+   *
+   * Collapses to two columns on a phone, as the reflowing grid does at the same
+   * widths.
+   */
+  columns?: number
   /** Prefix for a thumbnail's accessible name, e.g. "Skoða mynd". */
   viewLabel: string
   prevLabel: string
@@ -49,6 +68,7 @@ export interface GalleryProps {
 export function Gallery({
   photos = [],
   placeholderCount = 8,
+  columns,
   viewLabel,
   prevLabel,
   nextLabel,
@@ -78,7 +98,14 @@ export function Gallery({
 
   return (
     <>
-      <ul className={styles.grid}>
+      <ul
+        className={clsx(styles.grid, columns !== undefined && styles.fixedColumns)}
+        style={
+          columns !== undefined
+            ? ({ '--gallery-columns': columns } as CSSProperties)
+            : undefined
+        }
+      >
         {/*
           Keyed by position rather than by photo: the same upload can legitimately
           be added to an album twice, and a URL key would then collide.

@@ -108,14 +108,16 @@ export const getSiteChrome = cache(async function getSiteChrome(
     ...publicReadArgs,
   })) as unknown as SiteSettingsAllLocales
 
-  // `pickLocalized` already treats `''` — what Payload writes for a field
-  // opened in the admin and left blank — as missing.
+  // `pickLocalized` treats a blank field — `''` or whitespace, which is what
+  // Payload writes for one opened in the admin and left empty — as missing, in
+  // the fallback branch as well as the requested one (svef/www#88). This used to
+  // re-test the result with `.trim()` because it only did the latter.
   const blurb = pickLocalized(settings.footerBlurb, locale)
   const email = settings.contactEmail?.trim()
 
   return {
-    footerBlurb: blurb.value?.trim() ? blurb.value : null,
-    footerBlurbLocale: blurb.value?.trim() ? blurb.locale : DEFAULT_LOCALE,
+    footerBlurb: blurb.value ?? null,
+    footerBlurbLocale: blurb.value === null ? DEFAULT_LOCALE : blurb.locale,
     contactEmail: email || FALLBACK_EMAIL,
     socials: NETWORKS.map((network) =>
       toSocialLink(network, settings.social?.[network.field]),

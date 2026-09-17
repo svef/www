@@ -80,6 +80,10 @@ function toPhoto(
   // depth 0 (or an unresolved relationship) leaves an id behind — nothing to render.
   if (!row.image || typeof row.image === 'number') return null
   if (!row.image.url) return null
+  // A blank caption has to arrive as `null`, not `''`, or `??` short-circuits on
+  // it and the tile loses the media item's own alt text. `pickLocalized` owns
+  // that (svef/www#88); it did not always, which is what made this a real bug
+  // rather than a hypothetical one.
   const caption = pickLocalized(row.caption, locale).value
   const alt = caption ?? pickLocalized(row.image.alt, locale).value
   return {
