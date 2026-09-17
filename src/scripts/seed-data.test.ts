@@ -9,6 +9,7 @@ import {
   galleries,
   membership,
   news,
+  press,
   richText,
 } from './seed-data'
 
@@ -56,6 +57,14 @@ describe('seed fixtures', () => {
       role: 'Formaður · UX/UI hönnuður',
     })
     expect(faq).toHaveLength(14)
+    // Three roles the repo had wrong before the board was wired to Payload:
+    // the design export is the record, and these are what it says.
+    const roles = new Map(boardMembers.map((m) => [m.name, m.role]))
+    expect(roles.get('Brian Johannessen')).toBe('Meðstjórnandi · hönnun')
+    expect(roles.get('Petra Dís Magnúsdóttir')).toBe('Meðstjórnandi · vefverðlaunin')
+    // A deputy, not a board member — the distinction the old literal lost.
+    expect(roles.get('Jón Andri Óskarsson')).toBe('Varamaður · nýir vefir')
+    expect(press.map((p) => p.outlet)).toEqual(['RÚV', 'Vísir', 'Kjarninn'])
     expect(membership.tiers.map((t) => t.priceISK)).toEqual([23900, 149000])
     expect(events[0]?.startDate.startsWith('2026-11-14')).toBe(true)
   })

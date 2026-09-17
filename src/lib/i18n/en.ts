@@ -30,6 +30,25 @@ export const en = {
       copied: 'Link copied',
     },
   },
+  about: {
+    title: 'About SVEF',
+    boardTitle: 'The board',
+    boardCompanyPrefix: 'at',
+    faqTitle: 'FAQ',
+    bylawsTitle: 'Bylaws',
+    bylawsUnavailable:
+      'The bylaws could not be loaded right now. They are unchanged and can be read in full at the source:',
+    pressTitle: 'Press',
+    press: {
+      empty: 'No coverage listed yet.',
+    },
+    brand: {
+      title: 'Logo and assets',
+      blurb: 'The SVEF logo in black and white, together with the colour palette.',
+      empty: 'The asset pack is being prepared. Email svef@svef.is if you need the logo.',
+    },
+    icelandicOnly: 'Published in Icelandic only',
+  },
   footer: {
     rights: 'All rights reserved',
     blurb:
