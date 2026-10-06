@@ -1,6 +1,6 @@
 import type React from 'react'
 import type { Metadata } from 'next'
-import { Archivo, Overpass } from 'next/font/google'
+import { Archivo } from 'next/font/google'
 import {
   ColorSchemeScript,
   MantineProvider,
@@ -10,19 +10,13 @@ import { theme } from '@/lib/theme'
 import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
 
-// The Figma landing uses Interstate (commercial). Overpass is the open-source
-// Interstate look-alike and carries the body copy; Archivo sets the headings.
-const overpass = Overpass({
-  subsets: ['latin'],
-  variable: '--font-body',
-  weight: ['300', '400', '600', '700', '800'],
-  display: 'swap',
-})
-
+// Archivo carries the whole page — body and headings alike. The Figma landing
+// specifies Interstate, which is commercial; Archivo is the closest open
+// substitute and reads correctly at both text and display sizes.
 const archivo = Archivo({
   subsets: ['latin'],
-  variable: '--font-heading',
-  weight: ['600', '700'],
+  variable: '--font-archivo',
+  weight: ['300', '400', '500', '600', '700', '800'],
   display: 'swap',
 })
 
@@ -37,7 +31,11 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
   return (
     <html
       lang="is"
-      className={`${overpass.variable} ${archivo.variable}`}
+      className={archivo.variable}
+      style={{
+        ['--font-body' as string]: 'var(--font-archivo)',
+        ['--font-heading' as string]: 'var(--font-archivo)',
+      }}
       {...mantineHtmlProps}
     >
       <head>

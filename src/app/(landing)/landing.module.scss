@@ -139,7 +139,7 @@ $board-clip: polygon(
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 .eventWhen {
@@ -152,7 +152,7 @@ $board-clip: polygon(
   margin: 0;
   color: var(--color-violet-light);
   font-weight: var(--weight-bold);
-  font-size: var(--text-sm);
+  font-size: 16px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -163,24 +163,24 @@ $board-clip: polygon(
   background: var(--color-violet);
   color: var(--color-white);
   font-weight: var(--weight-bold);
-  font-size: var(--text-xs);
+  font-size: 16px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .eventTitle {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-3);
   font-family: var(--font-heading), system-ui, sans-serif;
-  font-size: clamp(1.5rem, 3vw, 28px);
-  line-height: 1.15;
+  font-size: 28px;
+  line-height: 1.2;
   overflow-wrap: break-word;
 }
 
 .eventVenue {
-  margin: 0 0 var(--space-4);
+  margin: 0 0 var(--space-8);
   color: var(--fg-muted);
-  font-size: var(--text-sm);
-  line-height: 1.4;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .eventDirections {
@@ -190,19 +190,23 @@ $board-clip: polygon(
 }
 
 .eventBody {
-  margin: 0 0 var(--space-4);
+  margin: 0 0 var(--space-6);
   color: var(--color-white);
   font-weight: var(--weight-light);
-  line-height: 1.5;
+  font-size: 18px;
+  line-height: 1.6;
 }
 
 .speakers {
   margin: 0 0 var(--space-8);
   padding: 0 0 0 var(--space-4);
   list-style: none;
-  font-size: var(--text-sm);
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.55;
   color: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 
   li {
     position: relative;
@@ -211,7 +215,7 @@ $board-clip: polygon(
       content: '';
       position: absolute;
       left: calc(-1 * var(--space-4));
-      top: 0.6em;
+      top: 0.62em;
       width: 6px;
       height: 6px;
       background: var(--color-violet);
@@ -224,18 +228,27 @@ $board-clip: polygon(
   // description runs a line longer than the other's. `align-items: flex-start`
   // stops the primary button stretching to match the calendar menu when it opens.
   margin-top: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  // Grid rather than flex: two `1fr` columns are exactly equal whatever the labels
+  // say, where `flex: 1 1 0` still let the padded button claim its padding on top
+  // of its share and come out 32px wider than its neighbour.
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
   gap: var(--space-3);
+
+  > * {
+    min-width: 0;
+  }
 }
 
 .eventPrimary {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  padding: var(--space-3) var(--space-6);
+  justify-content: center;
+  padding: var(--space-3) var(--space-4);
   font-weight: var(--weight-bold);
-  font-size: var(--text-sm);
+  font-size: 16px;
+  text-align: center;
   text-decoration: none;
 
   &:focus-visible {
@@ -256,13 +269,15 @@ $board-clip: polygon(
 }
 
 .calendarToggle {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  padding: var(--space-3) var(--space-6);
+  justify-content: center;
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--surface-4);
   color: var(--color-white);
   font-weight: var(--weight-bold);
-  font-size: var(--text-sm);
+  font-size: 16px;
+  text-align: center;
   cursor: pointer;
   list-style: none;
 
@@ -293,9 +308,9 @@ $board-clip: polygon(
   background: var(--surface-1);
 
   a {
-    padding: var(--space-3) var(--space-6);
+    padding: var(--space-3) var(--space-4);
     color: var(--color-white);
-    font-size: var(--text-sm);
+    font-size: 16px;
     text-decoration: none;
 
     &:hover {
