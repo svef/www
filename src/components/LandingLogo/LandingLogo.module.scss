@@ -1,15 +1,32 @@
-.wrap {
+.logo {
+  position: relative;
   display: block;
+  // The lockups live in one 720 x 717.4 space, each centred in it, so the mark
+  // keeps a constant box while the shape inside it changes.
+  width: 300px;
+  max-width: 64vw;
+  aspect-ratio: 720 / 717.4;
 }
 
-.logo {
-  display: block;
-  // The ten lockups are not the same shape — 0.94:1 through 1.53:1 — so the box
-  // is fixed and the artwork contained inside it. Without that the hero would
-  // change height depending on which one a visitor happened to get.
-  width: 250px;
-  height: 220px;
-  max-width: 60vw;
-  object-fit: contain;
-  object-position: center;
+.shape {
+  position: absolute;
+  inset: 0;
+  background: var(--color-violet);
+  transition: clip-path 400ms ease-in-out;
+}
+
+.letters {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--color-white);
+  transition: transform 400ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shape,
+  .letters {
+    transition: none;
+  }
 }
