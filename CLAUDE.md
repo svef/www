@@ -27,7 +27,7 @@ trade-off comes up, favour the choice that would hold up as an example.
 src/
   app/(app)/[locale]/   # public site (is | en)
   app/(payload)/        # Payload admin + API (framework files)
-  app/(landing)/        # temporary landing one-pager
+  app/(landing)/        # temporary landing one-pager, served at /is and /en
   payload/              # collections, globals
   components/           # colocated .tsx + .module.scss + .stories.tsx
   lib/                  # payload client, i18n, theme, site-mode
@@ -46,9 +46,17 @@ per branch rather than by environment variable:
 
 ## Routing and language
 
-- Icelandic is served at the root (unprefixed); English lives under `/en`. Handled in
-  `src/proxy.ts` (Next 16 Proxy — the rename of `middleware.ts`), which rewrites to an
-  internal `[locale]` segment.
+- **Every page lives under an explicit locale prefix: `/is` and `/en`.** The root is not a
+  page — it only decides which language to redirect to, and for now that is always
+  Icelandic. Neither usual signal is trustworthy here: SVEF serves one country, so
+  geolocation says nothing about language, and Icelanders commonly run their browser in
+  English, so `Accept-Language` would send native speakers to the English page.
+- Handled in `src/proxy.ts` (Next 16 Proxy — the rename of `middleware.ts`). This routing
+  is permanent: `LANDING_ONLY` changes *what* renders at a locale, never *where* things
+  live, so the URLs survive the cutover from landing page to full site unchanged.
+- While `LANDING_ONLY` is set, `/is` and `/en` are rewritten to `/landing/<locale>`, an
+  internal path reached only by that rewrite. When the full site ships, that rewrite and
+  the `(landing)` route group go away together and `(app)/[locale]` serves the same URLs.
 - Payload uses field-level localization: `is` default, `en` with fallback.
 - Some content is Icelandic-only by decision: the awards winners archive, press, and the bylaws.
 - **Interface copy is Icelandic. Code, comments, commits, issues and PRs are English.**

@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//SVEF//Landing//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:sigurvegarar-segja-fra-2026@svef.is
+DTSTAMP:20261006T000000Z
+DTSTART:20261008T170000Z
+DTEND:20261008T200000Z
+SUMMARY:Winners tell their stories – SVEF x Kolibri
+LOCATION:Kolibri's offices\, Borgartún 26\, 105 Reykjavík
+DESCRIPTION:Award-winning projects from the Icelandic Web Awards 2025 - the stories behind them. Free entry. Held in Icelandic.
+URL:https://fb.me/e/4iObUsrLH
+END:VEVENT
+END:VCALENDAR

@@ -1,3 +1,11 @@
+.topBar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  // Matches the section gutter so the toggle lines up with the content below it.
+  padding: var(--space-4) var(--space-6) 0;
+}
+
 .hero {
   // Was 800px when the hero carried the logo plus two lines of headline. With
   // the headline out, that left the logo alone in a tall void.

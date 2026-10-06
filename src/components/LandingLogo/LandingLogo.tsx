@@ -19,7 +19,7 @@ const HOLD_MS = 4000
  * hydration from a random point, which is also what makes the mark differ
  * between visits. `prefers-reduced-motion` leaves it on whichever one it started.
  */
-export function LandingLogo() {
+export function LandingLogo({ label }: { label: string }) {
   const [i, setI] = useState(0)
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function LandingLogo() {
   const lockup = LOCKUPS[i]
 
   return (
-    <span className={styles.logo} role="img" aria-label="SVEF — Samtök vefiðnaðarins">
+    <span className={styles.logo} role="img" aria-label={label}>
       <span className={styles.shape} style={{ clipPath: lockup.clip }} />
       <svg
         className={styles.letters}

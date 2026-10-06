@@ -1,0 +1,43 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  // 44px of height keeps each option a comfortable target on a phone without
+  // making the control look like a button pair on desktop.
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  color: var(--fg-muted);
+  font-weight: var(--weight-bold);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-white);
+  }
+
+  // The current language reads as selected on its own, so the link stays in place
+  // and simply stops advertising itself as somewhere to go.
+  &[aria-current='page'] {
+    color: var(--color-white);
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
+}
+
+.divider {
+  width: 1px;
+  height: 14px;
+  background: var(--surface-4);
+}
