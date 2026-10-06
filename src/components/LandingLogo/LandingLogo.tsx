@@ -1,30 +1,35 @@
 import styles from './LandingLogo.module.scss'
 
 const VARIANTS = 10
+const FALLBACK = 1
 
 /**
- * One of the brand's ten logo lockups, picked at random.
+ * One of the brand's ten logo lockups, picked at random on every visit.
  *
- * The choice is made when this module is evaluated, which for a statically
- * prerendered page means **once per build** — so a given deploy always serves the
- * same lockup, and it changes when the site is rebuilt. Picking per visit would
- * mean either rendering the page dynamically or choosing in the browser, and
- * choosing in the browser shows the wrong logo (or none) until JavaScript runs.
- * A stable logo per deploy is the better trade for a one-pager.
+ * The page is statically prerendered, so the server cannot choose per visitor
+ * and React cannot either: picking during render would differ between the
+ * server's HTML and the client's, and picking in an effect would show one
+ * lockup and then swap it after hydration.
  *
- * The lockups are not the same shape — they run from 0.94:1 to 1.53:1 — so the
- * box is fixed and the image is contained inside it. That keeps the hero the
- * same height whichever one a build happens to draw.
+ * So the markup ships a real lockup — someone with JavaScript off, or a crawler,
+ * sees variant 1 rather than a blank space — and the small script below rewrites
+ * the `src` while the document is still parsing, before anything is painted.
+ * `suppressHydrationWarning` tells React the attribute is deliberately not the
+ * one it rendered, so hydration leaves it alone.
  */
 export function LandingLogo() {
-  const n = 1 + Math.floor(Math.random() * VARIANTS)
+  const pick = `(function(){var i=document.currentScript.previousElementSibling;i.src='/landing/logo-'+(1+Math.floor(Math.random()*${VARIANTS}))+'.svg'})()`
   return (
-    <img
-      className={styles.logo}
-      src={`/landing/logo-${n}.png`}
-      alt="SVEF — Samtök vefiðnaðarins"
-      width={900}
-      height={746}
-    />
+    <span className={styles.wrap}>
+      <img
+        className={styles.logo}
+        src={`/landing/logo-${FALLBACK}.svg`}
+        alt="SVEF — Samtök vefiðnaðarins"
+        width={625}
+        height={518}
+        suppressHydrationWarning
+      />
+      <script dangerouslySetInnerHTML={{ __html: pick }} />
+    </span>
   )
 }

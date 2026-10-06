@@ -35,9 +35,9 @@ const events = [
       'https://www.google.com/maps/search/?api=1&query=Borgart%C3%BAn+26%2C+105+Reykjav%C3%ADk',
     body: 'SVEF og Kolibri blása til fyrsta viðburðar vetrarins. Við kynnumst verðlaunaverkefnum af Íslensku vefverðlaununum — sögunum á bak við þau og hvar þau standa í dag. Erindi 17–18:30, spjall og tengslamyndun til 20. Léttar veitingar í boði.',
     speakers: [
-      'Helena Rut Sveinsdóttir og Gunnar Bjarki Björnsson, stofnendur Undralings',
-      'Frilli, hönnuður hjá Kolibri',
-      'Rakel Björt, framendaforritari hjá Helix Health',
+      'Helena Rut og Gunnar Bjarki, stofnendur Undralings, segja okkur frá verkefninu sínu sem var valið app ársins, stafræn lausn ársins og verkefni ársins 2025!',
+      'Frilli, hönnuður hjá Kolibri, segir okkur frá Okkar heimi, sem var valinn samfélagsvefur ársins 2025.',
+      'Rakel Björt, framendaforritari hjá Helix Health, segir okkur frá Silva, sem hreppti verðlaunin fyrir tækninýtingu ársins 2025.',
     ],
     action: { label: 'Viðburður á Facebook', href: 'https://fb.me/e/4iObUsrLH' },
     ics: '/landing/haustopnun-svef.ics',

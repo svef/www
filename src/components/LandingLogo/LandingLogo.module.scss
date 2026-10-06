@@ -1,5 +1,12 @@
+.wrap {
+  display: block;
+}
+
 .logo {
   display: block;
+  // The ten lockups are not the same shape — 0.94:1 through 1.53:1 — so the box
+  // is fixed and the artwork contained inside it. Without that the hero would
+  // change height depending on which one a visitor happened to get.
   width: 250px;
   height: 220px;
   max-width: 60vw;
