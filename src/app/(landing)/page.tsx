@@ -1,23 +1,21 @@
 import { LogoBuild } from '@/components/LogoBuild/LogoBuild'
 import { BlockPanel } from '@/components/BlockPanel/BlockPanel'
-import { BoardMemberCard } from '@/components/BoardMemberCard/BoardMemberCard'
 import styles from './landing.module.scss'
 
-const board = [
-  { name: 'Salena Raquel Kauffman', role: 'Formaður SVEF', photo: '/landing/board-salena.jpg', clip: '/landing/clip-a.svg', frames: ['/landing/frame-0.svg', '/landing/frame-1.svg'] },
-  { name: 'Sigurður Snær Eiríksson', role: 'Gjaldkeri SVEF & Vefstjóri', photo: '/landing/board-sigurdur.jpg', clip: '/landing/clip-b.svg', frames: ['/landing/frame-2.svg'] },
-  { name: 'Sveinn Steinarsson', role: 'Ritari SVEF & Dómarakerfi', photo: '/landing/board-sveinn.jpg', clip: '/landing/clip-c.svg', frames: ['/landing/frame-3.svg'] },
-  { name: 'Margrét Rúnarsdóttir', role: 'Markaðsmál og miðlun', photo: '/landing/board-margret.jpg', clip: '/landing/clip-d.svg', frames: ['/landing/frame-4.svg'] },
-  { name: 'Kolfinna Pétursdóttir', role: 'Markaðsmál og miðlun', photo: '/landing/board-kolfinna.jpg', clip: '/landing/clip-c.svg', frames: ['/landing/frame-3.svg'] },
-  { name: 'Brian Johannessen', role: 'Dómarakerfi', photo: '/landing/board-brian.jpg', clip: '/landing/clip-d.svg', frames: ['/landing/frame-4.svg'] },
-  { name: 'Petra Dís Magnúsdóttir', role: 'Vef- og viðburðastjórn', photo: '/landing/board-petra.jpg', clip: '/landing/clip-a.svg', frames: ['/landing/frame-0.svg', '/landing/frame-1.svg'] },
-  { name: 'Jón Andri Óskarsson', role: 'Verkefnastjóri – Nýr vefur', photo: '/landing/board-jon.jpg', clip: '/landing/clip-b.svg', frames: ['/landing/frame-2.svg'] },
-]
 
-const heroSocials = [
-  { label: 'Facebook', icon: '/landing/ui-facebook.svg', href: '#' },
-  { label: 'Instagram', icon: '/landing/ui-instagram.svg', href: '#' },
-  { label: 'LinkedIn', icon: '/landing/ui-linkedin.svg', href: '#' },
+// Upcoming events shown under the event panel. Placeholder copy — the board
+// supplies the real titles, descriptions and venues.
+const events = [
+  {
+    date: '8. október',
+    title: 'Haustopnun SVEF',
+    body: 'Við hefjum starfsárið saman með léttum veitingum og spjalli. Kynnum dagskrá vetrarins og það sem framundan er hjá samtökunum.',
+  },
+  {
+    date: '21. október',
+    title: 'Vefkvöld: Aðgengi í verki',
+    body: 'Stutt erindi frá fólki úr greininni um hvernig aðgengi er unnið í raunverulegum verkefnum — og hvað við getum gert betur.',
+  },
 ]
 
 const footerSocials = [
@@ -31,15 +29,6 @@ export default function LandingPage() {
   return (
     <>
       <section className={styles.hero}>
-        <ul className={styles.heroSocials}>
-          {heroSocials.map((s) => (
-            <li key={s.label}>
-              <a href={s.href} aria-label={s.label}>
-                <img src={s.icon} alt="" width={20} height={20} />
-              </a>
-            </li>
-          ))}
-        </ul>
         <LogoBuild />
         <h1 className={styles.headline}>
           Framtíð SVEF er björt – komdu og vertu memm!
@@ -73,27 +62,36 @@ export default function LandingPage() {
       </section>
 
       <section className={styles.boardSection}>
-        <div className={styles.boardHead}>
-          <h2 className={styles.boardTitle}>Ný stjórn er tekin við</h2>
-          <p className={styles.boardIntro}>
-            Ný stjórn SVEF tók við störfum á aðalfundi samtakanna þann 22. maí síðastliðinn.
-            Stjórnin samanstendur af kempum og nýliðum í faginu sem eiga það sameiginlegt að
-            brenna fyrir vefmálum. Við hlökkum mikið til starfsársins með ykkur og getum ekki
-            beðið eftir að halda vefverðlaunin í 25. sinn!
-          </p>
-        </div>
-        <div className={styles.boardGrid}>
-          {board.map((m) => (
-            <BoardMemberCard
-              key={m.name}
-              name={m.name}
-              role={m.role}
-              photo={m.photo}
-              clip={m.clip}
-              frames={m.frames}
+        <h2 className={styles.boardTitle}>Stjórn SVEF</h2>
+        <figure className={styles.boardFigure}>
+          <div className={styles.boardFrame}>
+            <img
+              className={styles.boardPhoto}
+              src="/landing/board-group.jpg"
+              srcSet="/landing/board-group.jpg 1104w, /landing/board-group@2x.jpg 2208w"
+              sizes="(max-width: 1168px) calc(100vw - 48px), 1104px"
+              alt="Stjórn SVEF saman á hópmynd."
+              width={1104}
+              height={598}
             />
-          ))}
-        </div>
+            {/* Violet rule tracing the same staircase the photo is clipped to.
+                preserveAspectRatio="none" so it stretches with the figure, and a
+                non-scaling stroke so the line stays an even weight at any width. */}
+            <svg
+              className={styles.boardOutline}
+              viewBox="0 0 1104 598"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path d="M0 0H562V60H1104V598H443V445H152V374H0Z" />
+            </svg>
+          </div>
+          <figcaption className={styles.boardCaption}>
+            Ný stjórn SVEF tók við störfum á aðalfundi samtakanna þann 26. maí síðastliðinn.
+            Stjórnin samanstendur af fólki með ólíkan bakgrunn og reynslu sem á það
+            sameiginlegt að brenna fyrir vefmálum.
+          </figcaption>
+        </figure>
       </section>
 
       <section className={styles.section}>
@@ -116,17 +114,35 @@ export default function LandingPage() {
           í október. Nánari upplýsingar um dagskrá og staðsetningu verða birtar á
           samfélagsmiðlum og hér á vefnum á næstu vikum.
         </BlockPanel>
+
+        <ul className={styles.events}>
+          {events.map((e) => (
+            <li key={e.title} className={styles.event}>
+              <p className={styles.eventDate}>{e.date}</p>
+              <h3 className={styles.eventTitle}>{e.title}</h3>
+              <p className={styles.eventBody}>{e.body}</p>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div className={styles.footerMain}>
-            <img className={styles.footerLogo} src="/landing/logo.svg" alt="SVEF" width={86} height={56} />
-            <p className={styles.footerBlurb}>
-              Samtök vefiðnaðarins (SVEF) eru fagsamtök þeirra er starfa að vefmálum á Íslandi.
-              Samtökin hafa það að markmiði að miðla þekkingu og efla fagleg vinnubrögð í
-              greininni.
-            </p>
+            <div className={styles.footerLeft}>
+              <img
+                className={styles.footerLogo}
+                src="/landing/logo.svg"
+                alt="SVEF"
+                width={86}
+                height={56}
+              />
+              <p className={styles.footerBlurb}>
+                Samtök vefiðnaðarins (SVEF) eru fagsamtök þeirra er starfa að vefmálum á
+                Íslandi. Samtökin hafa það að markmiði að miðla þekkingu og efla fagleg
+                vinnubrögð í greininni.
+              </p>
+            </div>
             <div className={styles.footerContact}>
               <a className={styles.footerEmail} href="mailto:svef@svef.is">
                 svef@svef.is

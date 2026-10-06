@@ -11,50 +11,13 @@
 }
 
 .headline {
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--font-heading), system-ui, sans-serif;
   font-weight: var(--weight-regular);
   font-size: clamp(1.375rem, 3.4vw, 30px);
   line-height: 1.4;
   letter-spacing: -0.02em;
   max-width: 730px;
   margin: 0;
-}
-
-.heroSocials {
-  position: absolute;
-  right: var(--space-8);
-  top: 50%;
-  transform: translateY(-50%);
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  margin: 0;
-  padding: 0;
-
-  a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 40px;
-    background: var(--color-white);
-    filter: drop-shadow(0 0 20px rgba(137, 23, 225, 0.5));
-
-    &:focus-visible {
-      outline: 2px solid var(--color-violet-light);
-      outline-offset: 3px;
-    }
-  }
-
-  @media (max-width: 700px) {
-    position: static;
-    transform: none;
-    flex-direction: row;
-    justify-content: center;
-    margin-top: var(--space-4);
-  }
 }
 
 .section {
@@ -65,42 +28,129 @@
   padding: var(--space-16) var(--space-6);
 }
 
-.boardHead {
-  max-width: 1104px;
-  margin: 0 auto var(--space-12);
-  padding-left: clamp(0px, 8vw, 93px);
-}
-
 .boardTitle {
+  max-width: 1104px;
+  margin: 0 auto var(--space-10);
+  padding-left: clamp(0px, 8vw, 93px);
+  font-family: var(--font-heading), system-ui, sans-serif;
   font-size: clamp(2rem, 5vw, 48px);
+  text-transform: uppercase;
   letter-spacing: -0.96px;
-  margin: 0 0 var(--space-6);
 }
 
-.boardIntro {
-  max-width: 62ch;
-  color: var(--color-white);
-  font-weight: var(--weight-light);
-  font-size: var(--text-lg);
-  line-height: 1.5;
-  margin: 0;
-}
+// The group photo is a plain rectangle; the staircase is cut here rather than
+// baked into the file, so the edge stays crisp at any width and the asset stays
+// a 104 KB JPEG instead of a 1.1 MB transparent PNG. Percentages are measured
+// from the design export's alpha channel on its 1104x598 box:
+//   top    y=0   to x=562, then y=60
+//   bottom y=374 to x=152, then y=445 to x=443, then full height
+$board-clip: polygon(
+  0% 0%,
+  50.9058% 0%,
+  50.9058% 10.0334%,
+  100% 10.0334%,
+  100% 100%,
+  40.1268% 100%,
+  40.1268% 74.4147%,
+  13.7681% 74.4147%,
+  13.7681% 62.5418%,
+  0% 62.5418%
+);
 
-.boardGrid {
+.boardFigure {
   max-width: 1104px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 48px 26px;
+}
+
+.boardFrame {
+  position: relative;
+  aspect-ratio: 1104 / 598;
+}
+
+.boardPhoto {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  clip-path: $board-clip;
+}
+
+.boardOutline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+
+  path {
+    fill: none;
+    stroke: var(--color-violet);
+    stroke-width: 3;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.boardCaption {
+  // Sits under the photo's lower-right block, matching the design. `margin-left:
+  // auto` does the positioning — an equivalent `padding-left` would be counted
+  // inside `max-width` and crush the column to a few words per line.
+  max-width: 56ch;
+  margin: var(--space-8) 0 0 auto;
+  color: var(--color-white);
+  font-weight: var(--weight-light);
+  line-height: 1.5;
 
   @media (max-width: 860px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-left: 0;
+    margin-top: var(--space-6);
   }
-  @media (max-width: 600px) {
+}
+
+.events {
+  max-width: 1104px;
+  margin: var(--space-12) auto 0;
+  padding-left: clamp(0px, 8vw, 93px);
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-10);
+
+  @media (max-width: 760px) {
     grid-template-columns: minmax(0, 1fr);
-    gap: 40px;
-    max-width: 420px;
+    gap: var(--space-8);
   }
+}
+
+.event {
+  min-width: 0;
+  border-left: 3px solid var(--color-violet);
+  padding-left: var(--space-5);
+}
+
+.eventDate {
+  margin: 0 0 var(--space-2);
+  color: var(--color-violet-light);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.eventTitle {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-size: var(--text-xl);
+  line-height: 1.2;
+  overflow-wrap: break-word;
+}
+
+.eventBody {
+  margin: 0;
+  max-width: 46ch;
+  color: var(--color-white);
+  font-weight: var(--weight-light);
+  line-height: 1.5;
 }
 
 .footer {
@@ -118,8 +168,21 @@
 
 .footerMain {
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-10);
+
+  @media (max-width: 760px) {
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+}
+
+.footerLeft {
+  display: flex;
   flex-direction: column;
   gap: var(--space-8);
+  min-width: 0;
 }
 
 .footerLogo {
@@ -138,7 +201,13 @@
 .footerContact {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: var(--space-6);
+  flex-shrink: 0;
+
+  @media (max-width: 760px) {
+    align-items: flex-start;
+  }
 }
 
 .footerEmail {

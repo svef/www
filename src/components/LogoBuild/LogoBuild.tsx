@@ -1,7 +1,9 @@
 import styles from './LogoBuild.module.scss'
 
 // Hero centerpiece: the real SVEF logo assembling from its exported Figma pieces
-// (blocks → letterforms → tagline). Pure-CSS stagger; reduced-motion shows final state.
+// (blocks → letterforms). Pure-CSS stagger; reduced-motion shows final state.
+// The tagline lockup is deliberately not drawn here: the association name is
+// already the accessible name below, and the hero reads cleaner without it.
 export function LogoBuild() {
   return (
     <div className={styles.logo} role="img" aria-label="SVEF — Samtök vefiðnaðarins">
@@ -25,9 +27,6 @@ export function LogoBuild() {
       </span>
       <span className={styles.l4} style={{ top: '62.24%', right: '35.17%', bottom: '29.12%', left: '58.78%' }}>
         <img src="/landing/anim-f.svg" alt="" />
-      </span>
-      <span className={styles.tag} style={{ top: '85.9%', right: '18.04%', bottom: '9.75%', left: '18.18%' }}>
-        <img src="/landing/anim-tagline.svg" alt="" />
       </span>
     </div>
   )

@@ -1,6 +1,6 @@
 import type React from 'react'
 import type { Metadata } from 'next'
-import { Overpass } from 'next/font/google'
+import { Archivo, Overpass } from 'next/font/google'
 import {
   ColorSchemeScript,
   MantineProvider,
@@ -11,11 +11,18 @@ import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
 
 // The Figma landing uses Interstate (commercial). Overpass is the open-source
-// Interstate look-alike, so it's used for both body and headings here.
+// Interstate look-alike and carries the body copy; Archivo sets the headings.
 const overpass = Overpass({
   subsets: ['latin'],
   variable: '--font-body',
   weight: ['300', '400', '600', '700', '800'],
+  display: 'swap',
+})
+
+const archivo = Archivo({
+  subsets: ['latin'],
+  variable: '--font-heading',
+  weight: ['600', '700'],
   display: 'swap',
 })
 
@@ -30,8 +37,7 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
   return (
     <html
       lang="is"
-      className={overpass.variable}
-      style={{ ['--font-heading' as string]: 'var(--font-body)' }}
+      className={`${overpass.variable} ${archivo.variable}`}
       {...mantineHtmlProps}
     >
       <head>
