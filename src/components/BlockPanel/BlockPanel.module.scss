@@ -84,8 +84,11 @@
     73.15% 0,
     100% 0
   );
-  // Left padding clears the purple column (0-12.8%); bottom clears the notches.
-  padding: 16vw 10vw 24vw 14vw;
+  // Left padding clears the purple column, which ends at 12.8%, with room to
+  // spare rather than the few pixels a flush value leaves. Bottom padding clears
+  // the right-hand notch: the notch is `--cut-right` deep, so anything close to
+  // that puts the last line of text right on its corner.
+  padding: 20vw 13vw 34vw 19vw;
 }
 
 .mobileTitle {
@@ -106,8 +109,9 @@
   line-height: 1.5;
   color: var(--color-black);
   margin: 0;
-  // The body sits further in than the heading, as in the design.
-  padding-left: 9vw;
+  // The body sits further in than the heading, as in the design. Trimmed from
+  // 9vw to keep a readable measure now that the heading itself starts further in.
+  padding-left: 7vw;
 }
 
 @media (max-width: 700px) {
