@@ -30,7 +30,7 @@
 
 .boardTitle {
   max-width: 1104px;
-  margin: 0 auto var(--space-10);
+  margin: 0 auto var(--space-12);
   padding-left: clamp(0px, 8vw, 93px);
   font-family: var(--font-heading), system-ui, sans-serif;
   font-size: clamp(2rem, 5vw, 48px);
@@ -108,28 +108,44 @@ $board-clip: polygon(
 }
 
 .events {
-  max-width: 1104px;
+  // Matches the event panel above it (BlockPanel baseW 1200), so the cards line
+  // up with the panel's own edges rather than the narrower 1104 container.
+  max-width: 1200px;
   margin: var(--space-12) auto 0;
-  padding-left: clamp(0px, 8vw, 93px);
   list-style: none;
+  padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-10);
+  gap: var(--space-8);
 
-  @media (max-width: 760px) {
+  @media (max-width: 860px) {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-8);
+    gap: var(--space-6);
   }
 }
 
 .event {
   min-width: 0;
-  border-left: 3px solid var(--color-violet);
-  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-2);
+  border-top: 6px solid var(--color-violet);
+  padding: var(--space-8);
+
+  @media (max-width: 480px) {
+    padding: var(--space-6);
+  }
+}
+
+.eventTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .eventDate {
-  margin: 0 0 var(--space-2);
+  margin: 0;
   color: var(--color-violet-light);
   font-weight: var(--weight-bold);
   font-size: var(--text-sm);
@@ -137,20 +153,66 @@ $board-clip: polygon(
   letter-spacing: 0.08em;
 }
 
+.eventBadge {
+  margin: 0;
+  padding: 2px var(--space-3);
+  background: var(--color-violet);
+  color: var(--color-white);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .eventTitle {
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--space-4);
   font-family: var(--font-heading), system-ui, sans-serif;
-  font-size: var(--text-xl);
-  line-height: 1.2;
+  font-size: clamp(1.5rem, 3vw, 28px);
+  line-height: 1.15;
   overflow-wrap: break-word;
 }
 
 .eventBody {
-  margin: 0;
-  max-width: 46ch;
+  margin: 0 0 var(--space-8);
   color: var(--color-white);
   font-weight: var(--weight-light);
   line-height: 1.5;
+}
+
+.eventActions {
+  // `margin-top: auto` keeps the buttons on a shared baseline when one card's
+  // description runs a line longer than the other's.
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.eventPrimary,
+.eventSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-6);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
+}
+
+.eventPrimary {
+  // Shy White on Electric Violet is 6.22:1. Blakety Black on the same violet is
+  // 3.14:1 and fails AA — the trap the main site had to be corrected for.
+  background: var(--color-violet);
+  color: var(--color-white);
+}
+
+.eventSecondary {
+  border: 1px solid var(--surface-4);
+  color: var(--color-white);
 }
 
 .footer {
@@ -163,14 +225,14 @@ $board-clip: polygon(
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-10, 2.5rem);
+  gap: var(--space-12);
 }
 
 .footerMain {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--space-10);
+  gap: var(--space-12);
 
   @media (max-width: 760px) {
     flex-direction: column;

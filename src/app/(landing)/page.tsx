@@ -3,18 +3,28 @@ import { BlockPanel } from '@/components/BlockPanel/BlockPanel'
 import styles from './landing.module.scss'
 
 
-// Upcoming events shown under the event panel. Placeholder copy — the board
-// supplies the real titles, descriptions and venues.
+// Upcoming events shown under the event panel. Titles, descriptions and the
+// Facebook/ticket URLs are placeholders pending the board's own.
+//
+// The .ics files are deliberately all-day: we have the dates but not the start
+// times, and an all-day entry is honest where a guessed 17:00 would not be.
+// Give them DTSTART/DTEND with times once the schedule is settled.
 const events = [
   {
     date: '8. október',
     title: 'Haustopnun SVEF',
     body: 'Við hefjum starfsárið saman með léttum veitingum og spjalli. Kynnum dagskrá vetrarins og það sem framundan er hjá samtökunum.',
+    badge: 'Ókeypis',
+    action: { label: 'Viðburður á Facebook', href: '#' },
+    calendar: '/landing/haustopnun-svef.ics',
   },
   {
     date: '21. október',
     title: 'Vefkvöld: Aðgengi í verki',
     body: 'Stutt erindi frá fólki úr greininni um hvernig aðgengi er unnið í raunverulegum verkefnum — og hvað við getum gert betur.',
+    badge: null,
+    action: { label: 'Kaupa miða', href: '#' },
+    calendar: '/landing/vefkvold-adgengi.ics',
   },
 ]
 
@@ -56,8 +66,7 @@ export default function LandingPage() {
           SVEF eru fagsamtök þeirra er starfa að vefmálum á Íslandi. Samtökin hafa það að
           markmiði að miðla þekkingu og efla fagleg vinnubrögð í greininni, vera
           samræðuvettvangur félagsmanna og andlit stéttarinnar út á við. Á meðal verkefna
-          samtakanna eru hin árlegu Íslensku vefverðlaun og IceWeb-ráðstefnan, auk fjölda
-          smærri viðburða.
+          samtakanna eru hin árlegu Íslensku vefverðlaun, auk fjölda smærri viðburða.
         </BlockPanel>
       </section>
 
@@ -96,7 +105,7 @@ export default function LandingPage() {
 
       <section className={styles.section}>
         <BlockPanel
-          title="Fyrsti viðburður SVEF!"
+          title="Viðburðir"
           mobileBand="/landing/event-mobile-purple.svg"
           desktop={{
             baseW: 1200,
@@ -110,17 +119,28 @@ export default function LandingPage() {
             bodyIndent: 93,
           }}
         >
-          Stjórnin vinnur nú að mótun starfsársins 2025–2026, sem hefst formlega með viðburði
-          í október. Nánari upplýsingar um dagskrá og staðsetningu verða birtar á
-          samfélagsmiðlum og hér á vefnum á næstu vikum.
+          Starfsárið 2026–2027 er hafið. Hér fyrir neðan eru næstu viðburðir — nánari
+          upplýsingar um dagskrá og staðsetningu verða birtar á samfélagsmiðlum og hér á
+          vefnum.
         </BlockPanel>
 
         <ul className={styles.events}>
           {events.map((e) => (
             <li key={e.title} className={styles.event}>
-              <p className={styles.eventDate}>{e.date}</p>
+              <div className={styles.eventTop}>
+                <p className={styles.eventDate}>{e.date}</p>
+                {e.badge ? <p className={styles.eventBadge}>{e.badge}</p> : null}
+              </div>
               <h3 className={styles.eventTitle}>{e.title}</h3>
               <p className={styles.eventBody}>{e.body}</p>
+              <div className={styles.eventActions}>
+                <a className={styles.eventPrimary} href={e.action.href}>
+                  {e.action.label}
+                </a>
+                <a className={styles.eventSecondary} href={e.calendar} download>
+                  Setja í dagatal
+                </a>
+              </div>
             </li>
           ))}
         </ul>
@@ -158,7 +178,7 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-          <p className={styles.copy}>© SVEF 2025</p>
+          <p className={styles.copy}>© SVEF 2026</p>
         </div>
       </footer>
     </>
