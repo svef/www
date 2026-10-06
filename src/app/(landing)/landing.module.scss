@@ -1,6 +1,8 @@
 .hero {
+  // Was 800px when the hero carried the logo plus two lines of headline. With
+  // the headline out, that left the logo alone in a tall void.
   position: relative;
-  min-height: min(800px, 92vh);
+  min-height: min(480px, 60vh);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10,14 +12,10 @@
   padding: var(--space-16) var(--space-6);
 }
 
-.headline {
-  font-family: var(--font-heading), system-ui, sans-serif;
-  font-weight: var(--weight-regular);
-  font-size: clamp(1.375rem, 3.4vw, 30px);
-  line-height: 1.4;
-  letter-spacing: -0.02em;
-  max-width: 730px;
+.logoHeading {
   margin: 0;
+  display: flex;
+  justify-content: center;
 }
 
 .section {
@@ -199,7 +197,7 @@ $board-clip: polygon(
 }
 
 .speakers {
-  margin: 0 0 var(--space-4);
+  margin: 0 0 var(--space-8);
   padding: 0 0 0 var(--space-4);
   list-style: none;
   font-size: var(--text-sm);
@@ -219,18 +217,6 @@ $board-clip: polygon(
       background: var(--color-violet);
     }
   }
-}
-
-.eventPrice {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-3);
-  margin: 0 0 var(--space-8);
-
-
-  color: var(--fg-muted);
-  font-size: var(--text-sm);
-  line-height: 1.5;
 }
 
 .eventActions {
@@ -291,9 +277,18 @@ $board-clip: polygon(
 }
 
 .calendarMenu {
+  // Absolute so opening it does not nudge the card (and its neighbour) downward.
+  // `min-width: 100%` keeps it at least as wide as its toggle; `max-content`
+  // lets the longer label set the width rather than wrapping.
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  z-index: 2;
+  min-width: 100%;
+  width: max-content;
+  max-width: min(260px, 70vw);
   display: flex;
   flex-direction: column;
-  margin-top: var(--space-2);
   border: 1px solid var(--surface-4);
   background: var(--surface-1);
 

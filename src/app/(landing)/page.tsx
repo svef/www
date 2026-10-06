@@ -1,4 +1,4 @@
-import { LogoBuild } from '@/components/LogoBuild/LogoBuild'
+import { LandingLogo } from '@/components/LandingLogo/LandingLogo'
 import { BlockPanel } from '@/components/BlockPanel/BlockPanel'
 import styles from './landing.module.scss'
 
@@ -39,7 +39,6 @@ const events = [
       'Frilli, hönnuður hjá Kolibri',
       'Rakel Björt, framendaforritari hjá Helix Health',
     ],
-    price: null,
     action: { label: 'Viðburður á Facebook', href: 'https://fb.me/e/4iObUsrLH' },
     ics: '/landing/haustopnun-svef.ics',
     gcal: googleCalendar({
@@ -57,7 +56,7 @@ const events = [
     badge: null,
     venue: 'Harpa, Kaldalón (1. hæð)',
     directions: null,
-    body: 'Vefþróun er á stöðugri hreyfingu og breytingarnar gerast hratt. Við fáum reynslubolta úr vefheiminum til að rýna í nýjustu stefnur og strauma og spá fyrir um hvað er framundan. Viðburðurinn er haldinn af Ský í samstarfi við Samtök vefiðnaðarins.',
+    body: 'Vefþróun er á stöðugri hreyfingu og breytingarnar gerast hratt. Við fáum reynslubolta úr vefheiminum til að rýna í nýjustu stefnur og strauma og spá fyrir um hvað er framundan. Viðburðurinn er haldinn af Ský í samstarfi við Samtök vefiðnaðarins. Boðið er upp á veitingar.',
     speakers: [
       'Pablo Santos, Íslandsbanka',
       'Guðmundur Bjarni Sigurðsson og Jón Kári Eldon, Júní',
@@ -66,7 +65,6 @@ const events = [
       'Klara Arnalds, Avo',
       'Freyr Friðfinnsson, Samtökum iðnaðarins, stýrir umræðum',
     ],
-    price: ['Félagsmenn Ský 8.300 kr.', 'Utanfélagsmenn 14.900 kr.', 'Félagar utan vinnumarkaðar 6.000 kr.'],
     action: {
       label: 'Kaupa miða',
       href: 'https://www.sky.is/vidburdur/3165-2026-vidburdur-1021',
@@ -83,21 +81,19 @@ const events = [
 ]
 
 const footerSocials = [
-  { label: 'Facebook', icon: '/landing/ic-facebook.svg', href: '#' },
-  { label: 'Instagram', icon: '/landing/ic-instagram.svg', href: '#' },
-  { label: 'Messenger', icon: '/landing/ic-messenger.svg', href: '#' },
-  { label: 'LinkedIn', icon: '/landing/ic-linkedin.svg', href: '#' },
+  { label: 'Facebook', icon: '/landing/ic-facebook.svg', href: 'https://www.facebook.com/vefidnadurinn' },
+  { label: 'Instagram', icon: '/landing/ic-instagram.svg', href: 'https://www.instagram.com/_svef_/' },
+  // m.me/<page username> opens a Messenger thread with the page.
+  { label: 'Messenger', icon: '/landing/ic-messenger.svg', href: 'https://m.me/vefidnadurinn' },
+  { label: 'LinkedIn', icon: '/landing/ic-linkedin.svg', href: 'https://www.linkedin.com/company/sveficeland/' },
 ]
 
 export default function LandingPage() {
   return (
     <>
       <section className={styles.hero}>
-        <LogoBuild />
-        <h1 className={styles.headline}>
-          Framtíð SVEF er björt – komdu og vertu memm!
-          <br />
-          Stærsta partý ársins er handan við hornið…
+        <h1 className={styles.logoHeading}>
+          <LandingLogo />
         </h1>
       </section>
 
@@ -217,18 +213,6 @@ export default function LandingPage() {
                 ))}
               </ul>
 
-              {e.price ? (
-                <p className={styles.eventPrice}>
-                  {/* The separator trails its own item so a wrapped line never
-                      begins with a stray dot. */}
-                  {e.price.map((part, i) => (
-                    <span key={part}>
-                      {part}
-                      {i < e.price.length - 1 ? <span aria-hidden="true"> ·</span> : null}
-                    </span>
-                  ))}
-                </p>
-              ) : null}
 
               <div className={styles.eventActions}>
                 <a
