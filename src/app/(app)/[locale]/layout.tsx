@@ -11,6 +11,7 @@ import {
 } from '@mantine/core'
 import { theme } from '@/lib/theme'
 import { getDictionary, isLocale, LOCALES } from '@/lib/i18n'
+import { getSiteUrl } from '@/lib/site-url'
 import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
 
@@ -20,7 +21,7 @@ const body = Overpass({ subsets: ['latin'], variable: '--font-body', display: 's
 export const metadata: Metadata = {
   title: { default: 'SVEF — Samtök vefiðnaðarins', template: '%s | SVEF' },
   description: 'Samtök vefiðnaðarins — fagfélag fólksins sem býr til vefinn á Íslandi.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(getSiteUrl()),
 }
 
 export function generateStaticParams() {

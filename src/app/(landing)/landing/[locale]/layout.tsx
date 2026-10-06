@@ -9,6 +9,7 @@ import {
 } from '@mantine/core'
 import { theme } from '@/lib/theme'
 import { isLocale } from '@/lib/i18n'
+import { getSiteUrl } from '@/lib/site-url'
 import { getLandingCopy } from '../../content'
 import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
@@ -34,7 +35,7 @@ export async function generateMetadata({
   return {
     title: copy.meta.title,
     description: copy.meta.description,
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+    metadataBase: new URL(getSiteUrl()),
     // The public URLs are /is and /en; /landing/<locale> is an internal rewrite
     // target and must never be what search engines are pointed at.
     alternates: {
