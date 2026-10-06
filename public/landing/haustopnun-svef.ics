@@ -4,12 +4,13 @@ PRODID:-//SVEF//Landing//IS
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-UID:haustopnun-svef@svef.is
+UID:sigurvegarar-segja-fra-2026@svef.is
 DTSTAMP:20261006T000000Z
-DTSTART;VALUE=DATE:20261008
-DTEND;VALUE=DATE:20261009
-SUMMARY:Haustopnun SVEF
-DESCRIPTION:Haustopnun starfsársins hjá Samtökum vefidnadarins.
-URL:https://svef.is
+DTSTART:20261008T170000Z
+DTEND:20261008T200000Z
+SUMMARY:Sigurvegarar segja frá – SVEF x Kolibri
+LOCATION:Skrifstofur Kolibri\, Borgartún 26\, 105 Reykjavík
+DESCRIPTION:Verðlaunaverkefni Íslensku vefverðlaunanna 2025 - sögurnar á bak við þau. Ókeypis inn.
+URL:https://fb.me/e/4iObUsrLH
 END:VEVENT
 END:VCALENDAR

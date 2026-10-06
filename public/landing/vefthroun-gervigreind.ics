@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//SVEF//Landing//IS
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:vefthroun-gervigreind-2026@svef.is
+DTSTAMP:20261006T000000Z
+DTSTART:20261021T115000Z
+DTEND:20261021T140000Z
+SUMMARY:Vefþróun og gervigreind: Hvað er framundan?
+LOCATION:Harpa\, Kaldalón (1. hæð)\, Reykjavík
+DESCRIPTION:Viðburður Ský í samstarfi við Samtök vefiðnaðarins.
+URL:https://www.sky.is/vidburdur/3165-2026-vidburdur-1021
+END:VEVENT
+END:VCALENDAR

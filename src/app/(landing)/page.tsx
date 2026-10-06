@@ -3,28 +3,82 @@ import { BlockPanel } from '@/components/BlockPanel/BlockPanel'
 import styles from './landing.module.scss'
 
 
-// Upcoming events shown under the event panel. Titles, descriptions and the
-// Facebook/ticket URLs are placeholders pending the board's own.
-//
-// The .ics files are deliberately all-day: we have the dates but not the start
-// times, and an all-day entry is honest where a guessed 17:00 would not be.
-// Give them DTSTART/DTEND with times once the schedule is settled.
+// Builds a Google Calendar "add event" URL. Iceland keeps UTC all year, so the
+// Z timestamps below are the local times exactly — no offset maths needed.
+function googleCalendar(e: {
+  title: string
+  start: string
+  end: string
+  location: string
+  summary: string
+}) {
+  // Built by hand rather than with URLSearchParams: that would percent-encode the
+  // slash in `dates`, and Google's template expects a literal START/END separator.
+  const p = [
+    'action=TEMPLATE',
+    `text=${encodeURIComponent(e.title)}`,
+    `dates=${e.start}/${e.end}`,
+    `location=${encodeURIComponent(e.location)}`,
+    `details=${encodeURIComponent(e.summary)}`,
+  ]
+  return `https://calendar.google.com/calendar/render?${p.join('&')}`
+}
+
 const events = [
   {
     date: '8. október',
-    title: 'Haustopnun SVEF',
-    body: 'Við hefjum starfsárið saman með léttum veitingum og spjalli. Kynnum dagskrá vetrarins og það sem framundan er hjá samtökunum.',
+    time: '17:00–20:00',
+    title: 'Sigurvegarar segja frá – SVEF x Kolibri',
     badge: 'Ókeypis',
-    action: { label: 'Viðburður á Facebook', href: '#' },
-    calendar: '/landing/haustopnun-svef.ics',
+    venue: 'Skrifstofur Kolibri, Borgartún 26, 105 Reykjavík',
+    directions:
+      'https://www.google.com/maps/search/?api=1&query=Borgart%C3%BAn+26%2C+105+Reykjav%C3%ADk',
+    body: 'SVEF og Kolibri blása til fyrsta viðburðar vetrarins. Við kynnumst verðlaunaverkefnum af Íslensku vefverðlaununum — sögunum á bak við þau og hvar þau standa í dag. Erindi 17–18:30, spjall og tengslamyndun til 20. Léttar veitingar í boði.',
+    speakers: [
+      'Helena Rut Sveinsdóttir og Gunnar Bjarki Björnsson, stofnendur Undralings',
+      'Frilli, hönnuður hjá Kolibri',
+      'Rakel Björt, framendaforritari hjá Helix Health',
+    ],
+    price: null,
+    action: { label: 'Viðburður á Facebook', href: 'https://fb.me/e/4iObUsrLH' },
+    ics: '/landing/haustopnun-svef.ics',
+    gcal: googleCalendar({
+      title: 'Sigurvegarar segja frá – SVEF x Kolibri',
+      start: '20261008T170000Z',
+      end: '20261008T200000Z',
+      location: 'Skrifstofur Kolibri, Borgartún 26, 105 Reykjavík',
+      summary: 'Verðlaunaverkefni Íslensku vefverðlaunanna 2025. Ókeypis inn.',
+    }),
   },
   {
     date: '21. október',
-    title: 'Vefkvöld: Aðgengi í verki',
-    body: 'Stutt erindi frá fólki úr greininni um hvernig aðgengi er unnið í raunverulegum verkefnum — og hvað við getum gert betur.',
+    time: '11:50–14:00',
+    title: 'Vefþróun og gervigreind: Hvað er framundan?',
     badge: null,
-    action: { label: 'Kaupa miða', href: '#' },
-    calendar: '/landing/vefkvold-adgengi.ics',
+    venue: 'Harpa, Kaldalón (1. hæð)',
+    directions: null,
+    body: 'Vefþróun er á stöðugri hreyfingu og breytingarnar gerast hratt. Við fáum reynslubolta úr vefheiminum til að rýna í nýjustu stefnur og strauma og spá fyrir um hvað er framundan. Viðburðurinn er haldinn af Ský í samstarfi við Samtök vefiðnaðarins.',
+    speakers: [
+      'Pablo Santos, Íslandsbanka',
+      'Guðmundur Bjarni Sigurðsson og Jón Kári Eldon, Júní',
+      'Ólafur Kjartansson, Hugsmiðjunni',
+      'Steinar Ingi Farestveit, Kolibri',
+      'Klara Arnalds, Avo',
+      'Freyr Friðfinnsson, Samtökum iðnaðarins, stýrir umræðum',
+    ],
+    price: ['Félagsmenn Ský 8.300 kr.', 'Utanfélagsmenn 14.900 kr.', 'Félagar utan vinnumarkaðar 6.000 kr.'],
+    action: {
+      label: 'Kaupa miða',
+      href: 'https://www.sky.is/vidburdur/3165-2026-vidburdur-1021',
+    },
+    ics: '/landing/vefthroun-gervigreind.ics',
+    gcal: googleCalendar({
+      title: 'Vefþróun og gervigreind: Hvað er framundan?',
+      start: '20261021T115000Z',
+      end: '20261021T140000Z',
+      location: 'Harpa, Kaldalón (1. hæð), Reykjavík',
+      summary: 'Viðburður Ský í samstarfi við Samtök vefiðnaðarins.',
+    }),
   },
 ]
 
@@ -128,18 +182,76 @@ export default function LandingPage() {
           {events.map((e) => (
             <li key={e.title} className={styles.event}>
               <div className={styles.eventTop}>
-                <p className={styles.eventDate}>{e.date}</p>
+                <p className={styles.eventWhen}>
+                  <span>{e.date}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{e.time}</span>
+                </p>
                 {e.badge ? <p className={styles.eventBadge}>{e.badge}</p> : null}
               </div>
+
               <h3 className={styles.eventTitle}>{e.title}</h3>
+
+              <p className={styles.eventVenue}>
+                {e.venue}
+                {e.directions ? (
+                  <>
+                    {' '}
+                    <a
+                      className={styles.eventDirections}
+                      href={e.directions}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Leiðarlýsing
+                    </a>
+                  </>
+                ) : null}
+              </p>
+
               <p className={styles.eventBody}>{e.body}</p>
+
+              <ul className={styles.speakers}>
+                {e.speakers.map((sp) => (
+                  <li key={sp}>{sp}</li>
+                ))}
+              </ul>
+
+              {e.price ? (
+                <p className={styles.eventPrice}>
+                  {/* The separator trails its own item so a wrapped line never
+                      begins with a stray dot. */}
+                  {e.price.map((part, i) => (
+                    <span key={part}>
+                      {part}
+                      {i < e.price.length - 1 ? <span aria-hidden="true"> ·</span> : null}
+                    </span>
+                  ))}
+                </p>
+              ) : null}
+
               <div className={styles.eventActions}>
-                <a className={styles.eventPrimary} href={e.action.href}>
+                <a
+                  className={styles.eventPrimary}
+                  href={e.action.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {e.action.label}
                 </a>
-                <a className={styles.eventSecondary} href={e.calendar} download>
-                  Setja í dagatal
-                </a>
+                {/* A plain <details> rather than a scripted menu: the page ships no
+                    client JS, and a disclosure is keyboard-operable for free. */}
+                <details className={styles.calendar}>
+                  <summary className={styles.calendarToggle}>Setja í dagatal</summary>
+                  <div className={styles.calendarMenu}>
+                    <a href={e.gcal} target="_blank" rel="noreferrer">
+                      Google Calendar
+                    </a>
+                    <a href={e.ics} download>
+                      Apple, Outlook (.ics)
+                    </a>
+                  </div>
+                </details>
               </div>
             </li>
           ))}
