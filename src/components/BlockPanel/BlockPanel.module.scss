@@ -35,23 +35,57 @@
   margin: 0;
 }
 
-// Mobile flow layout (purple band + white panel + readable text)
+// Mobile composition. Derived from the Figma mobile export (`about-mobile.svg`,
+// 499 units wide): the white panel is full-bleed with the export's stepped top and
+// notched bottom corners, and the purple shape is overlaid so its left column
+// descends over the white rather than stopping above it. The white is clipped
+// rather than drawn as a second image so the panel can grow with its text.
 .mobile {
   display: none;
+  position: relative;
+  // Full-bleed: cancel the section's horizontal padding so both shapes reach the
+  // screen edges, as they do in the design.
+  margin-inline: calc(-1 * var(--space-6));
+  // 137 of 499 — where the white panel's top edge begins on the right.
+  padding-top: min(27.5vw, 137px);
 }
 
 .mobileBand {
-  display: block;
-  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  // 466 of 499. Height follows from the SVG's own aspect ratio.
+  width: 93.39%;
   height: auto;
+  // Above the white panel, so the left column reads as overlapping it.
+  z-index: 1;
+  pointer-events: none;
 }
 
 .mobileWhite {
   position: relative;
-  margin-top: -12%;
   background: var(--color-white);
   color: var(--color-black);
-  padding: var(--space-8) var(--space-6) var(--space-12);
+  // Offsets from the export, as a share of its 499-unit width, capped in px so
+  // the notches stay proportionate on a phone and don't become craters on a
+  // tablet-width screen approaching the 700px breakpoint.
+  --cut-right: min(23.2vw, 116px);
+  --cut-left: min(15.4vw, 77px);
+  --step: min(7.4vw, 37px);
+  clip-path: polygon(
+    100% calc(100% - var(--cut-right)),
+    77.4% calc(100% - var(--cut-right)),
+    77.4% 100%,
+    17.6% 100%,
+    17.6% calc(100% - var(--cut-left)),
+    8.02% calc(100% - var(--cut-left)),
+    8.02% var(--step),
+    73.15% var(--step),
+    73.15% 0,
+    100% 0
+  );
+  // Left padding clears the purple column (0-12.8%); bottom clears the notches.
+  padding: 16vw 10vw 24vw 14vw;
 }
 
 .mobileTitle {
@@ -72,7 +106,8 @@
   line-height: 1.5;
   color: var(--color-black);
   margin: 0;
-  padding-left: var(--space-6);
+  // The body sits further in than the heading, as in the design.
+  padding-left: 9vw;
 }
 
 @media (max-width: 700px) {
