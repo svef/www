@@ -12,6 +12,7 @@ import {
 import { theme } from '@/lib/theme'
 import { getDictionary, isLocale, LOCALES } from '@/lib/i18n'
 import { getSiteUrl } from '@/lib/site-url'
+import { Analytics } from '@/components/Analytics/Analytics'
 import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
 
@@ -85,6 +86,7 @@ export default async function LocaleLayout({
             year={2026}
           />
         </MantineProvider>
+        <Analytics />
       </body>
     </html>
   )

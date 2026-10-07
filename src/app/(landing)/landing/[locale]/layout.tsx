@@ -10,6 +10,7 @@ import {
 import { theme } from '@/lib/theme'
 import { isLocale } from '@/lib/i18n'
 import { getSiteUrl } from '@/lib/site-url'
+import { Analytics } from '@/components/Analytics/Analytics'
 import { getLandingCopy } from '../../content'
 import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
@@ -74,6 +75,7 @@ export default async function LandingLayout({
         <MantineProvider theme={theme} forceColorScheme="dark">
           {children}
         </MantineProvider>
+        <Analytics />
       </body>
     </html>
   )
