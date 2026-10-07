@@ -9,6 +9,7 @@ import { findNewsArticle, listNewsSlugs } from '@/lib/content/news'
 import { RichText } from '@/components/RichText/RichText'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { ShareRow } from '@/components/ShareRow/ShareRow'
+import { getSiteUrl } from '@/lib/site-url'
 import styles from './article.module.scss'
 
 type Params = Promise<{ locale: string; slug: string }>
@@ -81,8 +82,7 @@ export async function generateMetadata({
 }
 
 function absoluteUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  return new URL(path, base).toString()
+  return new URL(path, getSiteUrl()).toString()
 }
 
 export default async function NewsArticlePage({ params }: { params: Params }) {

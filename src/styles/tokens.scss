@@ -1,7 +1,8 @@
 // SVEF design tokens — derived from the exported design system
 // (.local/svef/SVEF Design System (standalone).html). Dark, electric-violet brand.
-// Fonts (Overpass body / Noto Sans headings) are provided as CSS vars by next/font
-// in the root layout: --font-body, --font-heading.
+// Fonts are provided as CSS vars by next/font in the root layout: --font-body and
+// --font-heading both resolve to Archivo, and --font-mono to Overpass Mono, which
+// the design uses for small uppercase labels.
 :root {
   // Brand
   --color-violet: #8917e1; // Electric Violet — primary

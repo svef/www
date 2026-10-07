@@ -3,6 +3,8 @@ import { isLocale, type Locale } from '@/lib/i18n'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { Section } from '@/components/Section/Section'
 import { ContactForm } from '@/components/ContactForm/ContactForm'
+import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
+import { getSiteChrome } from '@/lib/content/site-settings'
 import styles from './contact.module.scss'
 
 const content: Record<
@@ -48,6 +50,7 @@ export default async function ContactPage({
   const { locale } = await params
   if (!isLocale(locale)) notFound()
   const c = content[locale]
+  const chrome = await getSiteChrome(locale)
 
   return (
     <>
@@ -56,23 +59,20 @@ export default async function ContactPage({
         <div className={styles.layout}>
           <div className={styles.direct}>
             <h2 className={styles.subhead}>{c.reachUs}</h2>
-            <a href="mailto:svef@svef.is" className={styles.email}>
-              svef@svef.is
+            <a href={`mailto:${chrome.contactEmail}`} className={styles.email}>
+              {chrome.contactEmail}
             </a>
-            <ul className={styles.socials}>
-              <li>
-                <a href="#">Facebook</a>
-              </li>
-              <li>
-                <a href="#">Instagram</a>
-              </li>
-              <li>
-                <a href="#">X</a>
-              </li>
-              <li>
-                <a href="#">LinkedIn</a>
-              </li>
-            </ul>
+            {chrome.socials.length > 0 && (
+              <ul className={styles.socials}>
+                {chrome.socials.map((social) => (
+                  <li key={social.name}>
+                    <a href={social.href} aria-label={social.name}>
+                      <SocialIcon name={social.icon} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <ContactForm labels={c.labels} />
         </div>

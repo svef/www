@@ -24,10 +24,12 @@ type SiteSettingsAllLocales = Omit<SiteSetting, 'tagline' | 'footerBlurb'> & {
   footerBlurb: AllLocales<string>
 }
 
+export type SocialIcon = 'facebook' | 'instagram' | 'linkedin' | 'messenger'
+
 export interface SocialLink {
-  /** Two-letter mark the footer shows, as the design draws it. */
-  short: string
-  /** The network's name, for the accessible name. */
+  /** Which brand icon to draw. */
+  icon: SocialIcon
+  /** The network's name. The icon carries no text, so this is the accessible name. */
   name: string
   href: string
 }
@@ -63,11 +65,15 @@ export interface SiteChrome {
 }
 
 const NETWORKS = [
-  { field: 'facebook', short: 'FB', name: 'Facebook' },
-  { field: 'instagram', short: 'IG', name: 'Instagram' },
-  { field: 'x', short: 'X', name: 'X' },
-  { field: 'linkedin', short: 'LI', name: 'LinkedIn' },
-] as const satisfies readonly { field: keyof NonNullable<SiteSetting['social']>; short: string; name: string }[]
+  { field: 'facebook', icon: 'facebook', name: 'Facebook' },
+  { field: 'instagram', icon: 'instagram', name: 'Instagram' },
+  { field: 'linkedin', icon: 'linkedin', name: 'LinkedIn' },
+  { field: 'messenger', icon: 'messenger', name: 'Messenger' },
+] as const satisfies readonly {
+  field: keyof NonNullable<SiteSetting['social']>
+  icon: SocialIcon
+  name: string
+}[]
 
 /** Fallback address, matching the field's `defaultValue`. */
 const FALLBACK_EMAIL = 'svef@svef.is'
@@ -75,9 +81,7 @@ const FALLBACK_EMAIL = 'svef@svef.is'
 /**
  * A social field is a link only when it is an absolute URL.
  *
- * The four fields are plain text and every one of them is empty today — the
- * design export draws FB / IG / X / LI but carries no URLs, so the seed leaves
- * them null rather than guessing at profiles. Anything that is not an
+ * The fields are plain text. Anything that is not an
  * `http(s)` URL is therefore dropped rather than rendered: a blank field, a
  * stray space, or a half-typed `facebook.com/svef` would otherwise each become
  * a link that goes nowhere, which is the exact placeholder this replaces.
@@ -86,7 +90,7 @@ function toSocialLink(network: (typeof NETWORKS)[number], raw: unknown): SocialL
   if (typeof raw !== 'string') return null
   const href = raw.trim()
   if (!/^https?:\/\/\S+$/i.test(href)) return null
-  return { short: network.short, name: network.name, href }
+  return { icon: network.icon, name: network.name, href }
 }
 
 /**

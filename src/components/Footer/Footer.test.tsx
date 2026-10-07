@@ -3,10 +3,11 @@ import { render, screen } from '@testing-library/react'
 import { MantineProvider } from '@mantine/core'
 import { Footer } from './Footer'
 import { is } from '@/lib/i18n/is'
+import type { SocialLink } from '@/lib/content/site-settings'
 
-const socials = [
-  { short: 'FB', name: 'Facebook', href: 'https://www.facebook.com/svef' },
-  { short: 'LI', name: 'LinkedIn', href: 'https://www.linkedin.com/company/svef' },
+const socials: SocialLink[] = [
+  { icon: 'facebook', name: 'Facebook', href: 'https://www.facebook.com/vefidnadurinn' },
+  { icon: 'linkedin', name: 'LinkedIn', href: 'https://www.linkedin.com/company/sveficeland/' },
 ]
 
 function renderFooter(overrides: Partial<Parameters<typeof Footer>[0]> = {}) {
@@ -47,14 +48,12 @@ describe('Footer', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(2)
   })
 
-  it('names a social link by its network, keeping the visible mark in the name', () => {
-    // WCAG 2.5.3: replacing "FB" with an `aria-label` of "Facebook" would leave
-    // a speech-input user with nothing to say.
+  it('names a social link by its network', () => {
+    // The link's content is an icon with no text, so `aria-label` is the only
+    // accessible name available. WCAG 2.5.3 does not apply where there is no
+    // visible label for the name to contradict.
     renderFooter({ socials })
-    // jsdom's name computation joins the two text nodes without a separator,
-    // where a browser inserts one; the assertion tolerates both.
-    const link = screen.getByRole('link', { name: /^FB\s*Facebook$/ })
+    const link = screen.getByRole('link', { name: 'Facebook' })
     expect(link).toHaveAttribute('href', socials[0].href)
-    expect(link).toHaveTextContent('FB')
   })
 })

@@ -36,6 +36,7 @@ export const theme = createTheme({
   white: '#FCFBFE',
   black: '#09060C',
   fontFamily: 'var(--font-body), system-ui, sans-serif',
+  fontFamilyMonospace: 'var(--font-mono), ui-monospace, monospace',
   headings: {
     fontFamily: 'var(--font-heading), var(--font-body), system-ui, sans-serif',
     fontWeight: '800',

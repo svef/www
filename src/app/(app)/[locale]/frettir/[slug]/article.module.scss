@@ -10,6 +10,7 @@
 
 .back {
   display: inline-block;
+  font-family: var(--font-mono), ui-monospace, monospace;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: var(--text-sm);

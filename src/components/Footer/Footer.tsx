@@ -1,5 +1,5 @@
-import { VisuallyHidden } from '@mantine/core'
 import { Logo } from '@/components/Logo/Logo'
+import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
 import { BlockMotif } from '@/components/BlockMotif/BlockMotif'
 import type { SocialLink } from '@/lib/content/site-settings'
 import styles from './Footer.module.scss'
@@ -35,7 +35,7 @@ export function Footer({
       <BlockMotif className={styles.motif} />
       <div className={styles.inner}>
         <div className={styles.brand}>
-          <Logo />
+          <Logo tone="inverse" size="88px" />
           <p className={styles.blurb} lang={blurbLang}>
             {blurb}
           </p>
@@ -49,17 +49,13 @@ export function Footer({
               {socials.map((s) => (
                 <li key={s.name}>
                   {/*
-                    The design draws a two-letter mark, which is a thin thing to
-                    hear read out. The network's name is appended out of sight
-                    rather than replacing the mark with `aria-label`: the
-                    accessible name has to contain the visible text (WCAG 2.5.3
-                    Label in Name), and this is the same construction the
-                    language toggle already uses. X is its own mark, so it gets
-                    nothing appended — "X X" helps nobody.
+                    The icon carries no text, so the link needs its accessible
+                    name from `aria-label`. That is safe here precisely because
+                    there is no visible label for it to contradict — WCAG 2.5.3
+                    only bites when visible text and accessible name disagree.
                   */}
-                  <a href={s.href} className={styles.social}>
-                    {s.short}
-                    {s.name !== s.short && <VisuallyHidden> {s.name}</VisuallyHidden>}
+                  <a href={s.href} className={styles.social} aria-label={s.name}>
+                    <SocialIcon name={s.icon} />
                   </a>
                 </li>
               ))}

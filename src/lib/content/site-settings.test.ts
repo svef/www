@@ -81,13 +81,13 @@ describe('getSiteChrome', () => {
       social: {
         facebook: 'https://www.facebook.com/svef',
         instagram: null,
-        x: '',
         linkedin: 'https://www.linkedin.com/company/svef ',
+        messenger: '',
       },
     })
     expect((await getSiteChrome('is')).socials).toEqual([
-      { short: 'FB', name: 'Facebook', href: 'https://www.facebook.com/svef' },
-      { short: 'LI', name: 'LinkedIn', href: 'https://www.linkedin.com/company/svef' },
+      { icon: 'facebook', name: 'Facebook', href: 'https://www.facebook.com/svef' },
+      { icon: 'linkedin', name: 'LinkedIn', href: 'https://www.linkedin.com/company/svef' },
     ])
   })
 
@@ -95,7 +95,7 @@ describe('getSiteChrome', () => {
     // A half-typed profile is the placeholder this replaced, not a link.
     findGlobal.mockResolvedValue({
       ...settings,
-      social: { facebook: 'facebook.com/svef', instagram: '#', x: '/x', linkedin: 'javascript:1' },
+      social: { facebook: 'facebook.com/svef', instagram: '#', messenger: '/me', linkedin: 'javascript:1' },
     })
     expect((await getSiteChrome('is')).socials).toEqual([])
   })

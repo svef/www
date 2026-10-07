@@ -13,8 +13,9 @@ export const SiteSettings: GlobalConfig = {
       fields: [
         { name: 'facebook', type: 'text' },
         { name: 'instagram', type: 'text' },
-        { name: 'x', type: 'text' },
         { name: 'linkedin', type: 'text' },
+        // m.me/<page username> opens a Messenger thread with the page.
+        { name: 'messenger', type: 'text' },
       ],
     },
   ],

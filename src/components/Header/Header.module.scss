@@ -3,6 +3,12 @@
 $nav-breakpoint: 900px;
 
 .header {
+  // Sticky rather than fixed: the header keeps its place in the flow, so nothing
+  // below it needs a compensating offset. The background is already opaque, so
+  // content scrolls under it rather than showing through.
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   // The export draws two different gaps: clamp(16px, 2.5vw, 32px) between the

@@ -1,7 +1,7 @@
 import type React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Noto_Sans, Overpass } from 'next/font/google'
+import { Archivo, Overpass_Mono } from 'next/font/google'
 import { Header } from '@/components/Header/Header'
 import { Footer } from '@/components/Footer/Footer'
 import {
@@ -12,16 +12,31 @@ import {
 import { theme } from '@/lib/theme'
 import { getDictionary, isLocale, LOCALES } from '@/lib/i18n'
 import { getSiteChrome } from '@/lib/content/site-settings'
+import { getSiteUrl } from '@/lib/site-url'
+import { Analytics } from '@/components/Analytics/Analytics'
 import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
 
-const heading = Noto_Sans({ subsets: ['latin'], variable: '--font-heading', display: 'swap' })
-const body = Overpass({ subsets: ['latin'], variable: '--font-body', display: 'swap' })
+// Archivo carries body and headings alike. The Figma specifies Interstate, which
+// is commercial; Archivo is the closest open substitute and reads correctly at
+// both text and display sizes. It replaced Noto Sans and Overpass on the landing
+// page first, and this brings the full site in line.
+const archivo = Archivo({
+  subsets: ['latin'],
+  variable: '--font-archivo',
+  weight: ['300', '400', '500', '600', '700', '800'],
+  display: 'swap',
+})
+
+// The design sets small uppercase labels — eyebrows, album meta, the share row —
+// in Overpass Mono. Nothing loaded a mono face before, so all of them fell back
+// to the body font and quietly stopped reading as labels.
+const mono = Overpass_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
 export const metadata: Metadata = {
   title: { default: 'SVEF — Samtök vefiðnaðarins', template: '%s | SVEF' },
   description: 'Samtök vefiðnaðarins — fagfélag fólksins sem býr til vefinn á Íslandi.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(getSiteUrl()),
 }
 
 // The layout reads the `site-settings` global for the footer, so it is a route
@@ -44,7 +59,9 @@ export default async function LocaleLayout({
   if (!isLocale(locale)) notFound()
 
   const t = getDictionary(locale)
-  const base = locale === 'en' ? '/en' : ''
+  // Every page sits under an explicit locale prefix now — Icelandic included —
+  // so this is no longer "empty for the default locale".
+  const base = `/${locale}`
   const navItems = [
     { href: `${base}/vefverdlaunin`, label: t.nav.awards },
     { href: `${base}/vidburdir`, label: t.nav.events },
@@ -57,7 +74,11 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className={`${heading.variable} ${body.variable}`}
+      className={`${archivo.variable} ${mono.variable}`}
+      style={{
+        ['--font-body' as string]: 'var(--font-archivo)',
+        ['--font-heading' as string]: 'var(--font-archivo)',
+      }}
       {...mantineHtmlProps}
     >
       <head>
@@ -104,6 +125,7 @@ export default async function LocaleLayout({
             year={2026}
           />
         </MantineProvider>
+        <Analytics />
       </body>
     </html>
   )

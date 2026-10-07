@@ -457,8 +457,14 @@ export const siteSettings = {
   footerBlurb:
     'SVEF er félag fólks sem starfar við vefinn á Íslandi. Við miðlum þekkingu og eflum fagleg vinnubrögð í greininni.',
   contactEmail: 'svef@svef.is',
-  // The export draws FB / IG / X / LI in the footer but carries no URLs, so the
-  // `social` group is left empty rather than pointed at guessed profiles.
+  // The association's real profiles, as used on the landing page.
+  social: {
+    facebook: 'https://www.facebook.com/vefidnadurinn',
+    instagram: 'https://www.instagram.com/_svef_/',
+    linkedin: 'https://www.linkedin.com/company/sveficeland/',
+    // m.me/<page username> opens a Messenger thread with the page.
+    messenger: 'https://m.me/vefidnadurinn',
+  },
 }
 
 /**

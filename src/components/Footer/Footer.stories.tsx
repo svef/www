@@ -28,10 +28,10 @@ export const Default: Story = {}
 export const WithSocials: Story = {
   args: {
     socials: [
-      { short: 'FB', name: 'Facebook', href: 'https://www.facebook.com/svef' },
-      { short: 'IG', name: 'Instagram', href: 'https://www.instagram.com/svef' },
-      { short: 'X', name: 'X', href: 'https://x.com/svef' },
-      { short: 'LI', name: 'LinkedIn', href: 'https://www.linkedin.com/company/svef' },
+      { icon: 'facebook', name: 'Facebook', href: 'https://www.facebook.com/vefidnadurinn' },
+      { icon: 'instagram', name: 'Instagram', href: 'https://www.instagram.com/_svef_/' },
+      { icon: 'messenger', name: 'Messenger', href: 'https://m.me/vefidnadurinn' },
+      { icon: 'linkedin', name: 'LinkedIn', href: 'https://www.linkedin.com/company/sveficeland/' },
     ],
   },
 }
@@ -40,8 +40,8 @@ export const WithSocials: Story = {
 export const SomeSocials: Story = {
   args: {
     socials: [
-      { short: 'FB', name: 'Facebook', href: 'https://www.facebook.com/svef' },
-      { short: 'LI', name: 'LinkedIn', href: 'https://www.linkedin.com/company/svef' },
+      { icon: 'facebook', name: 'Facebook', href: 'https://www.facebook.com/vefidnadurinn' },
+      { icon: 'linkedin', name: 'LinkedIn', href: 'https://www.linkedin.com/company/sveficeland/' },
     ],
   },
 }

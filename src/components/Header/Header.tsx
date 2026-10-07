@@ -36,7 +36,7 @@ export function Header({
   return (
     <header className={styles.header}>
       <Link href={homeHref} className={styles.logoLink} aria-label="SVEF">
-        <Logo />
+        <Logo size="60px" />
       </Link>
       <SiteNav
         items={navItems}
