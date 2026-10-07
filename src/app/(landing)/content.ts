@@ -70,14 +70,14 @@ const is: LandingCopy = {
     body: 'SVEF eru fagsamtök þeirra er starfa að vefmálum á Íslandi. Samtökin hafa það að markmiði að miðla þekkingu og efla fagleg vinnubrögð í greininni, vera samræðuvettvangur félagsmanna og andlit stéttarinnar út á við. Á meðal verkefna samtakanna eru hin árlegu Íslensku vefverðlaun, auk fjölda smærri viðburða.',
   },
   board: {
-    title: 'Stjórn SVEF',
+    title: 'Stjórn SVEF 2026–2027',
     alt: 'Stjórn SVEF saman á hópmynd.',
     caption:
-      'Ný stjórn SVEF tók við störfum á aðalfundi samtakanna þann 26. maí síðastliðinn. Stjórnin samanstendur af fólki með ólíkan bakgrunn og reynslu sem á það sameiginlegt að brenna fyrir vefmálum.',
+      'Ný stjórn SVEF tók við störfum á aðalfundi samtakanna þann 26. maí síðastliðinn. Stjórnin samanstendur af öflugu fólki með ólíkan bakgrunn og fjölbreytta reynslu en öll eigum við það sameiginlegt að brenna fyrir vefmálum.',
   },
   events: {
     title: 'Viðburðir',
-    body: 'Starfsárið 2026–2027 er hafið. Hér fyrir neðan eru næstu viðburðir — nánari upplýsingar um dagskrá og staðsetningu verða birtar á samfélagsmiðlum og hér á vefnum.',
+    body: 'Starfsárið 2026–2027 er hafið. Hér fyrir neðan má sjá næstu viðburði – nánari upplýsingar um dagskrá og staðsetningu verða birtar á samfélagsmiðlum og hér á vefnum.',
     items: [
       {
         date: '8. október',
@@ -110,14 +110,14 @@ const is: LandingCopy = {
         badge: null,
         venue: 'Harpa, Kaldalón (1. hæð)',
         directions: null,
-        body: 'Vefþróun er á stöðugri hreyfingu og breytingarnar gerast hratt. Við fáum reynslubolta úr vefheiminum til að rýna í nýjustu stefnur og strauma og spá fyrir um hvað er framundan. Viðburðurinn er haldinn af Ský í samstarfi við Samtök vefiðnaðarins. Boðið er upp á veitingar.',
+        body: 'Vefþróun er á stöðugri hreyfingu og breytingarnar gerast hratt. Við fáum reynslubolta úr vefheiminum til að rýna í nýjustu stefnur og strauma og spá fyrir um hvað er framundan. Viðburðurinn er haldinn af Ský í samstarfi við Samtök vefiðnaðarins.',
         speakers: [
           'Pablo Santos, Íslandsbanka',
           'Guðmundur Bjarni Sigurðsson og Jón Kári Eldon, Júní',
           'Ólafur Kjartansson, Hugsmiðjunni',
           'Steinar Ingi Farestveit, Kolibri',
           'Klara Arnalds, Avo',
-          'Freyr Friðfinnsson, Samtökum iðnaðarins, stýrir umræðum',
+          'Freyr Friðfinnsson hjá Samtökum iðnaðarins stýrir umræðum',
         ],
         action: {
           label: 'Kaupa miða',
@@ -157,19 +157,19 @@ const en: LandingCopy = {
   logoLabel: 'SVEF — the Icelandic Web Industry Association',
   about: {
     title: 'About SVEF',
-    body: 'SVEF is the professional association for people working on the web in Iceland. Our aim is to share knowledge and raise professional standards in the field, to be a forum for discussion among members, and to represent the profession publicly. The association runs the annual Icelandic Web Awards, alongside a range of smaller events.',
+    body: 'SVEF is the Icelandic Web Industry Association. Our aim is to share knowledge and raise professional standards, provide a forum for discussion among members, and represent the industry publicly. SVEF organizes the annual Icelandic Web Awards, as well as a range of smaller events throughout the year.',
   },
   board: {
-    title: 'The SVEF board',
+    title: 'SVEF Board 2026–2027',
     alt: 'The SVEF board together in a group photograph.',
     caption:
-      'A new board took office at the association’s annual general meeting on 26 May. Its members come from different backgrounds and bring different experience, united by a shared enthusiasm for the web.',
+      'SVEF’s new board took office at the association’s annual general meeting on May 26. Its members come from diverse educational and professional backgrounds and have a wide range of experience – all united by a shared enthusiasm for the web.',
   },
   events: {
     title: 'Events',
     // The language note matters on the English page: both events run in Icelandic,
     // and that is not something an English reader can infer from the listing.
-    body: 'The 2026–2027 season is under way. The next events are listed below — further details of the programme and venues will be announced on social media and here on the site. Events are held in Icelandic unless stated otherwise.',
+    body: 'The 2026–2027 season is under way. The next events are listed below – further details of the programme and venues will be announced on social media and here on the site. Events are held in Icelandic unless stated otherwise.',
     items: [
       {
         date: '8 October',
@@ -203,14 +203,14 @@ const en: LandingCopy = {
         badge: null,
         venue: 'Harpa, Kaldalón (1st floor)',
         directions: null,
-        body: 'Web development is in constant motion and the changes come quickly. We bring together experienced people from the web industry to examine the latest trends and to consider what lies ahead. The event is held by Ský in collaboration with SVEF. Refreshments will be served.',
+        body: 'Web development is in constant motion and the changes come quickly. We bring together experienced people from the web industry to examine the latest trends and to consider what lies ahead. The event is held by Ský in collaboration with SVEF.',
         speakers: [
           'Pablo Santos, Íslandsbanki',
           'Guðmundur Bjarni Sigurðsson and Jón Kári Eldon, Júní',
           'Ólafur Kjartansson, Hugsmiðjan',
           'Steinar Ingi Farestveit, Kolibri',
           'Klara Arnalds, Avo',
-          'Freyr Friðfinnsson, Federation of Icelandic Industries, moderates',
+          'Freyr Friðfinnsson of the Federation of Icelandic Industries moderates the discussion',
         ],
         action: {
           label: 'Buy tickets',
