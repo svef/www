@@ -354,3 +354,132 @@ $nav-breakpoint: 900px;
     transition: none;
   }
 }
+
+// --- Submenus -------------------------------------------------------------
+// A parent is a real link to its own page, with the disclosure as a separate
+// button beside it. Making the parent itself the trigger would put a page
+// behind a menu and leave no way to reach it.
+
+.hasSubmenu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.submenuToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--fg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 2px;
+  }
+}
+
+.chevron {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.16s ease;
+}
+
+.submenuToggle[aria-expanded='true'] .chevron {
+  transform: translateY(1px) rotate(225deg);
+}
+
+// A parent holding the current page is marked, but not with `aria-current` —
+// that belongs to the page you are actually on, and claiming it here would
+// announce two current pages.
+.navLink[data-holds-current='true']::after {
+  background: var(--surface-4);
+}
+
+.submenu {
+  display: none;
+  position: absolute;
+  top: calc(100% + var(--space-3));
+  left: 0;
+  z-index: 1;
+  min-width: 13rem;
+  margin: 0;
+  padding: var(--space-2) 0;
+  list-style: none;
+  background: var(--surface-2);
+  border: 1px solid var(--surface-4);
+
+  &[data-open='true'] {
+    display: block;
+  }
+}
+
+.submenuLink {
+  display: block;
+  padding: var(--space-2) var(--space-4);
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--surface-3);
+    color: var(--color-violet-light);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: -2px;
+  }
+
+  &[aria-current='page'] {
+    box-shadow: inset 3px 0 0 var(--color-violet);
+  }
+}
+
+@media (max-width: $nav-breakpoint) {
+  // Inside the open menu the panel is already a disclosure, so a second one
+  // nested in it is a door behind a door. The subpages are simply listed,
+  // indented under their parent, and the toggle has nothing left to do.
+  .hasSubmenu {
+    display: block;
+  }
+
+  .submenuToggle {
+    display: none;
+  }
+
+  .submenu {
+    display: block;
+    position: static;
+    min-width: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+  }
+
+  .submenuLink {
+    padding: var(--space-4) var(--space-4) var(--space-4) var(--space-8);
+    border-bottom: 1px solid var(--surface-3);
+
+    &[aria-current='page'] {
+      box-shadow: none;
+      border-left: 3px solid var(--color-violet);
+      background: var(--surface-1);
+    }
+  }
+}

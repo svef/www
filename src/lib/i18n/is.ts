@@ -22,6 +22,7 @@ export const is = {
     // Visible label on the small-screen menu toggle. It is the button's whole
     // accessible name — `aria-expanded` carries the state, so the name does not
     // change when the menu opens.
+    submenu: 'undirsíður',
     menu: 'Valmynd',
   },
   home: {

@@ -29,6 +29,7 @@ function markup() {
         <SiteNav
           items={items}
           menuLabel={is.nav.menu}
+        submenuLabel="undirsíður"
           navLabel={is.nav.primary}
           locale="is"
         >

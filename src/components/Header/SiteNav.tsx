@@ -10,6 +10,13 @@ import styles from './Header.module.scss'
 export interface HeaderNavItem {
   href: string
   label: string
+  /**
+   * Pages that live under this one. The parent stays a real link to its own
+   * page — it is not a label standing in for a menu — and the disclosure is a
+   * separate button beside it, so the page remains reachable by keyboard
+   * without opening anything.
+   */
+  children?: { href: string; label: string }[]
 }
 
 /**
@@ -53,10 +60,13 @@ export function SiteNav({
   items,
   menuLabel,
   navLabel,
+  submenuLabel,
   locale,
   children,
 }: {
   items: HeaderNavItem[]
+  /** Appended to a section's name on its disclosure button, e.g. "Um SVEF — undirsíður". */
+  submenuLabel: string
   /** Visible text of the toggle, and therefore its whole accessible name. */
   menuLabel: string
   navLabel: string
@@ -67,6 +77,46 @@ export function SiteNav({
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const toggleRef = useRef<HTMLButtonElement>(null)
+  /** `href` of the parent whose submenu is open, or `null`. One at a time. */
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
+  const submenuTriggers = useRef(new Map<string, HTMLButtonElement | null>())
+  /**
+   * Whether opening on hover makes sense at all. False on a touch screen, where
+   * `mouseenter` fires on a tap and would race the button's own click.
+   */
+  const [hoverCapable, setHoverCapable] = useState(false)
+
+  useEffect(() => {
+    const query = window.matchMedia('(hover: hover) and (pointer: fine)')
+    const sync = () => setHoverCapable(query.matches)
+    sync()
+    query.addEventListener('change', sync)
+    return () => query.removeEventListener('change', sync)
+  }, [])
+
+  // Escape closes the submenu first and the menu second, so one press does not
+  // dismiss more than the reader asked it to. Focus goes back to the button
+  // that opened it, which is where the reader was.
+  useEffect(() => {
+    if (!openSubmenu) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.stopPropagation()
+      const trigger = submenuTriggers.current.get(openSubmenu)
+      setOpenSubmenu(null)
+      trigger?.focus()
+    }
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Element | null
+      if (!target?.closest?.('header')) setOpenSubmenu(null)
+    }
+    document.addEventListener('keydown', onKeyDown, { capture: true })
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown, { capture: true })
+      document.removeEventListener('pointerdown', onPointerDown)
+    }
+  }, [openSubmenu])
 
   /**
    * Close on navigation, by comparing the path against the last one rendered.
@@ -100,9 +150,13 @@ export function SiteNav({
    */
   const currentPath = localePath(pathname, locale)
   const isCurrent = (href: string) => (href || '/') === currentPath
+  /** A parent whose submenu holds the current page is marked, but not as `aria-current`. */
+  const holdsCurrent = (item: HeaderNavItem) =>
+    item.children?.some((child) => isCurrent(child.href)) ?? false
 
   const close = useCallback((returnFocus: boolean) => {
     setOpen(false)
+    setOpenSubmenu(null)
     if (returnFocus) toggleRef.current?.focus()
   }, [])
 
@@ -156,19 +210,83 @@ export function SiteNav({
         <div id={PANEL_ID} className={styles.panel} data-open={open ? 'true' : undefined}>
           <nav aria-label={navLabel} className={styles.nav}>
             <ul className={styles.list}>
-              {items.map((item, index) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={styles.navLink}
-                    aria-current={isCurrent(item.href) ? 'page' : undefined}
-                    data-autofocus={index === 0 ? true : undefined}
-                    onClick={() => close(isCurrent(item.href))}
+              {items.map((item, index) => {
+                const submenuId = `${PANEL_ID}-${item.href.replace(/[^a-z0-9]+/gi, '-')}`
+                const expanded = openSubmenu === item.href
+                return (
+                  <li
+                    key={item.href}
+                    className={item.children ? styles.hasSubmenu : undefined}
+                    // Pointer-only: `onMouseEnter` fires on a tap too, which
+                    // would fight the button's own click. `hoverCapable` is
+                    // false on a touch screen, so there the button is the only
+                    // way in — which is the behaviour you want anyway.
+                    onMouseEnter={
+                      item.children && hoverCapable ? () => setOpenSubmenu(item.href) : undefined
+                    }
+                    onMouseLeave={
+                      item.children && hoverCapable ? () => setOpenSubmenu(null) : undefined
+                    }
                   >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+                    <Link
+                      href={item.href}
+                      className={styles.navLink}
+                      aria-current={isCurrent(item.href) ? 'page' : undefined}
+                      data-holds-current={holdsCurrent(item) ? 'true' : undefined}
+                      data-autofocus={index === 0 ? true : undefined}
+                      onClick={() => close(isCurrent(item.href))}
+                    >
+                      {item.label}
+                    </Link>
+
+                    {item.children && (
+                      <>
+                        <button
+                          type="button"
+                          ref={(el) => {
+                            submenuTriggers.current.set(item.href, el)
+                          }}
+                          className={styles.submenuToggle}
+                          aria-expanded={expanded}
+                          aria-controls={submenuId}
+                          // The link beside it already carries the page's name,
+                          // so naming this after the section would have a screen
+                          // reader read the same words twice in a row.
+                          aria-label={`${item.label} — ${submenuLabel}`}
+                          onClick={() => setOpenSubmenu(expanded ? null : item.href)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'ArrowDown') {
+                              event.preventDefault()
+                              setOpenSubmenu(item.href)
+                            }
+                          }}
+                        >
+                          <span className={styles.chevron} aria-hidden="true" />
+                        </button>
+
+                        <ul
+                          id={submenuId}
+                          className={styles.submenu}
+                          data-open={expanded ? 'true' : undefined}
+                        >
+                          {item.children.map((child) => (
+                            <li key={child.href}>
+                              <Link
+                                href={child.href}
+                                className={styles.submenuLink}
+                                aria-current={isCurrent(child.href) ? 'page' : undefined}
+                                onClick={() => close(isCurrent(child.href))}
+                              >
+                                {child.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           </nav>
         </div>

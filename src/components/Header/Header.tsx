@@ -21,12 +21,14 @@ export function Header({
   homeHref,
   navItems,
   menuLabel,
+  submenuLabel,
   navLabel,
   locale,
 }: {
   homeHref: string
   navItems: HeaderNavItem[]
   menuLabel: string
+  submenuLabel: string
   navLabel: string
   locale: Locale
 }) {
@@ -36,7 +38,13 @@ export function Header({
         <Link href={homeHref} className={styles.logoLink} aria-label="SVEF">
           <Logo />
         </Link>
-        <SiteNav items={navItems} menuLabel={menuLabel} navLabel={navLabel} locale={locale}>
+        <SiteNav
+          items={navItems}
+          menuLabel={menuLabel}
+          submenuLabel={submenuLabel}
+          navLabel={navLabel}
+          locale={locale}
+        >
           <LocaleToggle locale={locale} />
         </SiteNav>
       </div>

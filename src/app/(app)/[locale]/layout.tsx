@@ -68,7 +68,18 @@ export default async function LocaleLayout({
     { href: localePath('/vidburdir', locale), label: t.nav.events },
     { href: localePath('/vefverdlaunin', locale), label: t.nav.awards },
     { href: localePath('/frettir', locale), label: t.nav.news },
-    { href: localePath('/um-svef', locale), label: t.nav.about },
+    {
+      href: localePath('/um-svef', locale),
+      label: t.nav.about,
+      // The pages split out of About SVEF in #103. Web Awards gets a submenu
+      // of its own next, which is why this is a property of an item rather
+      // than a special case in the header.
+      children: [
+        { href: localePath('/stjorn', locale), label: t.about.boardTitle },
+        { href: localePath('/log-svef', locale), label: t.about.bylawsTitle },
+        { href: localePath('/spurt-og-svarad', locale), label: t.about.faqTitle },
+      ],
+    },
     { href: localePath('/skraning', locale), label: t.nav.membership },
   ]
   const chrome = await getSiteChrome(locale)
@@ -96,6 +107,7 @@ export default async function LocaleLayout({
             homeHref={`/${locale}`}
             navItems={navItems}
             menuLabel={t.nav.menu}
+            submenuLabel={t.nav.submenu}
             navLabel={t.nav.primary}
             locale={locale}
           />

@@ -12,6 +12,7 @@ export const en = {
     about: 'About SVEF',
     membership: 'Membership',
     contact: 'Contact',
+    submenu: 'subpages',
     menu: 'Menu',
   },
   home: {
