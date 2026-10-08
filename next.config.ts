@@ -49,6 +49,33 @@ const nextConfig: NextConfig = {
   // `remotePatterns` entry derived from a *required* `R2_PUBLIC_URL` (fail the
   // build if it's unset, not just at request time).
   images: {},
+
+  /**
+   * Keep preview deployments out of search results.
+   *
+   * Every branch build serves the whole site on its own hostname — dev.svef.is
+   * among them — with no canonical pointing at production, so an indexed
+   * preview competes with the real site exactly as the old WordPress did
+   * (svef/www#92).
+   *
+   * A header rather than a `robots.txt` disallow, for the reason set out in
+   * `src/app/robots.ts`: blocking the crawl would stop a crawler ever fetching
+   * the page, so it would never see the `noindex` — and anything already
+   * indexed would stay indexed with no way to ask for its removal. This covers
+   * every response, including files a `<meta>` tag cannot reach.
+   *
+   * `VERCEL_ENV` is 'production' only for the production deployment, 'preview'
+   * for every branch build, and unset locally.
+   */
+  async headers() {
+    if (!process.env.VERCEL_ENV || process.env.VERCEL_ENV === 'production') return []
+    return [
+      {
+        source: '/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+    ]
+  },
 }
 
 export default withPayload(nextConfig)

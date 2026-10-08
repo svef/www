@@ -9,10 +9,15 @@ import { getSiteUrl } from '@/lib/site-url'
  * surface — neither is a page, and both would only waste crawl budget and put
  * the admin's login screen in results.
  *
- * Deliberately *not* disallowing anything else. The instinct to hide a page
- * from search by blocking it here is the wrong tool: a blocked page cannot be
- * fetched, so its `noindex` is never seen, and a URL already in the index stays
- * there with no way to remove it. Allow the crawl, deny the indexing.
+ * Deliberately *not* disallowing anything else — including on preview
+ * deployments, which are a complete duplicate of the site on their own
+ * hostname. They are kept out of search by an `X-Robots-Tag: noindex` header
+ * (`next.config.ts`) rather than by being blocked here.
+ *
+ * That distinction is the whole trick, and it is easy to get backwards: a
+ * blocked page cannot be fetched, so its `noindex` is never seen, and a URL
+ * already in the index stays there with no way to ask for its removal. Allow
+ * the crawl, deny the indexing.
  */
 export default function robots(): MetadataRoute.Robots {
   const base = getSiteUrl()
