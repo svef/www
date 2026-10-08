@@ -35,7 +35,6 @@ export function Hero({
 }) {
   return (
     <section className={styles.hero}>
-      <BlockMotif className={styles.motifLeft} tone="mixed" />
       <BlockMotif className={styles.motifRight} />
       <div className={styles.inner}>
         {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}

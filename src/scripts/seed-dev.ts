@@ -128,9 +128,19 @@ async function seed(payload: Payload): Promise<void> {
         accessibility: event.accessibility ?? null,
         slug: event.slug,
         startDate: event.startDate,
+        ticketUrl: event.ticketUrl ?? null,
         title: event.title,
       },
-      event.titleEn ? { title: event.titleEn } : undefined,
+      // English overrides for the localized fields, not the title alone: an
+      // event whose body stayed Icelandic on /en would look translated and
+      // not be.
+      event.titleEn || event.descriptionEn || event.locationEn
+        ? {
+            ...(event.titleEn ? { title: event.titleEn } : {}),
+            ...(event.locationEn ? { location: event.locationEn } : {}),
+            ...(event.descriptionEn ? { description: richText(event.descriptionEn) } : {}),
+          }
+        : undefined,
     )
     eventIds.set(event.slug, id)
   }
@@ -160,7 +170,7 @@ async function seed(payload: Payload): Promise<void> {
       { title: { equals: gallery.title } },
       {
         date: gallery.date,
-        event: eventIds.get(gallery.eventSlug) ?? null,
+        event: gallery.eventSlug ? (eventIds.get(gallery.eventSlug) ?? null) : null,
         images: [],
         title: gallery.title,
       },

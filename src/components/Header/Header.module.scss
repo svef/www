@@ -2,10 +2,23 @@
 // `NAV_BREAKPOINT` in `SiteNav.tsx`, which closes an open menu on the way up.
 $nav-breakpoint: 900px;
 
+// A one-pixel marker in the flow above the header. `HeaderShell` watches it
+// with an IntersectionObserver: once it leaves the viewport the bar is no longer
+// at the top of the page. The negative margin keeps it from shifting anything.
+.sentinel {
+  height: 1px;
+  margin-bottom: -1px;
+}
+
 .header {
+  // Deep at rest, shallow once scrolling starts. The mark is deliberately taller
+  // than the bar and hangs below it, so these three move together.
+  --header-h: 88px;
+  --logo-width: 112px;
+  --logo-top: 12px;
+
   // Sticky rather than fixed: the header keeps its place in the flow, so nothing
-  // below it needs a compensating offset. The background is already opaque, so
-  // content scrolls under it rather than showing through.
+  // below it needs a compensating offset.
   position: sticky;
   top: 0;
   z-index: 20;
@@ -18,14 +31,49 @@ $nav-breakpoint: 900px;
   // which is how the right-hand pair drifted to 32px. The header carries the
   // smaller gap and `.nav` makes up the difference on its own side.
   gap: var(--space-4);
-  padding: var(--space-4) var(--space-6);
-  background: var(--bg);
+  // No vertical padding. The bar's depth is `--header-h` instead, which is what
+  // lets the mark exceed it rather than push it open, and `min-height` rather
+  // than `height` because the small-screen menu opens as a second row inside the
+  // header and has to be able to grow it.
+  padding: 0 var(--space-6);
+  min-height: var(--header-h);
+  // Slightly transparent with the page blurred behind it, so the bar reads as
+  // glass over the content rather than a lid on it.
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  // No hand-written -webkit- prefix here: Lightning CSS adds prefixes from
+  // browserslist, and writing both made it collapse them into the prefixed
+  // property alone, which left the standard one undefined.
+  backdrop-filter: blur(14px) saturate(140%);
   flex-wrap: wrap;
+  transition:
+    min-height 220ms ease,
+    background-color 220ms ease;
+}
+
+// Without the blur the translucency would just be a washed-out bar over moving
+// text, so it falls back to the solid canvas.
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .header {
+    background: var(--bg);
+  }
+}
+
+.header[data-compact='true'] {
+  --header-h: 60px;
+  --logo-width: 76px;
+  --logo-top: 8px;
 }
 
 .logoLink {
   text-decoration: none;
   flex-shrink: 0;
+  // Fixed to the bar's own depth and aligned to its top, so the mark inside —
+  // which is taller — spills out of the bottom instead of stretching the bar.
+  // Nothing clips it, so the shape carries on over the page beneath.
+  align-self: flex-start;
+  height: var(--header-h);
+  padding-top: var(--logo-top);
+  transition: height 220ms ease;
 }
 
 // The focus-trap wrapper and the disclosure panel both take part in the
@@ -48,6 +96,9 @@ $nav-breakpoint: 900px;
 .list {
   display: flex;
   align-items: center;
+  // The links' own line box is what fills the bar now that it has no vertical
+  // padding; they stay centred as it shrinks.
+  line-height: var(--header-h);
   gap: var(--space-6);
   list-style: none;
   margin: 0;
@@ -213,7 +264,12 @@ $nav-breakpoint: 900px;
 
 @media (max-width: $nav-breakpoint) {
   .header {
-    padding: var(--space-4);
+    padding: 0 var(--space-4);
+  }
+
+  // The open menu is a second row, so the links go back to their own leading.
+  .list {
+    line-height: normal;
   }
 
   .toggle {
@@ -289,6 +345,11 @@ $nav-breakpoint: 900px;
 @media (prefers-reduced-motion: reduce) {
   .panel {
     animation: none;
+  }
+
+  .header,
+  .logoLink {
+    transition: none;
   }
 
   .navLink,

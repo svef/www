@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Logo } from '@/components/Logo/Logo'
+import { HeaderShell } from './HeaderShell'
 import { LocaleToggle } from './LocaleToggle'
 import { SiteNav, type HeaderNavItem } from './SiteNav'
 import type { Locale } from '@/lib/i18n'
@@ -34,9 +35,9 @@ export function Header({
   locale: Locale
 }) {
   return (
-    <header className={styles.header}>
+    <HeaderShell>
       <Link href={homeHref} className={styles.logoLink} aria-label="SVEF">
-        <Logo size="60px" />
+        <Logo />
       </Link>
       <SiteNav
         items={navItems}
@@ -48,6 +49,6 @@ export function Header({
       >
         <LocaleToggle locale={locale} />
       </SiteNav>
-    </header>
+    </HeaderShell>
   )
 }

@@ -2,12 +2,14 @@
   position: relative;
   display: block;
   // The lockups live in one 720 x 717.4 space, each centred in it, so the mark
-  // keeps a constant box while the shape inside it changes. Width is a variable
-  // so the header, the footer and any future hero can each set their own.
-  --logo-width: 120px;
-  width: var(--logo-width);
+  // keeps a constant box while the shape inside it changes. The width is read
+  // from an inherited variable rather than declared here: the header sets it and
+  // changes it as the bar shrinks, and a declaration on this element would win
+  // over the inherited value.
+  width: var(--logo-width, 120px);
   aspect-ratio: 720 / 717.4;
   flex-shrink: 0;
+  transition: width 220ms ease;
 }
 
 .shape {
@@ -40,6 +42,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .logo,
   .shape,
   .letters {
     transition: none;

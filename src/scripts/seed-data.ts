@@ -119,6 +119,9 @@ export type EventFixture = {
   startDate: string
   endDate?: string
   location?: string
+  locationEn?: string
+  /** Where to buy a ticket. Without one the page renders no button. */
+  ticketUrl?: string
   /** Street line under `location` — the export's sidebar prints both. */
   venueAddress?: string
   /** ISK. The export gives these only for the 2026 awards. */
@@ -126,86 +129,55 @@ export type EventFixture = {
   memberPrice?: number
   accessibility?: string
   description?: Block[]
+  descriptionEn?: Block[]
 }
 
 export const events: EventFixture[] = [
+  // The association's real autumn programme. Both events are held in Icelandic,
+  // which the English copy says rather than leaving an English reader to find
+  // out on the night.
   {
-    slug: 'islensku-vefverdlaunin-2026',
-    title: 'Íslensku vefverðlaunin 2026',
-    titleEn: 'The Icelandic Web Awards 2026',
-    startDate: '2026-11-14T19:30:00.000Z',
-    endDate: '2026-11-15T01:00:00.000Z',
-    location: 'Harpa, Silfurberg',
-    // The four below are transcribed from the HAGNÝTAR UPPLÝSINGAR sidebar on
-    // the export's `event` page, which is where the export itself puts them.
-    //
-    // They arrive together with the removal of an `{ h2: 'Hagnýtar upplýsingar' }`
-    // heading and two sentences from `description` below, and that removal moves
-    // this fixture *towards* the export rather than away from it: the export's
-    // event body is exactly the three paragraphs that remain, and its facts are
-    // a `<dl>` in the sidebar, not prose. The two sentences were an
-    // approximation written when `events` had no field to hold them (svef/www#19
-    // adds the fields). Nothing here is invented and nothing attested is lost —
-    // every value below is the sidebar's own text.
-    //
-    // 20% off is not stored: it is what 15.120 is off 18.900.
-    venueAddress: 'Austurbakki 2, 101 Reykjavík',
-    ticketPrice: 18900,
-    memberPrice: 15120,
-    accessibility: 'Hjólastólaaðgengi, tónmöskvi og táknmálstúlkun í boði.',
+    slug: 'sigurvegarar-segja-fra-svef-x-kolibri',
+    title: 'Sigurvegarar segja frá – SVEF x Kolibri',
+    titleEn: 'Winners tell their stories – SVEF x Kolibri',
+    startDate: '2026-10-08T17:00:00.000Z',
+    endDate: '2026-10-08T20:00:00.000Z',
+    location: 'Skrifstofur Kolibri',
+    locationEn: 'Kolibri’s offices',
+    venueAddress: 'Borgartún 26, 105 Reykjavík',
+    // No `ticketPrice`: the event is free, and 0 would print as "0 kr.".
     description: [
-      'Íslensku vefverðlaunin eru haldin í 26. sinn og eru stærsta hátíð vefiðnaðarins á Íslandi. Verðlaunað er í 13 flokkum og dómnefnd skipuð fagfólki úr greininni velur sigurvegara.',
-      'Kvöldið hefst með fordrykk klukkan 19:30, verðlaunaafhending hefst 20:30 og að henni lokinni tekur við eftirpartý með plötusnúð. Klæðnaður: það sem þér líður vel í.',
-      'Innsendingar eru opnar til 10. október. Félagar í SVEF fá 20% afslátt af innsendingum og miðum, og fyrirtækjafélagar fá fimm frímiða.',
+      'SVEF og Kolibri blása til fyrsta viðburðar vetrarins. Við kynnumst verðlaunaverkefnum af Íslensku vefverðlaununum — sögunum á bak við þau og hvar þau standa í dag. Erindi 17–18:30, spjall og tengslamyndun eftirá. Léttar veitingar í boði.',
+      'Helena Rut og Gunnar Bjarki, stofnendur Undralings, segja okkur frá verkefninu sínu sem var valið app ársins, stafræn lausn ársins og verkefni ársins 2025!',
+      'Frilli, hönnuður hjá Kolibri, segir okkur frá Okkar heimi, sem var valinn samfélagsvefur ársins 2025.',
+      'Rakel Björt, framendaforritari hjá Helix Health, segir okkur frá Silva, sem hreppti verðlaunin fyrir tækninýtingu ársins 2025.',
+    ],
+    descriptionEn: [
+      'SVEF and Kolibri open the winter season. We get to know the award-winning projects from the Icelandic Web Awards — the stories behind them and where they stand today. Talks from 17:00 to 18:30, with conversation and networking afterwards. Light refreshments provided. The event is held in Icelandic.',
+      'Helena Rut and Gunnar Bjarki, founders of Undralingur, tell us about their project, which was named app of the year, digital solution of the year and project of the year 2025!',
+      'Frilli, designer at Kolibri, tells us about Okkar heimur, named community website of the year 2025.',
+      'Rakel Björt, front-end developer at Helix Health, tells us about Silva, which won the award for use of technology in 2025.',
     ],
   },
   {
-    slug: 'kludurkvold-oktober-2026',
-    title: 'Klúðurkvöld',
-    startDate: '2026-10-09T20:00:00.000Z',
-    location: 'Grandi 101',
-    description: ['Afslappað kvöld um að læra af mistökum.'],
-  },
-  {
-    slug: 'hadegisfyrirlestur-adgengi-i-raunheimum',
-    title: 'Hádegisfyrirlestur: Aðgengi í raunheimum',
-    startDate: '2026-09-21T12:00:00.000Z',
-    location: 'Zoom',
-    description: ['Hvernig WCAG lítur út í daglegri vinnu.'],
-  },
-  {
-    slug: 'vinnustofa-honnunarkerfi-fra-grunni',
-    title: 'Vinnustofa: Hönnunarkerfi frá grunni',
-    startDate: '2026-09-05T13:00:00.000Z',
-    location: 'Kvosin',
-    description: ['Hálfsdagsvinnustofa, 20 sæti.'],
-  },
-  // `location` on the next two comes from the export's `albums` metas
-  // ("KVOSIN · 22. MAÍ 2026", "GRANDI 101 · 13. MAR 2026") — its `eventsPast`
-  // rows carry no venue.
-  {
-    slug: 'adalfundur-svef-2026',
-    title: 'Aðalfundur SVEF',
-    startDate: '2026-05-22T12:00:00.000Z',
-    location: 'Kvosin',
-    description: ['Ný stjórn kjörin og starfsárið gert upp.'],
-  },
-  {
-    slug: 'kludurkvold-mars-2026',
-    title: 'Klúðurkvöld',
-    startDate: '2026-03-13T12:00:00.000Z',
-    location: 'Grandi 101',
-    description: ['Sjö sögur af mistökum, ein af þeim mjög dýr.'],
-  },
-  {
-    slug: 'islensku-vefverdlaunin-2025',
-    title: 'Íslensku vefverðlaunin 2025',
-    titleEn: 'The Icelandic Web Awards 2025',
-    // The export gives "15. NÓV 2025" with no clock time, so the 12:00Z rule
-    // above applies — the 2026 ceremony's 19:30 is not attested for 2025.
-    startDate: '2025-11-15T12:00:00.000Z',
-    location: 'Harpa',
-    description: ['Uppselt hús og 13 verðlaunahafar.'],
+    slug: 'vefthroun-og-gervigreind',
+    title: 'Vefþróun og gervigreind: Hvað er framundan?',
+    titleEn: 'Web development and AI: what lies ahead?',
+    startDate: '2026-10-21T11:50:00.000Z',
+    endDate: '2026-10-21T14:00:00.000Z',
+    location: 'Harpa, Kaldalón (1. hæð)',
+    locationEn: 'Harpa, Kaldalón (1st floor)',
+    venueAddress: 'Austurbakki 2, 101 Reykjavík',
+    // Ský sells the tickets, so the button leaves the site.
+    ticketUrl: 'https://www.sky.is/vidburdur/3165-2026-vidburdur-1021',
+    description: [
+      'Vefþróun er á stöðugri hreyfingu og breytingarnar gerast hratt. Við fáum reynslubolta úr vefheiminum til að rýna í nýjustu stefnur og strauma og spá fyrir um hvað er framundan. Viðburðurinn er haldinn af Ský í samstarfi við Samtök vefiðnaðarins.',
+      'Pablo Santos, Íslandsbanka. Guðmundur Bjarni Sigurðsson og Jón Kári Eldon, Júní. Ólafur Kjartansson, Hugsmiðjunni. Steinar Ingi Farestveit, Kolibri. Klara Arnalds, Avo. Freyr Friðfinnsson hjá Samtökum iðnaðarins stýrir umræðum.',
+    ],
+    descriptionEn: [
+      'Web development is in constant motion and the changes come quickly. We bring together experienced people from the web industry to examine the latest trends and to consider what lies ahead. The event is held by Ský in collaboration with SVEF, and is held in Icelandic.',
+      'Pablo Santos, Íslandsbanki. Guðmundur Bjarni Sigurðsson and Jón Kári Eldon, Júní. Ólafur Kjartansson, Hugsmiðjan. Steinar Ingi Farestveit, Kolibri. Klara Arnalds, Avo. Freyr Friðfinnsson of the Federation of Icelandic Industries moderates the discussion.',
+    ],
   },
 ]
 
@@ -270,18 +242,18 @@ export const news: NewsFixture[] = [
 export type GalleryFixture = {
   title: string
   date: string
-  /** Slug of the event this album documents. */
-  eventSlug: string
+  /**
+   * Slug of the event this album documents, where that event exists. The real
+   * past events are not in the CMS yet, so these albums are unlinked until they
+   * are rather than pointing at a slug nothing resolves.
+   */
+  eventSlug?: string
 }
 
 export const galleries: GalleryFixture[] = [
-  {
-    title: 'Íslensku vefverðlaunin 2025',
-    date: '2025-11-15T12:00:00.000Z',
-    eventSlug: 'islensku-vefverdlaunin-2025',
-  },
-  { title: 'Klúðurkvöld', date: '2026-03-13T12:00:00.000Z', eventSlug: 'kludurkvold-mars-2026' },
-  { title: 'Aðalfundur 2026', date: '2026-05-22T12:00:00.000Z', eventSlug: 'adalfundur-svef-2026' },
+  { title: 'Íslensku vefverðlaunin 2025', date: '2025-11-15T12:00:00.000Z' },
+  { title: 'Klúðurkvöld', date: '2026-03-13T12:00:00.000Z' },
+  { title: 'Aðalfundur 2026', date: '2026-05-22T12:00:00.000Z' },
 ]
 
 export type BoardMemberFixture = {

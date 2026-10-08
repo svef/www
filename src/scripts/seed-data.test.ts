@@ -36,9 +36,14 @@ describe('seed fixtures', () => {
   })
 
   it('points every gallery and winner at something that is seeded', () => {
+    // An album may have no event: the real past events are not in the CMS yet,
+    // so these are unlinked rather than pointing at a slug nothing resolves.
+    // What must not happen is a slug that is set and resolves to nothing.
     const eventSlugs = new Set(events.map((e) => e.slug))
     for (const gallery of galleries) {
-      expect(eventSlugs).toContain(gallery.eventSlug)
+      if (gallery.eventSlug !== undefined) {
+        expect(eventSlugs).toContain(gallery.eventSlug)
+      }
     }
 
     const categorySlugs = new Set(awardCategories.map((c) => c.slug))
@@ -67,15 +72,32 @@ describe('seed fixtures', () => {
     expect(roles.get('Jón Andri Óskarsson')).toBe('Varamaður · nýir vefir')
     expect(press.map((p) => p.outlet)).toEqual(['RÚV', 'Vísir', 'Kjarninn'])
     expect(membership.tiers.map((t) => t.priceISK)).toEqual([23900, 149000])
-    expect(events[0]?.startDate.startsWith('2026-11-14')).toBe(true)
   })
 
-  it('seeds English only where the export actually has English', () => {
-    const translated = events.filter((event) => event.titleEn)
-    expect(translated.map((event) => event.slug)).toEqual([
-      'islensku-vefverdlaunin-2026',
-      'islensku-vefverdlaunin-2025',
+  it('carries the association’s real events, in order', () => {
+    // These are not design-export fixtures any more: they are the autumn
+    // programme, and the site shows them to the public.
+    expect(events.map((e) => e.slug)).toEqual([
+      'sigurvegarar-segja-fra-svef-x-kolibri',
+      'vefthroun-og-gervigreind',
     ])
+    expect(events[0]?.startDate.startsWith('2026-10-08')).toBe(true)
+    expect(events[1]?.startDate.startsWith('2026-10-21')).toBe(true)
+    // Ský sells the tickets for the second one; the first is free, and a free
+    // event must carry no price at all, since 0 prints as "0 kr.".
+    expect(events[0]?.ticketPrice).toBeUndefined()
+    expect(events[1]?.ticketUrl).toContain('sky.is')
+  })
+
+  it('translates every event in full, not just its title', () => {
+    // A title in English above an Icelandic body looks translated and is not,
+    // which is worse than leaving it alone.
+    for (const event of events) {
+      expect(event.titleEn, event.slug).toBeTruthy()
+      expect(event.descriptionEn, event.slug).toBeTruthy()
+      expect(event.descriptionEn, event.slug).toHaveLength(event.description?.length ?? 0)
+      if (event.location) expect(event.locationEn, event.slug).toBeTruthy()
+    }
   })
 
   it('keeps the English membership copy aligned with the Icelandic', () => {
