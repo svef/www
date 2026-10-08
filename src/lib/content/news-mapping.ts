@@ -24,8 +24,12 @@ import type { Media, News } from '@/payload-types'
 /** A `news` document as a `locale: 'all'` read actually returns it. */
 export type NewsAllLocales = Omit<
   News,
-  'title' | 'excerpt' | 'body' | 'coverImage'
+  'slug' | 'title' | 'excerpt' | 'body' | 'coverImage'
 > & {
+  // Localized since svef/www#98. No article has an English version today, so in
+  // practice every one of these falls back to its Icelandic slug — which is the
+  // same thing the headline and body already do.
+  slug: AllLocales<string>
   title: AllLocales<string>
   excerpt: AllLocales<string>
   body: AllLocales<News['body']>
@@ -109,9 +113,10 @@ function toCover(
 export function toNewsSummary(doc: NewsAllLocales, locale: Locale): NewsSummary {
   const title = pickLocalized(doc.title, locale)
   const excerpt = pickLocalized(doc.excerpt, locale)
+  const slug = pickLocalized(doc.slug, locale).value ?? ''
   return {
-    slug: doc.slug,
-    href: localePath(`/frettir/${doc.slug}`, locale),
+    slug,
+    href: localePath(`/frettir/${slug}`, locale),
     publishedAt: doc.publishedAt,
     title: title.value ?? '',
     excerpt: excerpt.value,

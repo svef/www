@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { getPayload, publicReadArgs } from '@/lib/payload'
-import type { Locale } from '@/lib/i18n'
+import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n'
+import { pickLocalized } from '@/lib/localized'
 import {
   isPastEvent,
   toEventDetail,
@@ -167,6 +168,10 @@ export const findEvent = cache(async function findEvent(
   const { docs } = await payload.find({
     collection: 'events',
     ...publicReadArgs,
+    // `slug` is localized, and `publicReadArgs` reads every locale at once, so
+    // this matches the slug in *either* language. A URL carrying the other
+    // language's slug therefore finds its document; the page redirects to the
+    // canonical one rather than serving it at two addresses.
     where: { slug: { equals: slug } },
     limit: 1,
     depth: 1,
@@ -183,7 +188,9 @@ export const findEvent = cache(async function findEvent(
  * checkbox someone forgets to move is how a site ends up pinning last month's
  * event. Reading it means the badge is right without anyone maintaining it.
  */
-export const nextEventSlug = cache(async function nextEventSlug(): Promise<string | null> {
+export const nextEventSlug = cache(async function nextEventSlug(
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<string | null> {
   const payload = await getPayload()
   const { docs } = await payload.find({
     collection: 'events',
@@ -195,7 +202,7 @@ export const nextEventSlug = cache(async function nextEventSlug(): Promise<strin
   })
   const now = Date.now()
   const next = (docs as unknown as EventAllLocales[]).find((doc) => !isPastEvent(doc, now))
-  return next?.slug ?? null
+  return next ? (pickLocalized(next.slug, locale).value ?? null) : null
 })
 
 /**
@@ -205,15 +212,18 @@ export const nextEventSlug = cache(async function nextEventSlug(): Promise<strin
  * visibility filter to mirror here — unlike `/frettir/[slug]`, where leaving
  * future-dated articles out of this list is what keeps them 404ing.
  *
- * `slug` is not localized, so this is one list and Next crosses it with the
- * `[locale]` params the layout above generates.
+ * `slug` is localized (svef/www#98), so this takes the locale and returns that
+ * language's slugs. `generateStaticParams` is called once per parent param set
+ * with those params passed in, so the route asks for the locale it is building.
  *
  * `pagination: false` is load-bearing, not tidy: Payload's `find` defaults to
  * `limit: 10`, and without it the eleventh event onwards would fall through to
  * `dynamicParams` with no symptom at all — green build, `●` in the route table.
  * Seven fixtures would never show it.
  */
-export const listEventSlugs = cache(async function listEventSlugs(): Promise<string[]> {
+export const listEventSlugs = cache(async function listEventSlugs(
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<string[]> {
   const payload = await getPayload()
   const { docs } = await payload.find({
     collection: 'events',
@@ -223,7 +233,9 @@ export const listEventSlugs = cache(async function listEventSlugs(): Promise<str
     pagination: false,
     depth: 0,
   })
-  return docs.map((doc) => doc.slug).filter((slug): slug is string => Boolean(slug))
+  return (docs as unknown as EventAllLocales[])
+    .map((doc) => pickLocalized(doc.slug, locale).value)
+    .filter((slug): slug is string => Boolean(slug))
 })
 
 /** Fallback for the contact address, matching `SiteSettings`' own default. */

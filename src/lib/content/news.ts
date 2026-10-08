@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { getPayload, publicReadArgs } from '@/lib/payload'
-import type { Locale } from '@/lib/i18n'
+import { pickLocalized } from '@/lib/localized'
+import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n'
 import {
   toNewsArticle,
   toNewsSummary,
@@ -119,7 +120,8 @@ export const findNewsArticle = cache(async function findNewsArticle(
  * re-evaluated on render and it 404s until its date passes — subject to the
  * caching lag documented on the route.
  *
- * `slug` is not localized, so this is one list for both locales.
+ * `slug` is localized (svef/www#98), so this takes the locale and returns that
+ * language's slugs.
  *
  * `pagination: false` is load-bearing rather than tidy: Payload's `find`
  * defaults to `limit: 10`, and without it a collection any larger than that
@@ -127,7 +129,9 @@ export const findNewsArticle = cache(async function findNewsArticle(
  * silently — green build, `●` in the route table, no symptom. Six fixtures
  * would never have shown it.
  */
-export const listNewsSlugs = cache(async function listNewsSlugs(): Promise<string[]> {
+export const listNewsSlugs = cache(async function listNewsSlugs(
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<string[]> {
   const payload = await getPayload()
   const { docs } = await payload.find({
     collection: 'news',
@@ -138,5 +142,7 @@ export const listNewsSlugs = cache(async function listNewsSlugs(): Promise<strin
     pagination: false,
     depth: 0,
   })
-  return docs.map((doc) => doc.slug).filter((slug): slug is string => Boolean(slug))
+  return (docs as unknown as NewsAllLocales[])
+    .map((doc) => pickLocalized(doc.slug, locale).value)
+    .filter((slug): slug is string => Boolean(slug))
 })

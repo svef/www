@@ -34,8 +34,12 @@ type MediaAllLocales = Omit<Media, 'alt' | 'caption'> & {
 /** An `events` document as a `locale: 'all'` read actually returns it. */
 export type EventAllLocales = Omit<
   Event,
-  'title' | 'location' | 'description' | 'accessibility' | 'coverImage' | 'gallery'
+  'slug' | 'title' | 'location' | 'description' | 'accessibility' | 'coverImage' | 'gallery'
 > & {
+  // Localized since svef/www#98: the slug is the headline, so it is translated
+  // with it. A document with no English slug falls back to the Icelandic one,
+  // the same way its body copy does.
+  slug: AllLocales<string>
   title: AllLocales<string>
   location: AllLocales<string>
   description: AllLocales<Event['description']>
@@ -212,9 +216,11 @@ export function toEventSummary(
     summary,
   })
 
+  const slug = pickLocalized(doc.slug, locale).value ?? ''
+
   return {
-    slug: doc.slug,
-    href: localePath(`/vidburdir/${doc.slug}`, locale),
+    slug,
+    href: localePath(`/vidburdir/${slug}`, locale),
     startDate: doc.startDate,
     endDate: doc.endDate ?? null,
     title: title.value ?? '',

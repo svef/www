@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { getDictionary, isLocale, localePath, type Locale } from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
 import { contactEmail, findEvent, listEventSlugs, nextEventSlug } from '@/lib/content/events'
@@ -43,8 +43,16 @@ export const revalidate = 300
  * `limit: 10` would silently prerender the first ten events and leave the rest
  * to `dynamicParams` with no visible symptom.
  */
-export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const slugs = await listEventSlugs()
+// Next calls this once per parent param set and passes those params in, so the
+// slugs are the ones for the locale being built. They differ per locale now
+// that `slug` is localized.
+export async function generateStaticParams({
+  params,
+}: {
+  params: { locale: string }
+}): Promise<{ slug: string }[]> {
+  if (!isLocale(params.locale)) return []
+  const slugs = await listEventSlugs(params.locale)
   return slugs.map((slug) => ({ slug }))
 }
 
@@ -54,6 +62,10 @@ async function loadEvent(params: Params) {
   if (!isLocale(locale)) notFound()
   const event = await findEvent(slug, locale)
   if (!event) notFound()
+  // The lookup matches the slug in either language, so a link carrying the
+  // other locale's slug still finds its event. One address per page, though:
+  // send it to the slug this locale actually uses.
+  if (event.slug !== slug) redirect(event.href)
   return { event, locale: locale as Locale }
 }
 

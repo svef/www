@@ -134,13 +134,16 @@ async function seed(payload: Payload): Promise<void> {
       // English overrides for the localized fields, not the title alone: an
       // event whose body stayed Icelandic on /en would look translated and
       // not be.
-      event.titleEn || event.descriptionEn || event.locationEn
-        ? {
-            ...(event.titleEn ? { title: event.titleEn } : {}),
-            ...(event.locationEn ? { location: event.locationEn } : {}),
-            ...(event.descriptionEn ? { description: richText(event.descriptionEn) } : {}),
-          }
-        : undefined,
+      //
+      // `slug` is always sent. It is localized and required, so the English
+      // record needs one; without an English slug it takes the Icelandic one,
+      // which is what a reader gets for the body copy too.
+      {
+        slug: event.slugEn ?? event.slug,
+        ...(event.titleEn ? { title: event.titleEn } : {}),
+        ...(event.locationEn ? { location: event.locationEn } : {}),
+        ...(event.descriptionEn ? { description: richText(event.descriptionEn) } : {}),
+      },
     )
     eventIds.set(event.slug, id)
   }

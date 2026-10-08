@@ -23,7 +23,6 @@ const NOW = new Date('2026-09-17T12:00:00.000Z')
 function event(overrides: Record<string, unknown>) {
   return {
     id: 1,
-    slug: 'kludurkvold',
     startDate: '2026-10-09T20:00:00.000Z',
     endDate: null,
     title: { is: 'Klúðurkvöld' },
@@ -31,6 +30,10 @@ function event(overrides: Record<string, unknown>) {
     description: null,
     ticketUrl: null,
     ...overrides,
+    // `slug` is localized, so a `locale: 'all'` read returns it per locale.
+    // Written as a plain string at the call sites and wrapped here, so the
+    // fixtures stay readable.
+    slug: { is: (overrides.slug as string | undefined) ?? 'kludurkvold' },
   }
 }
 

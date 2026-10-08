@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { getDictionary, isLocale, localePath, type Locale } from '@/lib/i18n'
 import { formatLongDate } from '@/lib/dates'
 import { resolveContentLocale } from '@/lib/localized'
@@ -55,8 +55,16 @@ export const revalidate = 300
  * not embargo and it does not take down. On-demand revalidation (svef/www#67)
  * is what makes either direction immediate.
  */
-export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const slugs = await listNewsSlugs()
+// Next calls this once per parent param set and passes those params in, so the
+// slugs are the ones for the locale being built. They differ per locale now
+// that `slug` is localized.
+export async function generateStaticParams({
+  params,
+}: {
+  params: { locale: string }
+}): Promise<{ slug: string }[]> {
+  if (!isLocale(params.locale)) return []
+  const slugs = await listNewsSlugs(params.locale)
   return slugs.map((slug) => ({ slug }))
 }
 
@@ -66,6 +74,10 @@ async function loadArticle(params: Params) {
   if (!isLocale(locale)) notFound()
   const article = await findNewsArticle(slug, locale)
   if (!article) notFound()
+  // The lookup matches the slug in either language, so a link carrying the
+  // other locale's slug still finds its article. One address per page, though:
+  // send it to the slug this locale actually uses.
+  if (article.slug !== slug) redirect(article.href)
   return { article, locale: locale as Locale }
 }
 

@@ -114,6 +114,12 @@ export const richText = (blocks: Block[]): RichTextValue => ({
 
 export type EventFixture = {
   slug: string
+  /**
+   * The slug an English reader sees. Where a document has no English version at
+   * all, leaving this out keeps the Icelandic slug in both languages, which is
+   * what the body copy already does when it falls back.
+   */
+  slugEn?: string
   title: string
   titleEn?: string
   startDate: string
@@ -138,6 +144,7 @@ export const events: EventFixture[] = [
   // out on the night.
   {
     slug: 'sigurvegarar-segja-fra-svef-x-kolibri',
+    slugEn: 'winners-tell-their-stories',
     title: 'Sigurvegarar segja frá – SVEF x Kolibri',
     titleEn: 'Winners tell their stories – SVEF x Kolibri',
     startDate: '2026-10-08T17:00:00.000Z',
@@ -161,6 +168,7 @@ export const events: EventFixture[] = [
   },
   {
     slug: 'vefthroun-og-gervigreind',
+    slugEn: 'web-development-and-ai',
     title: 'Vefþróun og gervigreind: Hvað er framundan?',
     titleEn: 'Web development and AI: what lies ahead?',
     startDate: '2026-10-21T11:50:00.000Z',

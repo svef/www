@@ -32,7 +32,7 @@ function body(...paragraphs: string[]) {
 function doc(overrides: Partial<EventAllLocales> = {}): EventAllLocales {
   return {
     id: 1,
-    slug: 'kludurkvold',
+    slug: { is: 'kludurkvold' },
     startDate: '2026-10-09T20:00:00.000Z',
     endDate: null,
     title: { is: 'Klúðurkvöld' },
@@ -184,7 +184,7 @@ describe('toEventSummary', () => {
 
 describe('toEventDetail', () => {
   const full = doc({
-    slug: 'islensku-vefverdlaunin-2026',
+    slug: { is: 'islensku-vefverdlaunin-2026' },
     startDate: '2026-11-14T19:30:00.000Z',
     endDate: '2026-11-15T01:00:00.000Z',
     title: { is: 'Íslensku vefverðlaunin 2026' },

@@ -5,7 +5,7 @@ import { toNewsArticle, toNewsSummary } from './news-mapping'
 // by locale, and English is absent until someone translates the document.
 const doc = {
   id: 1,
-  slug: 'ny-stjorn-er-tekin-vid',
+  slug: { is: 'ny-stjorn-er-tekin-vid' },
   publishedAt: '2026-05-22T12:00:00.000Z',
   title: { is: 'Ný stjórn er tekin við', en: null },
   excerpt: { is: 'Ný stjórn SVEF tók við störfum á aðalfundi.', en: null },
