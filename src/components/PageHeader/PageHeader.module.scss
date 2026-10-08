@@ -24,17 +24,3 @@
   margin: 0;
 }
 
-.motifLeft {
-  position: absolute;
-  top: var(--space-16);
-  left: 0;
-  transform: translateX(-45%);
-  opacity: 0.85;
-}
-
-.motifRight {
-  position: absolute;
-  top: var(--space-8);
-  right: var(--space-8);
-  opacity: 0.85;
-}

@@ -1,7 +1,7 @@
 import type React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Noto_Sans, Overpass } from 'next/font/google'
+import { Archivo, Overpass_Mono } from 'next/font/google'
 import { Header } from '@/components/Header/Header'
 import { Footer } from '@/components/Footer/Footer'
 import { LANDING_ONLY } from '@/lib/site-mode'
@@ -11,20 +11,40 @@ import {
   mantineHtmlProps,
 } from '@mantine/core'
 import { theme } from '@/lib/theme'
-import { getDictionary, isLocale, LOCALES } from '@/lib/i18n'
+import { getDictionary, isLocale, localePath, LOCALES } from '@/lib/i18n'
+import { getSiteChrome } from '@/lib/content/site-settings'
 import { getSiteUrl } from '@/lib/site-url'
 import { Analytics } from '@/components/Analytics/Analytics'
+import { NavigationProgress } from '@/components/NavigationProgress/NavigationProgress'
 import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
 
-const heading = Noto_Sans({ subsets: ['latin'], variable: '--font-heading', display: 'swap' })
-const body = Overpass({ subsets: ['latin'], variable: '--font-body', display: 'swap' })
+// Archivo carries body and headings alike. The Figma specifies Interstate, which
+// is commercial; Archivo is the closest open substitute and reads correctly at
+// both text and display sizes. It replaced Noto Sans and Overpass on the landing
+// page first, and this brings the full site in line.
+const archivo = Archivo({
+  subsets: ['latin'],
+  variable: '--font-archivo',
+  weight: ['300', '400', '500', '600', '700', '800'],
+  display: 'swap',
+})
+
+// The design sets small uppercase labels — eyebrows, album meta, the share row —
+// in Overpass Mono. Nothing loaded a mono face before, so all of them fell back
+// to the body font and quietly stopped reading as labels.
+const mono = Overpass_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
 export const metadata: Metadata = {
   title: { default: 'SVEF — Samtök vefiðnaðarins', template: '%s | SVEF' },
   description: 'Samtök vefiðnaðarins — fagfélag fólksins sem býr til vefinn á Íslandi.',
   metadataBase: new URL(getSiteUrl()),
 }
+
+// The layout reads the `site-settings` global for the footer, so it is a route
+// segment that touches Payload and takes the site's revalidation window like
+// any other. See "Rendering: static plus ISR" in CLAUDE.md.
+export const revalidate = 300
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
@@ -41,30 +61,42 @@ export default async function LocaleLayout({
   if (!isLocale(locale)) notFound()
 
   const t = getDictionary(locale)
-  const base = locale === 'en' ? '/en' : ''
-  // While the rest of the site is hidden, the nav would be a row of links that
-  // all bounce back to the landing page — worse than no nav. The handful of
-  // pages that *are* reachable (the forms) get the mark and the language link
-  // and nothing else; the full row returns with the site it belongs to.
+  // Built through `localePath` rather than by hand: pages are named in the
+  // reader's language, so an English nav has to link to /en/events, not
+  // /en/vidburdir — which exists, but only as a redirect to it.
+  // Empty while the rest of the site is hidden: the nav would be a row of links
+  // that all bounce back to the landing page, which is worse than no nav. The
+  // few pages that *are* reachable — the forms — get the mark and the language
+  // link and nothing else. The full row returns with the site it belongs to.
   const navItems = LANDING_ONLY ? [] : [
-    { href: `${base}/vefverdlaunin`, label: t.nav.awards },
-    { href: `${base}/vidburdir`, label: t.nav.events },
-    { href: `${base}/frettir`, label: t.nav.news },
-    { href: `${base}/um-svef`, label: t.nav.about },
-    { href: `${base}/skraning`, label: t.nav.membership },
+    // Events first: the programme is what a visitor is most often here for.
+    { href: localePath('/vidburdir', locale), label: t.nav.events },
+    { href: localePath('/vefverdlaunin', locale), label: t.nav.awards },
+    { href: localePath('/frettir', locale), label: t.nav.news },
+    {
+      href: localePath('/um-svef', locale),
+      label: t.nav.about,
+      // The pages split out of About SVEF in #103. Web Awards gets a submenu
+      // of its own next, which is why this is a property of an item rather
+      // than a special case in the header.
+      children: [
+        { href: localePath('/stjorn', locale), label: t.about.boardTitle },
+        { href: localePath('/log-svef', locale), label: t.about.bylawsTitle },
+        { href: localePath('/spurt-og-svarad', locale), label: t.about.faqTitle },
+      ],
+    },
+    { href: localePath('/skraning', locale), label: t.nav.membership },
   ]
-  // TODO: source socials + blurb from the SiteSettings global once content exists.
-  const socials = [
-    { label: 'FB', href: '#' },
-    { label: 'IG', href: '#' },
-    { label: 'X', href: '#' },
-    { label: 'LI', href: '#' },
-  ]
+  const chrome = await getSiteChrome(locale)
 
   return (
     <html
       lang={locale}
-      className={`${heading.variable} ${body.variable}`}
+      className={`${archivo.variable} ${mono.variable}`}
+      style={{
+        ['--font-body' as string]: 'var(--font-archivo)',
+        ['--font-heading' as string]: 'var(--font-archivo)',
+      }}
       {...mantineHtmlProps}
     >
       <head>
@@ -72,25 +104,44 @@ export default async function LocaleLayout({
       </head>
       <body>
         <MantineProvider theme={theme} forceColorScheme="dark">
+          <NavigationProgress />
           <a href="#main" className="skip-link">
             {t.skipToContent}
           </a>
           <Header
-            homeHref={base || '/'}
+            homeHref={`/${locale}`}
             navItems={navItems}
-            // Hidden with the rest of the site: the contact page is not among
-            // the pages reachable while LANDING_ONLY is set, so linking it from
-            // here would bounce the reader back to the landing page.
-            contactLabel={LANDING_ONLY ? '' : t.nav.contact}
-            contactHref={LANDING_ONLY ? '' : `${base}/hafa-samband`}
-            otherLocaleHref={locale === 'en' ? '/' : '/en'}
-            otherLocaleLabel={locale === 'en' ? 'IS' : 'EN'}
+            menuLabel={t.nav.menu}
+            submenuLabel={t.nav.submenu}
+            navLabel={t.nav.primary}
+            locale={locale}
           />
+          {/*
+            The fallback-language note is *not* rendered here. It belongs
+            inside `<main>`, as the page's own first child, so the skip link
+            lands before it — a skip-link user is exactly the reader who needs
+            to be told the page is showing Icelandic, and a note above `<main>`
+            is the one thing they would jump straight past. See
+            `TranslationNote`.
+          */}
           <main id="main">{children}</main>
+          {/*
+            The dictionary's sentence is the empty-database fallback only: both
+            languages are seeded into the global, and an untranslated blurb
+            falls back to Icelandic and is marked with `lang` like any other
+            fallback copy. See the note on `SiteChrome.footerBlurb`.
+          */}
           <Footer
-            blurb={t.footer.blurb}
-            email="svef@svef.is"
-            socials={socials}
+            blurb={chrome.footerBlurb ?? t.footer.blurb}
+            blurbLang={
+              chrome.footerBlurb && chrome.footerBlurbLocale !== locale
+                ? chrome.footerBlurbLocale
+                : undefined
+            }
+            email={chrome.contactEmail}
+            contactHref={localePath('/hafa-samband', locale)}
+            contactLabel={t.nav.contact}
+            socials={chrome.socials}
             year={2026}
           />
         </MantineProvider>

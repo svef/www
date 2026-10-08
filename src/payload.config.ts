@@ -77,20 +77,27 @@ export default buildConfig({
         process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || '',
     },
     // Schema changes reach a hosted database through a migration, never through
-    // a push: `npm run migrate` runs before the build on Vercel, so the deploy
-    // that needs a table is the deploy that creates it.
+    // a push from someone's laptop: `npm run migrate` runs before the build on
+    // Vercel, so the deploy that needs a column is the deploy that adds it.
     //
-    // This matters more than usual here. `main` and `dev` point at the same
-    // Neon database and their collections have diverged — `dev` has localized
-    // slugs and a different set of social fields. A push from this branch would
-    // not add tables, it would try to *revert* those, so it must never run
-    // anywhere but a local database.
+    // Local development keeps pushing, which is why `npm run seed:dev` can drop
+    // and recreate a schema in seconds. `VERCEL` is set on every Vercel build
+    // and on no local one.
     //
-    // `VERCEL` is set on every Vercel build and on no local one.
+    // It matters more here than it looks: `main` and `dev` point at the same
+    // Neon database. A push from a branch whose collections have fallen behind
+    // would not add tables, it would try to revert the other branch's — which
+    // is why the submissions migration is hand-written and purely additive.
     push: !process.env.VERCEL,
   }),
   sharp,
   plugins: [
+    // No `generateFileURL` here on purpose: Payload hands back its own relative
+    // URLs (`/api/media/file/<filename>`) rather than absolute R2 URLs, and
+    // `next.config.ts` is written to match — no `images.remotePatterns`, since
+    // nothing requests an absolute R2 host today. See svef/www#77. If public R2
+    // URLs become the intent, add `generateFileURL` here and update
+    // `next.config.ts` together, driven by a *required* `R2_PUBLIC_URL`.
     s3Storage({
       collections: { media: true },
       bucket: process.env.R2_BUCKET || '',

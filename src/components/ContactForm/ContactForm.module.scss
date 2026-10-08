@@ -43,7 +43,9 @@
   border: 0;
   cursor: pointer;
   background: var(--color-violet);
-  color: var(--color-black);
+  // Matches Button.module.scss `.primary` — see the note there. This component
+  // sets the same two tokens by hand, so it has to be changed alongside it.
+  color: var(--color-white);
 
   &:hover {
     background: var(--color-violet-bright);

@@ -1,22 +1,26 @@
 .motif {
-  display: inline-flex;
-  gap: 6px;
-  align-items: flex-start;
+  // The strip the cluster is seen through. `--motif-w` lets a placement size it.
+  --motif-w: 132px;
+  // Height as a share of the width: the band of the square shape that shows.
+  --motif-crop: 0.46;
+
+  display: block;
+  width: var(--motif-w);
+  height: calc(var(--motif-w) * var(--motif-crop));
+  overflow: hidden;
 }
 
-.block {
+.shape {
   display: block;
-  width: 48px;
-  height: 48px;
+  width: 100%;
+  // The lockups' own box, so the silhouette keeps its proportions.
+  aspect-ratio: 720 / 717.4;
+  // Pull the square up so the visible band sits across its middle, where the
+  // cluster is, rather than on the empty space above it.
+  margin-top: calc((var(--motif-w) * var(--motif-crop) - var(--motif-w)) / 2);
   background: var(--color-violet);
 }
 
-// Signature corner-cut block
-.cut {
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0, 40% 40%, 0 40%);
+.bright {
   background: var(--color-violet-bright);
-}
-
-.dark {
-  background: var(--surface-4);
 }

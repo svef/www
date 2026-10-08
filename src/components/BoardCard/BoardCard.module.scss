@@ -67,3 +67,12 @@
   font-weight: var(--weight-bold);
   font-size: var(--text-lg);
 }
+
+// Fills the 4:5 box above, covering the striped placeholder when a portrait exists.
+.portrait {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

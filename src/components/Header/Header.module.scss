@@ -1,35 +1,153 @@
+// The width at which the nav collapses into a menu. Mirrored by
+// `NAV_BREAKPOINT` in `SiteNav.tsx`, which closes an open menu on the way up.
+$nav-breakpoint: 900px;
+
+// A one-pixel marker in the flow above the header. `HeaderShell` watches it
+// with an IntersectionObserver: once it leaves the viewport the bar is no longer
+// at the top of the page. The negative margin keeps it from shifting anything.
+.sentinel {
+  height: 1px;
+  margin-bottom: -1px;
+}
+
 .header {
+  // Only the bar shrinks. The mark keeps its size at every scroll position, so
+  // it simply hangs further below the bar once the bar is shallow.
+  --header-h: 88px;
+  --logo-width: 112px;
+  --logo-top: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-height: var(--header-h);
+  // The gutter sits on the bar, not the row, which is what `Section` and the
+  // footer do — that is what makes the mark's left edge line up with the content
+  // below rather than sitting a gutter further in.
+  padding: 0 var(--space-6);
+  transition: min-height 220ms ease;
+}
+
+// The glass is a layer of its own rather than the header's own background, so
+// the mark can sit above it while the blur stays behind everything.
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  // No hand-written -webkit- prefix: Lightning CSS adds prefixes from
+  // browserslist, and writing both made it collapse them into the prefixed
+  // property alone, which left the standard one undefined.
+  backdrop-filter: blur(10px) saturate(120%);
+}
+
+// Without the blur the translucency would just be a washed-out band over moving
+// text, so it falls back to the solid canvas and no fade.
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .header::before {
+    background: var(--bg);
+  }
+}
+
+.header[data-compact='true'] {
+  --header-h: 60px;
+}
+
+// The row, held to the same measure as the page content so the mark's left edge
+// lines up with everything below it — the footer already does this.
+.inner {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
-  padding: var(--space-4) var(--space-6);
-  background: var(--bg);
+  // The export draws two different gaps: clamp(16px, 2.5vw, 32px) between the
+  // logo and the nav, and 14px inside the right-hand group. The panel is
+  // `display: contents`, so its children are direct children here.
+  gap: var(--space-4);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  // No padding at all: the bar carries the gutter, and the bar's depth is
+  // `--header-h`, which is what lets the mark exceed it rather than push it open.
+  min-height: var(--header-h);
   flex-wrap: wrap;
+  // The row sets its own min-height, so it has to ease on the same curve as the
+  // bar. Without this the bar animated while the row snapped, which is what made
+  // the shrink look like it was stuttering.
+  transition: min-height 220ms ease;
 }
 
 .logoLink {
   text-decoration: none;
   flex-shrink: 0;
+  // Fixed to the bar's own depth and aligned to its top, so the mark — which is
+  // taller, and stays that size as the bar shrinks — spills out of the bottom
+  // instead of stretching it. Nothing clips it, so it carries on over the page.
+  align-self: flex-start;
+  height: var(--header-h);
+  padding-top: var(--logo-top);
+  transition: height 220ms ease;
+
+  // The link's own box is the bar's depth, and that is the part that takes
+  // clicks. The mark inside is taller and hangs over the page, so without this
+  // it would sit on top of whatever is beneath and swallow clicks meant for it —
+  // the hero's call to action, once the bar has shrunk.
+  > * {
+    pointer-events: none;
+  }
+}
+
+// The focus-trap wrapper and the disclosure panel both take part in the
+// header's own flex layout at desktop width rather than nesting inside it, so
+// the row reads logo → nav → contact → controls exactly as the design draws it
+// while the markup stays a single grouped menu for small screens.
+.menu {
+  display: contents;
+}
+
+.panel {
+  display: contents;
 }
 
 .nav {
-  display: flex;
-  gap: var(--space-6);
-  flex-wrap: wrap;
+  flex: 1;
+  margin-left: var(--space-4);
 }
 
-.utility {
-  margin-left: auto;
+.list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.controls {
   display: flex;
   align-items: center;
   gap: var(--space-4);
 }
 
 .navLink {
+  display: inline-block;
   color: var(--fg);
   text-decoration: none;
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
+  // The design marks the current section with a violet underline. It is drawn
+  // below the link's own box rather than as a border with padding above it:
+  // padding-bottom made every item sit that much above the centre of the bar,
+  // which is what left the row looking unaligned.
+  position: relative;
   transition: color 0.16s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 3px;
+    background: transparent;
+  }
 
   &:hover {
     color: var(--color-violet-light);
@@ -39,19 +157,49 @@
     outline: 2px solid var(--color-violet-light);
     outline-offset: 3px;
   }
+
+  &[aria-current='page']::after {
+    background: var(--color-violet);
+  }
 }
 
-.langPill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  color: var(--fg);
+
+// The way out to the other language. Styled as a nav item rather than a control
+// so it sits on the same line as the rest of the row.
+.langLink {
+  color: var(--fg-muted);
   text-decoration: none;
   font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  transition: color 0.16s ease;
+
+  &:hover {
+    color: var(--fg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
+}
+
+// Hidden above the breakpoint, where the nav is a row and there is nothing to
+// disclose. `display: none` rather than `visibility`, so it is out of the tab
+// ring too.
+.toggle {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+  font: inherit;
   font-size: var(--text-sm);
-  padding: var(--space-1) var(--space-3);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  background: none;
   border: 1px solid var(--surface-4);
   border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  min-height: 44px;
+  cursor: pointer;
 
   &:hover {
     border-color: var(--color-violet);
@@ -60,5 +208,298 @@
   &:focus-visible {
     outline: 2px solid var(--color-violet-light);
     outline-offset: 2px;
+  }
+
+  // Shy White on Electric Violet is 6.05:1 — AA for this size, and the one
+  // place the brand violet carries text.
+  &[aria-expanded='true'] {
+    background: var(--color-violet);
+    border-color: var(--color-violet);
+  }
+}
+
+.bars {
+  position: relative;
+  display: block;
+  width: 16px;
+  height: 12px;
+  flex: none;
+
+  span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: currentcolor;
+    transition:
+      transform 0.16s ease,
+      opacity 0.16s ease;
+
+    &:nth-child(1) {
+      top: 0;
+    }
+
+    &:nth-child(2) {
+      top: 5px;
+    }
+
+    &:nth-child(3) {
+      top: 10px;
+    }
+  }
+}
+
+.toggle[aria-expanded='true'] .bars span {
+  &:nth-child(1) {
+    transform: translateY(5px) rotate(45deg);
+  }
+
+  &:nth-child(2) {
+    opacity: 0;
+  }
+
+  &:nth-child(3) {
+    transform: translateY(-5px) rotate(-45deg);
+  }
+}
+
+@media (max-width: $nav-breakpoint) {
+  .header {
+    padding: 0 var(--space-4);
+  }
+
+  .toggle {
+    display: inline-flex;
+  }
+
+  .controls {
+    margin-left: auto;
+  }
+
+  // The panel stops being a pass-through and becomes the header's second row:
+  // full width, in normal flow, so opening it pushes the page down instead of
+  // covering it and nothing can overflow sideways.
+  .panel {
+    display: none;
+    order: 2;
+    flex-basis: 100%;
+    width: 100%;
+    // Clear the mark, which is taller than the bar and hangs over whatever is
+    // below it — here, the first item of the open menu. Derived rather than
+    // hard-coded, so it still holds when the bar is shallow from scrolling.
+    padding-top: calc(
+      var(--logo-top) + var(--logo-width) - var(--header-h) + var(--space-2)
+    );
+    border-top: 1px solid var(--surface-3);
+    animation: menuIn 0.18s ease-out;
+
+    &[data-open='true'] {
+      display: block;
+    }
+  }
+
+  .nav {
+    flex: none;
+    margin-left: 0;
+  }
+
+  .list {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .navLink {
+    display: block;
+    // Comfortably past the 44px target size the association's own award asks
+    // for, on the axis where a thumb misses.
+    padding: var(--space-4);
+    border: 0;
+    border-bottom: 1px solid var(--surface-3);
+    border-left: 3px solid transparent;
+    color: var(--fg);
+    text-decoration: none;
+
+    &[aria-current='page'] {
+      border-left-color: var(--color-violet);
+      background: var(--surface-1);
+    }
+
+    // The underline belongs to the desktop row; down here the current item is
+    // marked by the violet edge on its left instead.
+    &::after {
+      content: none;
+    }
+  }
+}
+
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+
+  .header,
+  .logoLink {
+    transition: none;
+  }
+
+  .navLink,
+  .bars span {
+    transition: none;
+  }
+}
+
+// --- Submenus -------------------------------------------------------------
+// A parent is a real link to its own page, with the disclosure as a separate
+// button beside it. Making the parent itself the trigger would put a page
+// behind a menu and leave no way to reach it.
+
+.hasSubmenu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.submenuToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--fg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 2px;
+  }
+}
+
+.chevron {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.16s ease;
+}
+
+.submenuToggle[aria-expanded='true'] .chevron {
+  transform: translateY(1px) rotate(225deg);
+}
+
+// A parent holding the current page is marked, but not with `aria-current` —
+// that belongs to the page you are actually on, and claiming it here would
+// announce two current pages.
+.navLink[data-holds-current='true']::after {
+  background: var(--surface-4);
+}
+
+.submenu {
+  display: none;
+  position: absolute;
+  top: calc(100% + var(--space-3));
+  left: 0;
+  z-index: 1;
+  min-width: 13rem;
+  margin: 0;
+  padding: var(--space-2) 0;
+  list-style: none;
+  background: var(--surface-2);
+  border: 1px solid var(--surface-4);
+
+  &[data-open='true'] {
+    display: block;
+  }
+
+  // The panel sits a gap below its trigger, and that gap is outside the
+  // parent's box — so moving the pointer down onto the panel left the parent
+  // and closed it before you arrived. This bridges the gap so the pointer
+  // never leaves. Invisible, and inside the panel, so it only exists while the
+  // panel does.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: var(--space-3);
+  }
+}
+
+.submenuLink {
+  display: block;
+  padding: var(--space-2) var(--space-4);
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--surface-3);
+    color: var(--color-violet-light);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: -2px;
+  }
+
+  &[aria-current='page'] {
+    box-shadow: inset 3px 0 0 var(--color-violet);
+  }
+}
+
+@media (max-width: $nav-breakpoint) {
+  // Inside the open menu the panel is already a disclosure, so a second one
+  // nested in it is a door behind a door. The subpages are simply listed,
+  // indented under their parent, and the toggle has nothing left to do.
+  .hasSubmenu {
+    display: block;
+  }
+
+  .submenuToggle {
+    display: none;
+  }
+
+  .submenu {
+    display: block;
+    position: static;
+    min-width: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+  }
+
+  .submenuLink {
+    padding: var(--space-4) var(--space-4) var(--space-4) var(--space-8);
+    border-bottom: 1px solid var(--surface-3);
+
+    &[aria-current='page'] {
+      box-shadow: none;
+      border-left: 3px solid var(--color-violet);
+      background: var(--surface-1);
+    }
   }
 }

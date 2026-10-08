@@ -9,10 +9,41 @@
   }
 }
 
+// `SpotlightRow.tsx` has always rendered `<div className={styles.text}>`, but
+// there was no `.text` rule, so it resolved to `undefined` and the element came
+// out with no class attribute at all — the silent CSS Modules failure CLAUDE.md
+// warns about, sitting unnoticed in a shared component.
+//
+// The missing rule matters: a grid item defaults to `min-width: auto`, so this
+// column refused to shrink below the intrinsic width of its longest word and
+// pushed the row past the viewport at narrow widths (measured: scrollWidth 380
+// at clientWidth 320, where every other page held 320). `min-width: 0` lets it
+// shrink, which is also what lets `overflow-wrap` on the title take effect.
+.text {
+  min-width: 0;
+}
+
 .title {
   font-size: var(--text-3xl);
-  max-width: 14ch;
+  // 14ch was the design's measure, but it is narrower than many real Icelandic
+  // compounds ("Hádegisfyrirlestur" is 18 characters, ~428px at this size) and,
+  // on the two-column desktop layout, narrower than the column actually is —
+  // so it forced a mid-word break even where there was plenty of room to spare.
+  // 20ch covers that word (and most realistic ones) without widening the
+  // measure so far that short titles read as a full-width block. svef/www#82.
+  max-width: 20ch;
   margin: 0 0 var(--space-4);
+  // `overflow-wrap` stays as the backstop for whatever is still longer than
+  // the measure, or for a phone narrow enough that even 20ch is wider than the
+  // viewport. Without it the word is wider than the column and pushes the
+  // whole document sideways (measured: scrollWidth 428 at clientWidth 390).
+  //
+  // `hyphens: auto` was tried and does nothing, because Chromium ships no
+  // Icelandic hyphenation dictionary. A `min-content` floor on `max-width` was
+  // also tried and rejected: it licenses the word its full intrinsic width,
+  // which stops `overflow-wrap` applying at all and restores the horizontal
+  // scroll at 320px and 390px.
+  overflow-wrap: break-word;
 }
 
 .body {

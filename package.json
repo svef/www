@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "postinstall": "payload generate:types",
+    "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:ci": "vitest run --coverage",
@@ -18,7 +19,8 @@
     "generate:types": "payload generate:types",
     "migrate": "payload migrate",
     "migrate:create": "payload migrate:create",
-    "generate:importmap": "payload generate:importmap"
+    "generate:importmap": "payload generate:importmap",
+    "seed:dev": "payload run src/scripts/seed-dev.ts"
   },
   "dependencies": {
     "@mantine/core": "^8.3.17",

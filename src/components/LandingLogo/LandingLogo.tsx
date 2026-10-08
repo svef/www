@@ -24,6 +24,11 @@ export function LandingLogo({ label }: { label: string }) {
 
   useEffect(() => {
     const start = Math.floor(Math.random() * LOCKUPS.length)
+    // Deliberately setting state from an effect. The starting lockup has to be
+    // chosen after hydration, not during render: the page is prerendered, so a
+    // random pick during render would disagree with the server's HTML. This runs
+    // once and does not cascade.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setI(start)
 
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')

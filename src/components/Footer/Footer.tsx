@@ -1,44 +1,74 @@
-import { Logo } from '@/components/Logo/Logo'
-import { BlockMotif } from '@/components/BlockMotif/BlockMotif'
+import Link from 'next/link'
+import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
+import type { SocialLink } from '@/lib/content/site-settings'
 import styles from './Footer.module.scss'
 
-export interface FooterSocial {
-  label: string
-  href: string
-}
+export type FooterSocial = SocialLink
 
 export function Footer({
   blurb,
+  blurbLang,
   email,
+  contactHref,
+  contactLabel,
   socials,
   year,
 }: {
   blurb: string
+  /**
+   * Set only when `blurb` is not in the page's language — an English page
+   * whose blurb has not been translated yet. Marking it is the same rule the
+   * content pages follow: fallback copy is announced as what it is rather than
+   * read out in the wrong voice.
+   */
+  blurbLang?: string
   email: string
+  /**
+   * The contact page. It is linked from here and nowhere else — the header row
+   * has no room for it — so losing this link strands the page (svef/www#107).
+   */
+  contactHref: string
+  contactLabel: string
+  /**
+   * Only the networks the association actually has a URL for. An empty list is
+   * the normal state today and drops the row entirely — a row of links that go
+   * nowhere is worse than no row.
+   */
   socials: FooterSocial[]
   year: number
 }) {
   return (
     <footer className={styles.footer}>
-      <BlockMotif className={styles.motif} />
       <div className={styles.inner}>
         <div className={styles.brand}>
-          <Logo />
-          <p className={styles.blurb}>{blurb}</p>
+          <p className={styles.blurb} lang={blurbLang}>
+            {blurb}
+          </p>
         </div>
         <div className={styles.contact}>
+          <Link href={contactHref} className={styles.contactLink}>
+            {contactLabel}
+          </Link>
           <a href={`mailto:${email}`} className={styles.email}>
             {email}
           </a>
-          <ul className={styles.socials}>
-            {socials.map((s) => (
-              <li key={s.label}>
-                <a href={s.href} className={styles.social} aria-label={s.label}>
-                  {s.label}
-                </a>
-              </li>
-            ))}
-          </ul>
+          {socials.length > 0 && (
+            <ul className={styles.socials}>
+              {socials.map((s) => (
+                <li key={s.name}>
+                  {/*
+                    The icon carries no text, so the link needs its accessible
+                    name from `aria-label`. That is safe here precisely because
+                    there is no visible label for it to contradict — WCAG 2.5.3
+                    only bites when visible text and accessible name disagree.
+                  */}
+                  <a href={s.href} className={styles.social} aria-label={s.name}>
+                    <SocialIcon name={s.icon} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
           <p className={styles.copy}>© SVEF {year}</p>
         </div>
       </div>

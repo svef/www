@@ -40,3 +40,6 @@ next-env.d.ts
 /playwright-report
 /storybook-static
 .env*
+
+# agent worktrees (CLAUDE.md: one worktree per issue under _work/)
+/_work/

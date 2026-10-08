@@ -39,9 +39,49 @@
   font-family: var(--font-heading), system-ui, sans-serif;
   font-weight: var(--weight-bold);
   font-size: var(--text-xl);
+  // Rendered as a heading; neutralise the global heading defaults so the card
+  // keeps the exact size, weight, rhythm and spacing it had as a <span>.
+  margin: 0;
+  line-height: inherit;
+  letter-spacing: inherit;
 }
 
 .location {
   color: var(--fg-muted);
   font-size: var(--text-sm);
+}
+
+// A card that carries its own links (the "Liðnir viðburðir" grid) is a plain
+// element, so the title link and the photos link each get their own focus ring
+// rather than sharing the card's.
+.titleLink {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-violet-light);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
+}
+
+.secondary {
+  margin-top: var(--space-2);
+  align-self: flex-start;
+  color: var(--color-violet-light);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--fg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
 }

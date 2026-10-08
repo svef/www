@@ -10,6 +10,12 @@ export default defineConfig({
     coverage: { provider: 'v8', reporter: ['text', 'html'] },
   },
   resolve: {
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    alias: {
+      // Payload's own alias for the config, which `@/lib/payload` imports. It is
+      // set up by the Next plugin, so without it here anything that reaches the
+      // reading layer fails to resolve under Vitest.
+      '@payload-config': fileURLToPath(new URL('./src/payload.config.ts', import.meta.url)),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
   },
 })

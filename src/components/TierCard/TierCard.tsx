@@ -10,6 +10,11 @@ export interface TierCardProps {
   ctaLabel: string
   ctaHref: string
   featured?: boolean
+  /**
+   * Heading level for the tier name. Defaults to 2 — the tier grid on /skraning
+   * sits directly under the page <h1> with no section heading in between.
+   */
+  headingLevel?: 2 | 3 | 4
 }
 
 export function TierCard({
@@ -20,10 +25,13 @@ export function TierCard({
   ctaLabel,
   ctaHref,
   featured,
+  headingLevel = 2,
 }: TierCardProps) {
+  const Heading = `h${headingLevel}` as const
+
   return (
     <div className={clsx(styles.card, featured && styles.featured)}>
-      <h3 className={styles.name}>{name}</h3>
+      <Heading className={styles.name}>{name}</Heading>
       <p className={styles.price}>
         {price}
         {priceNote && <span className={styles.note}> {priceNote}</span>}

@@ -1,86 +1,32 @@
 import { notFound } from 'next/navigation'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import { isLocale, type Locale } from '@/lib/i18n'
-import { getBylawsMarkdown } from '@/lib/bylaws'
+import { getDictionary, isLocale, DEFAULT_LOCALE } from '@/lib/i18n'
+import { formatFileSize } from '@/lib/filesize'
+import { resolveContentLocale } from '@/lib/localized'
+import { getAboutContent } from '@/lib/content/about'
+import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
+import { RichText } from '@/components/RichText/RichText'
 import { Section } from '@/components/Section/Section'
-import { BoardCard, type Accent } from '@/components/BoardCard/BoardCard'
-import { FaqAccordion } from '@/components/FaqAccordion/FaqAccordion'
+import { EmptyState } from '@/components/EmptyState/EmptyState'
 import styles from './about.module.scss'
 
-const accents: Accent[] = ['violet', 'pink', 'yellow', 'red']
-
-const content: Record<
-  Locale,
-  {
-    title: string
-    story: string[]
-    boardTitle: string
-    board: { name: string; role: string }[]
-    bylawsTitle: string
-    bylawsFallback: string
-    faqTitle: string
-    faq: { question: string; answer: string }[]
-  }
-> = {
-  is: {
-    title: 'Um SVEF',
-    story: [
-      'SVEF — Samtök vefiðnaðarins — voru stofnuð árið 2005 og eru félag fólks sem starfar við vefinn á Íslandi. Í dag eru félagar um 300 talsins: forritarar, hönnuðir, markaðsfólk, verkefnastjórar og UX-fólk.',
-      'Við miðlum þekkingu og eflum fagleg vinnubrögð í greininni — með viðburðum, Íslensku vefverðlaununum og samtali milli fólks sem annars myndi aldrei hittast. Samtökin eru rekin af sex manna sjálfboðaliðastjórn.',
-    ],
-    boardTitle: 'Stjórn SVEF',
-    board: [
-      { name: 'Salena Raquel Kauffman', role: 'Formaður · UX/UI hönnuður hjá JúnÍ Digital' },
-      { name: 'Sigurður Snær Eiríksson', role: 'Gjaldkeri & vefstjóri · forritari hjá Dacoda' },
-      { name: 'Sveinn Steinarsson', role: 'Ritari · vefþróun' },
-      { name: 'Margrét Rúnarsdóttir', role: 'Meðstjórnandi · markaðsmál' },
-      { name: 'Kolfinna Pétursdóttir', role: 'Meðstjórnandi · viðburðir' },
-      { name: 'Brian Johannessen', role: 'Meðstjórnandi · dómkerfi' },
-      { name: 'Petra Dís Magnúsdóttir', role: 'Meðstjórnandi · stafrænar lausnir' },
-      { name: 'Jón Andri Óskarsson', role: 'Meðstjórnandi · vefverkefni' },
-    ],
-    bylawsTitle: 'Lög SVEF',
-    bylawsFallback:
-      'Lög SVEF eru geymd á GitHub og birtast hér sjálfkrafa. (Ekki tókst að sækja þau í augnablikinu.)',
-    faqTitle: 'Spurt og svarað',
-    faq: [
-      { question: 'Hvernig skrái ég mig í SVEF?', answer: 'Þú getur skráð þig hér á vefnum undir Skráning.' },
-      { question: 'Hvað kostar að vera í SVEF?', answer: 'Einstaklingsaðild kostar 23.900 kr. og fyrirtækjaaðild 149.000 kr.' },
-      { question: 'Hvað fæ ég út úr því að vera í SVEF?', answer: 'Frítt á alla viðburði (nema vefverðlaunin) og 20% afslátt af miðum á Íslensku vefverðlaunin.' },
-      { question: 'Er einhver að vinna hjá SVEF?', answer: 'Nei — stjórn SVEF skipa sex sjálfboðaliðar, kjörnir til tveggja ára.' },
-    ],
-  },
-  en: {
-    title: 'About SVEF',
-    story: [
-      'SVEF — the Icelandic Web Industry Association — was founded in 2005 and is an association of people who work with the web in Iceland. Today it has around 300 members: developers, designers, marketers, project managers and UX folk.',
-      'We share knowledge and raise professional standards in the field — through events, the Icelandic Web Awards, and conversations between people who would otherwise never meet. The association is run by a six-person volunteer board.',
-    ],
-    boardTitle: 'The board',
-    board: [
-      { name: 'Salena Raquel Kauffman', role: 'Chair · UX/UI designer at JúnÍ Digital' },
-      { name: 'Sigurður Snær Eiríksson', role: 'Treasurer & web director · developer at Dacoda' },
-      { name: 'Sveinn Steinarsson', role: 'Secretary · web development' },
-      { name: 'Margrét Rúnarsdóttir', role: 'Board member · marketing' },
-      { name: 'Kolfinna Pétursdóttir', role: 'Board member · events' },
-      { name: 'Brian Johannessen', role: 'Board member · judging system' },
-      { name: 'Petra Dís Magnúsdóttir', role: 'Board member · digital solutions' },
-      { name: 'Jón Andri Óskarsson', role: 'Board member · web projects' },
-    ],
-    bylawsTitle: 'Bylaws',
-    bylawsFallback:
-      "SVEF's bylaws live on GitHub and render here automatically. (Could not fetch them right now.)",
-    faqTitle: 'FAQ',
-    faq: [
-      { question: 'How do I join SVEF?', answer: 'You can sign up here on the site under Membership.' },
-      { question: 'What does membership cost?', answer: 'Individual membership is 23,900 ISK and company membership 149,000 ISK.' },
-      { question: 'What do I get from being a member?', answer: 'Free entry to all events (except the Web Awards) and 20% off Web Awards tickets.' },
-      { question: 'Does anyone work for SVEF?', answer: 'No — the board is six volunteers, elected for two-year terms.' },
-    ],
-  },
-}
+/**
+ * Statically prerendered for both locales and refreshed by ISR.
+ *
+ * `/um-svef` adds no dynamic segment of its own — the only thing that varies is
+ * `[locale]`, and the layout above already generates it — so this route needs
+ * `revalidate` and nothing else. See the rendering section of `CLAUDE.md`.
+ *
+ * Five minutes is the site-wide figure: long enough that the page is a cached
+ * file in practice, short enough that an editor who changes the story or the
+ * press list sees it while still looking.
+ *
+ * The board, the FAQ and the bylaws used to live here too. svef/www#103 split
+ * them out to `/stjorn`, `/spurt-og-svarad` and `/log-svef`, each with its own
+ * `TranslationNote` scoped to its own content. This page now covers only the
+ * story, the press list and the brand assets.
+ */
+export const revalidate = 300
 
 export default async function AboutPage({
   params,
@@ -89,40 +35,119 @@ export default async function AboutPage({
 }) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
-  const c = content[locale]
-  const bylaws = await getBylawsMarkdown()
 
+  const t = getDictionary(locale)
+  const about = await getAboutContent(locale)
+
+  /**
+   * The page-level note covers the story only — the one bilingual piece of
+   * content left on this page now that the board and FAQ have their own
+   * routes (svef/www#103). The press list is Icelandic by editorial decision,
+   * not by omission, so folding it in here would tell an English reader that a
+   * translation is coming when none ever is. It carries its own "Icelandic
+   * only" marker instead.
+   */
+  const contentLocale = resolveContentLocale([about.storyLocale], locale)
+
+  const storyLang = about.storyLocale === locale ? undefined : about.storyLocale
+
+  /**
+   * The inline "Icelandic only" marker beside the press list — on the English
+   * page only.
+   *
+   * There it tells an English reader why that section is not in their
+   * language. On the Icelandic page it has nothing to say: the section is
+   * already in the reader's language, so the marker states the obvious at best
+   * and reads as "this section is restricted" at worst.
+   */
+  const icelandicOnly =
+    locale === DEFAULT_LOCALE ? null : (
+      <p className={styles.icelandicOnly}>{t.about.icelandicOnly}</p>
+    )
+
+  // The note is the first thing inside `<main>`, so the skip link lands on it
+  // rather than past it.
   return (
     <>
-      <PageHeader title={c.title} />
+      <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
+      <PageHeader title={t.about.title} />
+
       <Section>
-        <div className={styles.story}>
-          {c.story.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-        </div>
+        <RichText data={about.story} className={styles.story} lang={storyLang} />
       </Section>
 
-      <Section title={c.boardTitle}>
-        <div className={styles.boardGrid}>
-          {c.board.map((m, i) => (
-            <BoardCard key={m.name} name={m.name} role={m.role} accent={accents[i % accents.length]} />
-          ))}
-        </div>
-      </Section>
-
-      <Section title={c.bylawsTitle}>
-        {bylaws ? (
-          <div className={styles.bylaws}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{bylaws}</ReactMarkdown>
+      <Section>
+        <div className={styles.stack}>
+          <div>
+            <div className={styles.sectionHead}>
+              <h2 className={styles.sectionTitle}>{t.about.pressTitle}</h2>
+              {icelandicOnly}
+            </div>
+            {about.press.length === 0 ? (
+              <EmptyState
+                title={t.about.press.empty.title}
+                body={t.about.press.empty.body}
+                headingLevel={3}
+              />
+            ) : (
+              <ul className={styles.pressList} lang={DEFAULT_LOCALE}>
+                {about.press.map((item) => (
+                  <li key={`${item.outlet}:${item.title}`} className={styles.pressItem}>
+                    {item.url ? (
+                      <a className={styles.pressLink} href={item.url}>
+                        <span className={styles.pressTitle}>{item.title}</span>
+                        <span className={styles.pressOutlet}>{item.outlet}</span>
+                      </a>
+                    ) : (
+                      // No link recorded for this mention — the row is still
+                      // real coverage, so it is listed as plain text rather
+                      // than as an anchor that goes nowhere.
+                      <span className={styles.pressLink}>
+                        <span className={styles.pressTitle}>{item.title}</span>
+                        <span className={styles.pressOutlet}>{item.outlet}</span>
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-        ) : (
-          <p style={{ color: 'var(--fg-muted)' }}>{c.bylawsFallback}</p>
-        )}
-      </Section>
 
-      <Section title={c.faqTitle}>
-        <FaqAccordion items={c.faq} />
+          <div className={styles.brandCard}>
+            <h2 className={styles.brandTitle}>{t.about.brand.title}</h2>
+            <p className={styles.brandBlurb}>{t.about.brand.blurb}</p>
+            {about.brandAssets.length === 0 ? (
+              // `brandAssets.file` is a required upload, so an empty list means
+              // no files have been uploaded yet — not a rendering failure. The
+              // card keeps its heading and says where to get the logo instead of
+              // showing download buttons that download nothing.
+              <EmptyState
+                title={t.about.brand.empty.title}
+                body={t.about.brand.empty.body}
+                headingLevel={3}
+              />
+            ) : (
+              <ul className={styles.brandDownloads}>
+                {about.brandAssets.map((asset) => {
+                  // `filesize` is what Payload recorded for the upload. It can
+                  // be missing on a media document restored from a dump, and a
+                  // button that claimed "0 B" would be worse than one that says
+                  // nothing, so the size is dropped rather than guessed.
+                  const size = formatFileSize(asset.filesize, locale)
+                  return (
+                    <li key={asset.url}>
+                      <a className={styles.download} href={asset.url} download>
+                        {asset.label}
+                        {size && <span className={styles.downloadSize}>{size}</span>}
+                        <span aria-hidden="true">↓</span>
+                      </a>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
       </Section>
     </>
   )

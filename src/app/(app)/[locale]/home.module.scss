@@ -1,23 +1,76 @@
-.eventGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+// The export's section header: heading on the left, the link on the right, and
+// a hairline rule filling whatever is between them.
+.head {
+  display: flex;
+  align-items: baseline;
   gap: var(--space-4);
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+  // The rule wraps onto its own line below ~420px in Icelandic — "Myndir frá
+  // viðburðum" and "Allar myndir →" do not fit one line at 320px — so the
+  // margin belongs to the row rather than to the heading.
+  flex-wrap: wrap;
+  margin-bottom: var(--space-8);
 }
 
-.photosMore {
-  margin-top: var(--space-6);
+.headTitle {
+  margin: 0;
+  font-size: var(--text-3xl);
+  // Long Icelandic compounds ("Verðlaunavefir", "Vefverðlaunin") set a
+  // min-content width wider than a 320px viewport once the rule and the link
+  // claim their share of the row. `min-width: 0` is what actually lets the
+  // heading shrink below that; `overflow-wrap` alone does not reduce
+  // min-content size, so on its own the row still overflows the page.
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
-.moreLink {
+.rule {
+  flex: 1;
+  min-width: var(--space-8);
+  height: 1px;
+  background: var(--surface-3);
+}
+
+.headLink {
   color: var(--color-violet-light);
   font-weight: var(--weight-semibold);
   text-decoration: none;
+  white-space: nowrap;
 
   &:hover {
     text-decoration: underline;
   }
+}
+
+// The export's winner grid: three cards across the content width.
+//
+// Explicit tracks rather than `repeat(auto-fit, minmax(260px, 1fr))` as the
+// export writes it, because the strip is capped at three cards and neither
+// auto- keyword survives that. `auto-fill` leaves a fourth, empty track at
+// 1440 and shrinks the three cards to 282px — measured, not assumed — and
+// `auto-fit` collapses it the other way, so a year with one recorded winner
+// would draw a single card the full width of the page. Three, two, one is the
+// same sequence the auto version produces at these widths, said outright.
+.winners {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 620px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// `1fr` tracks are `minmax(auto, 1fr)`, so a long unbroken Icelandic compound in
+// a card sets the column's minimum and pushes the grid past the viewport.
+// `min-width: 0` is what lets the track shrink below its content; the card's own
+// `overflow-wrap` cannot, because wrapping does not reduce min-content width.
+.winners > li {
+  min-width: 0;
 }
