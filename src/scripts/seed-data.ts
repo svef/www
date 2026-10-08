@@ -367,10 +367,11 @@ export type AwardEditionFixture = {
 export const awardEditions: AwardEditionFixture[] = [
   {
     year: 2026,
-    ceremonyDate: '2026-11-14T19:30:00.000Z',
+    // Iceland keeps UTC all year, so this Z timestamp is the local time exactly.
+    ceremonyDate: '2027-03-19T19:30:00.000Z',
     venue: 'Harpa, Silfurberg',
-    headline: '14. nóvember í Hörpu',
-    headlineEn: '14 November at Harpa',
+    headline: '19. mars í Hörpu',
+    headlineEn: '19 March at Harpa',
     submissionDeadline: '2026-10-10T23:59:00.000Z',
     ticketsOnSaleFrom: '2026-09-01T09:00:00.000Z',
   },
