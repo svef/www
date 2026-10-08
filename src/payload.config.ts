@@ -8,6 +8,7 @@ import { seoPlugin } from '@payloadcms/plugin-seo'
 import sharp from 'sharp'
 
 import { Users } from './payload/collections/Users'
+import { Feedback, TalkProposals } from '@/payload/collections/Submissions'
 import { Media } from './payload/collections/Media'
 import { Events } from './payload/collections/Events'
 import { News } from './payload/collections/News'
@@ -54,6 +55,9 @@ export default buildConfig({
   },
   collections: [
     Users,
+    // What readers send in. Append-only; see the file for why reads are closed.
+    Feedback,
+    TalkProposals,
     Media,
     Events,
     News,
@@ -72,6 +76,18 @@ export default buildConfig({
       connectionString:
         process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || '',
     },
+    // Schema changes reach a hosted database through a migration, never through
+    // a push: `npm run migrate` runs before the build on Vercel, so the deploy
+    // that needs a table is the deploy that creates it.
+    //
+    // This matters more than usual here. `main` and `dev` point at the same
+    // Neon database and their collections have diverged — `dev` has localized
+    // slugs and a different set of social fields. A push from this branch would
+    // not add tables, it would try to *revert* those, so it must never run
+    // anywhere but a local database.
+    //
+    // `VERCEL` is set on every Vercel build and on no local one.
+    push: !process.env.VERCEL,
   }),
   sharp,
   plugins: [

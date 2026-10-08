@@ -52,6 +52,8 @@ export interface LandingCopy {
     icsDownload: string
   }
   footer: { blurb: string; copyright: string }
+  /** The two things a reader can send us from the landing page. */
+  write: { heading: string; feedback: string; feedbackHref: string; talk: string; talkHref: string }
   language: { label: string; is: string; en: string }
 }
 
@@ -145,6 +147,13 @@ const is: LandingCopy = {
       'Samtök vefiðnaðarins (SVEF) eru fagsamtök þeirra er starfa að vefmálum á Íslandi. Samtökin hafa það að markmiði að miðla þekkingu og efla fagleg vinnubrögð í greininni.',
     copyright: '© SVEF 2026',
   },
+  write: {
+    heading: 'Heyrðu í okkur',
+    feedback: 'Senda ábendingu',
+    feedbackHref: '/is/abendingar',
+    talk: 'Bjóða fram erindi',
+    talkHref: '/is/erindi',
+  },
   language: { label: 'Skipta um tungumál', is: 'IS', en: 'EN' },
 }
 
@@ -237,6 +246,13 @@ const en: LandingCopy = {
     blurb:
       'Samtök vefiðnaðarins (SVEF) is the professional association for people working on the web in Iceland. Our aim is to share knowledge and raise professional standards in the field.',
     copyright: '© SVEF 2026',
+  },
+  write: {
+    heading: 'Get in touch',
+    feedback: 'Send feedback',
+    feedbackHref: '/en/abendingar',
+    talk: 'Propose a talk',
+    talkHref: '/en/erindi',
   },
   language: { label: 'Change language', is: 'IS', en: 'EN' },
 }

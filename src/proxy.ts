@@ -9,6 +9,13 @@ import { DEFAULT_LOCALE, isLocale } from '@/lib/i18n'
 // to. That decision is permanent routing: `LANDING_ONLY` changes *what* renders
 // at a locale, never *where* things live, so these URLs survive the cutover from
 // the landing page to the full site untouched.
+/**
+ * Pages that exist while `LANDING_ONLY` is set, beyond the landing page itself.
+ *
+ * Keyed on the directory name under `(app)/[locale]/`, which is also the path.
+ */
+const LANDING_PAGES = new Set(['abendingar', 'erindi'])
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -39,6 +46,14 @@ export function proxy(request: NextRequest) {
   // (landing) route group go away together and `(app)/[locale]` serves the very
   // same URLs.
   if (LANDING_ONLY) {
+    // A few real pages are reachable before the rest of the site is. They live
+    // where they will live afterwards — under `(app)/[locale]` — so the cutover
+    // moves nothing; this list is what goes away then, not the pages.
+    const page = pathname.split('/')[2]
+    if (page && LANDING_PAGES.has(page) && pathname === `/${segment}/${page}`) {
+      return NextResponse.next()
+    }
+
     if (pathname !== `/${segment}`) return redirectTo(`/${segment}`)
     const url = request.nextUrl.clone()
     url.pathname = `/landing/${segment}`

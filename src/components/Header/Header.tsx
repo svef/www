@@ -35,9 +35,13 @@ export function Header({
         ))}
       </nav>
       <div className={styles.utility}>
-        <Link href={contactHref} className={styles.navLink}>
-          {contactLabel}
-        </Link>
+        {/* Dropped when there is nowhere to send them: while the rest of the
+            site is hidden, the contact page redirects back to the landing. */}
+        {contactLabel && contactHref ? (
+          <Link href={contactHref} className={styles.navLink}>
+            {contactLabel}
+          </Link>
+        ) : null}
         <Link
           href={otherLocaleHref}
           className={styles.langPill}

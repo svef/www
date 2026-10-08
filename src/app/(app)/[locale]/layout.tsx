@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { Noto_Sans, Overpass } from 'next/font/google'
 import { Header } from '@/components/Header/Header'
 import { Footer } from '@/components/Footer/Footer'
+import { LANDING_ONLY } from '@/lib/site-mode'
 import {
   ColorSchemeScript,
   MantineProvider,
@@ -41,7 +42,11 @@ export default async function LocaleLayout({
 
   const t = getDictionary(locale)
   const base = locale === 'en' ? '/en' : ''
-  const navItems = [
+  // While the rest of the site is hidden, the nav would be a row of links that
+  // all bounce back to the landing page — worse than no nav. The handful of
+  // pages that *are* reachable (the forms) get the mark and the language link
+  // and nothing else; the full row returns with the site it belongs to.
+  const navItems = LANDING_ONLY ? [] : [
     { href: `${base}/vefverdlaunin`, label: t.nav.awards },
     { href: `${base}/vidburdir`, label: t.nav.events },
     { href: `${base}/frettir`, label: t.nav.news },
@@ -73,8 +78,11 @@ export default async function LocaleLayout({
           <Header
             homeHref={base || '/'}
             navItems={navItems}
-            contactLabel={t.nav.contact}
-            contactHref={`${base}/hafa-samband`}
+            // Hidden with the rest of the site: the contact page is not among
+            // the pages reachable while LANDING_ONLY is set, so linking it from
+            // here would bounce the reader back to the landing page.
+            contactLabel={LANDING_ONLY ? '' : t.nav.contact}
+            contactHref={LANDING_ONLY ? '' : `${base}/hafa-samband`}
             otherLocaleHref={locale === 'en' ? '/' : '/en'}
             otherLocaleLabel={locale === 'en' ? 'IS' : 'EN'}
           />

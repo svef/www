@@ -16,6 +16,8 @@
     "e2e": "playwright test",
     "e2e:a11y": "playwright test e2e/a11y",
     "generate:types": "payload generate:types",
+    "migrate": "payload migrate",
+    "migrate:create": "payload migrate:create",
     "generate:importmap": "payload generate:importmap"
   },
   "dependencies": {

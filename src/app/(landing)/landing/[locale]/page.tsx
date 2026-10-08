@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { LandingLogo } from '@/components/LandingLogo/LandingLogo'
 import { BlockPanel } from '@/components/BlockPanel/BlockPanel'
 import { LanguageToggle } from '@/components/LanguageToggle/LanguageToggle'
@@ -194,6 +195,15 @@ export default async function LandingPage({
                 height={56}
               />
               <p className={styles.footerBlurb}>{copy.footer.blurb}</p>
+            </div>
+            <div className={styles.footerWrite}>
+              <h2 className={styles.footerWriteHeading}>{copy.write.heading}</h2>
+              <Link className={styles.footerWriteLink} href={copy.write.feedbackHref}>
+                {copy.write.feedback}
+              </Link>
+              <Link className={styles.footerWriteLink} href={copy.write.talkHref}>
+                {copy.write.talk}
+              </Link>
             </div>
             <div className={styles.footerContact}>
               <a className={styles.footerEmail} href="mailto:svef@svef.is">

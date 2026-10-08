@@ -1,0 +1,10 @@
+// Only appears when "other" is chosen; the violet rule ties it to the select above.
+.other {
+  border-left: var(--space-1) solid var(--color-violet);
+  padding-left: var(--space-4);
+}
+
+.contactHint {
+  margin: 0;
+  color: var(--fg-muted);
+}

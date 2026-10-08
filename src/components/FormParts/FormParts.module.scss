@@ -1,0 +1,162 @@
+.honeypot {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.summary {
+  border: 2px solid var(--accent-yellow);
+  background: var(--surface-2);
+  padding: var(--space-4) var(--space-6);
+
+  &:focus {
+    outline: 3px solid var(--color-white);
+    outline-offset: 2px;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: var(--space-6);
+  }
+
+  a {
+    color: var(--fg);
+    text-decoration: underline;
+  }
+}
+
+.summaryTitle {
+  margin: 0 0 var(--space-2);
+  font-weight: var(--weight-bold);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+}
+
+.optional {
+  font-weight: var(--weight-regular);
+  color: var(--fg-muted);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--accent-yellow);
+}
+
+.pending {
+  color: var(--fg-muted);
+}
+
+.success {
+  max-width: 40rem;
+  border-left: var(--space-2) solid var(--color-violet);
+  padding: var(--space-4) var(--space-6);
+
+  &:focus {
+    outline: 3px solid var(--color-white);
+    outline-offset: 2px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: var(--text-lg);
+  }
+}
+
+.successTitle {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-xl);
+}
+
+.form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 40rem;
+}
+
+.input {
+  width: 100%;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: var(--text-base);
+  color: var(--fg);
+  background: var(--surface-2);
+  border: 1px solid var(--fg-muted);
+  padding: var(--space-3) var(--space-4);
+  border-radius: 0;
+
+  &:focus-visible {
+    outline: 3px solid var(--color-violet-light);
+    outline-offset: 2px;
+    border-color: var(--color-violet-light);
+  }
+
+  &[aria-invalid='true'] {
+    border: 2px solid var(--accent-yellow);
+  }
+}
+
+.textarea {
+  min-height: 8rem;
+  max-height: 32rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.submit {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-base);
+  padding: var(--space-4) var(--space-6);
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+  background: var(--color-violet);
+  // Shy White on Electric Violet is 6.22:1 and passes AA. Blakety Black on the
+  // same violet is 3.14:1 and does not — the trap this codebase has had to be
+  // corrected for before.
+  color: var(--color-white);
+
+  &:hover {
+    background: var(--color-violet-bright);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
+
+  &[aria-disabled='true'] {
+    cursor: progress;
+    opacity: 0.7;
+  }
+}
