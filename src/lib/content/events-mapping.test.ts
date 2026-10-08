@@ -146,7 +146,7 @@ describe('buildMeta', () => {
 
 describe('toEventSummary', () => {
   it('links at the locale-correct path', () => {
-    expect(toEventSummary(doc(), 'is').href).toBe('/vidburdir/kludurkvold')
+    expect(toEventSummary(doc(), 'is').href).toBe('/is/vidburdir/kludurkvold')
     expect(toEventSummary(doc(), 'en').href).toBe('/en/vidburdir/kludurkvold')
   })
 

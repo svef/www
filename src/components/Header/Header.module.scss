@@ -11,69 +11,99 @@ $nav-breakpoint: 900px;
 }
 
 .header {
-  // Deep at rest, shallow once scrolling starts. The mark is deliberately taller
-  // than the bar and hangs below it, so these three move together.
+  // Only the bar shrinks. The mark keeps its size at every scroll position, so
+  // it simply hangs further below the bar once the bar is shallow.
   --header-h: 88px;
   --logo-width: 112px;
   --logo-top: 12px;
+  // How far the blur reaches past the bar as it fades out.
+  --header-fade: 28px;
 
-  // Sticky rather than fixed: the header keeps its place in the flow, so nothing
-  // below it needs a compensating offset.
   position: sticky;
   top: 0;
   z-index: 20;
-  display: flex;
-  align-items: center;
-  // The export draws two different gaps: clamp(16px, 2.5vw, 32px) between the
-  // logo and the nav, and 14px inside the right-hand group of "Hafa samband"
-  // and the language pill. The panel is `display: contents`, so the contact
-  // link is a direct child here and would otherwise take the header's gap —
-  // which is how the right-hand pair drifted to 32px. The header carries the
-  // smaller gap and `.nav` makes up the difference on its own side.
-  gap: var(--space-4);
-  // No vertical padding. The bar's depth is `--header-h` instead, which is what
-  // lets the mark exceed it rather than push it open, and `min-height` rather
-  // than `height` because the small-screen menu opens as a second row inside the
-  // header and has to be able to grow it.
-  padding: 0 var(--space-6);
   min-height: var(--header-h);
-  // Slightly transparent with the page blurred behind it, so the bar reads as
-  // glass over the content rather than a lid on it.
+  // The gutter sits on the bar, not the row, which is what `Section` and the
+  // footer do — that is what makes the mark's left edge line up with the content
+  // below rather than sitting a gutter further in.
+  padding: 0 var(--space-6);
+  transition: min-height 220ms ease;
+}
+
+// The glass is a layer of its own rather than the header's own background, so
+// it can extend past the bar and fade out. A hard-edged blur draws a line across
+// the page at the exact pixel it stops; this lets it stop gradually instead.
+// Masking fades the tint and the blur together — masking only the colour would
+// leave a sharp edge where the blur ends.
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  bottom: calc(-1 * var(--header-fade));
+  z-index: -1;
+  pointer-events: none;
   background: color-mix(in srgb, var(--bg) 72%, transparent);
-  // No hand-written -webkit- prefix here: Lightning CSS adds prefixes from
+  // No hand-written -webkit- prefix: Lightning CSS adds prefixes from
   // browserslist, and writing both made it collapse them into the prefixed
   // property alone, which left the standard one undefined.
   backdrop-filter: blur(14px) saturate(140%);
-  flex-wrap: wrap;
-  transition:
-    min-height 220ms ease,
-    background-color 220ms ease;
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(100% - var(--header-fade)),
+    transparent 100%
+  );
 }
 
-// Without the blur the translucency would just be a washed-out bar over moving
-// text, so it falls back to the solid canvas.
+// Without the blur the translucency would just be a washed-out band over moving
+// text, so it falls back to the solid canvas and no fade.
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .header {
+  .header::before {
     background: var(--bg);
+    bottom: 0;
+    mask-image: none;
   }
 }
 
 .header[data-compact='true'] {
   --header-h: 60px;
-  --logo-width: 76px;
-  --logo-top: 8px;
+}
+
+// The row, held to the same measure as the page content so the mark's left edge
+// lines up with everything below it — the footer already does this.
+.inner {
+  display: flex;
+  align-items: center;
+  // The export draws two different gaps: clamp(16px, 2.5vw, 32px) between the
+  // logo and the nav, and 14px inside the right-hand group. The panel is
+  // `display: contents`, so its children are direct children here.
+  gap: var(--space-4);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  // No padding at all: the bar carries the gutter, and the bar's depth is
+  // `--header-h`, which is what lets the mark exceed it rather than push it open.
+  min-height: var(--header-h);
+  flex-wrap: wrap;
 }
 
 .logoLink {
   text-decoration: none;
   flex-shrink: 0;
-  // Fixed to the bar's own depth and aligned to its top, so the mark inside —
-  // which is taller — spills out of the bottom instead of stretching the bar.
-  // Nothing clips it, so the shape carries on over the page beneath.
+  // Fixed to the bar's own depth and aligned to its top, so the mark — which is
+  // taller, and stays that size as the bar shrinks — spills out of the bottom
+  // instead of stretching it. Nothing clips it, so it carries on over the page.
   align-self: flex-start;
   height: var(--header-h);
   padding-top: var(--logo-top);
   transition: height 220ms ease;
+
+  // The link's own box is the bar's depth, and that is the part that takes
+  // clicks. The mark inside is taller and hangs over the page, so without this
+  // it would sit on top of whatever is beneath and swallow clicks meant for it —
+  // the hero's call to action, once the bar has shrunk.
+  > * {
+    pointer-events: none;
+  }
 }
 
 // The focus-trap wrapper and the disclosure panel both take part in the
@@ -96,9 +126,6 @@ $nav-breakpoint: 900px;
 .list {
   display: flex;
   align-items: center;
-  // The links' own line box is what fills the bar now that it has no vertical
-  // padding; they stay centred as it shrinks.
-  line-height: var(--header-h);
   gap: var(--space-6);
   list-style: none;
   margin: 0;
@@ -116,11 +143,22 @@ $nav-breakpoint: 900px;
   color: var(--fg);
   text-decoration: none;
   font-weight: var(--weight-semibold);
-  // The design marks the current section with a violet underline; the border is
-  // always there so the item does not move when it becomes current.
-  padding-bottom: var(--space-1);
-  border-bottom: 3px solid transparent;
+  // The design marks the current section with a violet underline. It is drawn
+  // below the link's own box rather than as a border with padding above it:
+  // padding-bottom made every item sit that much above the centre of the bar,
+  // which is what left the row looking unaligned.
+  position: relative;
   transition: color 0.16s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 3px;
+    background: transparent;
+  }
 
   &:hover {
     color: var(--color-violet-light);
@@ -131,55 +169,48 @@ $nav-breakpoint: 900px;
     outline-offset: 3px;
   }
 
-  &[aria-current='page'] {
-    border-bottom-color: var(--color-violet);
+  &[aria-current='page']::after {
+    background: var(--color-violet);
   }
 }
 
-.contactLink {
+
+// Both languages side by side, sized and weighted like the nav items so the row
+// reads as one line rather than a nav plus a control.
+.langToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.langOption {
   color: var(--fg-muted);
   text-decoration: none;
-  font-weight: var(--weight-medium);
-  transition: color 0.16s ease;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  letter-spacing: 0.08em;
 
   &:hover {
     color: var(--fg);
+  }
+
+  // The current language reads as selected on its own, so the link stays in
+  // place and simply stops advertising itself as somewhere to go.
+  &[aria-current='page'] {
+    color: var(--fg);
+    cursor: default;
   }
 
   &:focus-visible {
     outline: 2px solid var(--color-violet-light);
     outline-offset: 3px;
   }
-
-  &[aria-current='page'] {
-    color: var(--fg);
-    text-decoration: underline;
-    text-decoration-color: var(--color-violet);
-    text-decoration-thickness: 3px;
-    text-underline-offset: 4px;
-  }
 }
 
-.langPill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  color: var(--fg);
-  text-decoration: none;
-  font-weight: var(--weight-semibold);
-  font-size: var(--text-sm);
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--surface-4);
-  border-radius: var(--radius-sm);
-
-  &:hover {
-    border-color: var(--color-violet);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-violet-light);
-    outline-offset: 2px;
-  }
+.langDivider {
+  width: 1px;
+  height: 12px;
+  background: var(--surface-4);
 }
 
 // Hidden above the breakpoint, where the nav is a row and there is nothing to
@@ -267,11 +298,6 @@ $nav-breakpoint: 900px;
     padding: 0 var(--space-4);
   }
 
-  // The open menu is a second row, so the links go back to their own leading.
-  .list {
-    line-height: normal;
-  }
-
   .toggle {
     display: inline-flex;
   }
@@ -307,8 +333,7 @@ $nav-breakpoint: 900px;
     gap: 0;
   }
 
-  .navLink,
-  .contactLink {
+  .navLink {
     display: block;
     // Comfortably past the 44px target size the association's own award asks
     // for, on the axis where a thumb misses.
@@ -323,10 +348,12 @@ $nav-breakpoint: 900px;
       border-left-color: var(--color-violet);
       background: var(--surface-1);
     }
-  }
 
-  .contactLink {
-    border-bottom: 0;
+    // The underline belongs to the desktop row; down here the current item is
+    // marked by the violet edge on its left instead.
+    &::after {
+      content: none;
+    }
   }
 }
 
@@ -353,7 +380,6 @@ $nav-breakpoint: 900px;
   }
 
   .navLink,
-  .contactLink,
   .bars span {
     transition: none;
   }

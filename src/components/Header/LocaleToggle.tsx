@@ -1,10 +1,9 @@
 'use client'
 
-import { useCallback, useSyncExternalStore } from 'react'
+import { Fragment, useCallback, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { VisuallyHidden } from '@mantine/core'
-import { getDictionary, localePath, type Locale } from '@/lib/i18n'
+import { getDictionary, localePath, LOCALES, type Locale } from '@/lib/i18n'
 import styles from './Header.module.scss'
 
 /**
@@ -63,21 +62,38 @@ function useLocationSuffix(): string {
  * not the query or the hash. That is unavoidable for the hash, which the server
  * never receives, and it is what the toggle already did before #49.
  */
+/**
+ * Both languages, side by side, the way the landing page shows them.
+ *
+ * The current language stays visible and is marked with `aria-current` rather
+ * than being dropped, so the control keeps its shape between locales and a
+ * reader can see which of the two they are on without inferring it.
+ *
+ * Each link preserves the page you are on, carrying the query and hash across
+ * with it; see `useLocationSuffix` above for why that is read from
+ * `window.location` rather than `useSearchParams()`.
+ */
 export function LocaleToggle({ locale }: { locale: Locale }) {
   const pathname = usePathname()
   const suffix = useLocationSuffix()
-  const target: Locale = locale === 'en' ? 'is' : 'en'
   const t = getDictionary(locale)
 
   return (
-    <Link
-      href={localePath(pathname + suffix, target)}
-      className={styles.langPill}
-      hrefLang={target}
-    >
-      <span aria-hidden="true">🌐</span>{' '}
-      <span lang={target}>{target.toUpperCase()}</span>
-      <VisuallyHidden> {t.switchLanguage}</VisuallyHidden>
-    </Link>
+    <nav className={styles.langToggle} aria-label={t.switchLanguage}>
+      {LOCALES.map((option, index) => (
+        <Fragment key={option}>
+          {index > 0 && <span className={styles.langDivider} aria-hidden="true" />}
+          <Link
+            href={localePath(pathname + suffix, option)}
+            className={styles.langOption}
+            hrefLang={option}
+            lang={option}
+            aria-current={option === locale ? 'page' : undefined}
+          >
+            {option.toUpperCase()}
+          </Link>
+        </Fragment>
+      ))}
+    </nav>
   )
 }

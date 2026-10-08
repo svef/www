@@ -36,7 +36,7 @@ const PANEL_ID = 'site-menu'
  * The primary navigation, and the small-screen menu that holds it.
  *
  * One set of links serves both widths. Above `NAV_BREAKPOINT` the panel is
- * `display: contents`, so the nav and the contact link are laid out by the
+ * `display: contents`, so the nav is laid out by the
  * header itself exactly as the design draws them and the toggle is hidden.
  * Below it the panel becomes a block that fills the header's second row, the
  * toggle appears, and the whole thing behaves as a disclosure. Rendering the
@@ -51,16 +51,12 @@ const PANEL_ID = 'site-menu'
  */
 export function SiteNav({
   items,
-  contactHref,
-  contactLabel,
   menuLabel,
   navLabel,
   locale,
   children,
 }: {
   items: HeaderNavItem[]
-  contactHref: string
-  contactLabel: string
   /** Visible text of the toggle, and therefore its whole accessible name. */
   menuLabel: string
   navLabel: string
@@ -175,14 +171,6 @@ export function SiteNav({
               ))}
             </ul>
           </nav>
-          <Link
-            href={contactHref}
-            className={styles.contactLink}
-            aria-current={isCurrent(contactHref) ? 'page' : undefined}
-            onClick={() => close(isCurrent(contactHref))}
-          >
-            {contactLabel}
-          </Link>
         </div>
         <div className={styles.controls}>
           {children}

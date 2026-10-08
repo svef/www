@@ -20,40 +20,37 @@ describe('i18n', () => {
 })
 
 describe('localePath', () => {
-  it('adds the /en prefix when switching to English', () => {
+  it('prefixes the target locale', () => {
     expect(localePath('/', 'en')).toBe('/en')
+    expect(localePath('/', 'is')).toBe('/is')
     expect(localePath('/vidburdir', 'en')).toBe('/en/vidburdir')
+    expect(localePath('/vidburdir', 'is')).toBe('/is/vidburdir')
     expect(localePath('/frettir/eitthvad', 'en')).toBe('/en/frettir/eitthvad')
   })
 
-  it('strips the /en prefix when switching to Icelandic', () => {
-    expect(localePath('/en', 'is')).toBe('/')
-    expect(localePath('/en/vidburdir', 'is')).toBe('/vidburdir')
-    expect(localePath('/en/frettir/eitthvad', 'is')).toBe('/frettir/eitthvad')
-  })
-
-  it('never emits the internal /is prefix', () => {
-    expect(localePath('/is', 'is')).toBe('/')
-    expect(localePath('/is/vidburdir', 'is')).toBe('/vidburdir')
+  it('replaces an existing prefix rather than stacking one on top', () => {
+    expect(localePath('/en/vidburdir', 'is')).toBe('/is/vidburdir')
     expect(localePath('/is/vidburdir', 'en')).toBe('/en/vidburdir')
+    expect(localePath('/en', 'is')).toBe('/is')
+    expect(localePath('/is', 'en')).toBe('/en')
   })
 
   it('is idempotent for the locale it is already in', () => {
     expect(localePath('/en/um-svef', 'en')).toBe('/en/um-svef')
-    expect(localePath('/um-svef', 'is')).toBe('/um-svef')
+    expect(localePath('/is/um-svef', 'is')).toBe('/is/um-svef')
+    expect(localePath(localePath('/um-svef', 'is'), 'is')).toBe('/is/um-svef')
   })
 
   it('only treats a whole segment as a locale prefix', () => {
     expect(localePath('/england', 'en')).toBe('/en/england')
     expect(localePath('/island', 'en')).toBe('/en/island')
-    expect(localePath('/en/england', 'is')).toBe('/england')
+    expect(localePath('/en/england', 'is')).toBe('/is/england')
   })
 
   it('preserves the query string and hash', () => {
-    expect(localePath('/vidburdir?ar=2026', 'en')).toBe('/en/vidburdir?ar=2026')
-    expect(localePath('/en/vidburdir#naesti', 'is')).toBe('/vidburdir#naesti')
+    expect(localePath('/en/vidburdir#naesti', 'is')).toBe('/is/vidburdir#naesti')
     expect(localePath('/myndir?ar=2025#topp', 'en')).toBe('/en/myndir?ar=2025#topp')
-    expect(localePath('/?x=1', 'is')).toBe('/?x=1')
+    expect(localePath('/?x=1', 'is')).toBe('/is?x=1')
   })
 
   it('tolerates a path without a leading slash', () => {
@@ -63,11 +60,11 @@ describe('localePath', () => {
   it('never returns a protocol-relative URL', () => {
     // `//evil.com` in an href navigates off-site. Unreachable today (Next
     // normalises `//` before render), guarded so it stays that way.
-    expect(localePath('//evil.com', 'is')).toBe('/evil.com')
+    expect(localePath('//evil.com', 'is')).toBe('/is/evil.com')
     expect(localePath('//evil.com', 'en')).toBe('/en/evil.com')
-    expect(localePath('/en//evil.com', 'is')).toBe('/evil.com')
+    expect(localePath('/en//evil.com', 'is')).toBe('/is/evil.com')
     expect(localePath('/is//evil.com', 'en')).toBe('/en/evil.com')
-    expect(localePath('///evil.com', 'is')).toBe('/evil.com')
-    expect(localePath('//evil.com?a=1#b', 'is')).toBe('/evil.com?a=1#b')
+    expect(localePath('///evil.com', 'is')).toBe('/is/evil.com')
+    expect(localePath('//evil.com?a=1#b', 'is')).toBe('/is/evil.com?a=1#b')
   })
 })

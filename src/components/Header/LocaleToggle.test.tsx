@@ -16,17 +16,17 @@ vi.mock('next/link', () => ({
   ),
 }))
 
-vi.mock('@mantine/core', () => ({
-  VisuallyHidden: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-}))
-
 /** jsdom allows same-origin navigation, which is how the hash/query get set. */
 function setLocation(url: string) {
   window.history.replaceState(null, '', url)
 }
 
-function href() {
-  return screen.getByRole('link').getAttribute('href')
+/**
+ * The href of one of the two options. Both languages are shown, so these all
+ * name the one they mean rather than relying on there being a single link.
+ */
+function href(label: 'IS' | 'EN' = 'EN') {
+  return screen.getByRole('link', { name: label }).getAttribute('href')
 }
 
 beforeEach(() => {
@@ -46,19 +46,19 @@ describe('LocaleToggle', () => {
     expect(href()).toBe('/en/vidburdir')
   })
 
-  it('strips the /en prefix when switching back to Icelandic', () => {
+  it('replaces the /en prefix when switching back to Icelandic', () => {
     pathname.value = '/en/vidburdir'
     setLocation('/en/vidburdir')
     render(<LocaleToggle locale="en" />)
-    expect(href()).toBe('/vidburdir')
+    expect(href('IS')).toBe('/is/vidburdir')
   })
 
-  it('never renders the internal /is prefix', () => {
+  it('does not stack one locale prefix on another', () => {
     pathname.value = '/is/myndir'
-    setLocation('/myndir')
+    setLocation('/is/myndir')
     render(<LocaleToggle locale="is" />)
-    expect(href()).toBe('/en/myndir')
-    expect(href()).not.toContain('/is/')
+    expect(href('EN')).toBe('/en/myndir')
+    expect(href('IS')).toBe('/is/myndir')
   })
 
   it('preserves the query string (#49)', () => {
@@ -79,7 +79,7 @@ describe('LocaleToggle', () => {
     pathname.value = '/en/frettir'
     setLocation('/en/frettir?flokkur=svef#listi')
     render(<LocaleToggle locale="en" />)
-    expect(href()).toBe('/frettir?flokkur=svef#listi')
+    expect(href('IS')).toBe('/is/frettir?flokkur=svef#listi')
   })
 
   it('does not append a stray ? or # when there is neither', () => {
@@ -120,16 +120,20 @@ describe('LocaleToggle', () => {
     // this reads `window.location` instead of `useSearchParams()`.
     const { renderToStaticMarkup } = await import('react-dom/server')
     pathname.value = '/is/myndir'
-    setLocation('/myndir?ar=2025#topp')
+    setLocation('/is/myndir?ar=2025#topp')
     const html = renderToStaticMarkup(<LocaleToggle locale="is" />)
     expect(html).toContain('href="/en/myndir"')
-    expect(html).not.toContain('/is/')
+    expect(html).toContain('href="/is/myndir"')
   })
 
-  it('labels the link with the target locale', () => {
+  it('shows both languages and marks the current one', () => {
     render(<LocaleToggle locale="is" />)
-    const link = screen.getByRole('link')
-    expect(link).toHaveAttribute('hrefLang', 'en')
-    expect(link).toHaveTextContent('EN')
+    const current = screen.getByRole('link', { name: 'IS' })
+    const other = screen.getByRole('link', { name: 'EN' })
+    // The current language stays a link so the control keeps its shape; it is
+    // marked rather than removed.
+    expect(current).toHaveAttribute('aria-current', 'page')
+    expect(other).not.toHaveAttribute('aria-current')
+    expect(other).toHaveAttribute('hrefLang', 'en')
   })
 })

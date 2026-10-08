@@ -92,8 +92,6 @@ export default async function LocaleLayout({
           <Header
             homeHref={base || '/'}
             navItems={navItems}
-            contactLabel={t.nav.contact}
-            contactHref={`${base}/hafa-samband`}
             menuLabel={t.nav.menu}
             navLabel={t.nav.primary}
             locale={locale}

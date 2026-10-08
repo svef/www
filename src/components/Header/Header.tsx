@@ -20,35 +20,26 @@ export type { HeaderNavItem }
 export function Header({
   homeHref,
   navItems,
-  contactLabel,
-  contactHref,
   menuLabel,
   navLabel,
   locale,
 }: {
   homeHref: string
   navItems: HeaderNavItem[]
-  contactLabel: string
-  contactHref: string
   menuLabel: string
   navLabel: string
   locale: Locale
 }) {
   return (
     <HeaderShell>
-      <Link href={homeHref} className={styles.logoLink} aria-label="SVEF">
-        <Logo />
-      </Link>
-      <SiteNav
-        items={navItems}
-        contactHref={contactHref}
-        contactLabel={contactLabel}
-        menuLabel={menuLabel}
-        navLabel={navLabel}
-        locale={locale}
-      >
-        <LocaleToggle locale={locale} />
-      </SiteNav>
+      <div className={styles.inner}>
+        <Link href={homeHref} className={styles.logoLink} aria-label="SVEF">
+          <Logo />
+        </Link>
+        <SiteNav items={navItems} menuLabel={menuLabel} navLabel={navLabel} locale={locale}>
+          <LocaleToggle locale={locale} />
+        </SiteNav>
+      </div>
     </HeaderShell>
   )
 }

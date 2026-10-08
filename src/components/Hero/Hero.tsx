@@ -1,6 +1,5 @@
 import { Eyebrow } from '@/components/Eyebrow/Eyebrow'
 import { Button } from '@/components/Button/Button'
-import { BlockMotif } from '@/components/BlockMotif/BlockMotif'
 import styles from './Hero.module.scss'
 
 interface Cta {
@@ -35,7 +34,6 @@ export function Hero({
 }) {
   return (
     <section className={styles.hero}>
-      <BlockMotif className={styles.motifRight} />
       <div className={styles.inner}>
         {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
         <h1 className={styles.title} lang={titleLang}>

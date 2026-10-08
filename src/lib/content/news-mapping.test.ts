@@ -22,8 +22,8 @@ const translated = {
 } as unknown as Parameters<typeof toNewsSummary>[0]
 
 describe('toNewsSummary', () => {
-  it('links to the Icelandic article at the root', () => {
-    expect(toNewsSummary(doc, 'is').href).toBe('/frettir/ny-stjorn-er-tekin-vid')
+  it('links to the Icelandic article under /is', () => {
+    expect(toNewsSummary(doc, 'is').href).toBe('/is/frettir/ny-stjorn-er-tekin-vid')
   })
 
   it('links to the English article under /en', () => {

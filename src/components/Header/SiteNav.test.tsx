@@ -17,9 +17,9 @@ const pathname = vi.hoisted(() => ({ current: '/is' }))
 vi.mock('next/navigation', () => ({ usePathname: () => pathname.current }))
 
 const items = [
-  { href: '/vefverdlaunin', label: is.nav.awards },
-  { href: '/vidburdir', label: is.nav.events },
-  { href: '/frettir', label: is.nav.news },
+  { href: '/is/vefverdlaunin', label: is.nav.awards },
+  { href: '/is/vidburdir', label: is.nav.events },
+  { href: '/is/frettir', label: is.nav.news },
 ]
 
 function markup() {
@@ -28,8 +28,6 @@ function markup() {
       <header>
         <SiteNav
           items={items}
-          contactHref="/hafa-samband"
-          contactLabel={is.nav.contact}
           menuLabel={is.nav.menu}
           navLabel={is.nav.primary}
           locale="is"
@@ -77,10 +75,6 @@ describe('SiteNav', () => {
     for (const item of items) {
       expect(screen.getByRole('link', { name: item.label })).toHaveAttribute('href', item.href)
     }
-    expect(screen.getByRole('link', { name: is.nav.contact })).toHaveAttribute(
-      'href',
-      '/hafa-samband',
-    )
   })
 
   it('labels the toggle and starts collapsed', () => {
@@ -199,14 +193,6 @@ describe('SiteNav', () => {
       'page',
     )
     expect(screen.getByRole('link', { name: is.nav.events })).not.toHaveAttribute('aria-current')
-  })
-
-  it('marks the contact link when the contact page is current', () => {
-    renderNav('/hafa-samband')
-    expect(screen.getByRole('link', { name: is.nav.contact })).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
   })
 
   it('marks nothing on a page the nav does not list', () => {

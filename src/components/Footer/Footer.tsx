@@ -1,6 +1,5 @@
 import { Logo } from '@/components/Logo/Logo'
 import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
-import { BlockMotif } from '@/components/BlockMotif/BlockMotif'
 import type { SocialLink } from '@/lib/content/site-settings'
 import styles from './Footer.module.scss'
 
@@ -32,7 +31,6 @@ export function Footer({
 }) {
   return (
     <footer className={styles.footer}>
-      <BlockMotif className={styles.motif} />
       <div className={styles.inner}>
         <div className={styles.brand}>
           <Logo tone="inverse" size="88px" />

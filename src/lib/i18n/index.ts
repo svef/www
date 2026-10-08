@@ -21,11 +21,10 @@ const LOCALE_PREFIX = /^\/(is|en)(?=\/|$)/
 /**
  * Map a path to its visible equivalent in another locale.
  *
- * Routing is asymmetric (see `src/proxy.ts`): Icelandic is served unprefixed at
- * the root and only carries the `/is` segment internally, English is served at
- * `/en/...`. Any `/is` prefix in the input is therefore stripped, never emitted
- * — so this accepts both the visible path and the internally rewritten one and
- * always returns the visible form.
+ * Routing is symmetric (see `src/proxy.ts`): every page lives under an explicit
+ * locale prefix, `/is/...` and `/en/...` alike, and the root is not a page but a
+ * redirect to a language. An existing prefix on the input is replaced rather
+ * than appended, so this accepts an already-localised path and is idempotent.
  *
  * A query string and/or hash on the input is carried over unchanged.
  *
@@ -48,6 +47,5 @@ export function localePath(path: string, target: Locale): string {
   let rest = pathname.replace(LOCALE_PREFIX, '').replace(/^\/+/, '/')
   if (rest === '/') rest = ''
 
-  const localized = target === 'en' ? `/en${rest}` : rest || '/'
-  return `${localized}${query}${hash}`
+  return `/${target}${rest}${query}${hash}`
 }
