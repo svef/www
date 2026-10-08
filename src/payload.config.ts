@@ -72,6 +72,14 @@ export default buildConfig({
       connectionString:
         process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || '',
     },
+    // Schema changes reach a hosted database through a migration, never through
+    // a push from someone's laptop: `npm run migrate` runs before the build on
+    // Vercel, so the deploy that needs a column is the deploy that adds it.
+    //
+    // Local development keeps pushing, which is why `npm run seed:dev` can drop
+    // and recreate a schema in seconds. `VERCEL` is set on every Vercel build
+    // and on no local one.
+    push: !process.env.VERCEL,
   }),
   sharp,
   plugins: [
