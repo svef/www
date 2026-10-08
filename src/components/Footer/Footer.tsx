@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
 import type { SocialLink } from '@/lib/content/site-settings'
 import styles from './Footer.module.scss'
@@ -8,6 +9,8 @@ export function Footer({
   blurb,
   blurbLang,
   email,
+  contactHref,
+  contactLabel,
   socials,
   year,
 }: {
@@ -20,6 +23,12 @@ export function Footer({
    */
   blurbLang?: string
   email: string
+  /**
+   * The contact page. It is linked from here and nowhere else — the header row
+   * has no room for it — so losing this link strands the page (svef/www#107).
+   */
+  contactHref: string
+  contactLabel: string
   /**
    * Only the networks the association actually has a URL for. An empty list is
    * the normal state today and drops the row entirely — a row of links that go
@@ -37,6 +46,9 @@ export function Footer({
           </p>
         </div>
         <div className={styles.contact}>
+          <Link href={contactHref} className={styles.contactLink}>
+            {contactLabel}
+          </Link>
           <a href={`mailto:${email}`} className={styles.email}>
             {email}
           </a>

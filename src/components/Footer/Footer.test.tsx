@@ -16,6 +16,8 @@ function renderFooter(overrides: Partial<Parameters<typeof Footer>[0]> = {}) {
       <Footer
         blurb={is.footer.blurb}
         email="svef@svef.is"
+        contactHref="/is/hafa-samband"
+        contactLabel={is.nav.contact}
         socials={[]}
         year={2026}
         {...overrides}
@@ -55,5 +57,14 @@ describe('Footer', () => {
     renderFooter({ socials })
     const link = screen.getByRole('link', { name: 'Facebook' })
     expect(link).toHaveAttribute('href', socials[0].href)
+  })
+
+  it('links to the contact page', () => {
+    // The header row no longer carries it, so this link is the only way there.
+    renderFooter()
+    expect(screen.getByRole('link', { name: is.nav.contact })).toHaveAttribute(
+      'href',
+      '/is/hafa-samband',
+    )
   })
 })

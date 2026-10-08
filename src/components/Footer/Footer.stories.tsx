@@ -10,6 +10,8 @@ const meta: Meta<typeof Footer> = {
   args: {
     blurb: is.footer.blurb,
     email: 'svef@svef.is',
+    contactHref: '/is/hafa-samband',
+    contactLabel: 'Hafa samband',
     socials: [],
     year: 2026,
   },

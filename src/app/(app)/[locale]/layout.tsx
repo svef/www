@@ -64,8 +64,9 @@ export default async function LocaleLayout({
   // reader's language, so an English nav has to link to /en/events, not
   // /en/vidburdir — which exists, but only as a redirect to it.
   const navItems = [
-    { href: localePath('/vefverdlaunin', locale), label: t.nav.awards },
+    // Events first: the programme is what a visitor is most often here for.
     { href: localePath('/vidburdir', locale), label: t.nav.events },
+    { href: localePath('/vefverdlaunin', locale), label: t.nav.awards },
     { href: localePath('/frettir', locale), label: t.nav.news },
     { href: localePath('/um-svef', locale), label: t.nav.about },
     { href: localePath('/skraning', locale), label: t.nav.membership },
@@ -121,6 +122,8 @@ export default async function LocaleLayout({
                 : undefined
             }
             email={chrome.contactEmail}
+            contactHref={localePath('/hafa-samband', locale)}
+            contactLabel={t.nav.contact}
             socials={chrome.socials}
             year={2026}
           />
