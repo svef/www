@@ -40,6 +40,21 @@ export const PAGES = [
     h1: { is: 'Um SVEF', en: 'About SVEF' },
   },
   {
+    path: '/stjorn',
+    name: 'board',
+    h1: { is: 'Stjórn SVEF', en: 'The board' },
+  },
+  {
+    path: '/log-svef',
+    name: 'bylaws',
+    h1: { is: 'Lög SVEF', en: 'Bylaws' },
+  },
+  {
+    path: '/spurt-og-svarad',
+    name: 'faq',
+    h1: { is: 'Spurt og svarað', en: 'FAQ' },
+  },
+  {
     path: '/skraning',
     name: 'membership',
     h1: { is: 'Skráning', en: 'Membership' },
