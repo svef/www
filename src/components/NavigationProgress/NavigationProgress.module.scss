@@ -1,0 +1,43 @@
+.track {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 3px;
+  // Above the header, below the skip link.
+  z-index: 30;
+  pointer-events: none;
+  background: transparent;
+}
+
+.bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--color-violet);
+  // Runs quickly to most of the way and then crawls, because the real duration
+  // is unknown: it must never look finished before the page arrives, and it is
+  // removed outright the moment it does.
+  animation: advance 8s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes advance {
+  0% {
+    width: 0;
+  }
+
+  40% {
+    width: 70%;
+  }
+
+  100% {
+    width: 92%;
+  }
+}
+
+// The point is to show that something is happening; a bar that holds still
+// still says that, without the motion.
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    width: 92%;
+    animation: none;
+  }
+}

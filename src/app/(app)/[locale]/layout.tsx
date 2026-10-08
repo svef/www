@@ -14,6 +14,7 @@ import { getDictionary, isLocale, LOCALES } from '@/lib/i18n'
 import { getSiteChrome } from '@/lib/content/site-settings'
 import { getSiteUrl } from '@/lib/site-url'
 import { Analytics } from '@/components/Analytics/Analytics'
+import { NavigationProgress } from '@/components/NavigationProgress/NavigationProgress'
 import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
 
@@ -86,6 +87,7 @@ export default async function LocaleLayout({
       </head>
       <body>
         <MantineProvider theme={theme} forceColorScheme="dark">
+          <NavigationProgress />
           <a href="#main" className="skip-link">
             {t.skipToContent}
           </a>

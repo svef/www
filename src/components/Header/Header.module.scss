@@ -16,10 +16,6 @@ $nav-breakpoint: 900px;
   --header-h: 88px;
   --logo-width: 112px;
   --logo-top: 12px;
-  // How far the blur reaches past the bar as it fades out. Small on purpose:
-  // enough to take the hard line off the bottom edge, not a gradient you notice.
-  --header-fade: 10px;
-
   position: sticky;
   top: 0;
   z-index: 20;
@@ -32,15 +28,11 @@ $nav-breakpoint: 900px;
 }
 
 // The glass is a layer of its own rather than the header's own background, so
-// it can extend past the bar and fade out. A hard-edged blur draws a line across
-// the page at the exact pixel it stops; this lets it stop gradually instead.
-// Masking fades the tint and the blur together — masking only the colour would
-// leave a sharp edge where the blur ends.
+// the mark can sit above it while the blur stays behind everything.
 .header::before {
   content: '';
   position: absolute;
   inset: 0;
-  bottom: calc(-1 * var(--header-fade));
   z-index: -1;
   pointer-events: none;
   background: color-mix(in srgb, var(--bg) 72%, transparent);
@@ -48,12 +40,6 @@ $nav-breakpoint: 900px;
   // browserslist, and writing both made it collapse them into the prefixed
   // property alone, which left the standard one undefined.
   backdrop-filter: blur(10px) saturate(120%);
-  mask-image: linear-gradient(
-    to bottom,
-    #000 0,
-    #000 calc(100% - var(--header-fade)),
-    transparent 100%
-  );
 }
 
 // Without the blur the translucency would just be a washed-out band over moving
@@ -61,8 +47,6 @@ $nav-breakpoint: 900px;
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .header::before {
     background: var(--bg);
-    bottom: 0;
-    mask-image: none;
   }
 }
 

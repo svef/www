@@ -2,11 +2,19 @@
 // page; colours and spacing go through the tokens rather than the export's
 // literals wherever a token exists.
 
-$max: 1320px;
-$gutter: clamp(1.25rem, 4vw, 3rem);
+// The site's container, not this page's own. The export's 1320/clamp() pair put
+// this page on a wider measure and a different gutter from every other page,
+// which showed as the header starting at a different left edge.
+$max: var(--content-max);
+$gutter: var(--space-6);
+// For elements that carry the measure and the gutter themselves, rather than
+// nesting an inner box inside a padded outer one as `.hero` does. Without the
+// gutter added back, padding eats into the measure and the content starts a
+// gutter further in than everything else on the page.
+$max-padded: calc(var(--content-max) + 2 * var(--space-6));
 
 .backBar {
-  max-width: $max;
+  max-width: $max-padded;
   margin: 0 auto;
   // Clears the mark, which is taller than the bar and hangs over the top of the
   // page. `--space-6` put this link inside that overhang.
@@ -91,7 +99,7 @@ $gutter: clamp(1.25rem, 4vw, 3rem);
 // Body + sidebar. `auto-fit`/`minmax` collapses to one column on a phone
 // without a media query, which is how the export writes it too.
 .body {
-  max-width: $max;
+  max-width: $max-padded;
   margin: 0 auto;
   padding: 0 $gutter clamp(3.5rem, 7vw, 6rem);
   display: grid;
