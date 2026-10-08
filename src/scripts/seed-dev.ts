@@ -52,22 +52,34 @@ import {
 type Data = Record<string, unknown>
 
 /**
- * Guards against pointing the fixtures at a real database. Local Postgres and
- * Neon's local proxy are the only hosts allowed.
+ * Guards against pointing the fixtures at a real database by accident. Local
+ * Postgres and Neon's local proxy are allowed without ceremony.
+ *
+ * A remote host is allowed only when `SEED_REMOTE_HOST` names it exactly. That
+ * is deliberately more than a boolean: a flag set to `1` months ago and
+ * forgotten still lets a stray `npm run seed:dev` overwrite whatever database
+ * happens to be configured, whereas a hostname only matches the one database
+ * someone meant. Written out in full each time, it cannot be a leftover.
  */
-function assertLocalDatabase(): void {
+function assertSeedableDatabase(): void {
   const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || ''
   if (!url) {
     throw new Error('DATABASE_URL is not set — nothing to seed.')
   }
   const host = new URL(url).hostname
   const localHosts = ['localhost', '127.0.0.1', '::1', 'db', 'postgres', 'db.localtest.me']
-  if (!localHosts.includes(host)) {
-    throw new Error(
-      `Refusing to seed development fixtures into "${host}". ` +
-        'npm run seed:dev only runs against a local database.',
-    )
+  if (localHosts.includes(host)) return
+
+  if (process.env.SEED_REMOTE_HOST === host) {
+    console.warn(`Seeding development fixtures into REMOTE host "${host}".`)
+    return
   }
+
+  throw new Error(
+    `Refusing to seed development fixtures into "${host}". ` +
+      'npm run seed:dev runs against a local database by default; to mean a ' +
+      `remote one, name it: SEED_REMOTE_HOST=${host} npm run seed:dev`,
+  )
 }
 
 /**
@@ -351,7 +363,7 @@ async function reportCounts(payload: Payload): Promise<void> {
   }
 }
 
-assertLocalDatabase()
+assertSeedableDatabase()
 
 const payload = await getPayload({ config })
 

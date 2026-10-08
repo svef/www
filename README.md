@@ -75,15 +75,30 @@ R2 variables can stay empty — the fixtures create no uploads.
 npm run seed:dev
 ```
 
-There is no separate migration step: the Postgres adapter pushes the schema from
-the collection definitions on first connect, so an empty database is created and
-filled in one run. If `DATABASE_URL` is unset the script stops with
+There is no separate migration step **locally**: the Postgres adapter pushes the
+schema from the collection definitions on first connect, so an empty database is
+created and filled in one run. If `DATABASE_URL` is unset the script stops with
 `DATABASE_URL is not set — nothing to seed.`
+
+A hosted database is the other way round: `push` is off on Vercel, and the schema
+arrives through a migration that `npm run migrate` applies before the build. Add
+one with `npm run migrate:create <name>` whenever a collection changes.
 
 It is idempotent — re-running updates the same rows rather than adding new ones —
 and it refuses to run against any host that is not local (`localhost`, `127.0.0.1`,
 `::1`, `db`, `postgres`, `db.localtest.me`); anything else is rejected before a
-single write. The copy lives in
+single write.
+
+To mean a remote database, name it:
+
+```bash
+SEED_REMOTE_HOST=ep-something.eu-central-1.aws.neon.tech npm run seed:dev
+```
+
+A hostname rather than a boolean on purpose. A flag set to `1` and forgotten
+still lets a stray `npm run seed:dev` overwrite whatever database happens to be
+configured; a hostname only ever matches the one database someone meant, and
+has to be written out each time. The copy lives in
 `src/scripts/seed-data.ts` and is transcribed from the Claude Design export that is
 the design of record, so what renders locally matches the design rather than
 invented placeholder text.
