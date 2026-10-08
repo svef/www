@@ -102,11 +102,11 @@ describe('pickCeremonyEdition', () => {
       edition({ year: 2026, ceremonyDate: '2026-11-14T19:30:00.000Z' }),
       edition({ year: 2025, ceremonyDate: '2025-11-15T12:00:00.000Z' }),
     ]
-    expect(pickCeremonyEdition(editions)?.year).toBe(2026)
+    expect(pickCeremonyEdition(editions, new Set())?.year).toBe(2026)
   })
 
   it('is null when no edition has a date yet', () => {
-    expect(pickCeremonyEdition([edition({ year: 2026 })])).toBeNull()
+    expect(pickCeremonyEdition([edition({ year: 2026 })], new Set())).toBeNull()
   })
 
   it('does not depend on the current time', () => {
@@ -115,7 +115,25 @@ describe('pickCeremonyEdition', () => {
     // it is read. A date long past still yields a block; the board retires it by
     // creating the next edition.
     const editions = [edition({ year: 2019, ceremonyDate: '2019-11-14T19:30:00.000Z' })]
-    expect(pickCeremonyEdition(editions)?.year).toBe(2019)
+    expect(pickCeremonyEdition(editions, new Set())?.year).toBe(2019)
+  })
+
+  it('skips a dated edition that already has winners (svef/www#86)', () => {
+    // Once a ceremony's winners have been entered, that edition is done, even
+    // though its date is still the most recent one on record. The block should
+    // move on to the next dated edition with nothing recorded yet.
+    const editions = [
+      edition({ year: 2026, ceremonyDate: '2026-11-14T19:30:00.000Z' }),
+      edition({ year: 2025, ceremonyDate: '2025-11-15T12:00:00.000Z' }),
+    ]
+    expect(pickCeremonyEdition(editions, new Set([2026]))?.year).toBe(2025)
+  })
+
+  it('is null when every dated edition already has winners (svef/www#86)', () => {
+    // No block is better than one still announcing a ceremony that already
+    // happened — the board creating next year's edition is what brings it back.
+    const editions = [edition({ year: 2026, ceremonyDate: '2026-11-14T19:30:00.000Z' })]
+    expect(pickCeremonyEdition(editions, new Set([2026]))).toBeNull()
   })
 })
 

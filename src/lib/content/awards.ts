@@ -105,42 +105,26 @@ const listEditions = cache(async function listEditions(): Promise<AwardEditionAl
 })
 
 /**
- * The upcoming ceremony, or null when no edition has a date yet.
+ * Every award-winners document, unmapped and locale-independent.
  *
- * Null is a real state, not a failure: an association that has not fixed next
- * November's date yet should show a page without a ceremony block rather than a
- * block with blanks in it.
- */
-export const getCeremony = cache(async function getCeremony(
-  locale: Locale,
-): Promise<CeremonyView | null> {
-  const edition = pickCeremonyEdition(await listEditions())
-  return edition ? toCeremony(edition, locale) : null
-})
-
-/**
- * The winners archive: every past edition with whatever has been recorded for it.
+ * Shared by `getCeremony` (which only needs to know *which years* have a
+ * winner, to keep the ceremony block off a year that has already been judged
+ * — svef/www#86) and `getWinnersArchive` (which needs the full rows). `cache`
+ * memoizes this per request regardless of which one asks first, so entering
+ * the archive and picking the ceremony edition cost one query between them,
+ * not two.
  *
  * `depth: 1` is what the card costs — the year comes from the related edition,
- * the label from the related category and the thumbnail from the related upload,
- * and all three are one hop away. `populate` then narrows the two relationship
- * sides to the fields the card actually reads, so resolving a winner does not
- * drag every edition's ceremony copy across to print a year.
+ * the label from the related category and the thumbnail from the related
+ * upload, and all three are one hop away. `populate` then narrows the two
+ * relationship sides to the fields the card actually reads, so resolving a
+ * winner does not drag every edition's ceremony copy across to print a year.
  *
- * `pagination: false` for the third time, and here it matters most: six winners a
- * year against a default limit of ten means the archive would start losing rows
- * the moment the historical import (svef/www#31) lands, and would look fine doing
- * it.
- *
- * Sorted by site name, which is the only ordering the design implies inside a
- * year — the grid is a set of equals, not a ranking. The grouping into years is
- * a decision, not a lookup (which years appear at all, and what an empty one
- * means), so it lives in the mapping module and is tested without a database.
+ * `pagination: false`, and here it matters most: six winners a year against a
+ * default limit of ten means the archive would start losing rows the moment
+ * the historical import (svef/www#31) lands, and would look fine doing it.
  */
-export const getWinnersArchive = cache(async function getWinnersArchive(
-  locale: Locale,
-  featuredYear: number | null,
-): Promise<AwardYearView[]> {
+const listWinnerDocs = cache(async function listWinnerDocs(): Promise<AwardWinnerAllLocales[]> {
   const payload = await getPayload()
   const { docs } = await payload.find({
     collection: 'award-winners',
@@ -153,7 +137,48 @@ export const getWinnersArchive = cache(async function getWinnersArchive(
     pagination: false,
     depth: 1,
   })
-  const winners = (docs as unknown as AwardWinnerAllLocales[])
+  return docs as unknown as AwardWinnerAllLocales[]
+})
+
+/** The years that have at least one winner recorded, from the raw winner rows. */
+function yearsWithWinners(docs: readonly AwardWinnerAllLocales[]): Set<number> {
+  const years = new Set<number>()
+  for (const doc of docs) {
+    if (typeof doc.edition !== 'number') years.add(doc.edition.year)
+  }
+  return years
+}
+
+/**
+ * The upcoming ceremony, or null when no edition qualifies yet.
+ *
+ * Null is a real state, not a failure: an association that has not fixed next
+ * November's date yet should show a page without a ceremony block rather than a
+ * block with blanks in it. The same is true the moment a ceremony's winners have
+ * been entered and no later edition has a date of its own (svef/www#86) — no
+ * block is better than one still announcing a ceremony that already happened.
+ */
+export const getCeremony = cache(async function getCeremony(
+  locale: Locale,
+): Promise<CeremonyView | null> {
+  const [editions, winnerDocs] = await Promise.all([listEditions(), listWinnerDocs()])
+  const edition = pickCeremonyEdition(editions, yearsWithWinners(winnerDocs))
+  return edition ? toCeremony(edition, locale) : null
+})
+
+/**
+ * The winners archive: every past edition with whatever has been recorded for it.
+ *
+ * Sorted by site name, which is the only ordering the design implies inside a
+ * year — the grid is a set of equals, not a ranking. The grouping into years is
+ * a decision, not a lookup (which years appear at all, and what an empty one
+ * means), so it lives in the mapping module and is tested without a database.
+ */
+export const getWinnersArchive = cache(async function getWinnersArchive(
+  locale: Locale,
+  featuredYear: number | null,
+): Promise<AwardYearView[]> {
+  const winners = (await listWinnerDocs())
     .map((doc) => toWinner(doc, locale))
     .filter((winner): winner is AwardWinnerView => winner !== null)
   return toArchive(await listEditions(), winners, featuredYear)

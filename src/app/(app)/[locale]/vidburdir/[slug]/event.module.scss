@@ -98,6 +98,16 @@ $max-padded: calc(var(--content-max) + 2 * var(--space-6));
 
 // Body + sidebar. `auto-fit`/`minmax` collapses to one column on a phone
 // without a media query, which is how the export writes it too.
+//
+// `overflow: hidden` clips `.asideBlock` (svef/www#81): that block sits
+// deliberately outside `.aside`'s own box, offset -24px behind its top-left
+// corner, and on a single-column phone layout the aside's left edge is the
+// page gutter itself — so the block's left 24px lands past this container's
+// padding box and right up against the hardware edge, with none of the
+// gutter the rest of the page keeps. Clipping here rather than on `.aside`
+// keeps the block visible (an ancestor's clip, not the block's own), and
+// never bites on a wider viewport, where the aside sits well clear of either
+// edge.
 .body {
   max-width: $max-padded;
   margin: 0 auto;
@@ -106,6 +116,7 @@ $max-padded: calc(var(--content-max) + 2 * var(--space-6));
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--space-12);
   align-items: start;
+  overflow: hidden;
 }
 
 .main {

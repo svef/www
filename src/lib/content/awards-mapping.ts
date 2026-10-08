@@ -161,25 +161,35 @@ export function toWinner(
 }
 
 /**
- * The edition the ceremony block is about: the most recent one that has a date.
+ * The edition the ceremony block is about: the most recent dated edition that
+ * has no winners recorded yet.
  *
  * Deliberately *not* "the next ceremony in the future". The page is prerendered
  * and revalidated every five minutes, so "in the future" would be evaluated when
  * the page was last rendered rather than when it is read (CLAUDE.md, "`revalidate`
  * is a staleness floor"), and on the day after a ceremony the block would keep
  * inviting people to an event that has happened — or vanish mid-afternoon,
- * depending on which side of the window the reader landed. The latest dated
- * edition is the same answer all year and changes exactly when the board creates
- * next year's edition, which is the moment they mean it to change.
+ * depending on which side of the window the reader landed.
  *
- * The cost is that the block outlives its own ceremony, and that the featured
- * year's winners have nowhere to render while it does — `toArchive` excludes it.
- * Tracked as svef/www#86 with three ways out; it first bites in November 2026.
+ * Also deliberately not a straight "latest dated edition" (svef/www#86): that
+ * answer is correct right up until the ceremony ends, and then wrong for however
+ * long it takes someone to create next year's edition — the block keeps
+ * announcing a ceremony that already happened, and that year's winners have
+ * nowhere to render because `toArchive` excludes whichever edition this function
+ * returns. Deriving it from whether winners exist makes the handoff self-healing:
+ * entering the first winner for an edition retires its ceremony block and opens
+ * its archive tab in the same save, with no separate status field to remember to
+ * flip. The cost is coupling two things that are conceptually separate — see
+ * svef/www#86 for the alternative (an explicit `status` field) if that coupling
+ * turns out to matter.
  */
 export function pickCeremonyEdition(
   editions: readonly AwardEditionAllLocales[],
+  yearsWithWinners: ReadonlySet<number>,
 ): AwardEditionAllLocales | null {
-  const dated = editions.filter((edition) => Boolean(edition.ceremonyDate))
+  const dated = editions.filter(
+    (edition) => Boolean(edition.ceremonyDate) && !yearsWithWinners.has(edition.year),
+  )
   if (dated.length === 0) return null
   return dated.reduce((latest, edition) => (edition.year > latest.year ? edition : latest))
 }
@@ -210,9 +220,11 @@ export function toCeremony(doc: AwardEditionAllLocales, locale: Locale): Ceremon
  * ceremony is in November — which reads as missing data rather than as a year
  * that has not happened. The design's tabs stop at 2025 for the same reason.
  *
- * The flip side is svef/www#86: once that ceremony has happened, its winners are
- * excluded from the archive too, and stay invisible until the next dated edition
- * exists.
+ * svef/www#86 used to bite here: because the ceremony edition used to be picked
+ * by date alone, a finished ceremony's winners stayed excluded from the archive
+ * until the next dated edition existed. Now that `pickCeremonyEdition` only ever
+ * returns an edition with no winners yet, `featuredYear` is never the year of an
+ * edition that has winners to show, so this filter cannot hide any.
  *
  * Years with no winners are kept. 2020–2024 exist as editions and are genuinely
  * empty until the historical import (svef/www#31, blocked on svef/Skjalasafn#1)
