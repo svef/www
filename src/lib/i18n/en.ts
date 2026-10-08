@@ -87,7 +87,15 @@ export const en = {
     title: 'About SVEF',
     boardTitle: 'The board',
     boardCompanyPrefix: 'at',
+    boardEmpty: {
+      title: 'No board members listed yet',
+      body: 'Board members appear here as they are added.',
+    },
     faqTitle: 'FAQ',
+    faqEmpty: {
+      title: 'No questions listed yet',
+      body: 'Frequently asked questions appear here as they are added.',
+    },
     bylawsTitle: 'Bylaws',
     bylawsProcess: {
       heading: 'Proposing a change',
@@ -103,12 +111,18 @@ export const en = {
       'The bylaws could not be loaded right now. They are unchanged and can be read in full at the source:',
     pressTitle: 'Press',
     press: {
-      empty: 'No coverage listed yet.',
+      empty: {
+        title: 'No coverage listed yet',
+        body: 'Coverage of SVEF appears here as it is published.',
+      },
     },
     brand: {
       title: 'Logo and assets',
       blurb: 'The SVEF logo in black and white, together with the colour palette.',
-      empty: 'The asset pack is being prepared. Email svef@svef.is if you need the logo.',
+      empty: {
+        title: 'The asset pack is being prepared',
+        body: 'Email svef@svef.is if you need the logo.',
+      },
     },
     icelandicOnly: 'Published in Icelandic only',
   },

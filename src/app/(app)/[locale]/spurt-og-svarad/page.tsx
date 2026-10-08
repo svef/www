@@ -5,6 +5,7 @@ import { getAboutContent } from '@/lib/content/about'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { Section } from '@/components/Section/Section'
+import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { FaqAccordion } from '@/components/FaqAccordion/FaqAccordion'
 
 /**
@@ -47,14 +48,21 @@ export default async function FaqPage({
       <PageHeader title={t.about.faqTitle} />
 
       <Section>
-        <FaqAccordion
-          items={about.faq.map((item) => ({
-            question: item.question,
-            answer: item.answer,
-            questionLang: langOf(item.questionLocale),
-            answerLang: langOf(item.answerLocale),
-          }))}
-        />
+        {about.faq.length === 0 ? (
+          // A heading over an empty accordion reads as a rendering failure —
+          // svef/www#76 — so this says the questions are coming rather than
+          // leaving the page header with nothing under it.
+          <EmptyState title={t.about.faqEmpty.title} body={t.about.faqEmpty.body} />
+        ) : (
+          <FaqAccordion
+            items={about.faq.map((item) => ({
+              question: item.question,
+              answer: item.answer,
+              questionLang: langOf(item.questionLocale),
+              answerLang: langOf(item.answerLocale),
+            }))}
+          />
+        )}
       </Section>
     </>
   )

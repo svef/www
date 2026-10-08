@@ -116,7 +116,21 @@ export const is = {
     boardTitle: 'Stjórn SVEF',
     // Joins a board role to the employer it belongs to: "… hjá Dacoda".
     boardCompanyPrefix: 'hjá',
+    // Shown on `/stjorn` in place of the grid when no board members are
+    // recorded yet — svef/www#76. A board with no members reads as a broken
+    // page, not a quiet one, so this says so rather than leaving the heading
+    // over an empty grid.
+    boardEmpty: {
+      title: 'Engin stjórn skráð enn',
+      body: 'Stjórnarmeðlimir birtast hér um leið og þeir hafa verið skráðir.',
+    },
     faqTitle: 'Spurt og svarað',
+    // Shown on `/spurt-og-svarad` in place of the accordion when no questions
+    // are recorded yet — svef/www#76.
+    faqEmpty: {
+      title: 'Engar spurningar skráðar enn',
+      body: 'Algengar spurningar birtast hér um leið og þær hafa verið skráðar.',
+    },
     bylawsTitle: 'Lög SVEF',
     bylawsProcess: {
       heading: 'Að leggja til breytingu',
@@ -137,12 +151,22 @@ export const is = {
       'Ekki tókst að sækja lög SVEF að svo stöddu. Lögin eru óbreytt og má lesa í heild sinni hjá upprunanum:',
     pressTitle: 'Fjölmiðlar',
     press: {
-      empty: 'Engin umfjöllun skráð enn.',
+      // svef/www#76: split into title/body so this renders through the same
+      // `EmptyState` component the other content sections use, instead of a
+      // plain muted line.
+      empty: {
+        title: 'Engin umfjöllun skráð enn',
+        body: 'Umfjöllun um SVEF bætist hér við eftir því sem hún birtist.',
+      },
     },
     brand: {
       title: 'Merki og efni',
       blurb: 'Merki SVEF í svörtu og hvítu, ásamt litapallettu.',
-      empty: 'Skráarsafnið er í vinnslu. Hafðu samband við svef@svef.is ef þig vantar merkið.',
+      // svef/www#76: split into title/body — see `press.empty` above.
+      empty: {
+        title: 'Skráarsafnið er í vinnslu',
+        body: 'Hafðu samband við svef@svef.is ef þig vantar merkið.',
+      },
     },
     // Marks a section that is published in Icelandic only as an editorial
     // decision — not a translation that is on its way.

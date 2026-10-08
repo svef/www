@@ -25,20 +25,24 @@
 
 .title {
   font-size: var(--text-3xl);
-  max-width: 14ch;
+  // 14ch was the design's measure, but it is narrower than many real Icelandic
+  // compounds ("Hádegisfyrirlestur" is 18 characters, ~428px at this size) and,
+  // on the two-column desktop layout, narrower than the column actually is —
+  // so it forced a mid-word break even where there was plenty of room to spare.
+  // 20ch covers that word (and most realistic ones) without widening the
+  // measure so far that short titles read as a full-width block. svef/www#82.
+  max-width: 20ch;
   margin: 0 0 var(--space-4);
-  // Icelandic compounds are longer than the 14ch measure — "Hádegisfyrirlestur"
-  // is 18 characters and, at this size, ~428px, wider than a 390px phone.
-  // Without this the word pushes the whole document past the viewport and the
-  // page scrolls sideways (measured: scrollWidth 428 at clientWidth 390).
+  // `overflow-wrap` stays as the backstop for whatever is still longer than
+  // the measure, or for a phone narrow enough that even 20ch is wider than the
+  // viewport. Without it the word is wider than the column and pushes the
+  // whole document sideways (measured: scrollWidth 428 at clientWidth 390).
   //
-  // The cost is that a title longer than the measure breaks mid-stem rather
-  // than at a space. Two better-looking fixes were tried and rejected:
-  // `hyphens: auto` does nothing, because Chromium ships no Icelandic
-  // dictionary; and a `min-content` floor on `max-width` licenses the word its
-  // full width and so stops this rule applying at all, restoring the scroll.
-  // Sideways scroll on a phone beats an ugly line break, so this stays.
-  // Tracked as svef/www#82.
+  // `hyphens: auto` was tried and does nothing, because Chromium ships no
+  // Icelandic hyphenation dictionary. A `min-content` floor on `max-width` was
+  // also tried and rejected: it licenses the word its full intrinsic width,
+  // which stops `overflow-wrap` applying at all and restores the horizontal
+  // scroll at 320px and 390px.
   overflow-wrap: break-word;
 }
 

@@ -1,10 +1,6 @@
 import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
 
-const r2Host = process.env.R2_PUBLIC_URL
-  ? new URL(process.env.R2_PUBLIC_URL).hostname
-  : 'assets.svef.is'
-
 const nextConfig: NextConfig = {
   // Don't auto-generate AGENTS.md/CLAUDE.md in the repo.
   agentRules: false,
@@ -43,9 +39,16 @@ const nextConfig: NextConfig = {
   sassOptions: {
     silenceDeprecations: ['legacy-js-api'],
   },
-  images: {
-    remotePatterns: [{ protocol: 'https', hostname: r2Host }],
-  },
+  // No `remotePatterns` here on purpose. `payload.config.ts`'s `s3Storage` plugin
+  // sets no `generateFileURL`, so Payload hands back its own relative URLs
+  // (`/api/media/file/<filename>`) rather than absolute R2 URLs — `next/image`
+  // serves those from this app's own origin and never consults the allowlist.
+  // The two configs used to disagree about this (one assumed public R2 URLs
+  // were already in use, the other didn't serve them) — svef/www#77. If public
+  // R2 URLs become the intent, add `generateFileURL` there and reinstate a
+  // `remotePatterns` entry derived from a *required* `R2_PUBLIC_URL` (fail the
+  // build if it's unset, not just at request time).
+  images: {},
 }
 
 export default withPayload(nextConfig)

@@ -5,6 +5,7 @@ import { listBoardMembers } from '@/lib/content/about'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { Section } from '@/components/Section/Section'
+import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { BoardCard, type Accent } from '@/components/BoardCard/BoardCard'
 import styles from './board.module.scss'
 
@@ -60,20 +61,27 @@ export default async function BoardPage({
       <PageHeader title={t.about.boardTitle} />
 
       <Section>
-        <div className={styles.boardGrid}>
-          {board.map((member, i) => (
-            <BoardCard
-              key={member.name}
-              name={member.name}
-              role={member.role}
-              company={member.company}
-              companyPrefix={companyPrefix(member.roleLocale)}
-              portrait={member.portrait}
-              roleLang={langOf(member.roleLocale)}
-              accent={ACCENTS[i % ACCENTS.length]}
-            />
-          ))}
-        </div>
+        {board.length === 0 ? (
+          // A board with no members reads as a broken page, not a quiet one —
+          // svef/www#76 — so this says so rather than leaving the page header
+          // over an empty grid.
+          <EmptyState title={t.about.boardEmpty.title} body={t.about.boardEmpty.body} />
+        ) : (
+          <div className={styles.boardGrid}>
+            {board.map((member, i) => (
+              <BoardCard
+                key={member.name}
+                name={member.name}
+                role={member.role}
+                company={member.company}
+                companyPrefix={companyPrefix(member.roleLocale)}
+                portrait={member.portrait}
+                roleLang={langOf(member.roleLocale)}
+                accent={ACCENTS[i % ACCENTS.length]}
+              />
+            ))}
+          </div>
+        )}
       </Section>
     </>
   )

@@ -7,6 +7,7 @@ import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { RichText } from '@/components/RichText/RichText'
 import { Section } from '@/components/Section/Section'
+import { EmptyState } from '@/components/EmptyState/EmptyState'
 import styles from './about.module.scss'
 
 /**
@@ -83,7 +84,11 @@ export default async function AboutPage({
               {icelandicOnly}
             </div>
             {about.press.length === 0 ? (
-              <p className={styles.asideEmpty}>{t.about.press.empty}</p>
+              <EmptyState
+                title={t.about.press.empty.title}
+                body={t.about.press.empty.body}
+                headingLevel={3}
+              />
             ) : (
               <ul className={styles.pressList} lang={DEFAULT_LOCALE}>
                 {about.press.map((item) => (
@@ -116,7 +121,11 @@ export default async function AboutPage({
               // no files have been uploaded yet — not a rendering failure. The
               // card keeps its heading and says where to get the logo instead of
               // showing download buttons that download nothing.
-              <p className={styles.asideEmpty}>{t.about.brand.empty}</p>
+              <EmptyState
+                title={t.about.brand.empty.title}
+                body={t.about.brand.empty.body}
+                headingLevel={3}
+              />
             ) : (
               <ul className={styles.brandDownloads}>
                 {about.brandAssets.map((asset) => {

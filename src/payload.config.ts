@@ -83,6 +83,12 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
+    // No `generateFileURL` here on purpose: Payload hands back its own relative
+    // URLs (`/api/media/file/<filename>`) rather than absolute R2 URLs, and
+    // `next.config.ts` is written to match — no `images.remotePatterns`, since
+    // nothing requests an absolute R2 host today. See svef/www#77. If public R2
+    // URLs become the intent, add `generateFileURL` here and update
+    // `next.config.ts` together, driven by a *required* `R2_PUBLIC_URL`.
     s3Storage({
       collections: { media: true },
       bucket: process.env.R2_BUCKET || '',
