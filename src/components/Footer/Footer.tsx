@@ -11,6 +11,7 @@ export function Footer({
   email,
   contactHref,
   contactLabel,
+  write,
   socials,
   year,
 }: {
@@ -26,9 +27,14 @@ export function Footer({
   /**
    * The contact page. It is linked from here and nowhere else — the header row
    * has no room for it — so losing this link strands the page (svef/www#107).
+   *
+   * Omitted while the rest of the site is hidden: the contact page is not one of
+   * the pages reachable then, so the link would bounce the reader to the landing.
    */
-  contactHref: string
-  contactLabel: string
+  contactHref?: string
+  contactLabel?: string
+  /** The two things a reader can send us. Rendered above the address. */
+  write?: { heading: string; links: { href: string; label: string }[] }
   /**
    * Only the networks the association actually has a URL for. An empty list is
    * the normal state today and drops the row entirely — a row of links that go
@@ -45,10 +51,22 @@ export function Footer({
             {blurb}
           </p>
         </div>
+        {write && write.links.length > 0 && (
+          <div className={styles.write}>
+            <h2 className={styles.writeHeading}>{write.heading}</h2>
+            {write.links.map((link) => (
+              <Link key={link.href} href={link.href} className={styles.writeLink}>
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        )}
         <div className={styles.contact}>
-          <Link href={contactHref} className={styles.contactLink}>
-            {contactLabel}
-          </Link>
+          {contactHref && contactLabel ? (
+            <Link href={contactHref} className={styles.contactLink}>
+              {contactLabel}
+            </Link>
+          ) : null}
           <a href={`mailto:${email}`} className={styles.email}>
             {email}
           </a>

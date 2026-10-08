@@ -139,8 +139,17 @@ export default async function LocaleLayout({
                 : undefined
             }
             email={chrome.contactEmail}
-            contactHref={localePath('/hafa-samband', locale)}
-            contactLabel={t.nav.contact}
+            // Dropped while the site is hidden: the contact page is not
+            // reachable then, so the link would bounce to the landing.
+            contactHref={LANDING_ONLY ? undefined : localePath('/hafa-samband', locale)}
+            contactLabel={LANDING_ONLY ? undefined : t.nav.contact}
+            write={{
+              heading: t.forms.writeHeading,
+              links: [
+                { href: localePath('/abendingar', locale), label: t.forms.feedback.title },
+                { href: localePath('/erindi', locale), label: t.forms.talk.title },
+              ],
+            }}
             socials={chrome.socials}
             year={2026}
           />

@@ -5,6 +5,7 @@ export const en = {
   skipToContent: 'Skip to content',
   close: 'Close',
     forms: {
+      writeHeading: 'Get in touch',
       optional: 'optional',
       required: 'required',
       sending: 'Sending…',

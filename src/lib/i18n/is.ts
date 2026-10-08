@@ -9,6 +9,7 @@ export const is = {
   // Accessible name for the close button of a dialog (the photo lightbox).
   close: 'Loka',
     forms: {
+      writeHeading: 'Heyrðu í okkur',
       optional: 'valfrjálst',
       required: 'nauðsynlegt',
       sending: 'Sendi…',

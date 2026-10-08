@@ -102,3 +102,35 @@
     outline-offset: 3px;
   }
 }
+
+// The two things a reader can send us. Sits before the address column, so the
+// footer reads: who we are, what you can send, how to reach us.
+.write {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.writeHeading {
+  margin: 0;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-size: var(--text-lg);
+  color: var(--fg);
+}
+
+.writeLink {
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: var(--weight-semibold);
+  border-bottom: 2px solid var(--color-violet);
+
+  &:hover {
+    color: var(--color-violet-light);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
+}

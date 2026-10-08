@@ -1,5 +1,8 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { Footer } from '@/components/Footer/Footer'
+import { getSiteChrome } from '@/lib/content/site-settings'
+import { getDictionary, localePath } from '@/lib/i18n'
 import { LandingLogo } from '@/components/LandingLogo/LandingLogo'
 import { BlockPanel } from '@/components/BlockPanel/BlockPanel'
 import { LanguageToggle } from '@/components/LanguageToggle/LanguageToggle'
@@ -13,14 +16,6 @@ export function generateStaticParams() {
 }
 export const dynamicParams = false
 
-const footerSocials = [
-  { label: 'Facebook', icon: '/landing/ic-facebook.svg', href: 'https://www.facebook.com/vefidnadurinn' },
-  { label: 'Instagram', icon: '/landing/ic-instagram.svg', href: 'https://www.instagram.com/_svef_/' },
-  // m.me/<page username> opens a Messenger thread with the page.
-  { label: 'Messenger', icon: '/landing/ic-messenger.svg', href: 'https://m.me/vefidnadurinn' },
-  { label: 'LinkedIn', icon: '/landing/ic-linkedin.svg', href: 'https://www.linkedin.com/company/sveficeland/' },
-]
-
 export default async function LandingPage({
   params,
 }: {
@@ -29,6 +24,7 @@ export default async function LandingPage({
   const { locale } = await params
   if (!isLocale(locale)) notFound()
   const copy = getLandingCopy(locale)
+  const [chrome, t] = [await getSiteChrome(locale), getDictionary(locale)]
 
   return (
     <>
@@ -183,46 +179,32 @@ export default async function LandingPage({
         </ul>
       </section>
 
-      <footer className={styles.footer}>
-        <div className={styles.footerInner}>
-          <div className={styles.footerMain}>
-            <div className={styles.footerLeft}>
-              <img
-                className={styles.footerLogo}
-                src="/landing/logo.svg"
-                alt="SVEF"
-                width={86}
-                height={56}
-              />
-              <p className={styles.footerBlurb}>{copy.footer.blurb}</p>
-            </div>
-            <div className={styles.footerWrite}>
-              <h2 className={styles.footerWriteHeading}>{copy.write.heading}</h2>
-              <Link className={styles.footerWriteLink} href={copy.write.feedbackHref}>
-                {copy.write.feedback}
-              </Link>
-              <Link className={styles.footerWriteLink} href={copy.write.talkHref}>
-                {copy.write.talk}
-              </Link>
-            </div>
-            <div className={styles.footerContact}>
-              <a className={styles.footerEmail} href="mailto:svef@svef.is">
-                svef@svef.is
-              </a>
-              <ul className={styles.footerSocials}>
-                {footerSocials.map((s) => (
-                  <li key={s.label}>
-                    <a href={s.href} aria-label={s.label}>
-                      <img src={s.icon} alt="" width={24} height={24} />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <p className={styles.copy}>{copy.footer.copyright}</p>
-        </div>
-      </footer>
+      {/*
+        The site's own footer, not a second one built for this page. The landing
+        and the form pages sit on the same domain and a reader moves between
+        them; two different footers would read as two different sites.
+
+        Its copy and social links come from the CMS, like everywhere else, which
+        is also why they stay correct when someone edits them.
+      */}
+      <Footer
+        blurb={chrome.footerBlurb ?? t.footer.blurb}
+        blurbLang={
+          chrome.footerBlurb && chrome.footerBlurbLocale !== locale
+            ? chrome.footerBlurbLocale
+            : undefined
+        }
+        email={chrome.contactEmail}
+        socials={chrome.socials}
+        year={new Date().getFullYear()}
+        write={{
+          heading: t.forms.writeHeading,
+          links: [
+            { href: localePath('/abendingar', locale), label: t.forms.feedback.title },
+            { href: localePath('/erindi', locale), label: t.forms.talk.title },
+          ],
+        }}
+      />
     </>
   )
 }
