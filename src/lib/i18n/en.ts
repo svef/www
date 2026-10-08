@@ -89,6 +89,16 @@ export const en = {
     boardCompanyPrefix: 'at',
     faqTitle: 'FAQ',
     bylawsTitle: 'Bylaws',
+    bylawsProcess: {
+      heading: 'Proposing a change',
+      repoLead: 'The bylaws are kept in a public GitHub repository:',
+      howTo: 'To propose a change, open a pull request there, or email us at',
+      howToEnd: 'if that suits you better.',
+      meeting:
+        'Proposals are considered at the next annual general meeting. If a change is urgent, an extraordinary general meeting can be called for it.',
+      article8:
+        'Article 8 requires a two-thirds majority, and proposals must be available for members to read before the meeting is held.',
+    },
     bylawsUnavailable:
       'The bylaws could not be loaded right now. They are unchanged and can be read in full at the source:',
     pressTitle: 'Press',

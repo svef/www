@@ -7,6 +7,7 @@ import { remarkHeadingLevels } from '@/lib/remark-heading-levels'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { Section } from '@/components/Section/Section'
+import { getSiteChrome } from '@/lib/content/site-settings'
 import styles from './bylaws.module.scss'
 
 /**
@@ -33,7 +34,8 @@ export default async function BylawsPage({
   if (!isLocale(locale)) notFound()
 
   const t = getDictionary(locale)
-  const bylaws = await getBylaws()
+  const [bylaws, chrome] = await Promise.all([getBylaws(), getSiteChrome(locale)])
+  const p = t.about.bylawsProcess
 
   // The note is the first thing inside `<main>`, so the skip link lands on it
   // rather than past it.
@@ -68,6 +70,35 @@ export default async function BylawsPage({
             <a href={LAWS_REPO_URL}>{LAWS_REPO_URL.replace('https://', '')}</a>
           </p>
         )}
+
+        {/*
+          How the bylaws are changed, after the bylaws themselves — a reader
+          proposing an amendment has read them first.
+
+          Outside the fetch's success branch on purpose: how to propose a
+          change is true whether or not GitHub answered, and this is the one
+          thing on the page still worth reading when the text is unavailable.
+
+          Written in the reader's language, unlike the bylaws above. This is
+          the association explaining its own process, not the legal text, and
+          the Icelandic-only decision covers the latter.
+        */}
+        <aside className={styles.process} aria-labelledby="bylaws-process">
+          <h2 id="bylaws-process" className={styles.processHeading}>
+            {p.heading}
+          </h2>
+          <p>
+            {p.repoLead}{' '}
+            <a href={LAWS_REPO_URL}>{LAWS_REPO_URL.replace('https://', '')}</a>
+          </p>
+          <p>
+            {p.howTo}{' '}
+            <a href={`mailto:${chrome.contactEmail}`}>{chrome.contactEmail}</a>{' '}
+            {p.howToEnd}
+          </p>
+          <p>{p.meeting}</p>
+          <p className={styles.processNote}>{p.article8}</p>
+        </aside>
       </Section>
     </>
   )

@@ -118,6 +118,21 @@ export const is = {
     boardCompanyPrefix: 'hjá',
     faqTitle: 'Spurt og svarað',
     bylawsTitle: 'Lög SVEF',
+    bylawsProcess: {
+      heading: 'Að leggja til breytingu',
+      /** Followed by a link to the repository. */
+      repoLead: 'Lögin eru geymd í opnu GitHub-safni:',
+      /** Between the repository link and the email address. */
+      howTo:
+        'Viltu leggja til breytingu? Opnaðu pull request þar, eða sendu okkur tölvupóst á',
+      /** Follows the email address. */
+      howToEnd: 'ef það hentar betur.',
+      meeting:
+        'Tillögur eru teknar fyrir á næsta aðalfundi. Sé breytingin brýn má boða til aukaaðalfundar um hana.',
+      /** The substance of article 8, which the page renders in full above. */
+      article8:
+        'Samkvæmt 8. gr. þarf samþykki 2/3 hluta atkvæða, og tillögur þurfa að liggja fyrir til skoðunar fyrir félagsmenn áður en fundurinn er haldinn.',
+    },
     bylawsUnavailable:
       'Ekki tókst að sækja lög SVEF að svo stöddu. Lögin eru óbreytt og má lesa í heild sinni hjá upprunanum:',
     pressTitle: 'Fjölmiðlar',
