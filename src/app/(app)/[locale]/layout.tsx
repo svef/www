@@ -10,7 +10,7 @@ import {
   mantineHtmlProps,
 } from '@mantine/core'
 import { theme } from '@/lib/theme'
-import { getDictionary, isLocale, LOCALES } from '@/lib/i18n'
+import { getDictionary, isLocale, localePath, LOCALES } from '@/lib/i18n'
 import { getSiteChrome } from '@/lib/content/site-settings'
 import { getSiteUrl } from '@/lib/site-url'
 import { Analytics } from '@/components/Analytics/Analytics'
@@ -60,15 +60,15 @@ export default async function LocaleLayout({
   if (!isLocale(locale)) notFound()
 
   const t = getDictionary(locale)
-  // Every page sits under an explicit locale prefix now — Icelandic included —
-  // so this is no longer "empty for the default locale".
-  const base = `/${locale}`
+  // Built through `localePath` rather than by hand: pages are named in the
+  // reader's language, so an English nav has to link to /en/events, not
+  // /en/vidburdir — which exists, but only as a redirect to it.
   const navItems = [
-    { href: `${base}/vefverdlaunin`, label: t.nav.awards },
-    { href: `${base}/vidburdir`, label: t.nav.events },
-    { href: `${base}/frettir`, label: t.nav.news },
-    { href: `${base}/um-svef`, label: t.nav.about },
-    { href: `${base}/skraning`, label: t.nav.membership },
+    { href: localePath('/vefverdlaunin', locale), label: t.nav.awards },
+    { href: localePath('/vidburdir', locale), label: t.nav.events },
+    { href: localePath('/frettir', locale), label: t.nav.news },
+    { href: localePath('/um-svef', locale), label: t.nav.about },
+    { href: localePath('/skraning', locale), label: t.nav.membership },
   ]
   const chrome = await getSiteChrome(locale)
 
@@ -92,7 +92,7 @@ export default async function LocaleLayout({
             {t.skipToContent}
           </a>
           <Header
-            homeHref={base || '/'}
+            homeHref={`/${locale}`}
             navItems={navItems}
             menuLabel={t.nav.menu}
             navLabel={t.nav.primary}

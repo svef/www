@@ -65,11 +65,11 @@ export const CurrentPage: Story = {
 export const English: Story = {
   args: {
     items: [
-      { href: '/en/vefverdlaunin', label: en.nav.awards },
-      { href: '/en/vidburdir', label: en.nav.events },
-      { href: '/en/frettir', label: en.nav.news },
-      { href: '/en/um-svef', label: en.nav.about },
-      { href: '/en/skraning', label: en.nav.membership },
+      { href: '/en/web-awards', label: en.nav.awards },
+      { href: '/en/events', label: en.nav.events },
+      { href: '/en/news', label: en.nav.news },
+      { href: '/en/about', label: en.nav.about },
+      { href: '/en/membership', label: en.nav.membership },
     ],
     menuLabel: en.nav.menu,
     navLabel: en.nav.primary,

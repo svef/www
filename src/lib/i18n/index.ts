@@ -1,4 +1,5 @@
 import { is } from './is'
+import { toPublicSegment } from './routes'
 import { en } from './en'
 
 export const LOCALES = ['is', 'en'] as const
@@ -26,6 +27,11 @@ const LOCALE_PREFIX = /^\/(is|en)(?=\/|$)/
  * redirect to a language. An existing prefix on the input is replaced rather
  * than appended, so this accepts an already-localised path and is idempotent.
  *
+ * The page's own name is translated with it: `/is/vidburdir` becomes
+ * `/en/events`, not `/en/vidburdir`. Anything after that first segment — a news
+ * or event slug — is carried across unchanged, because those are not localized
+ * yet (svef/www#98).
+ *
  * A query string and/or hash on the input is carried over unchanged.
  *
  * The result is always a single-slash-rooted path: a leading `//` would be a
@@ -47,5 +53,12 @@ export function localePath(path: string, target: Locale): string {
   let rest = pathname.replace(LOCALE_PREFIX, '').replace(/^\/+/, '/')
   if (rest === '/') rest = ''
 
-  return `/${target}${rest}${query}${hash}`
+  // Translate the page's own name. The input may be in either language, since
+  // this takes the path a reader is on as readily as one written in code.
+  const [, head = '', ...tail] = rest.split('/')
+  const translated = head ? `/${[toPublicSegment(head, target), ...tail].join('/')}` : rest
+
+  return `/${target}${translated}${query}${hash}`
 }
+
+export { ROUTE_SEGMENTS, toInternalSegment, toPublicSegment, type RouteKey } from './routes'

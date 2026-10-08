@@ -1,13 +1,15 @@
 import type { Page } from '@playwright/test'
+import { localePath, toInternalSegment } from '../src/lib/i18n'
 
 export const LOCALES = ['is', 'en'] as const
 export type Locale = (typeof LOCALES)[number]
 
 /**
  * Every public route the site currently has, with the `<h1>` each one renders
- * in each locale. The path is the *visible* one: Icelandic is unprefixed and
- * English lives under `/en` (see `src/proxy.ts`), so `''` means `/` in
- * Icelandic and `/en` in English.
+ * in each locale. The path is written in its **Icelandic** form, which is also
+ * the directory on disk; `urlFor` turns it into the visible URL for a locale,
+ * so the English rows come out as `/en/events` and the like. `''` means the
+ * front page.
  *
  * Adding a page to `src/app/(app)/[locale]/` means adding it here — that is the
  * point: the smoke, heading-outline and axe sweeps all iterate this table, so a
@@ -92,10 +94,15 @@ export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
   },
 ]
 
-/** Visible URL for a page in a locale. Never emits the internal `/is` prefix. */
+/**
+ * Visible URL for a page in a locale.
+ *
+ * Deferred to the app's own `localePath` rather than reimplemented, so the
+ * suite cannot disagree with the site about where a page lives — which it did
+ * when both the locale prefix and the page names changed under it.
+ */
 export function urlFor(locale: Locale, path: string): string {
-  if (locale === 'en') return `/en${path}`
-  return path === '' ? '/' : path
+  return localePath(path === '' ? '/' : path, locale)
 }
 
 /** Every (locale, page) pair, flattened for `for (const … of …)` in a spec. */
@@ -174,10 +181,17 @@ export function allKnownUrls(): string[] {
   return everyPage().map(({ url }) => url)
 }
 
-/** Strip the visible locale prefix, so `/en/frettir/x` and `/frettir/x` compare equal. */
+/**
+ * Reduce a visible URL to the Icelandic form the tables are written in, so
+ * `/en/news/x` and `/is/frettir/x` compare equal. Pages are named in the
+ * reader's language, so dropping the prefix is no longer enough — the page's
+ * own name has to come back too.
+ */
 export function stripLocale(path: string): string {
-  if (path === '/en') return ''
-  return path.startsWith('/en/') ? path.slice(3) : path
+  const withoutLocale = path.replace(/^\/(is|en)(?=\/|$)/, '')
+  if (withoutLocale === '' || withoutLocale === '/') return ''
+  const [, head = '', ...rest] = withoutLocale.split('/')
+  return `/${[toInternalSegment(head) ?? head, ...rest].join('/')}`
 }
 
 /** The dynamic route a path belongs to, if any. */

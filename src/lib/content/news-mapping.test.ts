@@ -27,7 +27,7 @@ describe('toNewsSummary', () => {
   })
 
   it('links to the English article under /en', () => {
-    expect(toNewsSummary(doc, 'en').href).toBe('/en/frettir/ny-stjorn-er-tekin-vid')
+    expect(toNewsSummary(doc, 'en').href).toBe('/en/news/ny-stjorn-er-tekin-vid')
   })
 
   it('falls back to Icelandic and says so when there is no translation', () => {

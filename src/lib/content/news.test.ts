@@ -72,7 +72,7 @@ describe('listNews', () => {
 
   it('maps documents into view models for the reading locale', async () => {
     const [article] = await listNews('en')
-    expect(article.href).toBe('/en/frettir/ny-stjorn-er-tekin-vid')
+    expect(article.href).toBe('/en/news/ny-stjorn-er-tekin-vid')
     expect(article.contentLocale).toBe('is')
   })
 })

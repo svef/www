@@ -44,12 +44,12 @@ describe('LocaleToggle', () => {
     pathname.value = '/vidburdir'
     setLocation('/vidburdir')
     render(<LocaleToggle locale="is" />)
-    expect(href()).toBe('/en/vidburdir')
+    expect(href()).toBe('/en/events')
   })
 
   it('replaces the /en prefix when switching back to Icelandic', () => {
-    pathname.value = '/en/vidburdir'
-    setLocation('/en/vidburdir')
+    pathname.value = '/en/events'
+    setLocation('/en/events')
     render(<LocaleToggle locale="en" />)
     expect(href()).toBe('/is/vidburdir')
   })
@@ -58,26 +58,26 @@ describe('LocaleToggle', () => {
     pathname.value = '/is/myndir'
     setLocation('/is/myndir')
     render(<LocaleToggle locale="is" />)
-    expect(href()).toBe('/en/myndir')
+    expect(href()).toBe('/en/photos')
   })
 
   it('preserves the query string (#49)', () => {
     pathname.value = '/myndir'
     setLocation('/myndir?ar=2025')
     render(<LocaleToggle locale="is" />)
-    expect(href()).toBe('/en/myndir?ar=2025')
+    expect(href()).toBe('/en/photos?ar=2025')
   })
 
   it('preserves the hash (#49)', () => {
     pathname.value = '/vefverdlaunin'
     setLocation('/vefverdlaunin#dagskra')
     render(<LocaleToggle locale="is" />)
-    expect(href()).toBe('/en/vefverdlaunin#dagskra')
+    expect(href()).toBe('/en/web-awards#dagskra')
   })
 
   it('preserves the query string and hash together', () => {
-    pathname.value = '/en/frettir'
-    setLocation('/en/frettir?flokkur=svef#listi')
+    pathname.value = '/en/news'
+    setLocation('/en/news?flokkur=svef#listi')
     render(<LocaleToggle locale="en" />)
     expect(href()).toBe('/is/frettir?flokkur=svef#listi')
   })
@@ -86,20 +86,20 @@ describe('LocaleToggle', () => {
     pathname.value = '/um-svef'
     setLocation('/um-svef')
     render(<LocaleToggle locale="is" />)
-    expect(href()).toBe('/en/um-svef')
+    expect(href()).toBe('/en/about')
   })
 
   it('picks up a hash added after mount', () => {
     pathname.value = '/vefverdlaunin'
     setLocation('/vefverdlaunin')
     render(<LocaleToggle locale="is" />)
-    expect(href()).toBe('/en/vefverdlaunin')
+    expect(href()).toBe('/en/web-awards')
 
     act(() => {
       setLocation('/vefverdlaunin#dagskra')
       window.dispatchEvent(new HashChangeEvent('hashchange'))
     })
-    expect(href()).toBe('/en/vefverdlaunin#dagskra')
+    expect(href()).toBe('/en/web-awards#dagskra')
   })
 
   it('picks up a query string restored by Back/Forward', () => {
@@ -111,7 +111,7 @@ describe('LocaleToggle', () => {
       setLocation('/myndir?ar=2024')
       window.dispatchEvent(new PopStateEvent('popstate'))
     })
-    expect(href()).toBe('/en/myndir?ar=2024')
+    expect(href()).toBe('/en/photos?ar=2024')
   })
 
   it('renders a real link with the plain path on the server', async () => {
@@ -122,7 +122,7 @@ describe('LocaleToggle', () => {
     pathname.value = '/is/myndir'
     setLocation('/is/myndir?ar=2025#topp')
     const html = renderToStaticMarkup(<LocaleToggle locale="is" />)
-    expect(html).toContain('href="/en/myndir"')
+    expect(html).toContain('href="/en/photos"')
   })
 
   it('names the language it leads to, in that language', () => {

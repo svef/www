@@ -49,9 +49,18 @@ cutover: `dev` merges into `main` and the constant flips.
 
 ## Routing and language
 
-- Icelandic is served at the root (unprefixed); English lives under `/en`. Handled in
-  `src/proxy.ts` (Next 16 Proxy — the rename of `middleware.ts`), which rewrites to an
-  internal `[locale]` segment.
+- **Every page lives under an explicit locale prefix: `/is` and `/en`.** The root is not a
+  page — it only decides which language to redirect to, and for now that is always
+  Icelandic. Handled in `src/proxy.ts` (Next 16 Proxy — the rename of `middleware.ts`).
+- **Pages are named in the reader's language**: `/is/vidburdir` and `/en/events`. The
+  directories under `src/app/(app)/[locale]/` keep their Icelandic names and the proxy
+  rewrites the English form onto them, so only the visible URL changes. The map is
+  `src/lib/i18n/routes.ts`.
+- **Build links with `localePath()`, never by hand.** It translates the page name along
+  with the prefix, so an English page links to `/en/events` rather than `/en/vidburdir` —
+  which exists, but only as a redirect to it.
+- **Document slugs are not localized yet** (svef/www#98): the slug after the page name is
+  carried across unchanged.
 - Payload uses field-level localization: `is` default, `en` with fallback.
 - Some content is Icelandic-only by decision: the awards winners archive, press, and the bylaws.
 - **Interface copy is Icelandic. Code, comments, commits, issues and PRs are English.**

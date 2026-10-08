@@ -23,22 +23,45 @@ describe('localePath', () => {
   it('prefixes the target locale', () => {
     expect(localePath('/', 'en')).toBe('/en')
     expect(localePath('/', 'is')).toBe('/is')
-    expect(localePath('/vidburdir', 'en')).toBe('/en/vidburdir')
     expect(localePath('/vidburdir', 'is')).toBe('/is/vidburdir')
-    expect(localePath('/frettir/eitthvad', 'en')).toBe('/en/frettir/eitthvad')
+  })
+
+  it('translates the page name along with the prefix', () => {
+    expect(localePath('/vidburdir', 'en')).toBe('/en/events')
+    expect(localePath('/frettir', 'en')).toBe('/en/news')
+    expect(localePath('/um-svef', 'en')).toBe('/en/about')
+    expect(localePath('/vefverdlaunin', 'en')).toBe('/en/web-awards')
+    expect(localePath('/myndir', 'en')).toBe('/en/photos')
+    expect(localePath('/skraning', 'en')).toBe('/en/membership')
+    expect(localePath('/hafa-samband', 'en')).toBe('/en/contact')
+  })
+
+  it('reads a path written in either language', () => {
+    // The input is as often the path a reader is on as one written in code.
+    expect(localePath('/en/events', 'is')).toBe('/is/vidburdir')
+    expect(localePath('/is/vidburdir', 'en')).toBe('/en/events')
+    expect(localePath('/en/events', 'en')).toBe('/en/events')
+  })
+
+  it('carries anything after the page name across untouched', () => {
+    // Document slugs are not localized yet — svef/www#98.
+    expect(localePath('/frettir/eitthvad', 'en')).toBe('/en/news/eitthvad')
+    expect(localePath('/en/events/kludurkvold', 'is')).toBe('/is/vidburdir/kludurkvold')
   })
 
   it('replaces an existing prefix rather than stacking one on top', () => {
-    expect(localePath('/en/vidburdir', 'is')).toBe('/is/vidburdir')
-    expect(localePath('/is/vidburdir', 'en')).toBe('/en/vidburdir')
     expect(localePath('/en', 'is')).toBe('/is')
     expect(localePath('/is', 'en')).toBe('/en')
   })
 
   it('is idempotent for the locale it is already in', () => {
-    expect(localePath('/en/um-svef', 'en')).toBe('/en/um-svef')
+    expect(localePath('/en/about', 'en')).toBe('/en/about')
     expect(localePath('/is/um-svef', 'is')).toBe('/is/um-svef')
-    expect(localePath(localePath('/um-svef', 'is'), 'is')).toBe('/is/um-svef')
+    expect(localePath(localePath('/um-svef', 'en'), 'en')).toBe('/en/about')
+  })
+
+  it('leaves a segment that names no page alone', () => {
+    expect(localePath('/eitthvad-annad', 'en')).toBe('/en/eitthvad-annad')
   })
 
   it('only treats a whole segment as a locale prefix', () => {
@@ -48,13 +71,13 @@ describe('localePath', () => {
   })
 
   it('preserves the query string and hash', () => {
-    expect(localePath('/en/vidburdir#naesti', 'is')).toBe('/is/vidburdir#naesti')
-    expect(localePath('/myndir?ar=2025#topp', 'en')).toBe('/en/myndir?ar=2025#topp')
+    expect(localePath('/en/events#naesti', 'is')).toBe('/is/vidburdir#naesti')
+    expect(localePath('/myndir?ar=2025#topp', 'en')).toBe('/en/photos?ar=2025#topp')
     expect(localePath('/?x=1', 'is')).toBe('/is?x=1')
   })
 
   it('tolerates a path without a leading slash', () => {
-    expect(localePath('vidburdir', 'en')).toBe('/en/vidburdir')
+    expect(localePath('vidburdir', 'en')).toBe('/en/events')
   })
 
   it('never returns a protocol-relative URL', () => {
