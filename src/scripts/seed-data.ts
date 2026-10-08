@@ -366,14 +366,17 @@ export type AwardEditionFixture = {
  */
 export const awardEditions: AwardEditionFixture[] = [
   {
+    // The edition is named for the work it judges, not the night it is handed
+    // out: these are the awards for projects done in 2026, given in March 2027.
     year: 2026,
     // Iceland keeps UTC all year, so this Z timestamp is the local time exactly.
     ceremonyDate: '2027-03-19T19:30:00.000Z',
     venue: 'Harpa, Silfurberg',
     headline: '19. mars í Hörpu',
     headlineEn: '19 March at Harpa',
-    submissionDeadline: '2026-10-10T23:59:00.000Z',
-    ticketsOnSaleFrom: '2026-09-01T09:00:00.000Z',
+    // No submission deadline and no ticket date. Both were left over from the
+    // November 2026 ceremony and had already passed; the date of the ceremony is
+    // the only thing settled so far. The page renders neither line when unset.
   },
   { year: 2025, ceremonyDate: '2025-11-15T12:00:00.000Z', venue: 'Harpa' },
   { year: 2024 },
