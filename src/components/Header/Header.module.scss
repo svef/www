@@ -16,8 +16,9 @@ $nav-breakpoint: 900px;
   --header-h: 88px;
   --logo-width: 112px;
   --logo-top: 12px;
-  // How far the blur reaches past the bar as it fades out.
-  --header-fade: 28px;
+  // How far the blur reaches past the bar as it fades out. Small on purpose:
+  // enough to take the hard line off the bottom edge, not a gradient you notice.
+  --header-fade: 10px;
 
   position: sticky;
   top: 0;
@@ -46,7 +47,7 @@ $nav-breakpoint: 900px;
   // No hand-written -webkit- prefix: Lightning CSS adds prefixes from
   // browserslist, and writing both made it collapse them into the prefixed
   // property alone, which left the standard one undefined.
-  backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(120%);
   mask-image: linear-gradient(
     to bottom,
     #000 0,
@@ -84,6 +85,10 @@ $nav-breakpoint: 900px;
   // `--header-h`, which is what lets the mark exceed it rather than push it open.
   min-height: var(--header-h);
   flex-wrap: wrap;
+  // The row sets its own min-height, so it has to ease on the same curve as the
+  // bar. Without this the bar animated while the row snapped, which is what made
+  // the shrink look like it was stuttering.
+  transition: min-height 220ms ease;
 }
 
 .logoLink {
@@ -175,42 +180,23 @@ $nav-breakpoint: 900px;
 }
 
 
-// Both languages side by side, sized and weighted like the nav items so the row
-// reads as one line rather than a nav plus a control.
-.langToggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.langOption {
+// The way out to the other language. Styled as a nav item rather than a control
+// so it sits on the same line as the rest of the row.
+.langLink {
   color: var(--fg-muted);
   text-decoration: none;
   font-weight: var(--weight-semibold);
-  font-size: var(--text-sm);
-  letter-spacing: 0.08em;
+  white-space: nowrap;
+  transition: color 0.16s ease;
 
   &:hover {
     color: var(--fg);
-  }
-
-  // The current language reads as selected on its own, so the link stays in
-  // place and simply stops advertising itself as somewhere to go.
-  &[aria-current='page'] {
-    color: var(--fg);
-    cursor: default;
   }
 
   &:focus-visible {
     outline: 2px solid var(--color-violet-light);
     outline-offset: 3px;
   }
-}
-
-.langDivider {
-  width: 1px;
-  height: 12px;
-  background: var(--surface-4);
 }
 
 // Hidden above the breakpoint, where the nav is a row and there is nothing to

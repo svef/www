@@ -29,8 +29,20 @@ export function proxy(request: NextRequest) {
 
   const segment = pathname.split('/')[1]
 
-  // Anything not under a known locale goes to the default one.
-  if (!isLocale(segment)) return redirectTo(`/${DEFAULT_LOCALE}`)
+  // A path with no locale on the front keeps the path and gains one, rather
+  // than being thrown away at the front door: /vidburdir/eitthvad becomes
+  // /is/vidburdir/eitthvad, so an old link or a hand-typed address still lands
+  // on the page it names.
+  //
+  // The locale cannot be inferred from the path, because both locales use the
+  // same slugs — /vidburdir is the English route as much as the Icelandic one.
+  // So this uses the default, and the language toggle is one click away.
+  //
+  // What it does not do is pretend a path exists. `/is/nonsense` matches no
+  // route and 404s, which is the honest answer for a URL that was never real;
+  // redirecting those to the front page told the visitor their link worked
+  // when it did not.
+  if (!isLocale(segment)) return redirectTo(`/${DEFAULT_LOCALE}${pathname}`)
 
   // Landing mode (main branch): the one-pager is the only page that exists, so
   // any deeper path falls back to the locale root. The page itself is rendered

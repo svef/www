@@ -8,6 +8,10 @@ vi.mock('next/navigation', () => ({
   usePathname: () => pathname.value,
 }))
 
+vi.mock('@mantine/core', () => ({
+  VisuallyHidden: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+}))
+
 vi.mock('next/link', () => ({
   default: ({ href, children, ...rest }: React.ComponentProps<'a'>) => (
     <a href={href} {...rest}>
@@ -21,12 +25,9 @@ function setLocation(url: string) {
   window.history.replaceState(null, '', url)
 }
 
-/**
- * The href of one of the two options. Both languages are shown, so these all
- * name the one they mean rather than relying on there being a single link.
- */
-function href(label: 'IS' | 'EN' = 'EN') {
-  return screen.getByRole('link', { name: label }).getAttribute('href')
+/** The toggle is a single link, to whichever language you are not reading. */
+function href() {
+  return screen.getByRole('link').getAttribute('href')
 }
 
 beforeEach(() => {
@@ -50,15 +51,14 @@ describe('LocaleToggle', () => {
     pathname.value = '/en/vidburdir'
     setLocation('/en/vidburdir')
     render(<LocaleToggle locale="en" />)
-    expect(href('IS')).toBe('/is/vidburdir')
+    expect(href()).toBe('/is/vidburdir')
   })
 
   it('does not stack one locale prefix on another', () => {
     pathname.value = '/is/myndir'
     setLocation('/is/myndir')
     render(<LocaleToggle locale="is" />)
-    expect(href('EN')).toBe('/en/myndir')
-    expect(href('IS')).toBe('/is/myndir')
+    expect(href()).toBe('/en/myndir')
   })
 
   it('preserves the query string (#49)', () => {
@@ -79,7 +79,7 @@ describe('LocaleToggle', () => {
     pathname.value = '/en/frettir'
     setLocation('/en/frettir?flokkur=svef#listi')
     render(<LocaleToggle locale="en" />)
-    expect(href('IS')).toBe('/is/frettir?flokkur=svef#listi')
+    expect(href()).toBe('/is/frettir?flokkur=svef#listi')
   })
 
   it('does not append a stray ? or # when there is neither', () => {
@@ -123,17 +123,24 @@ describe('LocaleToggle', () => {
     setLocation('/is/myndir?ar=2025#topp')
     const html = renderToStaticMarkup(<LocaleToggle locale="is" />)
     expect(html).toContain('href="/en/myndir"')
-    expect(html).toContain('href="/is/myndir"')
   })
 
-  it('shows both languages and marks the current one', () => {
+  it('names the language it leads to, in that language', () => {
     render(<LocaleToggle locale="is" />)
-    const current = screen.getByRole('link', { name: 'IS' })
-    const other = screen.getByRole('link', { name: 'EN' })
-    // The current language stays a link so the control keeps its shape; it is
-    // marked rather than removed.
-    expect(current).toHaveAttribute('aria-current', 'page')
-    expect(other).not.toHaveAttribute('aria-current')
-    expect(other).toHaveAttribute('hrefLang', 'en')
+    const link = screen.getByRole('link')
+    expect(link).toHaveAttribute('hrefLang', 'en')
+    expect(link).toHaveTextContent('English')
+    // The accessible name begins with the visible word and then says what the
+    // link does, rather than replacing it (WCAG 2.5.3).
+    // jsdom's name computation joins the two text nodes without a separator,
+    // where a browser inserts one; the assertion tolerates both.
+    expect(link).toHaveAccessibleName(/^English\s*Skipta yfir í ensku$/)
+  })
+
+  it('names the Icelandic page in Icelandic when read in English', () => {
+    render(<LocaleToggle locale="en" />)
+    const link = screen.getByRole('link')
+    expect(link).toHaveTextContent('Íslenska')
+    expect(link).toHaveAttribute('hrefLang', 'is')
   })
 })

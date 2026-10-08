@@ -1,9 +1,10 @@
 'use client'
 
-import { Fragment, useCallback, useSyncExternalStore } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { getDictionary, localePath, LOCALES, type Locale } from '@/lib/i18n'
+import { VisuallyHidden } from '@mantine/core'
+import { getDictionary, localePath, type Locale } from '@/lib/i18n'
 import styles from './Header.module.scss'
 
 /**
@@ -63,37 +64,35 @@ function useLocationSuffix(): string {
  * never receives, and it is what the toggle already did before #49.
  */
 /**
- * Both languages, side by side, the way the landing page shows them.
+ * A single link to the other language, labelled with that language's own name.
  *
- * The current language stays visible and is marked with `aria-current` rather
- * than being dropped, so the control keeps its shape between locales and a
- * reader can see which of the two they are on without inferring it.
+ * "English" on the Icelandic page, "Íslenska" on the English page — written in
+ * the language it leads to, so a reader who cannot read the page they are on can
+ * still recognise the way out. One item rather than a pair: there are only two
+ * languages, so the current one does not need stating, and a lone word sits on
+ * the nav's line instead of looking like a control dropped beside it.
  *
- * Each link preserves the page you are on, carrying the query and hash across
- * with it; see `useLocationSuffix` above for why that is read from
- * `window.location` rather than `useSearchParams()`.
+ * The hidden phrase follows the visible word rather than replacing it, so the
+ * accessible name still begins with what is on screen (WCAG 2.5.3 Label in
+ * Name) while saying what the link actually does.
+ *
+ * The href preserves the page you are on, carrying the query and hash with it;
+ * see `useLocationSuffix` above for why those are read from `window.location`.
  */
 export function LocaleToggle({ locale }: { locale: Locale }) {
   const pathname = usePathname()
   const suffix = useLocationSuffix()
   const t = getDictionary(locale)
+  const target: Locale = locale === 'is' ? 'en' : 'is'
 
   return (
-    <nav className={styles.langToggle} aria-label={t.switchLanguage}>
-      {LOCALES.map((option, index) => (
-        <Fragment key={option}>
-          {index > 0 && <span className={styles.langDivider} aria-hidden="true" />}
-          <Link
-            href={localePath(pathname + suffix, option)}
-            className={styles.langOption}
-            hrefLang={option}
-            lang={option}
-            aria-current={option === locale ? 'page' : undefined}
-          >
-            {option.toUpperCase()}
-          </Link>
-        </Fragment>
-      ))}
-    </nav>
+    <Link
+      href={localePath(pathname + suffix, target)}
+      className={styles.langLink}
+      hrefLang={target}
+    >
+      <span lang={target}>{getDictionary(target).languageName}</span>
+      <VisuallyHidden> {t.switchLanguage}</VisuallyHidden>
+    </Link>
   )
 }

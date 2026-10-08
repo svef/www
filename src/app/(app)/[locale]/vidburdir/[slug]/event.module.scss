@@ -8,7 +8,9 @@ $gutter: clamp(1.25rem, 4vw, 3rem);
 .backBar {
   max-width: $max;
   margin: 0 auto;
-  padding: var(--space-6) $gutter 0;
+  // Clears the mark, which is taller than the bar and hangs over the top of the
+  // page. `--space-6` put this link inside that overhang.
+  padding: var(--space-12) $gutter 0;
 }
 
 .back {
@@ -32,41 +34,10 @@ $gutter: clamp(1.25rem, 4vw, 3rem);
 
 .hero {
   position: relative;
-  overflow: hidden;
   padding: clamp(2rem, 4vw, 3.5rem) $gutter clamp(3rem, 6vw, 5rem);
 }
 
-// The brand's block motif: two violet squares off the right edge. Decorative,
-// and `overflow: hidden` on the hero keeps them from widening the page.
-.blockLarge,
-.blockSmall {
-  position: absolute;
-  background: var(--color-violet);
 
-  // On a phone the hero is narrow enough that these sit behind the meta row,
-  // and violet-light on violet is about 2:1 — the date and venue would be
-  // decoration, not text. The motif is desktop geometry; below that width it
-  // goes rather than takes the copy with it.
-  @media (max-width: 767px) {
-    display: none;
-  }
-}
-
-.blockLarge {
-  right: -30px;
-  top: 20px;
-  width: 140px;
-  height: 140px;
-  opacity: 0.9;
-}
-
-.blockSmall {
-  right: 110px;
-  top: 160px;
-  width: 70px;
-  height: 70px;
-  opacity: 0.4;
-}
 
 .heroInner {
   position: relative;

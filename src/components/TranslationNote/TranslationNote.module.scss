@@ -2,6 +2,9 @@
   // Same gutter as PageHeader and Section, so the note lines up with the page
   // heading underneath it rather than floating in from the edge.
   padding-inline: var(--space-6);
+  // This is the first thing in `<main>`, and the mark hangs below the bar and
+  // over the top of the page. Without this the note sits under it.
+  padding-block-start: var(--space-12);
 }
 
 .note {

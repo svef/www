@@ -97,10 +97,6 @@ export default async function EventPage({ params }: { params: Params }) {
 
       <article>
         <header className={styles.hero}>
-          {/* The brand's block motif, decorative only. */}
-          <span className={styles.blockLarge} aria-hidden="true" />
-          <span className={styles.blockSmall} aria-hidden="true" />
-
           <div className={styles.heroInner}>
             {isNext && <p className={styles.eyebrow}>{t.events.nextEvent}</p>}
             <h1 className={styles.title} lang={lang(event.contentLocale)}>
