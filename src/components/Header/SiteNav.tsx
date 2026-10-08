@@ -81,6 +81,18 @@ export function SiteNav({
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
   const submenuTriggers = useRef(new Map<string, HTMLButtonElement | null>())
   /**
+   * Closing on hover-out is delayed a little. The gap between a trigger and its
+   * panel is bridged in CSS, but a pointer moving diagonally still clips the
+   * edge of a neighbour on the way, and closing on that is the thing that makes
+   * a menu feel like it is running away from you.
+   */
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const cancelClose = useCallback(() => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    closeTimer.current = null
+  }, [])
+  useEffect(() => cancelClose, [cancelClose])
+  /**
    * Whether opening on hover makes sense at all. False on a touch screen, where
    * `mouseenter` fires on a tap and would race the button's own click.
    */
@@ -222,10 +234,20 @@ export function SiteNav({
                     // false on a touch screen, so there the button is the only
                     // way in — which is the behaviour you want anyway.
                     onMouseEnter={
-                      item.children && hoverCapable ? () => setOpenSubmenu(item.href) : undefined
+                      item.children && hoverCapable
+                        ? () => {
+                            cancelClose()
+                            setOpenSubmenu(item.href)
+                          }
+                        : undefined
                     }
                     onMouseLeave={
-                      item.children && hoverCapable ? () => setOpenSubmenu(null) : undefined
+                      item.children && hoverCapable
+                        ? () => {
+                            cancelClose()
+                            closeTimer.current = setTimeout(() => setOpenSubmenu(null), 160)
+                          }
+                        : undefined
                     }
                   >
                     <Link

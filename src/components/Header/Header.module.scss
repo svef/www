@@ -284,6 +284,12 @@ $nav-breakpoint: 900px;
     order: 2;
     flex-basis: 100%;
     width: 100%;
+    // Clear the mark, which is taller than the bar and hangs over whatever is
+    // below it — here, the first item of the open menu. Derived rather than
+    // hard-coded, so it still holds when the bar is shallow from scrolling.
+    padding-top: calc(
+      var(--logo-top) + var(--logo-width) - var(--header-h) + var(--space-2)
+    );
     border-top: 1px solid var(--surface-3);
     animation: menuIn 0.18s ease-out;
 
@@ -425,6 +431,20 @@ $nav-breakpoint: 900px;
 
   &[data-open='true'] {
     display: block;
+  }
+
+  // The panel sits a gap below its trigger, and that gap is outside the
+  // parent's box — so moving the pointer down onto the panel left the parent
+  // and closed it before you arrived. This bridges the gap so the pointer
+  // never leaves. Invisible, and inside the panel, so it only exists while the
+  // panel does.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: var(--space-3);
   }
 }
 

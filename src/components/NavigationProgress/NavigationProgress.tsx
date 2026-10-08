@@ -11,14 +11,31 @@ import styles from './NavigationProgress.module.scss'
  * screen changes, so on a slow connection the page sits there looking like the
  * click was missed. This says the click landed.
  *
- * No effect sets state, which is what keeps this honest: the click handler
- * records the path it started from, and the bar is *derived* from whether the
- * path has changed yet. When the navigation commits, `usePathname` changes and
- * the bar goes away on its own — nothing has to notice and switch it off.
+ * The click handler records the path it started from, and the bar is shown
+ * while the path has not changed yet. When the navigation commits, `usePathname`
+ * changes and the record is cleared.
+ *
+ * Clearing it is the part that has to be right. Leaving the record in place
+ * once the navigation finished was a bug: pressing Back returned to the very
+ * path the click started from, which matched the stale record again and left
+ * the bar on screen with nothing in flight. Pressing Back repeatedly toggled it.
+ *
+ * The reset happens during render rather than in an effect — React's own
+ * pattern for adjusting state when something it derives from changes. An effect
+ * would paint the stuck bar for a frame first, and would be reaching for the
+ * rule that says not to.
  */
 export function NavigationProgress() {
   const pathname = usePathname()
   const [startedAt, setStartedAt] = useState<string | null>(null)
+  const [seenPath, setSeenPath] = useState(pathname)
+
+  if (pathname !== seenPath) {
+    // The path moved, so whatever was in flight has landed — including a Back
+    // or Forward, which never set a record in the first place.
+    setSeenPath(pathname)
+    setStartedAt(null)
+  }
 
   // Still on the page the click was made from, so the navigation is in flight.
   const active = startedAt !== null && startedAt === pathname
