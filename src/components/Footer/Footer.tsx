@@ -1,4 +1,3 @@
-import { Logo } from '@/components/Logo/Logo'
 import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
 import type { SocialLink } from '@/lib/content/site-settings'
 import styles from './Footer.module.scss'
@@ -33,7 +32,6 @@ export function Footer({
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <div className={styles.brand}>
-          <Logo tone="inverse" size="88px" />
           <p className={styles.blurb} lang={blurbLang}>
             {blurb}
           </p>
