@@ -1,9 +1,20 @@
 import type { CollectionConfig } from 'payload'
+import {
+  revalidateCollection,
+  revalidateCollectionDelete,
+} from '@/payload/hooks/revalidate'
+import { eventPaths } from '@/payload/hooks/paths'
 
 export const Events: CollectionConfig = {
   slug: 'events',
   access: { read: () => true },
   admin: { useAsTitle: 'title', defaultColumns: ['title', 'startDate', 'location'] },
+  // An editor's save shows up on the next request rather than within the
+  // five-minute window (svef/www#67).
+  hooks: {
+    afterChange: [revalidateCollection('events', eventPaths)],
+    afterDelete: [revalidateCollectionDelete('events', eventPaths)],
+  },
   fields: [
     { name: 'title', type: 'text', required: true, localized: true },
     {

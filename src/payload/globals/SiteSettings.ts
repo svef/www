@@ -1,8 +1,12 @@
 import type { GlobalConfig } from 'payload'
+import { revalidateGlobal } from '@/payload/hooks/revalidate'
+import { siteSettingsPaths } from '@/payload/hooks/paths'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
   access: { read: () => true },
+  // An editor's save shows up on the next request (svef/www#67).
+  hooks: { afterChange: [revalidateGlobal('site-settings', siteSettingsPaths)] },
   fields: [
     { name: 'tagline', type: 'text', localized: true },
     { name: 'footerBlurb', type: 'textarea', localized: true },
