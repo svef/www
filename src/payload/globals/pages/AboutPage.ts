@@ -1,8 +1,13 @@
 import type { GlobalConfig } from 'payload'
+import { revalidateGlobal } from '@/payload/hooks/revalidate'
+import { aboutPagePaths } from '@/payload/hooks/paths'
 
 export const AboutPage: GlobalConfig = {
   slug: 'about-page',
   access: { read: () => true },
+  // An editor's save shows up on the next request rather than within the
+  // five-minute window (svef/www#67).
+  hooks: { afterChange: [revalidateGlobal('about-page', aboutPagePaths)] },
   fields: [
     { name: 'story', type: 'richText', localized: true },
     { name: 'boardIntro', type: 'textarea', localized: true },

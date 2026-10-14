@@ -1,8 +1,12 @@
 import type { GlobalConfig } from 'payload'
+import { revalidateGlobal } from '@/payload/hooks/revalidate'
+import { membershipPagePaths } from '@/payload/hooks/paths'
 
 export const MembershipPage: GlobalConfig = {
   slug: 'membership-page',
   access: { read: () => true },
+  // An editor's save shows up on the next request (svef/www#67).
+  hooks: { afterChange: [revalidateGlobal('membership-page', membershipPagePaths)] },
   fields: [
     { name: 'intro', type: 'textarea', localized: true },
     {

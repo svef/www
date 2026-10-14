@@ -1,4 +1,9 @@
 import type { CollectionConfig } from 'payload'
+import {
+  revalidateFixed,
+  revalidateFixedDelete,
+} from '@/payload/hooks/revalidate'
+import { awardsPaths } from '@/payload/hooks/paths'
 
 // One per awards year. Winners relate to an edition. Historical data import is
 // a separate side project (site-plan.md) — editions can be created ahead of data.
@@ -11,6 +16,12 @@ export const AwardEditions: CollectionConfig = {
   slug: 'award-editions',
   access: { read: () => true },
   admin: { useAsTitle: 'year', defaultColumns: ['year', 'ceremonyDate', 'venue'] },
+  // An editor's save shows up on the next request rather than within the
+  // five-minute window (svef/www#67).
+  hooks: {
+    afterChange: [revalidateFixed('award-editions', awardsPaths)],
+    afterDelete: [revalidateFixedDelete('award-editions', awardsPaths)],
+  },
   fields: [
     { name: 'year', type: 'number', required: true, unique: true, index: true },
     { name: 'ceremonyDate', type: 'date' },

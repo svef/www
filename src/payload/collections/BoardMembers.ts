@@ -1,4 +1,6 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateFixed, revalidateFixedDelete } from '@/payload/hooks/revalidate'
+import { boardPaths } from '@/payload/hooks/paths'
 
 // Rendered as a grid under Um SVEF (About).
 export const BoardMembers: CollectionConfig = {
@@ -6,6 +8,12 @@ export const BoardMembers: CollectionConfig = {
   access: { read: () => true },
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'role', 'company', 'order'] },
   defaultSort: 'order',
+  // An editor's save shows up on the next request rather than within the
+  // five-minute window (svef/www#67).
+  hooks: {
+    afterChange: [revalidateFixed('board-members', boardPaths)],
+    afterDelete: [revalidateFixedDelete('board-members', boardPaths)],
+  },
   fields: [
     { name: 'name', type: 'text', required: true },
     { name: 'role', type: 'text', localized: true },

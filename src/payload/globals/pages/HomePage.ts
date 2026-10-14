@@ -1,8 +1,12 @@
 import type { GlobalConfig } from 'payload'
+import { revalidateGlobal } from '@/payload/hooks/revalidate'
+import { homePagePaths } from '@/payload/hooks/paths'
 
 export const HomePage: GlobalConfig = {
   slug: 'home-page',
   access: { read: () => true },
+  // An editor's save shows up on the next request (svef/www#67).
+  hooks: { afterChange: [revalidateGlobal('home-page', homePagePaths)] },
   fields: [
     { name: 'heroSentence', type: 'text', localized: true },
     { name: 'heroHook', type: 'text', localized: true },
