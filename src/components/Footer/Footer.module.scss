@@ -43,6 +43,15 @@
   color: var(--fg);
   border-bottom: 2px solid var(--color-violet);
   padding-bottom: 2px;
+
+  // Its siblings `.contactLink` and `.writeLink` both carry this and this one
+  // did not, so tabbing through the footer fell from a 2px violet ring to the
+  // browser's 1px default on exactly one link — the least visible indicator on
+  // the page, on a dark canvas (svef/www#96).
+  &:focus-visible {
+    outline: 2px solid var(--color-violet-light);
+    outline-offset: 3px;
+  }
 }
 
 .socials {
