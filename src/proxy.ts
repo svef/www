@@ -14,8 +14,9 @@ import { DEFAULT_LOCALE, isLocale, localePath, toInternalSegment, toPublicSegmen
  * Pages that exist while `LANDING_ONLY` is set, beyond the landing page itself.
  *
  * Keyed on the directory name under `(app)/[locale]/`, which is also the path.
- * The list is what goes away at the cutover, not the pages — they already live
- * where they will live afterwards.
+ * The pages themselves already live where they will live after the cutover; this
+ * list only decides which of them stay reachable while the flag is on. It is not
+ * cutover scaffolding — see the note on `LANDING_ONLY` below.
  */
 const LANDING_PAGES = new Set(['abendingar', 'erindi'])
 
@@ -57,9 +58,14 @@ export function proxy(request: NextRequest) {
   // Landing mode (main branch): the one-pager is the only page that exists, so
   // any deeper path falls back to the locale root. The page itself is rendered
   // from /landing/<locale>, an internal path reached only by this rewrite — the
-  // public URL stays /is or /en. When the full site ships, this block and the
-  // (landing) route group go away together and `(app)/[locale]` serves the very
-  // same URLs.
+  // public URL stays /is or /en, so the cutover changes nothing about where things
+  // live.
+  //
+  // This block is permanent. The launch flips `LANDING_ONLY` to false and leaves
+  // the mechanism standing, because putting the whole site behind one page is a
+  // capability the association wants to keep — around the Awards, for instance.
+  // Note the consequence: once the flag is false in production, nothing exercises
+  // this path in normal use, so it is covered by tests rather than by traffic.
   if (LANDING_ONLY) {
     // A few real pages are reachable before the rest of the site is. They live
     // where they will live afterwards, under `(app)/[locale]`, so the cutover

@@ -39,13 +39,34 @@ src/
 `src/lib/site-mode.ts` holds a compile-time `LANDING_ONLY` constant, so behaviour is pinned
 per branch rather than by environment variable:
 
-- **`main`** — `LANDING_ONLY = true` → the temporary landing one-pager. Vercel production → svef.is.
+- **`main`** — `LANDING_ONLY = true` → only the landing one-pager is served. Vercel production → svef.is.
 - **`dev`** — `LANDING_ONLY = false` → the full site under construction. **Default branch**; branch from here.
 
-`dev` carries the full-site work and diverges from `main` as that work lands; `main` holds
-only the landing. **Never rebase or reset `dev` to match `main`** — the two branches are not
-meant to stay one commit apart, and forcing it discards merged work. Launch is a deliberate
-cutover: `dev` merges into `main` and the constant flips.
+Both branches carry the whole codebase. `main` is not "the landing branch" — it holds the
+full site too, with the flag turned on so only the landing is reachable. The flag decides
+*what is served*, never *what exists*.
+
+`dev` carries the full-site work and diverges from `main` as that work lands. **Never
+rebase or reset `dev` to match `main`** — the two are not meant to stay one commit apart,
+and forcing it discards merged work. Do keep `dev` current, though: merge or fast-forward
+`main` into it whenever `main` gains work, so branching from `dev` never silently drops
+something (svef/www#112).
+
+A landing-only fix — a date that has passed, a typo on the one-pager — targets `main`
+directly, since that is what production renders. Anything else branches from `dev`.
+
+Launch is a deliberate cutover: `dev` merges into `main` and the constant flips.
+
+**The flag outlives the launch.** It is standing capability, not scaffolding: a way to put
+the site behind a single page temporarily, for example around the Awards. So the cutover
+flips `LANDING_ONLY` to `false` and leaves the `(landing)` route group, the proxy branch
+and the allowlist in place. Two consequences worth keeping in mind:
+
+- After the cutover **nothing exercises the landing path in normal operation**, so it can
+  rot unnoticed and the first person to need it finds out the hard way. Keep a test on it.
+- The allowlist in `src/proxy.ts` decides what stays reachable while the flag is on. Today
+  that is the two forms. For a future blackout it would likely be a different set, so treat
+  it as configuration rather than a fixed list.
 
 ## Routing and language
 
