@@ -65,6 +65,7 @@ export default async function EventsPage({
         <Section eyebrow={t.events.nextEvent}>
           <SpotlightRow
             title={featured.title}
+            titleLang={featured.contentLocale === locale ? undefined : featured.contentLocale}
             // The export's spotlight reads `14. nóv 2026 · 19:30 · Harpa,
             // Reykjavík` — date, then time, then venue — with the descriptive
             // sentence as a separate paragraph beneath. `SpotlightRow` has one
@@ -72,6 +73,7 @@ export default async function EventsPage({
             // shared component for one caller; the *order* costs nothing and is
             // the export's.
             body={spotlightBody(featured)}
+            bodyLang={featured.metaLocale === locale ? undefined : featured.metaLocale}
             // No ticket URL means no ticket button: a "Kaupa miða" that goes
             // nowhere is worse than none, and most SVEF events are free anyway.
             primary={
