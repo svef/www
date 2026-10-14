@@ -127,9 +127,9 @@ export function everyPage(): { locale: Locale; page: PageSpec; url: string }[] {
   )
 }
 
-/** One console error or uncaught page error, with where it came from. */
+/** One console error, uncaught page error, or failed request. */
 export interface PageProblem {
-  kind: 'console' | 'pageerror'
+  kind: 'console' | 'pageerror' | 'response'
   text: string
   /** The resource the message points at — for "Failed to load resource", the URL that failed. */
   url: string
@@ -159,6 +159,20 @@ export function collectPageErrors(page: Page): PageProblem[] {
   })
   page.on('pageerror', (error) => {
     errors.push({ kind: 'pageerror', text: error.message, url: '' })
+  })
+  // Responses, not only the console. A prefetch that 404s does not reliably log
+  // anything — svef/www#60 was a 404 on every English page that only surfaced
+  // because the console happened to carry it, and svef/www#108 removed the flag
+  // that was guarding against it. Watching the network directly means the next
+  // one is caught by what actually went wrong rather than by whether Chromium
+  // chose to mention it.
+  page.on('response', (response) => {
+    if (response.status() < 400) return
+    errors.push({
+      kind: 'response',
+      text: `${response.status()} ${response.request().method()}`,
+      url: response.url(),
+    })
   })
   return errors
 }
