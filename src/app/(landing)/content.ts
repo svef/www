@@ -82,30 +82,6 @@ const is: LandingCopy = {
     body: 'Starfsárið 2026–2027 er hafið. Hér fyrir neðan má sjá næstu viðburði – nánari upplýsingar um dagskrá og staðsetningu verða birtar á samfélagsmiðlum og hér á vefnum.',
     items: [
       {
-        date: '8. október',
-        time: TIMES.first,
-        title: 'Sigurvegarar segja frá – SVEF x Kolibri',
-        badge: 'Ókeypis',
-        venue: 'Skrifstofur Kolibri, Borgartún 26, 105 Reykjavík',
-        directions:
-          'https://www.google.com/maps/search/?api=1&query=Borgart%C3%BAn+26%2C+105+Reykjav%C3%ADk',
-        body: 'SVEF og Kolibri blása til fyrsta viðburðar vetrarins. Við kynnumst verðlaunaverkefnum af Íslensku vefverðlaununum — sögunum á bak við þau og hvar þau standa í dag. Erindi 17–18:30, spjall og tengslamyndun eftirá. Léttar veitingar í boði.',
-        speakers: [
-          'Helena Rut og Gunnar Bjarki, stofnendur Undralings, segja okkur frá verkefninu sínu sem var valið app ársins, stafræn lausn ársins og verkefni ársins 2025!',
-          'Frilli, hönnuður hjá Kolibri, segir okkur frá Okkar heimi, sem var valinn samfélagsvefur ársins 2025.',
-          'Rakel Björt, framendaforritari hjá Helix Health, segir okkur frá Silva, sem hreppti verðlaunin fyrir tækninýtingu ársins 2025.',
-        ],
-        action: { label: 'Viðburður á Facebook', href: 'https://fb.me/e/4iObUsrLH' },
-        ics: '/landing/haustopnun-svef.ics',
-        gcal: googleCalendar({
-          title: 'Sigurvegarar segja frá – SVEF x Kolibri',
-          start: '20261008T170000Z',
-          end: '20261008T200000Z',
-          location: 'Skrifstofur Kolibri, Borgartún 26, 105 Reykjavík',
-          summary: 'Verðlaunaverkefni Íslensku vefverðlaunanna 2025. Ókeypis inn.',
-        }),
-      },
-      {
         date: '21. október',
         time: TIMES.second,
         title: 'Vefþróun og gervigreind: Hvað er framundan?',
@@ -180,31 +156,6 @@ const en: LandingCopy = {
     // and that is not something an English reader can infer from the listing.
     body: 'The 2026–2027 season is under way. The next events are listed below – further details of the programme and venues will be announced on social media and here on the site. Events are held in Icelandic unless stated otherwise.',
     items: [
-      {
-        date: '8 October',
-        time: TIMES.first,
-        title: 'Winners tell their stories – SVEF x Kolibri',
-        badge: 'Free',
-        venue: 'Kolibri’s offices, Borgartún 26, 105 Reykjavík',
-        directions:
-          'https://www.google.com/maps/search/?api=1&query=Borgart%C3%BAn+26%2C+105+Reykjav%C3%ADk',
-        body: 'SVEF and Kolibri open the winter season. We get to know the award-winning projects from the Icelandic Web Awards — the stories behind them and where they stand today. Talks from 17:00 to 18:30, with conversation and networking afterwards. Light refreshments provided.',
-        speakers: [
-          'Helena Rut and Gunnar Bjarki, founders of Undralingur, tell us about their project, which was named app of the year, digital solution of the year and project of the year 2025!',
-          'Frilli, designer at Kolibri, tells us about Okkar heimur, named community website of the year 2025.',
-          'Rakel Björt, front-end developer at Helix Health, tells us about Silva, which won the award for use of technology in 2025.',
-        ],
-        action: { label: 'Event on Facebook', href: 'https://fb.me/e/4iObUsrLH' },
-        ics: '/landing/haustopnun-svef-en.ics',
-        gcal: googleCalendar({
-          title: 'Winners tell their stories – SVEF x Kolibri',
-          start: '20261008T170000Z',
-          end: '20261008T200000Z',
-          location: 'Kolibri’s offices, Borgartún 26, 105 Reykjavík',
-          summary:
-            'Award-winning projects from the Icelandic Web Awards 2025. Free entry. Held in Icelandic.',
-        }),
-      },
       {
         date: '21 October',
         time: TIMES.second,
