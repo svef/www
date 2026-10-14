@@ -1,12 +1,67 @@
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-12);
-  align-items: center;
+// The frame exists only so the violet block has something to hang off. It is
+// not the panel: in the export the block sits *outside* the panel's top-left
+// corner, which needs an ancestor the panel does not clip.
+.frame {
+  position: relative;
+}
+
+// The violet block. Values are the export's, scaled down on narrow screens so
+// it never reaches past the page gutter and introduces a horizontal scroll.
+.blockViolet {
+  position: absolute;
+  left: -24px;
+  top: -32px;
+  width: 180px;
+  height: 96px;
+  background: var(--color-violet);
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    left: -12px;
+    top: -16px;
+    width: 104px;
+    height: 56px;
   }
+}
+
+// The panel itself. `auto-fit` rather than a fixed `1fr 1fr`, which is what the
+// export uses: it collapses to one column on its own at the 280px floor, so the
+// two-column rule and the mobile override are the same declaration.
+.panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  // The export's gap is 36px; the scale has no 36px step, so this takes the
+  // 2rem one rather than inventing a token for a 4px difference nobody can
+  // see.
+  gap: var(--space-8);
+  align-items: center;
+  padding: clamp(1.5rem, 3.5vw, 2.75rem);
+  background: var(--surface-2);
+  border: 1px solid rgba(137, 23, 225, 0.5);
+}
+
+// The home page's treatment: a Shy White panel, the one place on the site
+// where the brand inverts.
+//
+// Rather than restyling `Eyebrow` and `Button` for this one surface, the
+// foreground tokens are redefined for the subtree. Both components already read
+// them, so they follow automatically and there is no second code path to keep
+// in step. `--color-violet-light` is the on-dark accent; on a light surface the
+// accent that reads is the full violet, which is what the export uses for the
+// eyebrow here.
+.inverted {
+  background: var(--color-white);
+  border-color: transparent;
+
+  // `color` has to be restated, not just re-tokenised. Redefining `--fg` below
+  // changes what `var(--fg)` resolves to *inside* this subtree, but the heading
+  // inherits an already-computed `color` from the page — which is Shy White, on
+  // a Shy White panel. Measured before this line: 1:1, invisible.
+  color: var(--fg);
+
+  --fg: var(--color-black);
+  --fg-muted: rgba(9, 6, 12, 0.68);
+  --color-violet-light: var(--color-violet);
 }
 
 // `SpotlightRow.tsx` has always rendered `<div className={styles.text}>`, but
@@ -59,10 +114,35 @@
   gap: var(--space-6);
 }
 
-// Light "spotlight" image placeholder with diagonal stripes.
-.panel {
+// The image column, and the pink block hung off its bottom-right corner.
+.media {
+  position: relative;
+  min-width: 0;
+}
+
+.blockPink {
+  position: absolute;
+  right: -14px;
+  bottom: -14px;
+  width: 80px;
+  height: 44px;
+  background: var(--accent-pink);
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    right: -8px;
+    bottom: -8px;
+    width: 56px;
+    height: 30px;
+  }
+}
+
+// Still a placeholder: the export shows a 4:3 photograph here, but the image
+// has nowhere to come from until media uploads work (svef/www#15). The slot
+// and its block are the part this issue is about.
+.image {
+  position: relative;
   aspect-ratio: 4 / 3;
-  border-radius: var(--radius-sm);
   background:
     repeating-linear-gradient(
       45deg,

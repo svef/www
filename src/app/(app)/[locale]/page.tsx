@@ -183,8 +183,12 @@ export default async function HomePage({
       {spotlightEvent && (
         <Section eyebrow={c.happeningNow}>
           <SpotlightRow
+            // The home spotlight is the inverted one in the export.
+            tone="inverted"
             title={spotlightEvent.title}
+            titleLang={langOf(spotlightEvent.contentLocale)}
             body={spotlightBody(spotlightEvent)}
+            bodyLang={langOf(spotlightEvent.metaLocale)}
             // No ticket URL means no ticket button: a "Kaupa miða" that goes
             // nowhere is worse than none, and most SVEF events are free.
             primary={
@@ -200,8 +204,15 @@ export default async function HomePage({
       {settings.spotlightMode === 'winner' && spotlightWinner && (
         <Section eyebrow={c.happeningNow}>
           <SpotlightRow
+            // The home spotlight is the inverted one in the export.
+            tone="inverted"
             title={spotlightWinner.siteName}
+            // A winner's site name is a proper noun — not translated, and not
+            // Icelandic prose — so it is left unmarked. The blurb is written
+            // in Icelandic only, which is what `WinnerCard` already assumes a
+            // few lines below.
             body={spotlightWinner.blurb ?? undefined}
+            bodyLang={langOf(DEFAULT_LOCALE)}
             primary={
               spotlightWinner.url
                 ? { label: c.visitSite, href: spotlightWinner.url }
