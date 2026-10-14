@@ -2,11 +2,7 @@ import type React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Archivo } from 'next/font/google'
-import {
-  ColorSchemeScript,
-  MantineProvider,
-  mantineHtmlProps,
-} from '@mantine/core'
+import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core'
 import { theme } from '@/lib/theme'
 import { isLocale } from '@/lib/i18n'
 import { getSiteUrl } from '@/lib/site-url'
@@ -42,6 +38,32 @@ export async function generateMetadata({
     alternates: {
       canonical: `/${locale}`,
       languages: { is: '/is', en: '/en' },
+    },
+    // Pointed at explicitly rather than left to the `opengraph-image` file
+    // convention, which would place the card under `/landing/<locale>/` — an
+    // internal path the proxy redirects away, leaving every shared link with no
+    // preview. See `src/app/og/[locale]/opengraph.png/route.tsx`.
+    openGraph: {
+      type: 'website',
+      siteName: 'SVEF',
+      locale: locale === 'is' ? 'is_IS' : 'en_GB',
+      url: `/${locale}`,
+      title: copy.meta.title,
+      description: copy.meta.description,
+      images: [
+        {
+          url: `/og/${locale}/opengraph.png`,
+          width: 1200,
+          height: 630,
+          alt: copy.meta.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: copy.meta.title,
+      description: copy.meta.description,
+      images: [`/og/${locale}/opengraph.png`],
     },
   }
 }
