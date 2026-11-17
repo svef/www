@@ -19,7 +19,26 @@ export const News: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     { name: 'publishedAt', type: 'date', required: true, admin: { position: 'sidebar' } },
-    { name: 'author', type: 'text', admin: { position: 'sidebar' } },
+    {
+      name: 'authorMember',
+      type: 'relationship',
+      relationTo: 'board-members',
+      admin: {
+        position: 'sidebar',
+        description:
+          'The byline shows this board member with photo, name and role. Takes precedence over "Author (text)" if both are set. Leave both empty for no byline.',
+      },
+    },
+    {
+      name: 'author',
+      type: 'text',
+      label: 'Author (text)',
+      admin: {
+        position: 'sidebar',
+        description:
+          'For an author who is not on the board: shown as a name only, no photo or role. Ignored when a board member is chosen above.',
+      },
+    },
     { name: 'excerpt', type: 'textarea', localized: true },
     { name: 'coverImage', type: 'upload', relationTo: 'media' },
     { name: 'body', type: 'richText', localized: true },
