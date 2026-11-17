@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { settle } from './pages'
+import { clickVisibleLink } from './click-visible-link'
 
 /**
  * The page turn (#138): a block of violet sweeps over the screen while the page changes.
@@ -79,15 +80,15 @@ const announced = (page: Page) =>
       '',
   )
 
-/** One trip: about page, scroll, link to events, Back, Forward. Returns what the reader would feel. */
+/** One trip: news index, scroll, a link on screen, Back, Forward. Returns what the reader would feel. */
 async function trip(page: Page) {
-  await page.goto('/is/um-svef')
+  await page.goto('/is/frettir')
   await settle(page)
   await page.evaluate(() => window.scrollTo(0, 700))
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(600)
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(700)
 
-  await page.locator('header nav a[href$="vidburdir"]').first().click()
-  await page.waitForURL(/vidburdir/)
+  // With the mouse, where the link is: a locator click would scroll to the header first.
+  await clickVisibleLink(page)
   await idle(page)
   const afterClick = {
     focus: await describeFocus(page),
@@ -97,7 +98,7 @@ async function trip(page: Page) {
   }
 
   await page.goBack()
-  await page.waitForURL(/um-svef/)
+  await page.waitForURL(/frettir$/)
   await idle(page)
   // Scroll restoration, where there is any, is applied after the commit: let it land.
   await page.waitForTimeout(600)
@@ -108,7 +109,7 @@ async function trip(page: Page) {
   }
 
   await page.goForward()
-  await page.waitForURL(/vidburdir/)
+  await page.waitForURL(/frettir\//)
   await idle(page)
   const afterForward = {
     scroll: await page.evaluate(() => Math.round(window.scrollY)),
@@ -166,8 +167,7 @@ test.describe('page turn', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     const baseline = await trip(page)
     expect(baseline.afterClick.scroll, 'a new page starts at the top').toBeLessThan(5)
-    // Whatever Back does to the scroll position without the sweep (at the time of writing
-    // the App Router lands at the top), it must do with it.
+    expect(baseline.afterBack.scroll, 'Back restores the scroll position').toBe(700)
 
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await watchTransitions(page)
@@ -177,9 +177,10 @@ test.describe('page turn', () => {
     expect(withSweep.afterClick).toEqual(baseline.afterClick)
     expect(withSweep.afterBack.focus).toEqual(baseline.afterBack.focus)
     expect(withSweep.afterBack.announced).toEqual(baseline.afterBack.announced)
-    expect(Math.abs(withSweep.afterBack.scroll - baseline.afterBack.scroll)).toBeLessThan(
-      4,
-    )
+    expect(
+      withSweep.afterBack.scroll,
+      'Back restores the scroll position with the sweep',
+    ).toBe(700)
     expect(withSweep.afterForward).toEqual(baseline.afterForward)
   })
 })
