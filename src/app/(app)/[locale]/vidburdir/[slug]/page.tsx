@@ -2,12 +2,26 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr'
 import { getDictionary, isLocale, localePath, type Locale } from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
-import { contactEmail, findEvent, listEventSlugs, nextEventSlug } from '@/lib/content/events'
+import { toSeed } from '@/lib/shape/random'
+import {
+  contactEmail,
+  findEvent,
+  listEvents,
+  listEventSlugs,
+  nextEventSlug,
+} from '@/lib/content/events'
 import { RichText } from '@/components/RichText/RichText'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
-import { Button } from '@/components/Button/Button'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
+import { GrowText } from '@/components/GrowText/GrowText'
+import { EventPoster } from '@/components/EventPoster/EventPoster'
+import { EVENT_POSTER_LOOKS } from '@/components/EventPoster/looks'
+import { EventsCarousel } from '@/components/EventsCarousel/EventsCarousel'
+import { EventSponsors } from '@/components/EventSponsors/EventSponsors'
 import styles from './event.module.scss'
 
 type Params = Promise<{ locale: string; slug: string }>
@@ -77,18 +91,38 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   }
 }
 
+/** The most posters the "more events" carousel carries. */
+const MORE_EVENTS = 6
+
+/** Google Maps search for the venue: a link, not an embed, so the page loads nothing of theirs. */
+function mapUrl(...parts: (string | null)[]): string {
+  const query = parts.filter(Boolean).join(', ')
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+}
+
 export default async function EventPage({ params }: { params: Params }) {
   const { event, locale } = await loadEvent(params)
   const t = getDictionary(locale)
-  const [nextSlug, email] = await Promise.all([nextEventSlug(), contactEmail()])
+  const [nextSlug, email, lists] = await Promise.all([
+    nextEventSlug(locale),
+    contactEmail(),
+    listEvents(locale),
+  ])
   const isNext = nextSlug === event.slug
+  const more = lists.upcoming.filter((e) => e.slug !== event.slug).slice(0, MORE_EVENTS)
 
   // Title, venue, body and accessibility note are separately localized fields
   // that a translator lands one at a time, so each is marked on its own rather
   // than the page claiming one language for all of it.
   const lang = (fieldLocale: Locale) => (fieldLocale === locale ? undefined : fieldLocale)
   const contentLocale = resolveContentLocale(
-    [event.contentLocale, event.metaLocale, event.bodyLocale, event.accessibilityLocale],
+    [
+      event.contentLocale,
+      event.metaLocale,
+      event.bodyLocale,
+      event.accessibilityLocale,
+      ...event.sponsors.filter((s) => s.label).map((s) => s.labelLocale),
+    ],
     locale,
   )
 
@@ -96,53 +130,46 @@ export default async function EventPage({ params }: { params: Params }) {
   // time it ran — the design's "Myndir frá síðasta ári" on the 2026 awards.
   // Once it is over they are photos of the event itself.
   const photosTitle = event.isPast ? t.events.photosTitle : t.events.photosFromLastYear
+  const albumHref =
+    event.galleryId !== null
+      ? `${localePath('/myndir', locale)}#album-${event.galleryId}`
+      : null
+
+  // The ticket's colour is the event's own: the same six the posters wear, picked from the slug.
+  const ticketColor = EVENT_POSTER_LOOKS[toSeed(event.slug) % EVENT_POSTER_LOOKS.length].color
+  // A ticket on sale for something that is over is a dead end.
+  const ticketUrl = event.isPast ? null : event.ticketUrl
 
   return (
     <>
       <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
 
-      <div className={styles.backBar}>
-        <Link className={styles.back} href={localePath('/vidburdir', locale)}>
-          <span aria-hidden="true">←</span> {t.events.backToIndex}
-        </Link>
-      </div>
-
       <article>
-        <header className={styles.hero}>
-          <div className={styles.heroInner}>
-            {isNext && <p className={styles.eyebrow}>{t.events.nextEvent}</p>}
-            <h1 className={styles.title} lang={lang(event.contentLocale)}>
-              {event.title}
-            </h1>
-            <div className={styles.metaRow}>
-              <time dateTime={event.startDate}>{event.dateLabel}</time>
-              {event.timeRange && <span>{event.timeRange}</span>}
-              {event.location && <span lang={lang(event.metaLocale)}>{event.location}</span>}
-            </div>
-            {/* The discount note annotates the button, so it stands or falls
-                with it — on its own it would be a claim about a price the
-                reader cannot act on, and the sidebar prints both prices
-                anyway. */}
-            {event.ticketUrl && (
-              <div className={styles.ctaRow}>
-                <Button href={event.ticketUrl}>
-                  {event.ticketPrice
-                    ? `${t.events.buyTickets} — ${event.ticketPrice}`
-                    : t.events.buyTickets}
-                </Button>
-                {event.memberDiscount !== null && (
-                  <p className={styles.discount}>
-                    {t.events.memberDiscount.replace('{percent}', String(event.memberDiscount))}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </header>
+        <PageHead
+          long
+          title={event.title}
+          titleLang={lang(event.contentLocale)}
+          locale={locale}
+          seed={event.slug}
+          crumb={{
+            href: localePath('/vidburdir', locale),
+            label: t.events.back,
+            ariaLabel: t.events.backLabel,
+          }}
+          eyebrow={isNext ? t.events.nextEvent : undefined}
+          bodyClassName={styles.heroBody}
+        >
+          {/* The date, set huge. The ticket card spells it out, so this one is decoration. */}
+          <p className={styles.big} aria-hidden="true">
+            <time dateTime={event.startDate}>
+              <span>{Number(event.badge.day)}.</span> <span>{event.badge.month}</span>
+            </time>
+          </p>
+        </PageHead>
 
-        <div className={styles.body}>
-          <div className={styles.main}>
-            {event.cover ? (
+        <PageSection className={styles.body}>
+          <div className={styles.text}>
+            {event.cover && (
               <Image
                 className={styles.cover}
                 src={event.cover.url}
@@ -151,85 +178,153 @@ export default async function EventPage({ params }: { params: Params }) {
                 height={event.cover.height ?? 675}
                 priority
               />
-            ) : (
-              <div className={styles.cover} aria-hidden="true" />
             )}
 
             <RichText data={event.body} className={styles.prose} lang={lang(event.bodyLocale)} />
 
-            {event.photos.length > 0 && (
-              <section className={styles.photos}>
-                <h2 className={styles.photosTitle}>{photosTitle}</h2>
-                <div className={styles.photoGrid}>
-                  {event.photos.map((photo) => (
-                    <Image
-                      key={photo.url}
-                      className={styles.photo}
-                      src={photo.url}
-                      alt={photo.alt}
-                      width={photo.width ?? 400}
-                      height={photo.height ?? 400}
-                    />
-                  ))}
-                </div>
-              </section>
+            <EventSponsors
+              sponsors={event.sponsors}
+              title={t.events.sponsorsTitle}
+              locale={locale}
+            />
+
+            {albumHref && (
+              <Link className={styles.album} href={albumHref}>
+                <GrowText>{t.events.photosFromEvent}</GrowText>
+                <ArrowRight weight="bold" aria-hidden="true" />
+              </Link>
             )}
           </div>
 
-          <aside className={styles.aside}>
-            <span className={styles.asideBlock} aria-hidden="true" />
-            <div className={styles.asideInner}>
-              <h2 className={styles.asideTitle}>{t.events.practical.title}</h2>
-              <dl className={styles.facts}>
-                {(event.location || event.venueAddress) && (
-                  <div className={styles.fact}>
-                    <dt className={styles.factKey}>{t.events.practical.venue}</dt>
-                    <dd className={styles.factValue}>
-                      {event.location && <span lang={lang(event.metaLocale)}>{event.location}</span>}
-                      {event.location && event.venueAddress && <br />}
-                      {event.venueAddress}
-                    </dd>
-                  </div>
-                )}
+          <aside
+            className={styles.ticket}
+            data-color={ticketColor}
+            aria-label={t.events.practical.title}
+          >
+            <div className={styles.ticketTop} aria-hidden="true" />
+            <dl className={styles.facts}>
+              <div>
+                <dt>{t.events.practical.date}</dt>
+                <dd>
+                  <time dateTime={event.startDate}>{event.dateLabel}</time>
+                </dd>
+              </div>
 
-                {event.ticketPrice && (
-                  <div className={styles.fact}>
-                    <dt className={styles.factKey}>{t.events.practical.price}</dt>
-                    <dd className={styles.factValue}>
-                      {event.memberPrice
-                        ? `${event.ticketPrice} · ${t.events.practical.members} ${event.memberPrice}`
-                        : event.ticketPrice}
-                    </dd>
-                  </div>
-                )}
+              {event.timeRange && (
+                <div>
+                  <dt>{t.events.practical.time}</dt>
+                  <dd>{event.timeRange}</dd>
+                </div>
+              )}
 
-                {event.accessibility && (
-                  <div className={styles.fact}>
-                    <dt className={styles.factKey}>{t.events.practical.accessibility}</dt>
-                    <dd className={styles.factValue} lang={lang(event.accessibilityLocale)}>
-                      {event.accessibility}
-                    </dd>
-                  </div>
-                )}
-
-                <div className={styles.fact}>
-                  <dt className={styles.factKey}>{t.events.practical.questions}</dt>
-                  <dd className={styles.factValue}>
-                    <a className={styles.mail} href={`mailto:${email}`}>
-                      {email}
-                    </a>
+              {(event.location || event.venueAddress) && (
+                <div>
+                  <dt>{t.events.practical.venue}</dt>
+                  <dd>
+                    {event.location && <span lang={lang(event.locationLocale)}>{event.location}</span>}
+                    {event.venueAddress && (
+                      <>
+                        {event.location && <br />}
+                        <span className={styles.address}>{event.venueAddress}</span>
+                      </>
+                    )}
+                    <br />
+                    <a href={mapUrl(event.location, event.venueAddress)}>{t.events.practical.openMap}</a>
                   </dd>
                 </div>
-              </dl>
-
-              {event.ticketUrl && (
-                <Button href={event.ticketUrl} className={styles.asideCta}>
-                  {t.events.buyTickets}
-                </Button>
               )}
-            </div>
+
+              {event.ticketPrice && (
+                <div>
+                  <dt>{t.events.practical.price}</dt>
+                  <dd>
+                    {event.memberPrice
+                      ? `${event.ticketPrice} · ${t.events.practical.members} ${event.memberPrice}`
+                      : event.ticketPrice}
+                  </dd>
+                </div>
+              )}
+
+              {event.accessibility && (
+                <div>
+                  <dt>{t.events.practical.accessibility}</dt>
+                  <dd lang={lang(event.accessibilityLocale)}>{event.accessibility}</dd>
+                </div>
+              )}
+
+              <div>
+                <dt>{t.events.practical.questions}</dt>
+                <dd>
+                  <a href={`mailto:${email}`}>{email}</a>
+                </dd>
+              </div>
+            </dl>
+
+            {ticketUrl && (
+              <>
+                <a className={styles.cta} href={ticketUrl}>
+                  <GrowText>
+                    {event.ticketPrice
+                      ? `${t.events.buyTickets} — ${event.ticketPrice}`
+                      : t.events.buyTickets}
+                  </GrowText>
+                </a>
+                {event.memberDiscount !== null && (
+                  <p className={styles.discount}>
+                    {t.events.memberDiscount.replace('{percent}', String(event.memberDiscount))}
+                  </p>
+                )}
+              </>
+            )}
           </aside>
-        </div>
+        </PageSection>
+
+        {event.photos.length > 0 && (
+          <PageSection aria-labelledby="event-photos">
+            <h2 id="event-photos" className={`h2 ${styles.sectionTitle}`}>
+              {photosTitle}
+            </h2>
+            <div className={styles.photoGrid}>
+              {event.photos.map((photo) => (
+                <Image
+                  key={photo.url}
+                  className={styles.photo}
+                  src={photo.url}
+                  alt={photo.alt}
+                  width={photo.width ?? 400}
+                  height={photo.height ?? 400}
+                />
+              ))}
+            </div>
+          </PageSection>
+        )}
+
+        {more.length > 0 && (
+          <PageSection aria-labelledby="more-events" last>
+            <h2 id="more-events" className={`h2 ${styles.sectionTitle}`}>
+              {t.events.moreTitle}
+            </h2>
+            <EventsCarousel
+              label={t.events.carouselLabel}
+              dotLabel={t.events.dotLabel}
+            >
+              {more.map((other) => (
+                <EventPoster
+                  key={other.slug}
+                  // The poster's place in the full list, so it wears the look it has on the index.
+                  index={lists.upcoming.findIndex((e) => e.slug === other.slug)}
+                  href={other.href}
+                  title={other.title}
+                  date={other.shortDate}
+                  dateTime={other.startDate}
+                  meta={other.posterMeta}
+                  titleLang={lang(other.contentLocale)}
+                  metaLang={lang(other.locationLocale)}
+                />
+              ))}
+            </EventsCarousel>
+          </PageSection>
+        )}
       </article>
     </>
   )

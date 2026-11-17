@@ -47,6 +47,7 @@ import {
   richText,
   siteSettings,
   siteSettingsEn,
+  sponsorLogos,
 } from './seed-data'
 
 type Data = Record<string, unknown>
@@ -122,6 +123,45 @@ async function upsert(
   return saved.id
 }
 
+/**
+ * A `media` document for a placeholder sponsor logo, created once and found again by filename.
+ *
+ * Not uploaded: a real upload goes through the R2 storage adapter, which local development
+ * has no bucket for (the galleries stay empty for the same reason). The document is written
+ * straight to the database, and `next.config.ts` serves its `dev-fixture-` filename from
+ * `public/dev-fixtures`, so the page renders a real logo without storage. It is a dev fixture only — `assertSeedableDatabase`
+ * has already refused anything that is not a local database.
+ */
+async function sponsorLogoId(
+  payload: Payload,
+  key: keyof typeof sponsorLogos,
+): Promise<number | string> {
+  const logo = sponsorLogos[key]
+  const found = await payload.find({
+    collection: 'media',
+    depth: 0,
+    limit: 1,
+    pagination: false,
+    where: { filename: { equals: `dev-fixture-${logo.file}` } },
+  })
+  if (found.docs[0]) return found.docs[0].id
+
+  const created = await payload.db.create({
+    collection: 'media',
+    data: {
+      // `db.create` takes the stored shape, so a localized field is keyed by locale.
+      alt: { is: logo.alt, en: logo.alt },
+      // `next.config.ts` serves `dev-fixture-<file>` from `public/dev-fixtures/sponsors`.
+      filename: `dev-fixture-${logo.file}`,
+      mimeType: logo.mimeType,
+      width: logo.width,
+      height: logo.height,
+      url: `/api/media/file/dev-fixture-${logo.file}`,
+    },
+  })
+  return created.id
+}
+
 async function seed(payload: Payload): Promise<void> {
   // --- Events -------------------------------------------------------------
   const eventIds = new Map<string, number | string>()
@@ -142,6 +182,14 @@ async function seed(payload: Payload): Promise<void> {
         startDate: event.startDate,
         ticketUrl: event.ticketUrl ?? null,
         title: event.title,
+        sponsors: await Promise.all(
+          (event.sponsors ?? []).map(async (sponsor) => ({
+            name: sponsor.name,
+            logo: await sponsorLogoId(payload, sponsor.logo),
+            url: sponsor.url ?? null,
+            label: sponsor.label ?? null,
+          })),
+        ),
       },
       // English overrides for the localized fields, not the title alone: an
       // event whose body stayed Icelandic on /en would look translated and
@@ -158,6 +206,26 @@ async function seed(payload: Payload): Promise<void> {
       },
     )
     eventIds.set(event.slug, id)
+
+    // The English labels. The rows were just written, so they have ids now; the English pass
+    // has to repeat them, or it would replace the rows and take the Icelandic labels with them.
+    if (event.sponsors?.some((sponsor) => sponsor.labelEn)) {
+      const saved = await payload.findByID({ collection: 'events', id, depth: 0, locale: 'is' })
+      await payload.update({
+        collection: 'events',
+        id,
+        locale: 'en',
+        data: {
+          sponsors: (saved.sponsors ?? []).map((row, i) => ({
+            id: row.id,
+            name: row.name,
+            logo: typeof row.logo === 'object' ? row.logo.id : row.logo,
+            url: row.url ?? null,
+            label: event.sponsors?.[i]?.labelEn ?? null,
+          })),
+        },
+      })
+    }
   }
 
   // --- News ---------------------------------------------------------------

@@ -1,125 +1,74 @@
-// Event detail. Geometry transcribed from the Claude Design export's `event`
-// page; colours and spacing go through the tokens rather than the export's
-// literals wherever a token exists.
+// The export's event page: `.ev-hb`, `.ev-big`, `.ev-body`, `.ev-text`, `.ev-ticket`, `.tk-*`.
+@use '../../../../../styles/breakpoints' as bp;
 
-// The site's container, not this page's own. The export's 1320/clamp() pair put
-// this page on a wider measure and a different gutter from every other page,
-// which showed as the header starting at a different left edge.
-$max: var(--content-max);
-$gutter: var(--space-6);
-// For elements that carry the measure and the gutter themselves, rather than
-// nesting an inner box inside a padded outer one as `.hero` does. Without the
-// gutter added back, padding eats into the measure and the content starts a
-// gutter further in than everything else on the page.
-$max-padded: calc(var(--content-max) + 2 * var(--space-6));
+// The foot of the band holds only the big date, kept clear of the pattern's edges.
+// Doubled class: it has to outrank `PageHead`'s own `.body`, whichever sheet loads last.
+.heroBody.heroBody {
+  width: 100%;
+  max-width: none;
+  display: flex;
+  justify-content: center;
+  padding: clamp(24px, 3vw, 48px) clamp(40px, 5vw, 96px) clamp(16px, 2vw, 32px);
 
-.backBar {
-  max-width: $max-padded;
-  margin: 0 auto;
-  // Clears the mark, which is taller than the bar and hangs over the top of the
-  // page. `--space-6` put this link inside that overhang.
-  padding: var(--space-12) $gutter 0;
-}
-
-.back {
-  display: inline-block;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  color: rgb(252 251 254 / 55%);
-  text-decoration: none;
-
-  &:hover {
-    color: var(--fg);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-violet-light);
-    outline-offset: 3px;
+  @include bp.above(900px) {
+    padding-left: 44%;
+    justify-content: flex-start;
   }
 }
 
-.hero {
-  position: relative;
-  padding: clamp(2rem, 4vw, 3.5rem) $gutter clamp(3rem, 6vw, 5rem);
-}
-
-
-
-.heroInner {
-  position: relative;
-  max-width: $max;
-  margin: 0 auto;
-}
-
-.eyebrow {
+.big {
   margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  // Yellow on the dark canvas, as the export draws it. #FFF511 on #09060C is
-  // ~17:1, well clear of AA.
-  color: var(--accent-yellow);
-}
-
-.title {
-  margin: var(--space-4) 0 0;
-  font-size: clamp(2.125rem, 5.5vw, 4.25rem);
-  line-height: 1;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-stretch: var(--stretch-display);
+  font-size: clamp(3rem, 9vw, 10rem);
+  line-height: 0.82;
   letter-spacing: -0.03em;
-  max-width: 16ch;
+  color: var(--shape-on);
+
+  time {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.22em;
+    white-space: nowrap;
+  }
+
+  @include bp.below(900px) {
+    font-size: 17vw;
+  }
 }
 
-.metaRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4) var(--space-8);
-  margin-top: var(--space-6);
-  font-weight: var(--weight-semibold);
-  color: var(--color-violet-light);
-}
-
-.ctaRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-4);
-  margin-top: var(--space-8);
-}
-
-.discount {
-  margin: 0;
-  font-size: var(--text-sm);
-  line-height: 1.6;
-  color: var(--fg-muted);
-}
-
-// Body + sidebar. `auto-fit`/`minmax` collapses to one column on a phone
-// without a media query, which is how the export writes it too.
-//
-// `overflow: hidden` clips `.asideBlock` (svef/www#81): that block sits
-// deliberately outside `.aside`'s own box, offset -24px behind its top-left
-// corner, and on a single-column phone layout the aside's left edge is the
-// page gutter itself — so the block's left 24px lands past this container's
-// padding box and right up against the hardware edge, with none of the
-// gutter the rest of the page keeps. Clipping here rather than on `.aside`
-// keeps the block visible (an ancestor's clip, not the block's own), and
-// never bites on a wider viewport, where the aside sits well clear of either
-// edge.
 .body {
-  max-width: $max-padded;
-  margin: 0 auto;
-  padding: 0 $gutter clamp(3.5rem, 7vw, 6rem);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--space-12);
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: clamp(32px, 6vw, 110px);
   align-items: start;
-  overflow: hidden;
+  padding-bottom: 0;
+
+  @include bp.below(900px) {
+    grid-template-columns: 1fr;
+  }
+
+  // The ticket on the left, the text starting under the date's left edge (44% across).
+  @include bp.above(900px) {
+    grid-template-columns: 380px minmax(0, 1fr);
+    container-type: inline-size;
+
+    .ticket {
+      order: -1;
+    }
+
+    .text {
+      justify-self: start;
+      width: auto;
+      max-width: min(720px, 44cqw);
+      margin-left: calc(44cqw - 380px - clamp(32px, 6vw, 110px));
+      padding-top: clamp(8px, 1vw, 16px);
+    }
+  }
 }
 
-.main {
+.text {
   min-width: 0;
 }
 
@@ -127,129 +76,187 @@ $max-padded: calc(var(--content-max) + 2 * var(--space-6));
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  margin-bottom: var(--space-8);
-  // Standing in for a cover that has not been uploaded: the export's diagonal
-  // hatch, so an empty frame reads as "no image yet" rather than as a hole.
-  background: repeating-linear-gradient(
-    135deg,
-    var(--surface-3) 0 8px,
-    var(--surface-4) 8px 16px
-  );
+  margin-bottom: clamp(28px, 3vw, 44px);
 }
 
+// The first paragraph is the lede; the rest is running text set narrow, like the export's `.ev-text`.
 .prose {
-  font-size: var(--text-lg);
+  max-width: none;
+  gap: 0;
+  font-size: inherit;
+
+  p {
+    max-width: 60ch;
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 1.3vw, 1.25rem);
+    line-height: 1.5;
+    color: var(--muted);
+  }
+
+  p + p {
+    margin-top: 1em;
+  }
+
+  > p:first-child {
+    max-width: 26ch;
+    margin-bottom: 0.9em;
+    font-stretch: var(--stretch-lede);
+    font-weight: 500;
+    font-size: clamp(1.7rem, 2.8vw, 2.6rem);
+    line-height: 1.1;
+    color: var(--color-white);
+  }
+
+  h2 {
+    margin: 1.8em 0 0.6em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.4rem, 2vw, 1.9rem);
+    line-height: 1.1;
+    color: var(--color-white);
+  }
+
+  @include bp.above(900px) {
+    p,
+    > p:first-child {
+      max-width: none;
+    }
+  }
 }
 
-.photos {
-  margin-top: var(--space-12);
+// "Myndir frá viðburði": the call to the album.
+.album {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-top: clamp(32px, 4vw, 48px);
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-white);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--accent-yellow);
+  }
 }
 
-.photosTitle {
-  margin: 0 0 var(--space-4);
-  font-size: var(--text-xl);
-  letter-spacing: var(--tracking-tight);
+// ---- The ticket ------------------------------------------------------------------------------
+
+.ticket {
+  --c: var(--color-violet);
+  position: sticky;
+  top: 100px;
+  border: 2px solid var(--c);
+  background: var(--color-black);
+
+  &[data-color='red'] {
+    --c: var(--accent-red);
+  }
+
+  &[data-color='pink'] {
+    --c: var(--accent-pink);
+  }
+
+  &[data-color='yellow'] {
+    --c: var(--accent-yellow);
+  }
+
+  @include bp.below(900px) {
+    position: static;
+  }
+}
+
+// A block of the event's colour with a stepped notch cut from its foot.
+.ticketTop {
+  height: 72px;
+  background: var(--c);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 62% 100%, 62% calc(100% - 30px), 0 calc(100% - 30px));
+}
+
+.facts {
+  margin: 0;
+  padding: 8px 22px 4px;
+  display: grid;
+
+  > div {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  dt {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 4px 0 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+
+  a {
+    color: var(--color-white);
+  }
+}
+
+.address {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+// The export's white `.btn.tk-btn`.
+.cta {
+  display: flex;
+  justify-content: center;
+  margin: 18px 22px 0;
+  padding: 0.95rem 1.5rem;
+  background: var(--color-white);
+  color: var(--color-black);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-stretch: var(--stretch-button);
+  text-decoration: none;
+
+  &:last-child {
+    margin-bottom: 22px;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: var(--accent-yellow);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--color-white);
+    outline-offset: 3px;
+  }
+}
+
+.discount {
+  margin: 10px 22px 22px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+// ---- Below the text ---------------------------------------------------------------------------
+
+.sectionTitle {
+  margin: 0 0 clamp(32px, 4vw, 56px);
 }
 
 .photoGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
 }
 
 .photo {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-// The practical-information panel: Shy White on the dark canvas, with a pink
-// block tucked behind its top-left corner.
-.aside {
-  position: relative;
-  background: var(--color-white);
-  padding: var(--space-8);
-}
-
-// The export puts this at -14px, where its inner 10px would sit over the first
-// letter of the heading — violet on pink, which is both ugly and well under AA.
-// Pulled out to the panel's own padding edge instead: same block, same corner,
-// nothing overlapping the text.
-.asideBlock {
-  position: absolute;
-  left: -24px;
-  top: -24px;
-  width: 56px;
-  height: 56px;
-  background: var(--accent-pink);
-}
-
-.asideInner {
-  position: relative;
-}
-
-.asideTitle {
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  color: var(--color-violet);
-}
-
-.facts {
-  margin: var(--space-6) 0 0;
-  display: grid;
-  gap: var(--space-4);
-}
-
-.fact {
-  margin: 0;
-}
-
-.factKey {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  // Dark-on-white here, so the muted greys of the dark canvas do not apply.
-  //
-  // Measured against #FCFBFE, not assumed: the export's `rgba(9,6,12,.5)`
-  // composites to #838185 and gives **3.74:1**, which fails AA. These labels are
-  // `--text-xs` (12px) semibold, so they are normal text and need 4.5:1 — the
-  // 3:1 large-text allowance starts at 18.66px bold. 62% composites to #656368
-  // and gives **5.76:1**, comfortably clear.
-  color: rgb(9 6 12 / 62%);
-}
-
-.factValue {
-  margin: var(--space-1) 0 0;
-  font-size: var(--text-base);
-  line-height: 1.5;
-  color: var(--color-black);
-}
-
-.mail {
-  color: var(--color-violet);
-  border-bottom: 2px solid rgb(137 23 225 / 30%);
-  text-decoration: none;
-
-  &:hover {
-    border-bottom-color: var(--color-violet);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-violet);
-    outline-offset: 3px;
-  }
-}
-
-.asideCta {
-  margin-top: var(--space-8);
-  width: 100%;
-  justify-content: center;
 }

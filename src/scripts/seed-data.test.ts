@@ -11,6 +11,7 @@ import {
   membershipEn,
   news,
   press,
+  relativeSlot,
   richText,
 } from './seed-data'
 
@@ -77,9 +78,10 @@ describe('seed fixtures', () => {
   it('carries the association’s real events, in order', () => {
     // These are not design-export fixtures any more: they are the autumn
     // programme, and the site shows them to the public.
-    // The autumn programme first. A past event (Klúðurkvöld) follows, so the events
-    // index has something in "Liðnir viðburðir" and an album to link it to (#141).
-    expect(events.map((e) => e.slug)).toEqual([
+    // The autumn programme first, then a past event (Klúðurkvöld) so the events index has
+    // something in "Liðnir viðburðir" and an album to link it to (#141). The relative-dated
+    // upcoming fixtures follow and are checked below, not pinned here.
+    expect(events.slice(0, 3).map((e) => e.slug)).toEqual([
       'sigurvegarar-segja-fra-svef-x-kolibri',
       'vefthroun-og-gervigreind',
       'kludurkvold',
@@ -90,6 +92,28 @@ describe('seed fixtures', () => {
     // event must carry no price at all, since 0 prints as "0 kr.".
     expect(events[0]?.ticketPrice).toBeUndefined()
     expect(events[1]?.ticketUrl).toContain('sky.is')
+  })
+
+  it('keeps some events upcoming, and says which ones carry sponsors', () => {
+    // The dated events above are over, so the upcoming views live on the fixtures that are
+    // dated relative to the day the seed runs (svef/www#141).
+    const now = Date.now()
+    const upcoming = events.filter((e) => new Date(e.endDate ?? e.startDate).getTime() > now)
+    expect(upcoming.length).toBeGreaterThanOrEqual(3)
+    // At least one sponsored, with a labelled and an unlabelled sponsor to group.
+    const sponsored = events.find((e) => (e.sponsors?.length ?? 0) > 1)
+    expect(sponsored).toBeDefined()
+    for (const sponsor of sponsored?.sponsors ?? []) {
+      if (sponsor.label) expect(sponsor.labelEn, sponsor.name).toBeTruthy()
+    }
+  })
+
+  it('relativeSlot is anchored to the day it is given, not to the clock', () => {
+    const now = new Date('2030-01-31T23:30:00.000Z')
+    expect(relativeSlot(1, 20, 2.5, now)).toEqual({
+      startDate: '2030-02-01T20:00:00.000Z',
+      endDate: '2030-02-01T22:30:00.000Z',
+    })
   })
 
   it('translates every event in full, not just its title', () => {

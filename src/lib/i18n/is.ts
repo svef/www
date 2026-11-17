@@ -148,12 +148,22 @@ export const is = {
     photosFromLastYear: 'Myndir frá síðasta ári',
     photosTitle: 'Myndir frá viðburðinum',
     backToIndex: 'Viðburðir',
+    back: 'Til baka',
+    backLabel: 'Til baka í viðburði',
+    moreTitle: 'Fleiri viðburðir',
+    carouselLabel: 'Næstu viðburðir',
+    // `{n}` is the slide's number; the dots under the events carousel.
+    dotLabel: 'Viðburður {n}',
+    sponsorsTitle: 'Samstarfsaðilar',
     // `{percent}` is filled in from the two prices, so the sentence cannot
     // disagree with the numbers printed beside it.
     memberDiscount: 'Félagar fá {percent}% afslátt',
     practical: {
       title: 'Hagnýtar upplýsingar',
+      date: 'Dagsetning',
+      time: 'Tími',
       venue: 'Staðsetning',
+      openMap: 'Opna kort',
       price: 'Miðaverð',
       members: 'félagar',
       accessibility: 'Aðgengi',

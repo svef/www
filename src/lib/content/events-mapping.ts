@@ -34,7 +34,14 @@ type MediaAllLocales = Omit<Media, 'alt' | 'caption'> & {
 /** An `events` document as a `locale: 'all'` read actually returns it. */
 export type EventAllLocales = Omit<
   Event,
-  'slug' | 'title' | 'location' | 'description' | 'accessibility' | 'coverImage' | 'gallery'
+  | 'slug'
+  | 'title'
+  | 'location'
+  | 'description'
+  | 'accessibility'
+  | 'coverImage'
+  | 'gallery'
+  | 'sponsors'
 > & {
   // Localized since svef/www#98: the slug is the headline, so it is translated
   // with it. A document with no English slug falls back to the Icelandic one,
@@ -46,6 +53,15 @@ export type EventAllLocales = Omit<
   accessibility: AllLocales<string>
   coverImage?: number | MediaAllLocales | null
   gallery?: (number | MediaAllLocales)[] | null
+  sponsors?:
+    | {
+        id?: string | null
+        name: string
+        logo: number | MediaAllLocales
+        url?: string | null
+        label?: AllLocales<string>
+      }[]
+    | null
 }
 
 export type EventImage = {
@@ -53,6 +69,17 @@ export type EventImage = {
   alt: string
   width: number | null
   height: number | null
+}
+
+/** One sponsor of an event, ready to render. */
+export type EventSponsor = {
+  name: string
+  logo: { url: string; width: number | null; height: number | null }
+  url: string | null
+  /** The line before the logo ("Drykkir í boði"), in the page's language where it exists. */
+  label: string | null
+  /** The language `label` is written in. */
+  labelLocale: Locale
 }
 
 export type EventSummary = {
@@ -78,12 +105,19 @@ export type EventSummary = {
   startTime: string
   /** Venue · time — summary, as the design's row and card meta line. */
   meta: string | null
+  /**
+   * The line on an event's poster: `20:00—22:30 · Iðnó`, or just the venue once the event
+   * is over (what time a past event started is not something the archive needs).
+   */
+  posterMeta: string | null
   /** The body's opening sentence on its own, for `<meta name="description">`. */
   summary: string | null
   /** The language `title` is written in; `is` when English has not landed. */
   contentLocale: Locale
   /** The language `meta` is written in — venue and summary are both localized. */
   metaLocale: Locale
+  /** The language `location` (and so `posterMeta`) is written in. */
+  locationLocale: Locale
   /**
    * Where to buy a ticket, or `null`. Carried on the summary as well as the
    * detail because the index's spotlight draws the same "Kaupa miða" button.
@@ -111,6 +145,10 @@ export type EventDetail = EventSummary & {
   memberDiscount: number | null
   accessibility: string | null
   accessibilityLocale: Locale
+  /** In the order the editor entered them. Empty when there are none. */
+  sponsors: EventSponsor[]
+  /** The album of photos from this event (`galleries.id`), or `null`. Filled by `findEvent`. */
+  galleryId: number | null
 }
 
 function toImage(
@@ -230,6 +268,10 @@ export function toEventSummary(
     location: location.value ?? null,
     startTime,
     meta,
+    posterMeta:
+      [options.past ? null : formatTimeRange(doc.startDate, doc.endDate), location.value]
+        .filter(Boolean)
+        .join(' · ') || null,
     summary,
     ticketUrl: doc.ticketUrl || null,
     contentLocale: title.locale,
@@ -237,6 +279,7 @@ export function toEventSummary(
     // in the page's language only if both halves are. Where the line has
     // neither there is nothing to mark, and it follows the title.
     metaLocale: pickMetaLocale(location, description, summary, title.locale),
+    locationLocale: location.value ? location.locale : title.locale,
   }
 }
 
@@ -252,6 +295,30 @@ function pickMetaLocale(
   ].filter((l): l is Locale => l !== null)
   if (locales.length === 0) return fallback
   return locales.every((l) => l === locales[0]) ? locales[0] : 'is'
+}
+
+/**
+ * Sponsors whose logo did not resolve (a deleted upload, or a read at depth 0) are left
+ * out: a sponsor with nothing to show is not a row.
+ */
+export function toSponsors(
+  rows: EventAllLocales['sponsors'],
+  locale: Locale,
+): EventSponsor[] {
+  return (rows ?? []).flatMap((row) => {
+    const logo = toImage(row.logo, locale)
+    if (!logo) return []
+    const label = pickLocalized(row.label ?? {}, locale)
+    return [
+      {
+        name: row.name,
+        logo: { url: logo.url, width: logo.width, height: logo.height },
+        url: row.url || null,
+        label: label.value ?? null,
+        labelLocale: label.locale,
+      },
+    ]
+  })
 }
 
 export function toEventDetail(doc: EventAllLocales, locale: Locale): EventDetail {
@@ -276,5 +343,7 @@ export function toEventDetail(doc: EventAllLocales, locale: Locale): EventDetail
     memberDiscount: memberDiscountPercent(doc.ticketPrice, doc.memberPrice),
     accessibility: accessibility.value ?? null,
     accessibilityLocale: accessibility.value ? accessibility.locale : summary.contentLocale,
+    sponsors: toSponsors(doc.sponsors, locale),
+    galleryId: null,
   }
 }

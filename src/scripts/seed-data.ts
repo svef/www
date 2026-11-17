@@ -112,6 +112,44 @@ export const richText = (blocks: Block[]): RichTextValue => ({
 // Collections
 // ---------------------------------------------------------------------------
 
+/**
+ * Placeholder sponsor logos: invented names, drawn for the purpose (`public/dev-fixtures/sponsors`),
+ * never a real brand's mark. Three proportions on purpose — a wide wordmark, a square mark and a
+ * PNG — so the event page's height-normalised logo row has something uneven to normalise.
+ */
+export const sponsorLogos = {
+  nordurljos: { file: 'nordurljos.svg', mimeType: 'image/svg+xml', width: 420, height: 96, alt: 'Norðurljós' },
+  kaldur: { file: 'kaldur.svg', mimeType: 'image/svg+xml', width: 120, height: 120, alt: 'Kaldur' },
+  hraunmolar: { file: 'hraunmolar.png', mimeType: 'image/png', width: 600, height: 140, alt: 'Hraunmolar' },
+} as const
+
+export type SponsorFixture = {
+  name: string
+  logo: keyof typeof sponsorLogos
+  url?: string
+  label?: string
+  labelEn?: string
+}
+
+/**
+ * A moment `days` from `now` (default: now) at `hour`:00 UTC — Iceland has no daylight
+ * saving, so UTC is wall-clock time — lasting `hours`. Upcoming fixtures are written this
+ * way rather than as dates so that they stay upcoming: a date typed in November is a past
+ * event by spring, and the upcoming views then have nothing to show (svef/www#141).
+ */
+export function relativeSlot(
+  days: number,
+  hour: number,
+  hours: number,
+  now: Date = new Date(),
+): { startDate: string; endDate: string } {
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + days, hour))
+  return {
+    startDate: start.toISOString(),
+    endDate: new Date(start.getTime() + hours * 3_600_000).toISOString(),
+  }
+}
+
 export type EventFixture = {
   slug: string
   /**
@@ -136,6 +174,8 @@ export type EventFixture = {
   accessibility?: string
   description?: Block[]
   descriptionEn?: Block[]
+  /** Entered per event; the same sponsor on two events is entered twice. */
+  sponsors?: SponsorFixture[]
 }
 
 export const events: EventFixture[] = [
@@ -196,6 +236,98 @@ export const events: EventFixture[] = [
     slug: 'kludurkvold',
     title: 'Klúðurkvöld',
     startDate: '2026-03-13T18:00:00.000Z',
+  },
+  // ---- Upcoming, always: dated relative to the day the seed runs ----------------------------
+  // The two real events above are over, so without these the upcoming views have nothing in
+  // them. Dev fixtures, not the programme; they re-date themselves on every `seed:dev`.
+  {
+    slug: 'kludurkvold-haust',
+    slugEn: 'fuckup-night-autumn',
+    title: 'Klúðurkvöld: haustútgáfa',
+    titleEn: 'Fuckup night: autumn edition',
+    ...relativeSlot(9, 20, 2.5),
+    location: 'Iðnó',
+    locationEn: 'Iðnó',
+    venueAddress: 'Vonarstræti 3, 101 Reykjavík',
+    accessibility: 'Gengið er inn á jarðhæð, án þrepa. Táknmálstúlkun er í boði sé þess óskað.',
+    description: [
+      'Klúðurkvöldið snýr aftur. Fimm manneskjur úr vefbransanum segja frá verkefnum sem fóru út af sporinu — og hvað þær myndu gera öðruvísi næst.',
+      'Engar glærur yfir tíu, enginn dómur og nóg af hlátri. Eftir erindin er opinn bar og spjall.',
+      { h2: 'Fyrir hverja?' },
+      'Viðburðurinn er opinn öllum sem starfa við vefinn eða hafa áhuga á honum: hönnuðum, forriturum, verkefnastjórum, efnisfólki og nemum. Félagar SVEF fá frítt inn.',
+    ],
+    descriptionEn: [
+      'The fuckup night is back. Five people from the web industry tell the story of a project that went off the rails — and what they would do differently next time.',
+      'No slide decks over ten, no judgement and plenty of laughter. Open bar and conversation after the talks.',
+      { h2: 'Who is it for?' },
+      'Open to everyone who works with the web or cares about it: designers, developers, project managers, content people and students. SVEF members attend free.',
+    ],
+    sponsors: [
+      { name: 'Norðurljós', logo: 'nordurljos', url: 'https://example.com/nordurljos', label: 'Drykkir í boði', labelEn: 'Beverages sponsored by' },
+      { name: 'Kaldur', logo: 'kaldur', url: 'https://example.com/kaldur', label: 'Drykkir í boði', labelEn: 'Beverages sponsored by' },
+      { name: 'Hraunmolar', logo: 'hraunmolar', label: 'Veitingar í boði', labelEn: 'Food sponsored by' },
+    ],
+  },
+  {
+    slug: 'adgengi-i-verki',
+    slugEn: 'accessibility-in-practice',
+    title: 'Aðgengi í verki: vinnustofa',
+    titleEn: 'Accessibility in practice: workshop',
+    ...relativeSlot(23, 13, 3),
+    location: 'Gróska',
+    locationEn: 'Gróska',
+    venueAddress: 'Bjargargata 1, 102 Reykjavík',
+    ticketUrl: 'https://example.com/skraning',
+    ticketPrice: 4900,
+    memberPrice: 3900,
+    description: [
+      'Hagnýt vinnustofa um aðgengi: við förum í gegnum raunveruleg dæmi, prófum með hjálpartækjum og lagfærum það sem finnst.',
+      'Taktu með eigin fartölvu og verkefni sem þú vilt rýna í.',
+    ],
+    descriptionEn: [
+      'A hands-on accessibility workshop: we go through real examples, test with assistive technology and fix what we find.',
+      'Bring your own laptop and a project you want to review.',
+    ],
+  },
+  {
+    slug: 'morgunkaffi-honnunarkerfi',
+    slugEn: 'morning-coffee-design-systems',
+    title: 'Morgunkaffi: hönnunarkerfi í raunheimum',
+    titleEn: 'Morning coffee: design systems in the real world',
+    ...relativeSlot(61, 8, 1.5),
+    location: 'Bíó Paradís',
+    locationEn: 'Bíó Paradís',
+    venueAddress: 'Hverfisgata 54, 101 Reykjavík',
+    description: [
+      'Kaffi, kruðerí og spjall um hönnunarkerfi sem lifa af raunveruleikann: hvað virkar, hvað ekki og hver á að sjá um þetta allt saman.',
+    ],
+    descriptionEn: [
+      'Coffee, pastries and a conversation about design systems that survive the real world: what works, what does not and who is supposed to look after it all.',
+    ],
+  },
+  {
+    slug: 'framendakvold',
+    slugEn: 'frontend-night',
+    title: 'Framendakvöld: CSS í dag',
+    titleEn: 'Front-end night: CSS today',
+    ...relativeSlot(90, 17, 2.5),
+    location: 'Hafnarhúsið',
+    locationEn: 'Hafnarhúsið',
+    venueAddress: 'Tryggvagata 17, 101 Reykjavík',
+    description: ['Container queries, :has() og allt hitt: hvað er hægt að nota á morgun og hvað bíður.'],
+    descriptionEn: ['Container queries, :has() and the rest: what you can use tomorrow and what can wait.'],
+  },
+  {
+    slug: 'hradstefnumot',
+    slugEn: 'speed-dating',
+    title: 'Hraðstefnumót: nemar og vefstofur',
+    titleEn: 'Speed dating: students and agencies',
+    ...relativeSlot(120, 16, 2),
+    location: 'Háskólinn í Reykjavík',
+    locationEn: 'Reykjavík University',
+    venueAddress: 'Menntavegur 1, 102 Reykjavík',
+    description: ['Nemar hitta vefstofur í stuttum samtölum. Tíu mínútur á mann, engin ferilskrá nauðsynleg.'],
+    descriptionEn: ['Students meet agencies in short conversations. Ten minutes each, no CV needed.'],
   },
 ]
 

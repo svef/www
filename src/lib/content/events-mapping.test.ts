@@ -5,6 +5,7 @@ import {
   leadSentence,
   toEventDetail,
   toEventSummary,
+  toSponsors,
   type EventAllLocales,
 } from './events-mapping'
 
@@ -247,5 +248,56 @@ describe('toEventDetail', () => {
     // At depth 0 an upload relationship is a number; there is nothing to render.
     const detail = toEventDetail(doc({ gallery: [7, 8] }), 'is')
     expect(detail.photos).toEqual([])
+  })
+})
+
+describe('toSponsors', () => {
+  const logo = { id: 3, url: '/api/media/file/kaldur.svg', width: 120, height: 120, alt: { is: 'Kaldur' } }
+
+  it('keeps the entered order and resolves the label for the locale', () => {
+    const rows = [
+      { name: 'Kaldur', logo, url: 'https://a.example', label: { is: 'Drykkir í boði', en: 'Beverages sponsored by' } },
+      { name: 'Norðurljós', logo: { ...logo, id: 4 }, label: { is: 'Veitingar í boði' } },
+    ] as unknown as EventAllLocales['sponsors']
+
+    const en = toSponsors(rows, 'en')
+    expect(en.map((s) => s.name)).toEqual(['Kaldur', 'Norðurljós'])
+    expect(en[0]).toMatchObject({
+      url: 'https://a.example',
+      label: 'Beverages sponsored by',
+      labelLocale: 'en',
+      logo: { url: '/api/media/file/kaldur.svg', width: 120, height: 120 },
+    })
+    // No English label on the second: it falls back, and says it did.
+    expect(en[1]).toMatchObject({ label: 'Veitingar í boði', labelLocale: 'is', url: null })
+  })
+
+  it('has no label when none was written, and leaves out a logo that did not resolve', () => {
+    const rows = [
+      { name: 'A', logo, label: {} },
+      { name: 'Gone', logo: 9 },
+    ] as unknown as EventAllLocales['sponsors']
+    const out = toSponsors(rows, 'is')
+    expect(out).toHaveLength(1)
+    expect(out[0].label).toBeNull()
+  })
+
+  it('is empty for an event with no sponsors', () => {
+    expect(toSponsors(null, 'is')).toEqual([])
+    expect(toSponsors(undefined, 'is')).toEqual([])
+  })
+
+  it('arrives on the detail', () => {
+    const rows = [{ name: 'A', logo }] as unknown as EventAllLocales['sponsors']
+    expect(toEventDetail(doc({ sponsors: rows }), 'is').sponsors).toHaveLength(1)
+    expect(toEventDetail(doc(), 'is').sponsors).toEqual([])
+  })
+})
+
+describe('posterMeta', () => {
+  it('is time range and venue for an upcoming event, and the venue alone once it is over', () => {
+    const d = doc({ endDate: '2026-10-09T22:30:00.000Z' })
+    expect(toEventSummary(d, 'is').posterMeta).toBe('20:00 — 22:30 · Grandi 101')
+    expect(toEventSummary(d, 'is', { past: true }).posterMeta).toBe('Grandi 101')
   })
 })

@@ -1,0 +1,75 @@
+// The logo row of `public/skjar/svef-x-aranja.html`, for the page.
+@use '../../styles/breakpoints' as bp;
+
+.sponsors {
+  --logo-h: clamp(36px, 3.6vw, 52px);
+  margin-top: clamp(48px, 6vw, 88px);
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 28px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.group {
+  display: grid;
+  gap: 14px;
+}
+
+.label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.logos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px clamp(28px, 3.4vw, 48px);
+  // Logos are drawn for a light ground; on the dark canvas a dark wordmark would disappear,
+  // so the row sits on a panel of Shy White.
+  padding: clamp(18px, 2vw, 28px) clamp(22px, 3vw, 40px);
+  background: var(--color-white);
+  width: fit-content;
+  max-width: 100%;
+}
+
+// Normalised by height; the width follows the file.
+.logo {
+  display: block;
+  height: var(--logo-h);
+  width: auto;
+  max-width: min(60vw, 260px);
+  object-fit: contain;
+}
+
+.link {
+  display: block;
+  transition: opacity var(--dur-hover) var(--ease);
+
+  &:hover {
+    opacity: 0.75;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--color-white);
+    outline-offset: 6px;
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}

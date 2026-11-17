@@ -87,26 +87,23 @@ afterEach(() => {
 })
 
 describe('event page ticket CTA', () => {
-  it('renders the hero and sidebar buttons, pointed at the ticketUrl, when one is set', async () => {
+  it('renders the ticket button, pointed at the ticketUrl, when one is set', async () => {
     find.mockResolvedValue({ docs: [SKY_EVENT] })
     const page = await EventPage({
       params: Promise.resolve({ locale: 'is', slug: 'vefthroun-og-gervigreind' }),
     })
     render(page)
 
+    // One button, on the ticket card (the redesign dropped the hero's duplicate).
     const links = screen.getAllByRole('link', { name: /Kaupa miða/ })
-    // The hero button and the full-width sidebar button both go through
-    // `<Button href>`, so there are two, not one.
-    expect(links).toHaveLength(2)
-    for (const link of links) {
-      expect(link).toHaveAttribute(
-        'href',
-        'https://www.sky.is/vidburdur/3165-2026-vidburdur-1021',
-      )
-    }
+    expect(links).toHaveLength(1)
+    expect(links[0]).toHaveAttribute(
+      'href',
+      'https://www.sky.is/vidburdur/3165-2026-vidburdur-1021',
+    )
   })
 
-  it('renders neither button, and no member-discount sentence, when the event is free', async () => {
+  it('renders no button, and no member-discount sentence, when the event is free', async () => {
     find.mockResolvedValue({ docs: [KOLIBRI_EVENT] })
     const page = await EventPage({
       params: Promise.resolve({ locale: 'is', slug: 'sigurvegarar-segja-fra-svef-x-kolibri' }),
@@ -115,5 +112,54 @@ describe('event page ticket CTA', () => {
 
     expect(screen.queryByRole('link', { name: /Kaupa miða/ })).toBeNull()
     expect(screen.queryByText(/afslátt/)).toBeNull()
+  })
+})
+
+describe('event page content', () => {
+  const LOGO = { id: 7, url: '/dev-fixtures/sponsors/kaldur.svg', width: 120, height: 120, alt: { is: 'Kaldur' } }
+
+  it('shows the date, the venue with its address and the sponsors with their label', async () => {
+    find.mockResolvedValue({
+      docs: [
+        {
+          ...SKY_EVENT,
+          sponsors: [
+            { id: 'a', name: 'Kaldur', logo: LOGO, url: 'https://example.com/kaldur', label: { is: 'Drykkir í boði' } },
+            { id: 'b', name: 'Norðurljós', logo: { ...LOGO, id: 8 }, label: { is: 'Drykkir í boði' } },
+          ],
+        },
+      ],
+    })
+    const page = await EventPage({
+      params: Promise.resolve({ locale: 'is', slug: 'vefthroun-og-gervigreind' }),
+    })
+    render(page)
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Vefþróun og gervigreind')
+    expect(screen.getByText('Harpa, Kaldalón (1. hæð)')).toBeInTheDocument()
+    expect(screen.getByText('Austurbakki 2, 101 Reykjavík')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Opna kort' })).toBeInTheDocument()
+
+    // Neighbouring sponsors with the same label share it: printed once, over both logos.
+    expect(screen.getAllByText('Drykkir í boði')).toHaveLength(1)
+    expect(screen.getByRole('img', { name: 'Kaldur' })).toHaveAttribute(
+      'src',
+      '/dev-fixtures/sponsors/kaldur.svg',
+    )
+    expect(screen.getByRole('link', { name: 'Kaldur' })).toHaveAttribute(
+      'href',
+      'https://example.com/kaldur',
+    )
+    // No url, no link.
+    expect(screen.queryByRole('link', { name: 'Norðurljós' })).toBeNull()
+  })
+
+  it('has no sponsors section when there are none', async () => {
+    find.mockResolvedValue({ docs: [KOLIBRI_EVENT] })
+    const page = await EventPage({
+      params: Promise.resolve({ locale: 'is', slug: 'sigurvegarar-segja-fra-svef-x-kolibri' }),
+    })
+    render(page)
+    expect(screen.queryByRole('heading', { name: 'Samstarfsaðilar' })).toBeNull()
   })
 })

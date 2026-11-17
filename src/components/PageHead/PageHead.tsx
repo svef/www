@@ -38,6 +38,8 @@ export interface PageHeadProps {
    * page always has the same shape on the server and the client.
    */
   seed?: string | number
+  /** Class for the foot of the band (the part under the title), for a page that sets it differently. */
+  bodyClassName?: string
   /** Anything else for the foot of the band, beside the lede. */
   children?: ReactNode
 }
@@ -65,6 +67,7 @@ export function PageHead({
   stickers,
   color = 'violet',
   seed,
+  bodyClassName,
   children,
 }: PageHeadProps) {
   const shapeSeed = toSeed(seed ?? title)
@@ -97,7 +100,7 @@ export function PageHead({
           </h1>
         </Notch>
         {(lede || children) && (
-          <div className={styles.body}>
+          <div className={clsx(styles.body, bodyClassName)}>
             {lede && (
               <p className={styles.lede} lang={ledeLang}>
                 {lede}

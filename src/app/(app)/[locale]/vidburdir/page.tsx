@@ -1,13 +1,12 @@
 import { notFound } from 'next/navigation'
-import { getDictionary, isLocale, localePath } from '@/lib/i18n'
+import { getDictionary, isLocale } from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
-import { listEvents, type EventSummary } from '@/lib/content/events'
+import { listEvents } from '@/lib/content/events'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
-import { PageHeader } from '@/components/PageHeader/PageHeader'
-import { Section } from '@/components/Section/Section'
-import { SpotlightRow } from '@/components/SpotlightRow/SpotlightRow'
-import { EventRow } from '@/components/EventRow/EventRow'
-import { EventCard } from '@/components/EventCard/EventCard'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
+import { EventPoster } from '@/components/EventPoster/EventPoster'
+import { EventGrid } from '@/components/EventPoster/EventGrid'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import styles from './events.module.scss'
 
@@ -26,12 +25,6 @@ import styles from './events.module.scss'
  */
 export const revalidate = 300
 
-/** `date · time · venue — summary`, the export's spotlight line. */
-function spotlightBody(event: EventSummary): string {
-  const facts = [event.dateLabel, event.startTime, event.location].filter(Boolean).join(' · ')
-  return [facts || null, event.summary].filter(Boolean).join(' — ')
-}
-
 export default async function EventsPage({
   params,
 }: {
@@ -43,15 +36,11 @@ export default async function EventsPage({
   const t = getDictionary(locale)
   const { upcoming, past } = await listEvents(locale)
 
-  // The soonest event is the spotlight, and the list under "Framundan" is
-  // everything after it — the design shows the next event once, large, not
-  // twice.
-  const [featured, ...rest] = upcoming
-
   const contentLocale = resolveContentLocale(
     [...upcoming, ...past].flatMap((event) => [event.contentLocale, event.metaLocale]),
     locale,
   )
+  const lang = (l: string) => (l === locale ? undefined : l)
 
   // The note is the first thing inside `<main>`, so the skip link lands on it
   // rather than past it. It renders nothing when the content is already in the
@@ -59,90 +48,58 @@ export default async function EventsPage({
   return (
     <>
       <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
-      <PageHeader title={t.events.title} lead={t.events.lead} />
+      <PageHead title={t.events.title} lede={t.events.lead} stickers="vidburdir" locale={locale} />
 
-      {featured && (
-        <Section eyebrow={t.events.nextEvent}>
-          <SpotlightRow
-            title={featured.title}
-            // The export's spotlight reads `14. nóv 2026 · 19:30 · Harpa,
-            // Reykjavík` — date, then time, then venue — with the descriptive
-            // sentence as a separate paragraph beneath. `SpotlightRow` has one
-            // `body`, so the two are joined here rather than restructuring a
-            // shared component for one caller; the *order* costs nothing and is
-            // the export's.
-            body={spotlightBody(featured)}
-            // No ticket URL means no ticket button: a "Kaupa miða" that goes
-            // nowhere is worse than none, and most SVEF events are free anyway.
-            primary={
-              featured.ticketUrl
-                ? { label: t.events.buyTickets, href: featured.ticketUrl }
-                : undefined
-            }
-            secondary={{ label: `${t.events.aboutEvent} →`, href: featured.href }}
-          />
-        </Section>
-      )}
-
-      {upcoming.length === 0 ? (
-        <Section>
-          <EmptyState title={t.events.empty.title} body={t.events.empty.body} />
-        </Section>
-      ) : (
-        rest.length > 0 && (
-          <Section title={t.events.upcomingTitle}>
-            <div>
-              {rest.map((event) => (
-                <EventRow
-                  key={event.slug}
-                  day={event.badge.day}
-                  month={event.badge.month}
-                  dateTime={event.startDate}
-                  dateLabel={event.dateLabel}
-                  title={event.title}
-                  description={event.meta ?? undefined}
-                  href={event.href}
-                  ctaLabel={t.events.details}
-                  titleLang={event.contentLocale === locale ? undefined : event.contentLocale}
-                  descriptionLang={event.metaLocale === locale ? undefined : event.metaLocale}
-                />
-              ))}
-            </div>
-          </Section>
-        )
-      )}
-
-      {past.length > 0 && (
-        <Section title={t.events.pastTitle}>
-          <div className={styles.pastGrid}>
-            {past.map((event) => (
-              <EventCard
+      <PageSection aria-labelledby="events-upcoming" last={past.length === 0}>
+        <header className={styles.head}>
+          <h2 id="events-upcoming" className="h2">
+            {t.events.upcomingTitle}
+          </h2>
+        </header>
+        {upcoming.length === 0 ? (
+          <EmptyState title={t.events.empty.title} body={t.events.empty.body} headingLevel={3} />
+        ) : (
+          <EventGrid>
+            {upcoming.map((event, i) => (
+              <EventPoster
                 key={event.slug}
-                title={event.title}
-                dateLabel={event.shortDate}
-                dateTime={event.startDate}
-                location={event.meta ?? undefined}
+                index={i}
                 href={event.href}
-                titleLang={event.contentLocale === locale ? undefined : event.contentLocale}
-                locationLang={event.metaLocale === locale ? undefined : event.metaLocale}
-                // Only offered where there are photos to see, and pointed at
-                // the album itself rather than the top of the photos page —
-                // `/myndir` renders each album's heading with the DOM id
-                // `album-<galleryId>` (#73). Enforced by `e2e/event.spec.ts`,
-                // because the link checker does not resolve a cross-page
-                // fragment and would not notice if that id were renamed.
-                secondary={
-                  event.galleryId !== null
-                    ? {
-                        label: t.events.photosFromEvent,
-                        href: `${localePath('/myndir', locale)}#album-${event.galleryId}`,
-                      }
-                    : undefined
-                }
+                title={event.title}
+                date={event.shortDate}
+                dateTime={event.startDate}
+                meta={event.posterMeta}
+                titleLang={lang(event.contentLocale)}
+                metaLang={lang(event.locationLocale)}
               />
             ))}
-          </div>
-        </Section>
+          </EventGrid>
+        )}
+      </PageSection>
+
+      {past.length > 0 && (
+        <PageSection aria-labelledby="events-past" last>
+          <header className={styles.head}>
+            <h2 id="events-past" className="h2">
+              {t.events.pastTitle}
+            </h2>
+          </header>
+          <EventGrid>
+            {past.map((event, i) => (
+              <EventPoster
+                key={event.slug}
+                index={i}
+                href={event.href}
+                title={event.title}
+                date={event.shortDate}
+                dateTime={event.startDate}
+                meta={event.posterMeta}
+                titleLang={lang(event.contentLocale)}
+                metaLang={lang(event.locationLocale)}
+              />
+            ))}
+          </EventGrid>
+        </PageSection>
       )}
     </>
   )

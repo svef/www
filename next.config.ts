@@ -51,6 +51,28 @@ const nextConfig: NextConfig = {
   images: {},
 
   /**
+   * The seeded sponsor logos (`npm run seed:dev`).
+   *
+   * Payload derives a media document's URL from its filename (`/api/media/file/<filename>`)
+   * and serves it from R2, which local development has no bucket for. The seed's placeholder
+   * logos are therefore named `dev-fixture-<file>`, and this serves them from
+   * `public/dev-fixtures/sponsors/<file>` instead. It matches nothing a real upload is called,
+   * and `beforeFiles` puts it ahead of the Payload route.
+   */
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/api/media/file/dev-fixture-:file',
+          destination: '/dev-fixtures/sponsors/:file',
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    }
+  },
+
+  /**
    * Keep preview deployments out of search results.
    *
    * Every branch build serves the whole site on its own hostname — dev.svef.is

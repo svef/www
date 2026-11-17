@@ -86,5 +86,35 @@ export const Events: CollectionConfig = {
     { name: 'accessibility', type: 'textarea', localized: true },
     { name: 'coverImage', type: 'upload', relationTo: 'media' },
     { name: 'gallery', type: 'upload', relationTo: 'media', hasMany: true },
+    /**
+     * Who backs this event — the logos under the description. Per event, on
+     * purpose (svef/www#121): a sponsor that comes back is entered again on the
+     * next event, so there is no shared sponsors collection to keep in step and
+     * no sponsor whose logo change rewrites an old event's page.
+     *
+     * Rendered as one row of logos normalised by height, so any mix of wordmarks
+     * and near-square marks reads as a line.
+     */
+    {
+      name: 'sponsors',
+      type: 'array',
+      labels: { singular: 'Sponsor', plural: 'Sponsors' },
+      admin: {
+        initCollapsed: true,
+        description: 'Logos shown on the event page, in this order.',
+        components: { RowLabel: '/payload/components/SponsorRowLabel#SponsorRowLabel' },
+      },
+      fields: [
+        { name: 'name', type: 'text', required: true, admin: { description: 'Used as the logo’s alt text.' } },
+        { name: 'logo', type: 'upload', relationTo: 'media', required: true },
+        { name: 'url', type: 'text', admin: { description: 'Optional. Makes the logo a link.' } },
+        {
+          name: 'label',
+          type: 'text',
+          localized: true,
+          admin: { description: 'Optional line before the logo, e.g. “Drykkir í boði” / “Beverages sponsored by”.' },
+        },
+      ],
+    },
   ],
 }

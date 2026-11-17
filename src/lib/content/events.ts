@@ -28,7 +28,7 @@ import {
  * whether a page exists at all.
  */
 
-export type { EventDetail, EventImage, EventSummary } from './events-mapping'
+export type { EventDetail, EventImage, EventSponsor, EventSummary } from './events-mapping'
 
 /**
  * A past event, plus the album of photos from it, when there is one.
@@ -177,7 +177,9 @@ export const findEvent = cache(async function findEvent(
     depth: 1,
   })
   const doc = docs[0] as unknown as EventAllLocales | undefined
-  return doc ? toEventDetail(doc, locale) : null
+  if (!doc) return null
+  const galleries = await galleriesByEvent([doc.id])
+  return { ...toEventDetail(doc, locale), galleryId: galleries.get(doc.id) ?? null }
 })
 
 /**
