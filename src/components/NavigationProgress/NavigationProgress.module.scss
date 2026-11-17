@@ -12,7 +12,9 @@
   display: block;
   height: 100%;
   width: 0;
-  background: var(--color-violet);
+  // Yellow, not violet: every page opens on a violet band, where a violet bar
+  // would vanish. Yellow reads on both that and the black canvas.
+  background: var(--accent-yellow);
   // Runs quickly to most of the way and then crawls, because the real duration
   // is unknown: it must never look finished before the page arrives, and it is
   // removed outright the moment it does.
@@ -30,6 +32,41 @@
 
   100% {
     width: 92%;
+  }
+}
+
+// First document load: in the server HTML, running from first paint with no JS.
+// Failsafe: if nothing ever finishes it (no JS, hydration failure) it fades out
+// by itself after 10s and stops being rendered at all.
+.first {
+  animation: failsafe 10s linear forwards;
+}
+
+@keyframes failsafe {
+  0%,
+  80% {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+// Ready: the component has pinned the bar's current width inline; run it to the
+// end, then fade. Opacity transitions only from here, so the failsafe animation
+// is switched off.
+.finishing {
+  animation: none;
+  opacity: 0;
+  transition: opacity 300ms ease-out 250ms;
+
+  .bar {
+    animation: none;
+    width: 100% !important;
+    transition: width 250ms ease-out;
   }
 }
 

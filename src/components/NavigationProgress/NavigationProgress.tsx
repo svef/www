@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { whenPageReady } from '@/lib/page-ready'
 import styles from './NavigationProgress.module.scss'
 
 /**
@@ -20,15 +21,29 @@ import styles from './NavigationProgress.module.scss'
  * path the click started from, which matched the stale record again and left
  * the bar on screen with nothing in flight. Pressing Back repeatedly toggled it.
  *
+ * The same bar covers the first document load. It is in the server HTML and
+ * animates from first paint with CSS alone; once the page is hydrated and the
+ * fonts have settled it runs to 100%, fades and is removed. If that never
+ * happens (no JS, a hydration failure) a CSS animation fades it out regardless,
+ * and a `<noscript>` rule hides it outright. It never covers or blocks content.
+ *
  * The reset happens during render rather than in an effect — React's own
  * pattern for adjusting state when something it derives from changes. An effect
  * would paint the stuck bar for a frame first, and would be reaching for the
  * rule that says not to.
  */
+// Keep in step with the finishing transitions in the stylesheet.
+const FINISH_MS = 250
+const FADE_MS = 300
+
 export function NavigationProgress() {
   const pathname = usePathname()
   const [startedAt, setStartedAt] = useState<string | null>(null)
   const [seenPath, setSeenPath] = useState(pathname)
+  // 'loading' is what the server renders; the first-load bar is the same on the
+  // client's first render, so hydration matches.
+  const [firstLoad, setFirstLoad] = useState<'loading' | 'finishing' | 'done'>('loading')
+  const barRef = useRef<HTMLSpanElement>(null)
 
   if (pathname !== seenPath) {
     // The path moved, so whatever was in flight has landed — including a Back
@@ -39,6 +54,35 @@ export function NavigationProgress() {
 
   // Still on the page the click was made from, so the navigation is in flight.
   const active = startedAt !== null && startedAt === pathname
+
+  useEffect(() => {
+    let cancelled = false
+    whenPageReady().then(() => {
+      if (cancelled) return
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const bar = barRef.current
+      if (reduced || !bar) {
+        setFirstLoad('done')
+        return
+      }
+      // Freeze the bar where the sweep has got to, so finishing continues from
+      // there instead of jumping back to 0.
+      bar.style.width = `${bar.getBoundingClientRect().width}px`
+      void bar.offsetWidth
+      setFirstLoad('finishing')
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (firstLoad !== 'finishing') return
+    // Normally the fade's transitionend ends it; this covers a transition that
+    // never runs (hidden tab, interrupted style).
+    const timer = setTimeout(() => setFirstLoad('done'), FINISH_MS + FADE_MS + 200)
+    return () => clearTimeout(timer)
+  }, [firstLoad])
 
   useEffect(() => {
     function onClick(event: MouseEvent) {
@@ -66,6 +110,28 @@ export function NavigationProgress() {
     document.addEventListener('click', onClick, { capture: true })
     return () => document.removeEventListener('click', onClick, { capture: true })
   }, [])
+
+  const showFirstLoad = firstLoad !== 'done' && !active
+
+  if (showFirstLoad) {
+    return (
+      <>
+        <noscript>
+          <style>{'[data-first-load]{display:none!important}'}</style>
+        </noscript>
+        <div
+          className={`${styles.track} ${styles.first} ${firstLoad === 'finishing' ? styles.finishing : ''}`}
+          data-first-load=""
+          aria-hidden="true"
+          onTransitionEnd={(event) => {
+            if (event.propertyName === 'opacity') setFirstLoad('done')
+          }}
+        >
+          <span ref={barRef} className={styles.bar} />
+        </div>
+      </>
+    )
+  }
 
   if (!active) return null
 
