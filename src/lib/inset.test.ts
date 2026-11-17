@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { _scrollSubscriberCount, subscribeScroll } from './scroll-bus'
 import {
   easeInset,
   INSET_DESKTOP,
@@ -6,6 +7,8 @@ import {
   INSET_RANGE,
   insetMax,
   insetTarget,
+  registerInset,
+  _insetCount,
 } from './inset'
 
 describe('insetMax', () => {
@@ -57,5 +60,36 @@ describe('easeInset', () => {
     const step = easeInset(24, 0)
     expect(step.value).toBeLessThan(24)
     expect(step.value).toBeGreaterThan(0)
+  })
+})
+
+describe('registerInset', () => {
+  it('rides the scroll bus: one scroll listener for the page, however many subscribers', () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: false }))
+    const add = vi.spyOn(window, 'addEventListener')
+    const remove = vi.spyOn(window, 'removeEventListener')
+    const scrollListeners = () => add.mock.calls.filter(([t]) => t === 'scroll').length
+
+    const other = subscribeScroll(() => {})
+    expect(scrollListeners()).toBe(1)
+
+    const a = document.createElement('div')
+    const b = document.createElement('div')
+    const offA = registerInset(a)
+    const offB = registerInset(b)
+    expect(_insetCount()).toBe(2)
+    expect(_scrollSubscriberCount()).toBe(2) // the other one, and inset's single subscription
+    expect(scrollListeners()).toBe(1)
+
+    offA()
+    offB()
+    expect(_insetCount()).toBe(0)
+    expect(_scrollSubscriberCount()).toBe(1)
+    other()
+    expect(remove.mock.calls.filter(([t]) => t === 'scroll').length).toBe(1)
+
+    add.mockRestore()
+    remove.mockRestore()
+    vi.unstubAllGlobals()
   })
 })

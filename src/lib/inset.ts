@@ -3,9 +3,10 @@
  * phones) as you scroll past where it first sits. Ported from the export's "pattern
  * inset" block.
  *
- * - **One passive listener for all of them.** A single `scroll` and `resize` listener
- *   (both passive), attached when the first element registers and removed with the
- *   last. Handlers only request an animation frame; the work happens in it.
+ * - **No listener of its own.** It subscribes to the shared scroll bus
+ *   (`lib/scroll-bus.ts`), so the page has one passive `scroll`/`resize` listener in
+ *   all. The subscription lives from the first registered element to the last; the work
+ *   happens in the bus's animation frame, and easing re-requests a frame until settled.
  * - **Eased.** Each element chases its target by 7% a frame, so a fast scroll glides
  *   instead of snapping. The loop stops once everything has settled.
  * - **Native scrolling is never touched**: nothing here calls `preventDefault`, moves
@@ -15,6 +16,8 @@
  * The value is written as `--hin` (px) on the element; `inset-mask` in
  * `styles/_mixins.scss` turns it into the mask.
  */
+
+import { requestScrollFrame, subscribeScroll } from './scroll-bus'
 
 export const INSET_DESKTOP = 24
 export const INSET_PHONE = 12
@@ -74,19 +77,13 @@ interface Entry {
 }
 
 const entries = new Map<HTMLElement, Entry>()
-let frame: number | null = null
-let attached = false
+let unsubscribe: (() => void) | null = null
 
 const prefersReducedMotion = () =>
   typeof window.matchMedia === 'function' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-function request() {
-  if (frame === null) frame = requestAnimationFrame(tick)
-}
-
 function tick() {
-  frame = null
   const vh = window.innerHeight
   const max = insetMax(window.innerWidth)
   let moving = false
@@ -102,35 +99,22 @@ function tick() {
     if (step.moving) moving = true
     el.style.setProperty('--hin', step.value.toFixed(2) + 'px')
   })
-  if (moving) request()
-}
-
-function attach() {
-  if (attached) return
-  attached = true
-  window.addEventListener('scroll', request, { passive: true })
-  window.addEventListener('resize', request, { passive: true })
-}
-
-function detach() {
-  if (!attached) return
-  attached = false
-  window.removeEventListener('scroll', request)
-  window.removeEventListener('resize', request)
-  if (frame !== null) cancelAnimationFrame(frame)
-  frame = null
+  if (moving) requestScrollFrame()
 }
 
 /** Opts an element into the inset. Returns the function that opts it out again. */
 export function registerInset(el: HTMLElement, options: InsetOptions = {}): () => void {
   if (prefersReducedMotion()) return () => {}
   entries.set(el, { anchor: options.anchor, value: 0 })
-  attach()
-  request()
+  if (!unsubscribe) unsubscribe = subscribeScroll(tick)
+  requestScrollFrame()
   return () => {
     entries.delete(el)
     el.style.removeProperty('--hin')
-    if (entries.size === 0) detach()
+    if (entries.size === 0 && unsubscribe) {
+      unsubscribe()
+      unsubscribe = null
+    }
   }
 }
 
