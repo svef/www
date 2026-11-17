@@ -53,9 +53,10 @@ h4 {
 
 // Running text is set in the display face at a condensed width, as the export does
 // (its `p:not(.eyebrow)…` rule). Opt out with `.no-condense` (eyebrows, prices…).
-p:not(.no-condense),
-dd,
-li {
+// Wrapped in `:where()` so it carries no specificity: as a plain selector,
+// `p:not(.no-condense)` weighs (0,1,1) and quietly beat every single-class rule on
+// a paragraph — a `.lede` set wider in a component lost to this default.
+:where(p:not(.no-condense), dd, li) {
   font-stretch: var(--stretch-body);
   letter-spacing: var(--tracking-body);
 }
