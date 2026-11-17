@@ -271,7 +271,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"users_id" integer
   );
   
-  CREATE TABLE "payload_migrations" (
+  CREATE TABLE IF NOT EXISTS "payload_migrations" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"name" varchar,
   	"batch" numeric,
@@ -545,8 +545,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "payload_preferences_rels_parent_idx" ON "payload_preferences_rels" USING btree ("parent_id");
   CREATE INDEX "payload_preferences_rels_path_idx" ON "payload_preferences_rels" USING btree ("path");
   CREATE INDEX "payload_preferences_rels_users_id_idx" ON "payload_preferences_rels" USING btree ("users_id");
-  CREATE INDEX "payload_migrations_updated_at_idx" ON "payload_migrations" USING btree ("updated_at");
-  CREATE INDEX "payload_migrations_created_at_idx" ON "payload_migrations" USING btree ("created_at");
+  CREATE INDEX IF NOT EXISTS "payload_migrations_updated_at_idx" ON "payload_migrations" USING btree ("updated_at");
+  CREATE INDEX IF NOT EXISTS "payload_migrations_created_at_idx" ON "payload_migrations" USING btree ("created_at");
   CREATE UNIQUE INDEX "site_settings_locales_locale_parent_id_unique" ON "site_settings_locales" USING btree ("_locale","_parent_id");
   CREATE INDEX "home_page_happening_now_happening_now_winner_idx" ON "home_page" USING btree ("happening_now_winner_id");
   CREATE UNIQUE INDEX "home_page_locales_locale_parent_id_unique" ON "home_page_locales" USING btree ("_locale","_parent_id");

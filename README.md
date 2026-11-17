@@ -84,6 +84,17 @@ A hosted database is the other way round: `push` is off on Vercel, and the schem
 arrives through a migration that `npm run migrate` applies before the build. Add
 one with `npm run migrate:create <name>` whenever a collection changes.
 
+`payload migrate` runs the files in `src/migrations/` in **filename order** (it
+sorts the directory; the order in `index.ts` is not used), so `npm run migrate`
+works on an empty database only if that order is dependency-safe. Two rules follow:
+never rename a migration that has reached a hosted database (Payload records them
+by name and would run it again), and keep hand-edits to old ones idempotent.
+`20261008_000000_submissions` sorts before `20261008_035238_initial` for historical
+reasons, so it creates `payload_migrations` itself (see the comment in the file).
+To check that the migrations still describe the schema, run `npm run migrate:create check`
+against a scratch database: it should say "No schema changes detected" (answer
+no to the prompt; delete anything it generated).
+
 It is idempotent — re-running updates the same rows rather than adding new ones —
 and it refuses to run against any host that is not local (`localhost`, `127.0.0.1`,
 `::1`, `db`, `postgres`, `db.localtest.me`); anything else is rejected before a

@@ -10,11 +10,34 @@ import type { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
  * two tables; it would try to *revert* those. This adds, and touches nothing it
  * did not create.
  *
+ * **Ordering (#143).** Payload runs migrations in *filename* order (it reads the
+ * directory and sorts; `index.ts` order is irrelevant to `payload migrate`), and
+ * this file's `20261008_000000` timestamp sorts before `20261008_035238_initial`.
+ * After each `up`, Payload inserts a row into `payload_migrations` — a table the
+ * initial migration creates. On an empty database this migration therefore ran
+ * first and the insert failed ("relation payload_migrations does not exist").
+ * Production could not notice: it was already past both. The migration's name
+ * is recorded in production's `payload_migrations`, so it cannot be renamed
+ * without Payload treating it as new; instead it creates the bookkeeping table
+ * itself (identical definition, `IF NOT EXISTS`), and the initial migration's
+ * `payload_migrations` statements were made `IF NOT EXISTS` to match. Both edits
+ * are no-ops wherever the migrations have already run.
+ *
  * `IF NOT EXISTS` throughout so it is safe to run against a database that
  * already has them — including the local one, which gets its schema by push.
  */
 export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(`
+    CREATE TABLE IF NOT EXISTS "payload_migrations" (
+      "id" serial PRIMARY KEY NOT NULL,
+      "name" varchar,
+      "batch" numeric,
+      "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+      "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS "payload_migrations_updated_at_idx" ON "payload_migrations" USING btree ("updated_at");
+    CREATE INDEX IF NOT EXISTS "payload_migrations_created_at_idx" ON "payload_migrations" USING btree ("created_at");
+
     DO $$ BEGIN
       CREATE TYPE "public"."enum_feedback_subject" AS ENUM('general', 'awards', 'event-oct-8', 'event-oct-21', 'other');
     EXCEPTION WHEN duplicate_object THEN null; END $$;
