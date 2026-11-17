@@ -17,7 +17,8 @@ test.describe('label in name (WCAG 2.5.3)', () => {
           .first()
         // On a phone the link lives in the menu, which is closed; its name is still in the tree.
         const name = await link.evaluate((el) => el.textContent ?? '')
-        expect(name).toContain('IS/EN')
+        const target = locale === 'is' ? 'EN' : 'IS'
+        expect(name.trimStart().startsWith(target)).toBe(true)
         // What is drawn is IS and/or EN, in a node hidden from assistive technology.
         const drawn = await link.locator('[aria-hidden="true"]').allTextContents()
         expect(drawn.join(' ')).toMatch(/\b(IS|EN)\b/)

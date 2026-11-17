@@ -95,16 +95,17 @@ export function LocaleToggle({ locale }: { locale: Locale }) {
       hrefLang={target}
     >
       {/* Decoration: the link's name is the hidden text below. */}
+      {/* The chip names the language the link goes to, not the one you're in. */}
       <span className={styles.langCurrent} aria-hidden="true">
-        <GrowText className={styles.langText}>{locale.toUpperCase()}</GrowText>
+        <GrowText className={styles.langText}>{target.toUpperCase()}</GrowText>
       </span>
       <span className={styles.langSeg} aria-hidden="true">
         <b data-on={locale === 'is'}>IS</b>
         <b data-on={locale === 'en'}>EN</b>
       </span>
       <VisuallyHidden>
-        {/* Starts with what is drawn: the chip shows the current code, the phone switch both. */}
-        <span lang="en">IS/EN</span>,{' '}
+        {/* Starts with what is drawn (WCAG 2.5.3): the chip shows the target's code. */}
+        <span lang="en">{target.toUpperCase()}</span>,{' '}
         <span lang={target}>{getDictionary(target).languageName}</span>.{' '}
         {t.switchLanguage}
       </VisuallyHidden>

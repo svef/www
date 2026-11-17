@@ -131,12 +131,13 @@ describe('LocaleToggle', () => {
     expect(link).toHaveAttribute('hrefLang', 'en')
     expect(link).toHaveTextContent('English')
     // Label in Name: the drawn letters are part of the name.
-    expect(link.getAttribute('aria-label') ?? link.textContent).toContain('IS/EN')
+    // The chip shows where the link goes (EN on an Icelandic page), not where you are.
+    expect(link.querySelector('[aria-hidden="true"]')).toHaveTextContent(/^EN/)
     // The accessible name begins with the visible word and then says what the
     // link does, rather than replacing it (WCAG 2.5.3).
     // jsdom's name computation joins the two text nodes without a separator,
     // where a browser inserts one; the assertion tolerates both.
-    expect(link).toHaveAccessibleName(/^IS\/EN,\s*English\.\s*Skipta yfir í ensku$/)
+    expect(link).toHaveAccessibleName(/^EN,\s*English\.\s*Skipta yfir í ensku$/)
   })
 
   it('names the Icelandic page in Icelandic when read in English', () => {
