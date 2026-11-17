@@ -16,7 +16,6 @@ import { buildNavItems, visibleFooterColumns } from '@/lib/nav'
 import { getSiteChrome } from '@/lib/content/site-settings'
 import { getSiteUrl } from '@/lib/site-url'
 import { Analytics } from '@/components/Analytics/Analytics'
-import { PageTurn } from '@/components/PageTurn/PageTurn'
 import { NavigationProgress } from '@/components/NavigationProgress/NavigationProgress'
 // Not `@mantine/core/styles.css`: that is every Mantine component's CSS (~200KB, ~29KB gzip,
 // render-blocking on every page) for a site that uses two of them. This is the baseline,
@@ -151,7 +150,6 @@ export default async function LocaleLayout({
             }
             socials={chrome.socials}
           />
-          <PageTurn />
         </MantineProvider>
         <Analytics />
       </body>
