@@ -192,10 +192,30 @@ export const en = {
     },
     brand: {
       title: 'Logo and assets',
-      blurb: 'The SVEF logo in black and white, together with the colour palette.',
-      empty: {
-        title: 'The asset pack is being prepared',
-        body: 'Email svef@svef.is if you need the logo.',
+      mark: {
+        title: 'The logo',
+        blurb:
+          'The mark is a stepped shape that adapts around the letters. It is always violet with white letters on black, but the shape comes in several versions.',
+        primary: 'Primary logo',
+        primaryAlt: 'The SVEF logo',
+        variants: 'Logo versions',
+        download: 'Download the logo (SVG)',
+        downloadName: 'svef-logo.svg',
+      },
+      files: { title: 'More files' },
+      colours: {
+        title: 'Colours',
+        blurb: 'Click a colour to copy its hex code.',
+        copied: 'Copied',
+        copyFailed: 'Could not copy',
+        copyHint: 'copy colour code',
+      },
+      type: {
+        title: 'Typeface',
+        name: 'Roc Grotesk',
+        blurb:
+          'A variable typeface, width 50–150 and weight 100–900. Narrow for body text, wide and heavy for headlines.',
+        website: 'The website uses Archivo, an open typeface with the same variable axes.',
       },
     },
     icelandicOnly: 'Published in Icelandic only',

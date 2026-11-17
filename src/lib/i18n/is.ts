@@ -235,11 +235,33 @@ export const is = {
     },
     brand: {
       title: 'Merki og efni',
-      blurb: 'Merki SVEF í svörtu og hvítu, ásamt litapallettu.',
-      // svef/www#76: split into title/body — see `press.empty` above.
-      empty: {
-        title: 'Skráarsafnið er í vinnslu',
-        body: 'Hafðu samband við svef@svef.is ef þig vantar merkið.',
+      mark: {
+        title: 'Merkið',
+        blurb:
+          'Merkið er stöllótt form sem lagar sig að letrinu. Það er alltaf fjólublátt með hvítum stöfum á svörtum grunni, en formið kemur í nokkrum útgáfum.',
+        primary: 'Aðalmerki',
+        primaryAlt: 'SVEF merkið',
+        variants: 'Útgáfur merkisins',
+        download: 'Sækja merkið (SVG)',
+        downloadName: 'svef-merki.svg',
+      },
+      files: { title: 'Fleiri skrár' },
+      colours: {
+        title: 'Litir',
+        blurb: 'Smelltu á lit til að afrita litakóðann.',
+        /** Announced politely, and shown on the swatch, after a copy. */
+        copied: 'Afritað',
+        /** Shown instead if the browser refused the copy. */
+        copyFailed: 'Afritun tókst ekki',
+        /** Appended to a swatch's accessible name. */
+        copyHint: 'afrita litakóða',
+      },
+      type: {
+        title: 'Letur',
+        name: 'Roc Grotesk',
+        blurb:
+          'Breytilegt letur, breidd 50–150 og þykkt 100–900. Mjótt fyrir meginmál, breitt og þungt fyrir fyrirsagnir.',
+        website: 'Vefurinn notar Archivo, opið letur með sömu breytilegu eiginleika.',
       },
     },
     // Marks a section that is published in Icelandic only as an editorial

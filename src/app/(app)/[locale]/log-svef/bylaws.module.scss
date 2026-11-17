@@ -1,19 +1,3 @@
-.bylaws {
-  max-width: 70ch;
-  color: var(--fg-muted);
-  line-height: 1.7;
-
-  :global(h1),
-  :global(h2),
-  :global(h3) {
-    color: var(--fg);
-  }
-
-  :global(a) {
-    color: var(--color-violet-light);
-  }
-}
-
 // Shown only in the deliberate BYLAWS_ALLOW_DEGRADED escape hatch, when the bylaws
 // source could not be reached. Visible on purpose — the point is that nobody mistakes
 // a degraded page for a complete one.
@@ -31,38 +15,7 @@
   }
 }
 
-// How the bylaws are changed. Set apart from the legal text above it — it is
-// the association's own voice rather than the document's, and in the reader's
-// language where the document is Icelandic.
-.process {
-  margin-top: var(--space-16);
-  padding: var(--space-8);
-  background: var(--surface-2);
-  border-left: 3px solid var(--color-violet);
-
-  p {
-    margin: 0 0 var(--space-4);
-    color: var(--fg-muted);
-    line-height: 1.6;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  a {
-    color: var(--fg);
-  }
-}
-
-.processHeading {
-  margin: 0 0 var(--space-4);
-  font-family: var(--font-heading), system-ui, sans-serif;
-  font-size: var(--text-xl);
-  color: var(--fg);
-}
-
-// The clause itself, rather than the invitation — quieter than the rest.
-.processNote {
-  font-size: var(--text-sm);
+// Space between the note band and the footer (the export's `.page` bottom padding).
+.end {
+  height: var(--page-pad-bottom);
 }

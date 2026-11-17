@@ -1,0 +1,145 @@
+// The export's `.laws`, `.laws-prose`, `.art` and `.laws-note` rules, later overrides folded in.
+@use '../../styles/breakpoints' as bp;
+
+$gutter: max(24px, env(safe-area-inset-left, 0px));
+
+.text {
+  max-width: 1100px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0 0 clamp(40px, 5vw, 72px);
+  font-size: clamp(2.4rem, 4.6vw, 4rem);
+  font-weight: var(--weight-heading);
+  line-height: var(--lh-heading);
+}
+
+.article {
+  display: grid;
+  grid-template-columns: clamp(120px, 15vw, 230px) minmax(0, 1fr);
+  gap: clamp(20px, 4vw, 64px);
+  align-items: start;
+  padding: clamp(28px, 3.4vw, 48px) 0;
+  border-top: 1px solid var(--line);
+
+  @include bp.below(bp.$sm) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+// The article number: a violet block with a stepped top-left corner; every second one
+// steps the other way. Turns white on hover of its row.
+.number {
+  margin: 0;
+  display: inline-flex;
+  align-items: flex-end;
+  justify-self: start;
+  min-width: clamp(96px, 10vw, 150px);
+  min-height: clamp(84px, 8vw, 120px);
+  padding: clamp(10px, 1vw, 14px) clamp(14px, 1.4vw, 20px);
+  background: var(--color-violet);
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 2.6vw, 2.4rem);
+  line-height: 0.95;
+  font-variant-numeric: lining-nums;
+  letter-spacing: -0.02em;
+  clip-path: polygon(0 26%, 38% 26%, 38% 0, 100% 0, 100% 100%, 0 100%);
+  transition:
+    background 0.3s,
+    color 0.3s;
+
+  .article:nth-of-type(even) & {
+    clip-path: polygon(0 0, 64% 0, 64% 22%, 100% 22%, 100% 100%, 0 100%);
+  }
+
+  .article:hover & {
+    background: var(--color-white);
+    color: var(--color-violet);
+  }
+}
+
+.body {
+  display: grid;
+  gap: 18px;
+  max-width: 62ch;
+  color: var(--color-white);
+  font-size: clamp(1.3rem, 1.9vw, 1.9rem);
+  line-height: 1.45;
+
+  > * {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    display: grid;
+    gap: 10px;
+    padding-left: 1.4em;
+  }
+
+  li::marker {
+    color: var(--color-violet-light);
+    font-weight: 800;
+  }
+
+  a {
+    color: var(--color-violet-light);
+  }
+}
+
+// --- How to propose a change -----------------------------------------------
+
+.note {
+  margin-top: clamp(72px, 9vw, 140px);
+  padding: clamp(28px, 3vw, 44px) $gutter clamp(80px, 9vw, 130px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 2vw, 28px) clamp(28px, 5vw, 80px);
+  color: var(--color-black);
+
+  p {
+    margin: 0;
+    max-width: 46ch;
+    font-size: clamp(1.15rem, 1.5vw, 1.45rem);
+    line-height: 1.4;
+    color: var(--color-black);
+  }
+
+  a {
+    color: var(--color-black);
+    font-weight: 700;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+
+  @include bp.below(bp.$sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// The heading sits on black in a notch; the notch needs its own backing so contrast
+// checkers read white-on-black, which is what is drawn.
+.noteTitle {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-bottom: clamp(20px, 3vw, 40px);
+  background: var(--color-black);
+  color: var(--color-white);
+
+  h2 {
+    margin: 0;
+    font-size: clamp(2.2rem, 4.4vw, 4rem);
+    font-weight: var(--weight-heading);
+    color: var(--color-white);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .number {
+    transition: none;
+  }
+}

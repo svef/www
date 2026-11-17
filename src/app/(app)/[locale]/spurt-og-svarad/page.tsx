@@ -3,8 +3,8 @@ import { getDictionary, isLocale } from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
 import { getAboutContent } from '@/lib/content/about'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
-import { PageHeader } from '@/components/PageHeader/PageHeader'
-import { Section } from '@/components/Section/Section'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { FaqAccordion } from '@/components/FaqAccordion/FaqAccordion'
 
@@ -45,9 +45,9 @@ export default async function FaqPage({
   return (
     <>
       <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
-      <PageHeader title={t.about.faqTitle} />
+      <PageHead title={t.about.faqTitle} stickers="spurt-og-svarad" locale={locale} />
 
-      <Section>
+      <PageSection last>
         {about.faq.length === 0 ? (
           // A heading over an empty accordion reads as a rendering failure —
           // svef/www#76 — so this says the questions are coming rather than
@@ -63,7 +63,7 @@ export default async function FaqPage({
             }))}
           />
         )}
-      </Section>
+      </PageSection>
     </>
   )
 }

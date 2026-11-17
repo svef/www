@@ -1,0 +1,89 @@
+// The export's `.faq` rules with the later overrides folded in.
+@use '../../styles/breakpoints' as bp;
+
+$icon: clamp(30px, 3vw, 44px);
+$gap: clamp(18px, 2vw, 32px);
+
+.faq {
+  max-width: min(100%, 900px);
+  margin-inline: auto;
+}
+
+.item {
+  border-bottom: 1px solid var(--line);
+}
+
+.heading {
+  margin: 0;
+  font: inherit;
+}
+
+.summary {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  gap: $gap;
+  align-items: center;
+  padding: clamp(22px, 2.4vw, 34px) 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.4rem, 3vw, 2.6rem);
+  line-height: 1.2;
+  transition:
+    font-stretch var(--dur-hover) var(--ease),
+    font-weight var(--dur-hover) var(--ease);
+
+  &:hover,
+  &:focus-visible {
+    font-weight: 750;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+.pm {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--color-violet-light);
+  font-size: $icon;
+
+  svg {
+    width: 1em;
+    height: 1em;
+    transition: transform 0.35s var(--ease);
+  }
+}
+
+.open .pm {
+  color: var(--color-white);
+
+  svg {
+    transform: rotate(45deg);
+  }
+}
+
+.answer {
+  max-width: 80ch;
+  padding: 0 0 clamp(26px, 2.6vw, 40px) calc(#{$icon} + #{$gap});
+  color: var(--muted);
+  font-size: clamp(1.1rem, 1.4vw, 1.35rem);
+  font-stretch: var(--stretch-body);
+  letter-spacing: var(--tracking-body);
+
+  @include bp.below(bp.$xs) {
+    padding-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary,
+  .pm svg {
+    transition: none;
+  }
+}

@@ -1,0 +1,22 @@
+// The export's `.sec-head`, `.h2` and `.sec-head-r`.
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: clamp(32px, 4vw, 56px);
+}
+
+.right {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-h2);
+  font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-h2);
+  line-height: var(--lh-heading);
+}

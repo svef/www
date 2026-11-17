@@ -1,0 +1,346 @@
+// The export's `.brandkit`, `.bk-*` rules.
+@use '../../styles/breakpoints' as bp;
+
+.kit {
+  padding-top: clamp(112px, 14vw, 220px);
+  padding-inline: max(24px, env(safe-area-inset-left, 0px))
+    max(24px, env(safe-area-inset-right, 0px));
+  margin: 0 auto;
+}
+
+.block {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  column-gap: clamp(20px, 4vw, 64px);
+  border-top: 1px solid var(--line);
+  padding: clamp(24px, 3vw, 40px) 0 clamp(36px, 4vw, 60px);
+
+  > :not(.blockTitle) {
+    grid-column: 2;
+  }
+
+  @include bp.below(bp.$md) {
+    grid-template-columns: 1fr;
+
+    > :not(.blockTitle) {
+      grid-column: 1;
+    }
+  }
+}
+
+.blockTitle {
+  grid-row: 1 / span 2;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+
+  @include bp.below(bp.$md) {
+    grid-row: auto;
+    margin-bottom: 10px;
+  }
+}
+
+.desc {
+  margin: 0 0 clamp(18px, 2vw, 28px);
+  max-width: 52ch;
+  color: var(--muted);
+}
+
+// --- Logo ------------------------------------------------------------------
+
+.primary {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 7;
+    object-fit: contain;
+    padding: clamp(32px, 5vw, 72px);
+    background: var(--color-black);
+    outline: 1px solid var(--line);
+    outline-offset: -1px;
+    box-sizing: border-box;
+  }
+
+  span {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+}
+
+.variants {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+
+  @include bp.below(bp.$md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  li {
+    position: relative;
+    background: var(--color-black);
+    aspect-ratio: 1;
+  }
+
+  img {
+    position: absolute;
+    inset: 18%;
+    width: 64%;
+    height: 64%;
+    object-fit: contain;
+    transition: transform 0.45s var(--ease);
+  }
+
+  li:hover img {
+    transform: scale(1.08);
+  }
+}
+
+.downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 20px;
+  padding-top: clamp(20px, 2.4vw, 32px);
+}
+
+// The export's `.btn.btn-white`.
+.download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 22px;
+  background: var(--color-white);
+  color: var(--color-black);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  line-height: 1;
+  text-decoration: none;
+  transition: background 0.2s;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--accent-yellow);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+.filesTitle {
+  margin: clamp(24px, 3vw, 40px) 0 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.fileList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.fileLink {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  color: var(--fg);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--color-violet-light);
+  }
+}
+
+.fileSize {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+// --- Colours ---------------------------------------------------------------
+
+.swatches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+  align-items: end;
+  height: clamp(270px, 27vw, 390px);
+
+  li {
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  @include bp.below(bp.$md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    height: auto;
+
+    li {
+      height: auto;
+    }
+  }
+}
+
+.swatch {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 100%;
+  padding: 14px 14px 16px;
+  background: var(--c);
+  color: var(--color-black);
+  font-family: var(--font-display);
+  outline: 1px solid var(--line);
+  outline-offset: -1px;
+  transition: height 0.55s var(--ease);
+
+  // The export staggers the swatches' resting heights.
+  li:nth-child(1) & {
+    height: clamp(220px, 22vw, 320px);
+  }
+  li:nth-child(2) & {
+    height: clamp(180px, 18vw, 260px);
+  }
+  li:nth-child(3) & {
+    height: clamp(250px, 25vw, 360px);
+  }
+  li:nth-child(4) & {
+    height: clamp(160px, 16vw, 230px);
+  }
+  li:nth-child(5) & {
+    height: clamp(200px, 20vw, 290px);
+  }
+  li:nth-child(6) & {
+    height: clamp(140px, 14vw, 200px);
+  }
+
+  &:hover,
+  &:focus-visible {
+    height: clamp(270px, 27vw, 390px) !important;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--color-white);
+    outline-offset: 3px;
+  }
+
+  @include bp.below(bp.$md) {
+    // Three to a row: no staggered heights, a fixed block each.
+    height: 180px !important;
+  }
+}
+
+.onDark {
+  color: var(--color-white);
+}
+
+.swatchName {
+  font-weight: 700;
+  font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+  line-height: 1.1;
+}
+
+.swatchHex {
+  font-weight: 500;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.swatchResult {
+  min-height: 1em;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+// --- Type ------------------------------------------------------------------
+
+.type {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: center;
+
+  @include bp.below(bp.$md) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.aa {
+  width: 2.25em;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-stretch: var(--stretch-display);
+  font-size: clamp(6rem, 14vw, 13rem);
+  line-height: 0.8;
+  color: var(--color-violet);
+  transition:
+    font-stretch 0.6s var(--ease),
+    font-weight 0.6s var(--ease);
+
+  .type:hover & {
+    font-stretch: var(--stretch-min);
+    font-weight: 300;
+  }
+}
+
+.fontName {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+}
+
+.weights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+
+  span {
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 2vw, 1.9rem);
+    font-weight: var(--w);
+  }
+}
+
+.note {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swatch,
+  .aa,
+  .variants img {
+    transition: none;
+  }
+}

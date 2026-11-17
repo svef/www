@@ -77,6 +77,10 @@ function problemFor(
 
   if (link.resolved === '') return null
 
+  // A file in `public/` (the brand kit's logo downloads), not a route. The About spec
+  // fetches it.
+  if (link.resolved.startsWith('/brand/')) return null
+
   const path = normalisePath(link.resolved)
   // A path the static table does not have is only acceptable if it belongs to a
   // declared dynamic route. Matching the shape is not enough on its own — the

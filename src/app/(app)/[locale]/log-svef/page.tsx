@@ -1,12 +1,11 @@
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import { notFound } from 'next/navigation'
 import { getDictionary, isLocale, DEFAULT_LOCALE } from '@/lib/i18n'
 import { getBylaws, LAWS_REPO_URL } from '@/lib/bylaws'
-import { remarkHeadingLevels } from '@/lib/remark-heading-levels'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
-import { PageHeader } from '@/components/PageHeader/PageHeader'
-import { Section } from '@/components/Section/Section'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
+import { BylawsText } from '@/components/Bylaws/BylawsText'
+import { BylawsNote } from '@/components/Bylaws/BylawsNote'
 import { getSiteChrome } from '@/lib/content/site-settings'
 import styles from './bylaws.module.scss'
 
@@ -53,53 +52,43 @@ export default async function BylawsPage({
         contentLocale={DEFAULT_LOCALE}
         reason="icelandic-by-design"
       />
-      <PageHeader title={t.about.bylawsTitle} />
+      <PageHead title={t.about.bylawsTitle} locale={locale} />
 
-      <Section>
+      <PageSection>
         {bylaws.status === 'ok' ? (
-          <div className={styles.bylaws} lang={DEFAULT_LOCALE}>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm, [remarkHeadingLevels, { startLevel: 2 }]]}
-            >
-              {bylaws.markdown}
-            </ReactMarkdown>
-          </div>
+          <BylawsText markdown={bylaws.markdown} lang={DEFAULT_LOCALE} />
         ) : (
           <p className={styles.bylawsNotice} role="status">
             {t.about.bylawsUnavailable}{' '}
             <a href={LAWS_REPO_URL}>{LAWS_REPO_URL.replace('https://', '')}</a>
           </p>
         )}
+      </PageSection>
 
-        {/*
-          How the bylaws are changed, after the bylaws themselves — a reader
-          proposing an amendment has read them first.
+      {/*
+        How the bylaws are changed, after the bylaws themselves — a reader
+        proposing an amendment has read them first.
 
-          Outside the fetch's success branch on purpose: how to propose a
-          change is true whether or not GitHub answered, and this is the one
-          thing on the page still worth reading when the text is unavailable.
+        Outside the fetch's success branch on purpose: how to propose a
+        change is true whether or not GitHub answered, and this is the one
+        thing on the page still worth reading when the text is unavailable.
 
-          Written in the reader's language, unlike the bylaws above. This is
-          the association explaining its own process, not the legal text, and
-          the Icelandic-only decision covers the latter.
-        */}
-        <aside className={styles.process} aria-labelledby="bylaws-process">
-          <h2 id="bylaws-process" className={styles.processHeading}>
-            {p.heading}
-          </h2>
-          <p>
-            {p.repoLead}{' '}
-            <a href={LAWS_REPO_URL}>{LAWS_REPO_URL.replace('https://', '')}</a>
-          </p>
-          <p>
-            {p.howTo}{' '}
-            <a href={`mailto:${chrome.contactEmail}`}>{chrome.contactEmail}</a>{' '}
-            {p.howToEnd}
-          </p>
-          <p>{p.meeting}</p>
-          <p className={styles.processNote}>{p.article8}</p>
-        </aside>
-      </Section>
+        Written in the reader's language, unlike the bylaws above. This is
+        the association explaining its own process, not the legal text, and
+        the Icelandic-only decision covers the latter.
+      */}
+      <BylawsNote heading={p.heading}>
+        <p>
+          {p.repoLead} <a href={LAWS_REPO_URL}>{LAWS_REPO_URL.replace('https://', '')}</a>
+        </p>
+        <p>
+          {p.howTo} <a href={`mailto:${chrome.contactEmail}`}>{chrome.contactEmail}</a>{' '}
+          {p.howToEnd}
+        </p>
+        <p>{p.meeting}</p>
+        <p>{p.article8}</p>
+      </BylawsNote>
+      <div className={styles.end} />
     </>
   )
 }

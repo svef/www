@@ -71,7 +71,7 @@ test.describe('locale routing', () => {
       // Canonical means: carries this page's own prefix, and names every page
       // in this page's language. `localePath` is the site's own rule for that.
       const notCanonical = hrefs.filter(
-        (href) => !/^\/(admin|api)(\/|$)/.test(href) && localePath(href, locale) !== href,
+        (href) => !/^\/(admin|api|brand)(\/|$)/.test(href) && localePath(href, locale) !== href,
       )
       expect(
         notCanonical,

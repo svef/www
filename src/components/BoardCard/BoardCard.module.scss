@@ -1,43 +1,74 @@
+// The export's `.board figure`, `.photo`, `.back` and the `.board-spread` colour blocks.
+@use '../../styles/breakpoints' as bp;
+
 .card {
+  position: relative;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  min-width: 0;
 }
 
 .photo {
-  position: relative;
   aspect-ratio: 4 / 5;
-  background:
-    repeating-linear-gradient(
-      45deg,
-      rgba(192, 139, 245, 0.1),
-      rgba(192, 139, 245, 0.1) 12px,
-      transparent 12px,
-      transparent 24px
-    ),
-    var(--surface-3);
+  max-width: 100%;
+
+  // The colour layer is the photo's backdrop, not a brand colour. Two classes plus an
+  // attribute, to win over the shape's own colour rule regardless of stylesheet order.
+  &.photo > [data-shape-layer] {
+    background: var(--ink-3);
+    overflow: hidden;
+  }
 }
 
-.cornerTop {
+.portrait {
+  object-fit: cover;
+  object-position: 50% 0%;
+  filter: grayscale(0.2) contrast(1.05);
+  transition: transform 0.6s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+.card:hover .portrait {
+  transform: scale(1.04);
+}
+
+// No photo: the striped placeholder keeps the box.
+.placeholder {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 34px;
-  height: 34px;
-  background: var(--color-violet);
-  transform: translate(-30%, -30%);
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(192, 139, 245, 0.1),
+    rgba(192, 139, 245, 0.1) 12px,
+    transparent 12px,
+    transparent 24px
+  );
 }
 
-.cornerBottom {
+// --- The colour block behind the photo: a small corner block on tablets and phones ---
+
+.back {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 34px;
-  height: 34px;
-  transform: translate(30%, 30%);
+  width: 44%;
+  height: 30%;
+  z-index: -2;
+  display: none;
+
+  @include bp.below(bp.$md) {
+    display: block;
+  }
+
+  @media (max-width: 600px) {
+    display: none;
+  }
 }
 
+.right {
+  right: -12px;
+  top: -12px;
+}
+.left {
+  left: -12px;
+  top: -12px;
+}
 .violet {
   background: var(--color-violet);
 }
@@ -51,28 +82,164 @@
   background: var(--accent-red);
 }
 
-.caption {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+// --- On desktop, a big stepped block peeks out from behind each photo (eight looks) ---
+// Each is a stepped polygon in a colour, placed by percentages of the photo box.
+
+@mixin look($n, $colour, $props, $clip) {
+  .card[data-look='#{$n}'] .photo::before {
+    background: $colour;
+    clip-path: polygon(#{$clip});
+    @each $prop, $value in $props {
+      #{$prop}: $value;
+    }
+  }
 }
 
-.role {
-  color: var(--fg-muted);
-  font-size: var(--text-sm);
+.photo::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  pointer-events: none;
+
+  @include bp.below(bp.$md) {
+    display: none;
+  }
+}
+
+@include look(
+  0,
+  var(--color-violet),
+  (
+    top: 18%,
+    right: -18%,
+    bottom: -12%,
+    left: 46%,
+  ),
+  '0 0, 100% 0, 100% 100%, 40% 100%, 40% 72%, 0 72%'
+);
+@include look(
+  1,
+  var(--accent-pink),
+  (
+    top: -10%,
+    left: -14%,
+    width: 52%,
+    height: 64%,
+  ),
+  '0 0, 100% 0, 100% 30%, 56% 30%, 56% 100%, 0 100%'
+);
+@include look(
+  2,
+  var(--accent-yellow),
+  (
+    top: 30%,
+    right: -16%,
+    width: 40%,
+    height: 62%,
+  ),
+  '0 0, 100% 0, 100% 100%, 0 100%, 0 64%, 46% 64%, 46% 0'
+);
+@include look(
+  3,
+  var(--accent-red),
+  (
+    top: -12%,
+    right: -12%,
+    width: 48%,
+    height: 74%,
+  ),
+  '0 0, 100% 0, 100% 100%, 38% 100%, 38% 56%, 0 56%'
+);
+@include look(
+  4,
+  var(--accent-pink),
+  (
+    top: -5%,
+    left: -16%,
+    width: 54%,
+    height: 62%,
+  ),
+  '0 0, 100% 0, 100% 34%, 52% 34%, 52% 100%, 0 100%'
+);
+@include look(
+  5,
+  var(--color-violet),
+  (
+    top: -5%,
+    left: -12%,
+    width: 46%,
+    height: 70%,
+  ),
+  '0 0, 100% 0, 100% 38%, 60% 38%, 60% 100%, 0 100%'
+);
+@include look(
+  6,
+  var(--accent-red),
+  (
+    top: 24%,
+    right: -20%,
+    bottom: -8%,
+    left: 50%,
+  ),
+  '0 0, 100% 0, 100% 100%, 36% 100%, 36% 70%, 0 70%'
+);
+@include look(
+  7,
+  var(--accent-yellow),
+  (
+    top: 16%,
+    right: -16%,
+    width: 44%,
+    height: 70%,
+  ),
+  '0 0, 100% 0, 100% 100%, 40% 100%, 40% 62%, 0 62%'
+);
+
+// --- Caption: name over role (the export reverses the order visually) ---
+
+.caption {
+  position: relative;
+  z-index: 1;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  @media (max-width: 600px) {
+    margin-top: 12px;
+    gap: 2px;
+  }
 }
 
 .name {
-  font-family: var(--font-heading), system-ui, sans-serif;
-  font-weight: var(--weight-bold);
-  font-size: var(--text-lg);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.4rem;
+  line-height: 1.1;
+
+  @media (max-width: 600px) {
+    font-size: clamp(1rem, 4.6vw, 1.2rem);
+
+    .card:first-child & {
+      font-size: 1.4rem;
+    }
+  }
 }
 
-// Fills the 4:5 box above, covering the striped placeholder when a portrait exists.
-.portrait {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.role {
+  color: var(--muted);
+  font-size: 0.94rem;
+
+  @media (max-width: 600px) {
+    font-size: 0.82rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portrait {
+    transition: none;
+  }
+  .card:hover .portrait {
+    transform: none;
+  }
 }

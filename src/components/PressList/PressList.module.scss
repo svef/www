@@ -1,0 +1,119 @@
+// The export's `.winlist` / `.wl` rows, sized as `.press2`.
+@use '../../styles/breakpoints' as bp;
+
+$gutter: max(24px, env(safe-area-inset-left, 0px));
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(0, 3.6fr);
+  gap: clamp(16px, 3vw, 48px);
+  align-items: end;
+  padding: clamp(18px, 2.2vw, 30px) 0;
+  border-bottom: 1px solid var(--line);
+  transition: color 0.4s var(--ease);
+  --on: var(--color-white);
+
+  // The colour sweep: a stepped block that rises from the foot of the row, bleeding
+  // out to the page edges.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 calc(-1 * #{$gutter});
+    z-index: -1;
+    background: var(--c);
+    clip-path: polygon(0 100%, 14% 100%, 14% 100%, 100% 100%, 100% 100%, 0 100%);
+    transition: clip-path 0.55s var(--ease);
+  }
+
+  &:hover,
+  &:focus-within {
+    color: var(--on);
+    border-bottom-color: transparent;
+
+    &::before {
+      clip-path: polygon(0 16%, 14% 16%, 14% 0, 100% 0, 100% 100%, 0 100%);
+    }
+  }
+
+  @include bp.below(bp.$sm) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.violet {
+  --c: var(--color-violet);
+  --on: var(--color-white);
+}
+.pink {
+  --c: var(--accent-pink);
+  --on: var(--color-black);
+}
+.yellow {
+  --c: var(--accent-yellow);
+  --on: var(--color-black);
+}
+.red {
+  --c: var(--accent-red);
+  --on: var(--color-black);
+}
+
+.outlet {
+  margin: 0;
+  align-self: end;
+  padding-bottom: 0.6em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1rem, 1.3vw, 1.25rem);
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 3vw, 2.8rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    // The whole row is the target.
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0 calc(-1 * #{$gutter});
+      z-index: 2;
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
+  }
+}
+
+// Text on the sweep is read against its colour, but the coloured layer is a pseudo-element
+// a contrast checker cannot see. Keep the focus ring visible on the row itself.
+.row:focus-within {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row,
+  .row::before {
+    transition: none;
+  }
+}

@@ -4,10 +4,13 @@ import { formatFileSize } from '@/lib/filesize'
 import { resolveContentLocale } from '@/lib/localized'
 import { getAboutContent } from '@/lib/content/about'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
-import { PageHeader } from '@/components/PageHeader/PageHeader'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
 import { RichText } from '@/components/RichText/RichText'
-import { Section } from '@/components/Section/Section'
+import { SectionHead } from '@/components/SectionHead/SectionHead'
+import { PressList } from '@/components/PressList/PressList'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
+import { BrandKit } from '@/components/BrandKit/BrandKit'
 import styles from './about.module.scss'
 
 /**
@@ -23,8 +26,8 @@ import styles from './about.module.scss'
  *
  * The board, the FAQ and the bylaws used to live here too. svef/www#103 split
  * them out to `/stjorn`, `/spurt-og-svarad` and `/log-svef`, each with its own
- * `TranslationNote` scoped to its own content. This page now covers only the
- * story, the press list and the brand assets.
+ * `TranslationNote` scoped to its own content. This page covers the story, the
+ * press list and the brand kit.
  */
 export const revalidate = 300
 
@@ -65,90 +68,42 @@ export default async function AboutPage({
       <p className={styles.icelandicOnly}>{t.about.icelandicOnly}</p>
     )
 
+  // Files an editor uploaded to the About page. The static logo downloads in the brand kit
+  // do not depend on them, so an empty list is no longer an empty section.
+  const brandFiles = about.brandAssets.map((asset) => ({
+    label: asset.label,
+    url: asset.url,
+    size: formatFileSize(asset.filesize, locale),
+  }))
+
   // The note is the first thing inside `<main>`, so the skip link lands on it
   // rather than past it.
   return (
     <>
       <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
-      <PageHeader title={t.about.title} />
+      <PageHead title={t.about.title} stickers="um-svef" locale={locale} />
 
-      <Section>
+      <PageSection>
         <RichText data={about.story} className={styles.story} lang={storyLang} />
-      </Section>
+      </PageSection>
 
-      <Section>
-        <div className={styles.stack}>
-          <div>
-            <div className={styles.sectionHead}>
-              <h2 className={styles.sectionTitle}>{t.about.pressTitle}</h2>
-              {icelandicOnly}
-            </div>
-            {about.press.length === 0 ? (
-              <EmptyState
-                title={t.about.press.empty.title}
-                body={t.about.press.empty.body}
-                headingLevel={3}
-              />
-            ) : (
-              <ul className={styles.pressList} lang={DEFAULT_LOCALE}>
-                {about.press.map((item) => (
-                  <li key={`${item.outlet}:${item.title}`} className={styles.pressItem}>
-                    {item.url ? (
-                      <a className={styles.pressLink} href={item.url}>
-                        <span className={styles.pressTitle}>{item.title}</span>
-                        <span className={styles.pressOutlet}>{item.outlet}</span>
-                      </a>
-                    ) : (
-                      // No link recorded for this mention — the row is still
-                      // real coverage, so it is listed as plain text rather
-                      // than as an anchor that goes nowhere.
-                      <span className={styles.pressLink}>
-                        <span className={styles.pressTitle}>{item.title}</span>
-                        <span className={styles.pressOutlet}>{item.outlet}</span>
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+      <PageSection aria-labelledby="h-press">
+        <SectionHead id="h-press" title={t.about.pressTitle}>
+          {icelandicOnly}
+        </SectionHead>
+        {about.press.length === 0 ? (
+          <EmptyState
+            title={t.about.press.empty.title}
+            body={t.about.press.empty.body}
+            headingLevel={3}
+          />
+        ) : (
+          <PressList items={about.press} lang={DEFAULT_LOCALE} />
+        )}
+      </PageSection>
 
-          <div className={styles.brandCard}>
-            <h2 className={styles.brandTitle}>{t.about.brand.title}</h2>
-            <p className={styles.brandBlurb}>{t.about.brand.blurb}</p>
-            {about.brandAssets.length === 0 ? (
-              // `brandAssets.file` is a required upload, so an empty list means
-              // no files have been uploaded yet — not a rendering failure. The
-              // card keeps its heading and says where to get the logo instead of
-              // showing download buttons that download nothing.
-              <EmptyState
-                title={t.about.brand.empty.title}
-                body={t.about.brand.empty.body}
-                headingLevel={3}
-              />
-            ) : (
-              <ul className={styles.brandDownloads}>
-                {about.brandAssets.map((asset) => {
-                  // `filesize` is what Payload recorded for the upload. It can
-                  // be missing on a media document restored from a dump, and a
-                  // button that claimed "0 B" would be worse than one that says
-                  // nothing, so the size is dropped rather than guessed.
-                  const size = formatFileSize(asset.filesize, locale)
-                  return (
-                    <li key={asset.url}>
-                      <a className={styles.download} href={asset.url} download>
-                        {asset.label}
-                        {size && <span className={styles.downloadSize}>{size}</span>}
-                        <span aria-hidden="true">↓</span>
-                      </a>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
-          </div>
-        </div>
-      </Section>
+      <BrandKit copy={t.about.brand} files={brandFiles} />
+      <div className={styles.end} />
     </>
   )
 }

@@ -3,11 +3,11 @@ import { getDictionary, isLocale } from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
 import { listBoardMembers } from '@/lib/content/about'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
-import { PageHeader } from '@/components/PageHeader/PageHeader'
-import { Section } from '@/components/Section/Section'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { BoardCard, type Accent } from '@/components/BoardCard/BoardCard'
-import styles from './board.module.scss'
+import { BoardGrid } from '@/components/BoardCard/BoardGrid'
 
 /**
  * Statically prerendered for both locales and refreshed by ISR.
@@ -58,16 +58,16 @@ export default async function BoardPage({
   return (
     <>
       <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
-      <PageHeader title={t.about.boardTitle} />
+      <PageHead title={t.about.boardTitle} stickers="stjorn" locale={locale} />
 
-      <Section>
+      <PageSection last>
         {board.length === 0 ? (
           // A board with no members reads as a broken page, not a quiet one —
           // svef/www#76 — so this says so rather than leaving the page header
           // over an empty grid.
           <EmptyState title={t.about.boardEmpty.title} body={t.about.boardEmpty.body} />
         ) : (
-          <div className={styles.boardGrid}>
+          <BoardGrid>
             {board.map((member, i) => (
               <BoardCard
                 key={member.name}
@@ -78,11 +78,13 @@ export default async function BoardPage({
                 portrait={member.portrait}
                 roleLang={langOf(member.roleLocale)}
                 accent={ACCENTS[i % ACCENTS.length]}
+                side={i % 2 === 0 ? 'right' : 'left'}
+                index={i}
               />
             ))}
-          </div>
+          </BoardGrid>
         )}
-      </Section>
+      </PageSection>
     </>
   )
 }
