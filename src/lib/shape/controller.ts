@@ -47,7 +47,8 @@ export interface ShapeConfig {
   revealHeadings: boolean
 }
 
-export type ShapeState = 'pending' | 'in'
+/** `settled`: shown at rest with no entrance (above the fold on first load). */
+export type ShapeState = 'pending' | 'in' | 'settled'
 
 const prefersReducedMotion = () =>
   typeof window.matchMedia === 'function' &&
@@ -222,8 +223,15 @@ export class ShapeController {
       this.later(() => this.rise(), d)
       return
     }
-    if (this.state === 'in') return
+    if (this.state !== 'pending') return
     this.setState('in')
+    this.final()
+  }
+
+  /** Shows the content at rest, with no entrance. */
+  settle(): void {
+    if (this.state !== 'pending') return
+    this.setState('settled')
     this.final()
   }
 

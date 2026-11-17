@@ -129,9 +129,12 @@ shape is a plain rectangle and each `[data-notch]` carries a black backing until
 shape is painted: everything readable, nothing laid out differently, no layout shift
 when the client paints (measured CLS ≈ 0.0002).
 
-With scripting on and motion allowed, the shape's content is held invisible until the
-client takes over (a CSS failsafe shows it after 3s if it never does), so the first
-thing seen is the entrance rather than a rectangle snapping to a shape.
+The server render is shown as it is: nothing is held back, so LCP does not wait for
+hydration. When the client takes over, shapes below the fold hide their content and play
+the entrance as they scroll in; shapes already above the fold on the **first load of a
+document** settle in place (`data-shape-state="settled"`) and skip it — the rectangle
+snaps to its shape, which measured at ~1s LCP instead of 2.2–3.7s on a throttled
+phone-class load. Shapes mounted by a client navigation always play the entrance.
 
 ## Motion
 

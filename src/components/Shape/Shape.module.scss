@@ -104,19 +104,11 @@ $ease: cubic-bezier(0.7, 0, 0.2, 1); // the export's --ease
 
 // ---------- entrance ----------
 // The engine marks headings `data-shape-reveal` and body content `data-shape-fade`,
-// and moves the shape from `pending` to `in`. Under reduced motion it never sets
+// and moves the shape from `pending` to `in` (above-the-fold shapes on first load go to
+// `settled` instead, which has no rules here: content simply stays visible). Under reduced motion it never sets
 // `pending`, and nothing here runs.
 
 @media (prefers-reduced-motion: no-preference) {
-  // Before the client takes over (scripting on): hold the content back so the first
-  // thing seen is the entrance. A failsafe shows it after 3s if the client never runs.
-  @media (scripting: enabled) {
-    .shape:not([data-shape-state]) > * {
-      opacity: 0;
-      animation: shape-failsafe 0s 3s forwards;
-    }
-  }
-
   .shape[data-shape-state='pending'] {
     // Headings sit below their own bottom edge, clipped to where they will rest: the
     // clip moves against the translate, so the window stays put while the text rises
@@ -171,11 +163,5 @@ $ease: cubic-bezier(0.7, 0, 0.2, 1); // the export's --ease
 @keyframes shape-lift {
   from {
     translate: 0 28px;
-  }
-}
-
-@keyframes shape-failsafe {
-  to {
-    opacity: 1;
   }
 }

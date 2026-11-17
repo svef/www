@@ -3,7 +3,8 @@
  *
  * - **Entrance.** Shapes mounting in the same frame are armed together, as the export's
  *   `arm()` does for a page: those already on screen rise 120ms in, 90ms apart in
- *   document order; the rest rise when 20% of them scrolls into view.
+ *   document order; the rest rise when 20% of them scrolls into view. On the first
+ *   load of a document (hydration), the ones already on screen skip the entrance.
  * - **Ambient drift.** One 8s beat for `ambient` shapes (each 900ms after the one
  *   before it) and one 6s beat for `"lively"` ones — two timers in total, not one per
  *   shape. Shapes off screen are skipped, and both timers stop while the tab is hidden.
@@ -47,6 +48,7 @@ let started = false
 
 let armQueue: ShapeController[] = []
 let armFrame: number | null = null
+let firstBatchDone = false
 
 let calmTimer: ReturnType<typeof setInterval> | null = null
 let livelyTimer: ReturnType<typeof setInterval> | null = null
@@ -153,10 +155,17 @@ function flushArm() {
   const queue = armQueue.filter((c) => c.el.isConnected && byElement.get(c.el) === c)
   armQueue = []
   queue.sort((a, b) => byDocumentOrder(a.el, b.el))
+  // The first batch of a document load is the page hydrating. What it already shows
+  // above the fold is what the visitor has been looking at since first paint, so it
+  // settles in place instead of hiding and replaying an entrance (which would also hold
+  // LCP back until hydration). Later batches, from client navigations, keep the entrance.
+  const hydrating = !firstBatchDone
+  firstBatchDone = true
   queue.forEach((c, i) => {
     const r = c.el.getBoundingClientRect()
     if (r.top < window.innerHeight * RISE_VIEWPORT && r.bottom > 0) {
-      c.later(() => c.rise(), RISE_DELAY + i * RISE_STAGGER)
+      if (hydrating) c.settle()
+      else c.later(() => c.rise(), RISE_DELAY + i * RISE_STAGGER)
     } else riseObs()?.observe(c.el)
   })
 }
@@ -335,4 +344,9 @@ export function _stairTimerCount(): number {
 /** For tests: how many ambient timers are running. */
 export function _ambientTimerCount(): number {
   return (calmTimer ? 1 : 0) + (livelyTimer ? 1 : 0)
+}
+
+/** For tests: treat the next batch as the first of a document load again. */
+export function _resetFirstBatch(): void {
+  firstBatchDone = false
 }

@@ -56,8 +56,12 @@ export type ShapeProps<T extends ElementType = 'div'> = ShapeOwnProps & {
  * `<Notch>` carries a black backing until the shape is painted — everything is
  * readable, and since `clip-path` and `box-shadow` don't take part in layout, nothing
  * moves when the client paints. Where scripting is on (and motion allowed), the
- * shape's content is held invisible until the client takes over, so the first thing
- * seen is the entrance rather than a rectangle that then snaps to its shape.
+ * shape is painted by the client, and the entrance (content rising over the resting
+ * shape) plays when it mounts. On the *first load of a document* the shapes already
+ * above the fold skip it: they are what the visitor has been reading since first paint,
+ * and hiding them until hydration only delays LCP. They settle in place (state
+ * `settled`); shapes below the fold, and every shape mounted by a client navigation,
+ * still get the entrance.
  */
 export function Shape<T extends ElementType = 'div'>(props: ShapeProps<T>) {
   const {

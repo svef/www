@@ -4,7 +4,7 @@ import { renderToString } from 'react-dom/server'
 import { axe } from 'vitest-axe'
 import { computeGeometry, polygonPoints, toClipPath } from '@/lib/shape/geometry'
 import { createRng, initialDraws, toSeed } from '@/lib/shape/random'
-import { _ambientTimerCount } from '@/lib/shape/scheduler'
+import { _ambientTimerCount, _resetFirstBatch } from '@/lib/shape/scheduler'
 import { Shape } from './Shape'
 import { Notch } from './Notch'
 
@@ -216,6 +216,43 @@ describe('Shape on the client', () => {
     expect(el.getAttribute('data-shape-state')).toBe('pending')
     act(() => rise!.fire(el, 0.2))
     expect(el.getAttribute('data-shape-state')).toBe('in')
+    vi.restoreAllMocks()
+  })
+
+  it('settles above-the-fold shapes in place on the first load, and plays the entrance for later ones', async () => {
+    setReducedMotion(false)
+    globalThis.IntersectionObserver = FakeIO as unknown as typeof IntersectionObserver
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      top: 100,
+      bottom: 400,
+      left: 0,
+      right: 400,
+      width: 400,
+      height: 300,
+      x: 0,
+      y: 100,
+      toJSON: () => ({}),
+    })
+    _resetFirstBatch()
+    const first = render(
+      <Shape>
+        <p>Texti</p>
+      </Shape>,
+    )
+    const a = first.container.firstElementChild!
+    expect(a.getAttribute('data-shape-state')).toBe('pending')
+    await act(() => new Promise((r) => requestAnimationFrame(() => r(null))))
+    expect(a.getAttribute('data-shape-state')).toBe('settled')
+
+    // a later batch (a client navigation) keeps the entrance
+    const later = render(
+      <Shape>
+        <p>Texti</p>
+      </Shape>,
+    )
+    const b = later.container.firstElementChild!
+    await act(() => new Promise((r) => requestAnimationFrame(() => r(null))))
+    expect(b.getAttribute('data-shape-state')).toBe('pending')
     vi.restoreAllMocks()
   })
 
