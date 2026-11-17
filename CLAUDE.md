@@ -103,7 +103,10 @@ Tokens live in `src/styles/tokens.scss` and are mirrored by the Mantine theme in
 - Dark canvas `#09060C`, Shy White `#FCFBFE`, Electric Violet `#8917E1`, with red / pink /
   yellow accents for emphasis and large shapes — not body text.
 - **The brand is sharp/blocky: no rounded corners.** The radius tokens are `0` deliberately.
-- Type: Overpass (body) and Noto Sans (headings), loaded with `next/font`.
+- Type: **Archivo** for display and text (variable: `wdth` 62–125, `wght` 100–900) and
+  Overpass Mono for small uppercase labels, loaded with `next/font`. **Never commit a
+  licensed font** — this repository is public. The design exports are set in Roc Grotesk,
+  which is licensed; Archivo stands in for it (#121 has the `font-stretch` remapping).
 - The recurring violet block motif is the brand's signature device; use it to frame and
   punctuate, not as wallpaper.
 
@@ -113,7 +116,9 @@ The design of record depends on the surface:
 
 - **The full site** (pages and the design system) — Claude Design exports, kept as
   self-contained HTML alongside the maintainer's working notes. They carry the real markup,
-  CSS values and assets, so work from the export itself.
+  CSS values and assets, so work from the export itself. **The current one is the November
+  2026 redesign, `.local/svef/redesign/svef-website/index.html`; its decisions are in #121**
+  and override the export wherever the two disagree.
 - **The temporary landing page** — a Figma file. Extract it with Figma's design-to-code
   (`get_design_context`) to get the real geometry and exported assets; those assets are
   committed under `public/landing/`.
@@ -243,6 +248,10 @@ verification is the gate; that is not a figure of speech.
 ## Git and pull requests
 
 - Branch from **`dev`**. One issue ↔ one PR, squash-merged.
+- **Exception, until launch:** while the site is not live, redesign work (#121) does not go
+  through pull requests. Each issue is built in its own worktree and branch, then the
+  maintainer's integrating session rebases it onto `dev` and pushes, so every change shows on
+  dev.svef.is as it lands. The local gate still applies before anything reaches `dev`.
 - Commit messages and PR descriptions are plain and descriptive. **No AI attribution** in
   commits or PR text.
 - PR descriptions say what a human should verify. For UI changes, **describe what you checked
@@ -257,6 +266,9 @@ verification is the gate; that is not a figure of speech.
   **Never `git stash`** — the stash is shared.
 - Move the issue on the project board as you go: starting → In progress, PR open → In review.
 - **Never merge.** A person merges, and sets the issue Done.
+- **During the redesign (#121):** commit on your issue branch in your worktree, but **do not
+  push, open a PR, or touch `dev`** — the integrating session does that. Only one agent at a
+  time changes the Payload schema, since every worktree shares the local database.
 - Run the full local gate before pushing.
 - If you're blocked, stop and say precisely what and why. Don't improvise around it.
 - Report what you actually did, including what didn't work.
@@ -265,5 +277,5 @@ verification is the gate; that is not a figure of speech.
 
 The plan of record is **GitHub issues** on this repo plus the
 [SVEF web project board](https://github.com/orgs/svef/projects/2) — not documents.
-Labels: `area:*`, `size:*`, `blocked`. Milestones: `v1 - full-site launch`, `v2 - member portal`.
+Labels: `area:*`, `size:*`, `blocked`, `redesign`. Milestones: `v1 - full-site launch`, `v2 - member portal`.
 Decisions are recorded as a comment on the issue they affect.
