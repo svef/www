@@ -269,6 +269,11 @@ verification is the gate; that is not a figure of speech.
 - **During the redesign (#121):** commit on your issue branch in your worktree, but **do not
   push, open a PR, or touch `dev`** — the integrating session does that. Only one agent at a
   time changes the Payload schema, since every worktree shares the local database.
+- **Every branch pushed to GitHub gets a Vercel preview build, and every build runs
+  `npm run migrate` (`vercel.json`) against the Preview environment's database — which is
+  currently the production database, deliberately.** So pushing *any* branch that carries a
+  new migration applies it to production. Never push a branch with a migration — not even
+  "for safekeeping" — without the maintainer's explicit OK for that migration.
 - Run the full local gate before pushing.
 - If you're blocked, stop and say precisely what and why. Don't improvise around it.
 - Report what you actually did, including what didn't work.
