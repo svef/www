@@ -147,9 +147,9 @@ test.describe('event route', () => {
   }
 
   for (const locale of LOCALES) {
-    // svef/www#141: the seed has no past event with a gallery linked to it, so
-    // the card never offers the link. The page is right; the fixture is missing.
-    test.fixme(`${locale}: the photos link lands on the album, not the top of /myndir`, async ({
+    // svef/www#141: needs a past event with a linked gallery, which the seed now has
+    // (Klúðurkvöld, March 2026).
+    test(`${locale}: the photos link lands on the album, not the top of /myndir`, async ({
       page,
     }) => {
       // A past event's card links at `/myndir#album-<galleryId>`, an id that
@@ -167,9 +167,9 @@ test.describe('event route', () => {
           .find((h) => /#album-\d+$/.test(h)),
       )
 
-      // The seeded fixtures have three albums against past events. If that ever
-      // stops being true this fails loudly rather than skipping quietly, which
-      // is the point — a test that silently covers nothing is worse than none.
+      // The seed links one album to a past event. If that ever stops being true
+      // this fails loudly rather than skipping quietly, which is the point — a
+      // test that silently covers nothing is worse than none.
       expect(
         href,
         `${index} offered no "Myndir frá viðburði" link — are galleries seeded ` +

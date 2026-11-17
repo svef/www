@@ -66,7 +66,7 @@ export const listGalleries = cache(async function listGalleries(
     collection: 'galleries',
     ...publicReadArgs,
     select: ALBUM_FIELDS,
-    populate: { events: { location: true } },
+    populate: { events: { location: true, slug: true } },
     sort: '-date',
     pagination: false,
     depth: 2,

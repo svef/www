@@ -1,5 +1,5 @@
 import { pickLocalized, type AllLocales } from '@/lib/localized'
-import type { Locale } from '@/lib/i18n'
+import { localePath, type Locale } from '@/lib/i18n'
 import type { Event, Gallery, Media } from '@/payload-types'
 
 /**
@@ -17,8 +17,9 @@ type MediaAllLocales = Omit<Media, 'alt' | 'caption'> & {
   caption: AllLocales<string>
 }
 
-type EventAllLocales = Omit<Event, 'title' | 'location' | 'description'> & {
+type EventAllLocales = Omit<Event, 'title' | 'slug' | 'location' | 'description'> & {
   title: AllLocales<string>
+  slug: AllLocales<string>
   location: AllLocales<string>
 }
 
@@ -59,6 +60,8 @@ export type GalleryAlbum = {
   date: string | null
   /** Venue, taken from the related event's `location`. Null when unrelated or unset. */
   venue: string | null
+  /** The related event's page, when the album is linked to an event. */
+  eventHref: string | null
   photos: GalleryPhoto[]
   /**
    * The language `title` is actually written in.
@@ -99,12 +102,14 @@ export function toGalleryAlbum(doc: GalleryAllLocales, locale: Locale): GalleryA
   const title = pickLocalized(doc.title, locale)
   const event = doc.event && typeof doc.event !== 'number' ? doc.event : null
   const venue = pickLocalized(event?.location, locale)
+  const eventSlug = pickLocalized(event?.slug, locale).value
 
   return {
     id: doc.id,
     title: title.value ?? '',
     date: doc.date ?? null,
     venue: venue.value,
+    eventHref: eventSlug ? localePath(`/vidburdir/${eventSlug}`, locale) : null,
     photos: (doc.images ?? [])
       .map((row) => toPhoto(row, locale))
       .filter((photo): photo is GalleryPhoto => photo !== null),

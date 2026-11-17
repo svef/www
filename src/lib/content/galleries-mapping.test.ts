@@ -8,7 +8,7 @@ function album(overrides: Partial<GalleryAllLocales> = {}): GalleryAllLocales {
     date: '2025-11-15T12:00:00.000Z',
     event: {
       id: 9,
-      slug: 'islensku-vefverdlaunin-2025',
+      slug: { is: 'islensku-vefverdlaunin-2025' },
       startDate: '2025-11-15T12:00:00.000Z',
       title: { is: 'Íslensku vefverðlaunin 2025' },
       location: { is: 'Harpa' },
@@ -40,6 +40,17 @@ function image(overrides: Record<string, unknown> = {}) {
 }
 
 describe('toGalleryAlbum', () => {
+  it('links an album to its event, in the page language', () => {
+    const doc = album()
+    ;(doc.event as { slug: Record<string, string> }).slug = { is: 'islensku', en: 'the-awards' }
+    expect(toGalleryAlbum(doc, 'is').eventHref).toBe('/is/vidburdir/islensku')
+    expect(toGalleryAlbum(doc, 'en').eventHref).toBe('/en/events/the-awards')
+  })
+
+  it('has no event link for an album with no event', () => {
+    expect(toGalleryAlbum(album({ event: null }), 'is').eventHref).toBeNull()
+  })
+
   it('resolves the title for the locale', () => {
     expect(toGalleryAlbum(album(), 'en').title).toBe('The Icelandic Web Awards 2025')
     expect(toGalleryAlbum(album(), 'is').title).toBe('Íslensku vefverðlaunin 2025')

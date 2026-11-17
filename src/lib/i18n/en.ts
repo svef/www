@@ -251,6 +251,11 @@ export const en = {
     prevPhoto: 'Previous photo',
     nextPhoto: 'Next photo',
     photoCount: (n: number) => `${n} ${n === 1 ? 'photo' : 'photos'}`,
+    placeholder: 'Photo',
+    showMore: 'Show more photos',
+    shown: 'Showing {shown} of {total}',
+    counter: 'Photo {n} of {total}',
+    toEvent: 'About the event',
     empty: {
       title: 'No albums yet',
       body: 'Photos from SVEF events appear here as soon as they are in.',

@@ -139,6 +139,12 @@ a {
   }
 }
 
+// A modal dialog (the photo lightbox) keeps the page behind it from scrolling. CSS only: no
+// scroll listener, no `preventDefault`, and it lifts the moment the dialog closes.
+html:has(dialog[open]:modal) {
+  overflow: hidden;
+}
+
 // Accessibility: visually hidden, but still announced.
 // Kept in the accessibility tree, so `display: none` / `visibility: hidden` are
 // deliberately not used. The clip-path approach collapses the box visually while

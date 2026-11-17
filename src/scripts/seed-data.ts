@@ -187,6 +187,16 @@ export const events: EventFixture[] = [
       'Pablo Santos, Íslandsbanki. Guðmundur Bjarni Sigurðsson and Jón Kári Eldon, Júní. Ólafur Kjartansson, Hugsmiðjan. Steinar Ingi Farestveit, Kolibri. Klara Arnalds, Avo. Freyr Friðfinnsson of the Federation of Icelandic Industries moderates the discussion.',
     ],
   },
+
+  // A past event, so the events index has a "Liðnir viðburðir" card and an album to
+  // link it to (svef/www#141). Held on the date its album carries; nothing else about
+  // it is claimed — no venue, no description — because the real record is not in the
+  // CMS yet.
+  {
+    slug: 'kludurkvold',
+    title: 'Klúðurkvöld',
+    startDate: '2026-03-13T18:00:00.000Z',
+  },
 ]
 
 export type NewsFixture = {
@@ -260,7 +270,7 @@ export type GalleryFixture = {
 
 export const galleries: GalleryFixture[] = [
   { title: 'Íslensku vefverðlaunin 2025', date: '2025-11-15T12:00:00.000Z' },
-  { title: 'Klúðurkvöld', date: '2026-03-13T12:00:00.000Z' },
+  { title: 'Klúðurkvöld', date: '2026-03-13T12:00:00.000Z', eventSlug: 'kludurkvold' },
   { title: 'Aðalfundur 2026', date: '2026-05-22T12:00:00.000Z' },
 ]
 

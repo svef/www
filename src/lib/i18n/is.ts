@@ -318,6 +318,16 @@ export const is = {
     // singular, 11 does not. A function rather than two strings because no pair
     // of strings can express that rule.
     photoCount: (n: number) => `${n} ${n % 10 === 1 && n % 100 !== 11 ? 'mynd' : 'myndir'}`,
+    // The label on a placeholder tile ("Mynd 3"), for an album whose photos are
+    // not uploaded yet.
+    placeholder: 'Mynd',
+    // Paging a large album: a button under the grid, and what it says is shown.
+    showMore: 'Sýna fleiri myndir',
+    shown: 'Sýni {shown} af {total}',
+    // Read out when the lightbox moves ("Mynd 3 af 24"); the visible "3 / 24" is hidden
+    // from screen readers because they would say "slash".
+    counter: 'Mynd {n} af {total}',
+    toEvent: 'Um viðburðinn',
     empty: {
       title: 'Engin myndasöfn enn',
       body: 'Hér birtast myndir frá viðburðum SVEF um leið og þær eru komnar í hús.',

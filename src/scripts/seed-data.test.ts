@@ -77,9 +77,12 @@ describe('seed fixtures', () => {
   it('carries the association’s real events, in order', () => {
     // These are not design-export fixtures any more: they are the autumn
     // programme, and the site shows them to the public.
+    // The autumn programme first. A past event (Klúðurkvöld) follows, so the events
+    // index has something in "Liðnir viðburðir" and an album to link it to (#141).
     expect(events.map((e) => e.slug)).toEqual([
       'sigurvegarar-segja-fra-svef-x-kolibri',
       'vefthroun-og-gervigreind',
+      'kludurkvold',
     ])
     expect(events[0]?.startDate.startsWith('2026-10-08')).toBe(true)
     expect(events[1]?.startDate.startsWith('2026-10-21')).toBe(true)
@@ -93,9 +96,11 @@ describe('seed fixtures', () => {
     // A title in English above an Icelandic body looks translated and is not,
     // which is worse than leaving it alone.
     for (const event of events) {
-      expect(event.titleEn, event.slug).toBeTruthy()
+      expect(event.titleEn ?? event.title, event.slug).toBeTruthy()
+      // An event with no body (the past one) has nothing to translate.
+      if (!event.description) continue
       expect(event.descriptionEn, event.slug).toBeTruthy()
-      expect(event.descriptionEn, event.slug).toHaveLength(event.description?.length ?? 0)
+      expect(event.descriptionEn, event.slug).toHaveLength(event.description.length)
       if (event.location) expect(event.locationEn, event.slug).toBeTruthy()
     }
   })

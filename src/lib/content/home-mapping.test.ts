@@ -48,6 +48,7 @@ function album(id: number, photos: GalleryPhoto[]): GalleryAlbum {
     title: `Album ${id}`,
     date: null,
     venue: null,
+    eventHref: null,
     photos,
     contentLocale: 'is',
     venueLocale: 'is',
