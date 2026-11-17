@@ -11,7 +11,7 @@ for (const locale of LOCALES) {
   test.describe(`contact and talk proposal (${locale})`, () => {
     test('contact: an address to write to and a form whose fields are labelled', async ({ page }) => {
       await page.goto(urlFor(locale, '/hafa-samband'))
-      await expect(page.locator('a[href^="mailto:"]').first()).toBeVisible()
+      await expect(page.locator('main a[href^="mailto:"]')).toBeVisible()
       const form = page.getByRole('form')
       await expect(form).toBeVisible()
       await expect(form.getByRole('textbox')).toHaveCount(3)
