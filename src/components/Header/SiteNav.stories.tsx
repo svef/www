@@ -29,6 +29,8 @@ const meta: Meta<typeof SiteNav> = {
       { href: '/is/skraning', label: is.nav.membership },
     ],
     menuLabel: is.nav.menu,
+    closeLabel: is.close,
+    email: 'svef@svef.is',
     submenuLabel: "undirsíður",
     navLabel: is.nav.primary,
     locale: 'is',
@@ -58,6 +60,27 @@ type Story = StoryObj<typeof SiteNav>
 
 export const Desktop: Story = {}
 
+/** The `Um SVEF` disclosure, opened from the keyboard-operable button beside the link. */
+export const Submenu: Story = {
+  args: {
+    items: [
+      { href: '/is/vidburdir', label: is.nav.events },
+      {
+        href: '/is/um-svef',
+        label: is.nav.about,
+        children: [
+          { href: '/is/stjorn', label: is.about.boardTitle },
+          { href: '/is/log-svef', label: is.about.bylawsTitle },
+          { href: '/is/spurt-og-svarad', label: is.about.faqTitle },
+        ],
+      },
+    ],
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(await canvas.findByRole('button', { name: /undirsíður/ }))
+  },
+}
+
 /** The current page carries the design's violet underline. */
 export const CurrentPage: Story = {
   parameters: { nextjs: { navigation: { pathname: '/is/frettir' } } },
@@ -73,7 +96,8 @@ export const English: Story = {
       { href: '/en/membership', label: en.nav.membership },
     ],
     menuLabel: en.nav.menu,
-    submenuLabel: "undirsíður",
+    closeLabel: en.close,
+    submenuLabel: en.nav.submenu,
     navLabel: en.nav.primary,
     locale: 'en',
   },

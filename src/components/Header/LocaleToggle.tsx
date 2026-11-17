@@ -4,6 +4,7 @@ import { useCallback, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { VisuallyHidden } from '@mantine/core'
+import { GrowText } from '@/components/GrowText/GrowText'
 import { getDictionary, localePath, type Locale } from '@/lib/i18n'
 import styles from './Header.module.scss'
 
@@ -64,7 +65,8 @@ function useLocationSuffix(): string {
  * never receives, and it is what the toggle already did before #49.
  */
 /**
- * A single link to the other language, labelled with that language's own name.
+ * A single link to the other language, drawn as the export's `IS/EN` button and
+ * named, for assistive technology, with that language's own name.
  *
  * "English" on the Icelandic page, "Íslenska" on the English page — written in
  * the language it leads to, so a reader who cannot read the page they are on can
@@ -91,8 +93,17 @@ export function LocaleToggle({ locale }: { locale: Locale }) {
       className={styles.langLink}
       hrefLang={target}
     >
-      <span lang={target}>{getDictionary(target).languageName}</span>
-      <VisuallyHidden> {t.switchLanguage}</VisuallyHidden>
+      {/* Decoration: the link's name is the hidden text below. */}
+      <span className={styles.langCurrent} aria-hidden="true">
+        <GrowText className={styles.langText}>{locale.toUpperCase()}</GrowText>
+      </span>
+      <span className={styles.langSeg} aria-hidden="true">
+        <b data-on={locale === 'is'}>IS</b>
+        <b data-on={locale === 'en'}>EN</b>
+      </span>
+      <VisuallyHidden>
+        <span lang={target}>{getDictionary(target).languageName}</span> {t.switchLanguage}
+      </VisuallyHidden>
     </Link>
   )
 }

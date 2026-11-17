@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { Footer } from './Footer'
 import { is } from '@/lib/i18n/is'
 import { en } from '@/lib/i18n/en'
+import { visibleFooterColumns } from '@/lib/nav'
 
 const meta: Meta<typeof Footer> = {
   title: 'Chrome/Footer',
@@ -10,10 +11,10 @@ const meta: Meta<typeof Footer> = {
   args: {
     blurb: is.footer.blurb,
     email: 'svef@svef.is',
-    contactHref: '/is/hafa-samband',
-    contactLabel: 'Hafa samband',
+    contactHeading: is.footer.contactHeading,
+    columns: visibleFooterColumns('is', is),
+    columnsLabel: is.footer.pages,
     socials: [],
-    year: 2026,
   },
 }
 export default meta
@@ -49,5 +50,10 @@ export const SomeSocials: Story = {
 }
 
 export const English: Story = {
-  args: { blurb: en.footer.blurb },
+  args: {
+    blurb: en.footer.blurb,
+    contactHeading: en.footer.contactHeading,
+    columns: visibleFooterColumns('en', en),
+    columnsLabel: en.footer.pages,
+  },
 }

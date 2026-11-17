@@ -25,8 +25,23 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+:root {
+  // The mark's width in the header, and the strip the header occupies over the top
+  // of the page: the mark plus 12px above and below it.
+  --head-logo: clamp(84px, 7.4vw, 112px);
+  --head-h: calc(var(--head-logo) + 24px);
+}
+
 main {
   flex: 1;
+}
+
+// The header overlays the top of the page, as the export's does over its first band.
+// A page built on the stepped-shape band carries that band's own padding; a page that
+// has not been rebuilt yet has no band, so it is moved down out from under the header.
+// Temporary: it goes when the last page is on the band (#121).
+main:not(:has([data-shape])) {
+  padding-top: var(--head-h);
 }
 
 h1,

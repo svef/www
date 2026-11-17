@@ -1,20 +1,35 @@
 import Link from 'next/link'
+import { GrowText } from '@/components/GrowText/GrowText'
+import { Notch } from '@/components/Shape/Notch'
+import { Shape } from '@/components/Shape/Shape'
 import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
-import { isHiddenPath, withoutHiddenLinks } from '@/lib/i18n'
+import { withoutHiddenLinks } from '@/lib/i18n'
 import type { SocialLink } from '@/lib/content/site-settings'
 import styles from './Footer.module.scss'
 
 export type FooterSocial = SocialLink
 
+export interface FooterColumn {
+  heading: string
+  links: { href: string; label: string }[]
+}
+
+/**
+ * The site footer: one violet shape band holding the about blurb, the address, the
+ * page columns and the socials (the export's `.site-foot`).
+ *
+ * Not ported: the export's `Lagalegt` column (the privacy and cookie pages are
+ * skipped, #121) and the 3D trophy in the bottom-right corner, which belongs to the
+ * on-hold Web Awards work. That corner is a decorative notch instead.
+ */
 export function Footer({
   blurb,
   blurbLang,
   email,
-  contactHref,
-  contactLabel,
-  write,
+  contactHeading,
+  columns,
+  columnsLabel,
   socials,
-  year,
 }: {
   blurb: string
   /**
@@ -25,77 +40,86 @@ export function Footer({
    */
   blurbLang?: string
   email: string
+  /** The small label above the address. */
+  contactHeading: string
   /**
-   * The contact page. It is linked from here and nowhere else — the header row
-   * has no room for it — so losing this link strands the page (svef/www#107).
-   *
-   * Omitted while the rest of the site is hidden: the contact page is not one of
-   * the pages reachable then, so the link would bounce the reader to the landing.
+   * The link columns, in the export's order. Links to hidden pages are dropped
+   * here whatever the caller passed (see `HIDDEN_PAGES`), and so is a column left
+   * with nothing in it.
    */
-  contactHref?: string
-  contactLabel?: string
-  /** The two things a reader can send us. Rendered above the address. */
-  write?: { heading: string; links: { href: string; label: string }[] }
+  columns: FooterColumn[]
+  /** Accessible name of the `<nav>` the columns form. */
+  columnsLabel: string
   /**
    * Only the networks the association actually has a URL for. An empty list is
    * the normal state today and drops the row entirely — a row of links that go
    * nowhere is worse than no row.
    */
   socials: FooterSocial[]
-  year: number
 }) {
-  // Dropped here whatever the caller passed: a hidden page must not be linked
-  // from the footer (see `HIDDEN_PAGES`).
-  const writeLinks = write ? withoutHiddenLinks(write.links) : []
-  const showContact = contactHref && contactLabel && !isHiddenPath(contactHref)
+  const visible = columns
+    .map((column) => ({ ...column, links: withoutHiddenLinks(column.links) }))
+    .filter((column) => column.links.length > 0)
 
   return (
-    <footer className={styles.footer}>
-      <div className={styles.inner}>
-        <div className={styles.brand}>
-          <p className={styles.blurb} lang={blurbLang}>
+    <footer className={styles.siteFoot}>
+      <Shape
+        color="violet"
+        band
+        auto="tr,bl,br"
+        autoMobile="tr"
+        ambient="lively"
+        className={styles.band}
+      >
+        <div className={styles.wrap}>
+          <Notch corner="tl" as="p" className={styles.about} lang={blurbLang}>
             {blurb}
-          </p>
-        </div>
-        {write && writeLinks.length > 0 && (
-          <div className={styles.write}>
-            <h2 className={styles.writeHeading}>{write.heading}</h2>
-            {writeLinks.map((link) => (
-              <Link key={link.href} href={link.href} className={styles.writeLink}>
-                {link.label}
-              </Link>
-            ))}
+          </Notch>
+
+          <div className={styles.contact}>
+            <p className={styles.chip}>{contactHeading}</p>
+            <a href={`mailto:${email}`} className={styles.mail}>
+              <GrowText className={styles.mailText}>{email}</GrowText>
+            </a>
           </div>
-        )}
-        <div className={styles.contact}>
-          {showContact ? (
-            <Link href={contactHref} className={styles.contactLink}>
-              {contactLabel}
-            </Link>
-          ) : null}
-          <a href={`mailto:${email}`} className={styles.email}>
-            {email}
-          </a>
-          {socials.length > 0 && (
-            <ul className={styles.socials}>
-              {socials.map((s) => (
-                <li key={s.name}>
-                  {/*
-                    The icon carries no text, so the link needs its accessible
-                    name from `aria-label`. That is safe here precisely because
-                    there is no visible label for it to contradict — WCAG 2.5.3
-                    only bites when visible text and accessible name disagree.
-                  */}
-                  <a href={s.href} className={styles.social} aria-label={s.name}>
-                    <SocialIcon name={s.icon} />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-          <p className={styles.copy}>© SVEF {year}</p>
+
+          <div className={styles.right}>
+            {visible.length > 0 && (
+              <nav className={styles.cols} aria-label={columnsLabel}>
+                {visible.map((column) => (
+                  <div key={column.heading} className={styles.col}>
+                    <h2 className={styles.chip}>{column.heading}</h2>
+                    <ul>
+                      {column.links.map((link) => (
+                        <li key={link.href}>
+                          <Link href={link.href}>{link.label}</Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </nav>
+            )}
+            {socials.length > 0 && (
+              <ul className={styles.socials}>
+                {socials.map((s) => (
+                  <li key={s.name}>
+                    {/*
+                      The icon carries no text, so the link needs its accessible
+                      name from `aria-label`. That is safe here precisely because
+                      there is no visible label for it to contradict — WCAG 2.5.3
+                      only bites when visible text and accessible name disagree.
+                    */}
+                    <a href={s.href} aria-label={s.name}>
+                      <SocialIcon name={s.icon} size={20} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-      </div>
+      </Shape>
     </footer>
   )
 }

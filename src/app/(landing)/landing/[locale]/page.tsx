@@ -210,14 +210,17 @@ export default async function LandingPage({
         }
         email={chrome.contactEmail}
         socials={chrome.socials}
-        year={new Date().getFullYear()}
-        write={{
-          heading: t.forms.writeHeading,
-          links: [
-            { href: localePath('/abendingar', locale), label: t.forms.feedback.title },
-            { href: localePath('/erindi', locale), label: t.forms.talk.title },
-          ],
-        }}
+        contactHeading={t.footer.contactHeading}
+        columnsLabel={t.footer.pages}
+        columns={[
+          {
+            heading: t.forms.writeHeading,
+            links: [
+              { href: localePath('/abendingar', locale), label: t.forms.feedback.title },
+              { href: localePath('/erindi', locale), label: t.forms.talk.title },
+            ],
+          },
+        ]}
       />
     </>
   )

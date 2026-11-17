@@ -151,11 +151,24 @@ test.describe('header at 390px', () => {
       await expect(panel(page)).toBeVisible()
       // Sweep the settled panel: axe reads computed colours, and mid-animation
       // they are whatever the compositor happened to blend.
+      // The panel wipes in and its items fade up in turn, so wait for the last
+      // of them and for the violet foot to land.
       await expect
-        .poll(() => panel(page).evaluate((node) => getComputedStyle(node).opacity), {
-          message: 'the menu never finished its open animation',
-        })
-        .toBe('1')
+        .poll(
+          () =>
+            panel(page).evaluate((node) => {
+              const items = node.querySelectorAll('nav > ul > li')
+              const last = items[items.length - 1]
+              const foot = node.querySelector('nav + div')
+              return [
+                getComputedStyle(node).visibility,
+                last ? getComputedStyle(last).opacity : '1',
+                foot ? getComputedStyle(foot).transform : 'none',
+              ].join('|')
+            }),
+          { message: 'the menu never finished its open animation' },
+        )
+        .toBe('visible|1|none')
 
       const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
       const { unexpected } = triage(results.violations, url)

@@ -42,3 +42,53 @@ export function visibleNavItems(locale: Locale, t: Dictionary): HeaderNavItem[] 
       item.children ? { ...item, children: withoutHiddenLinks(item.children) } : item,
     )
 }
+
+export interface FooterColumn {
+  heading: string
+  links: { href: string; label: string }[]
+}
+
+/**
+ * The footer's link columns, before the hidden pages are dropped. Same source
+ * of truth as the header: labels come from the dictionary and every href goes
+ * through `localePath`. The export's fourth column, `Lagalegt`, is left out on
+ * purpose — the privacy and cookie pages are skipped for now (#121).
+ */
+export function buildFooterColumns(locale: Locale, t: Dictionary): FooterColumn[] {
+  return [
+    {
+      heading: t.footer.programme,
+      links: [
+        { href: localePath('/vidburdir', locale), label: t.nav.events },
+        { href: localePath('/vefverdlaunin', locale), label: t.nav.awards },
+        { href: localePath('/frettir', locale), label: t.nav.news },
+        { href: localePath('/myndir', locale), label: t.photos.title },
+      ],
+    },
+    {
+      heading: t.footer.about,
+      links: [
+        { href: localePath('/um-svef', locale), label: t.footer.aboutClub },
+        { href: localePath('/stjorn', locale), label: t.about.boardTitle },
+        { href: localePath('/log-svef', locale), label: t.about.bylawsTitle },
+        { href: localePath('/spurt-og-svarad', locale), label: t.about.faqTitle },
+      ],
+    },
+    {
+      heading: t.footer.involved,
+      links: [
+        { href: localePath('/skraning', locale), label: t.nav.membership },
+        { href: localePath('/erindi', locale), label: t.forms.talk.title },
+        { href: localePath('/abendingar', locale), label: t.forms.feedback.title },
+        { href: localePath('/hafa-samband', locale), label: t.nav.contact },
+      ],
+    },
+  ]
+}
+
+/** `buildFooterColumns` minus links to hidden pages, and any column left empty. */
+export function visibleFooterColumns(locale: Locale, t: Dictionary): FooterColumn[] {
+  return buildFooterColumns(locale, t)
+    .map((column) => ({ ...column, links: withoutHiddenLinks(column.links) }))
+    .filter((column) => column.links.length > 0)
+}

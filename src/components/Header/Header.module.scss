@@ -1,505 +1,693 @@
-// The width at which the nav collapses into a menu. Mirrored by
-// `NAV_BREAKPOINT` in `SiteNav.tsx`, which closes an open menu on the way up.
-$nav-breakpoint: 900px;
+// The site header, ported from the export's `.site-head` family (final cascade, not
+// the first pass: the export restyles the submenu, the language button and the
+// mobile menu further down its own stylesheet, and those later rules win).
+//
+// Not fixed, not sticky (#121). The header is in the flow at the top of the page and
+// scrolls away with it; a negative bottom margin lets it overlay the first band, the
+// way the export's does. At scroll position 0 over that band it shows white nav text
+// and the violet mark: the band's top-left corner is a black notch cut around the
+// page title, and the mark and the first nav items sit in it.
+@use '../../styles/breakpoints' as bp;
+@use '../../styles/mixins';
 
-// A one-pixel marker in the flow above the header. `HeaderShell` watches it
-// with an IntersectionObserver: once it leaves the viewport the bar is no longer
-// at the top of the page. The negative margin keeps it from shifting anything.
-.sentinel {
-  height: 1px;
-  margin-bottom: -1px;
-}
+$focus: 3px solid var(--focus-ring);
 
 .header {
-  // Only the bar shrinks. The mark keeps its size at every scroll position, so
-  // it simply hangs further below the bar once the bar is shallow.
-  --header-h: 88px;
-  --logo-width: 112px;
-  --logo-top: 12px;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  min-height: var(--header-h);
-  // The gutter sits on the bar, not the row, which is what `Section` and the
-  // footer do — that is what makes the mark's left edge line up with the content
-  // below rather than sitting a gutter further in.
-  padding: 0 var(--space-6);
-  transition: min-height 220ms ease;
-}
-
-// The glass is a layer of its own rather than the header's own background, so
-// the mark can sit above it while the blur stays behind everything.
-.header::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
+  // `--head-logo` and `--head-h` (the mark, plus 12px above and below it) are on
+  // `:root`, in globals.scss, because the page needs the strip's height too.
+  position: relative;
+  z-index: 50;
+  margin-bottom: calc(-1 * var(--head-h));
+  // The strip overlays the page's first band. Only what is drawn in it takes
+  // clicks, so a link under the empty part of it stays clickable.
   pointer-events: none;
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
-  // No hand-written -webkit- prefix: Lightning CSS adds prefixes from
-  // browserslist, and writing both made it collapse them into the prefixed
-  // property alone, which left the standard one undefined.
-  backdrop-filter: blur(10px) saturate(120%);
-}
 
-// Without the blur the translucency would just be a washed-out band over moving
-// text, so it falls back to the solid canvas and no fade.
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .header::before {
-    background: var(--bg);
+  :where(a, button) {
+    pointer-events: auto;
   }
 }
 
-.header[data-compact='true'] {
-  --header-h: 60px;
-}
-
-// The row, held to the same measure as the page content so the mark's left edge
-// lines up with everything below it — the footer already does this.
-.inner {
+.row {
   display: flex;
   align-items: center;
-  // The export draws two different gaps: clamp(16px, 2.5vw, 32px) between the
-  // logo and the nav, and 14px inside the right-hand group. The panel is
-  // `display: contents`, so its children are direct children here.
-  gap: var(--space-4);
-  max-width: var(--content-max);
-  margin: 0 auto;
-  // No padding at all: the bar carries the gutter, and the bar's depth is
-  // `--header-h`, which is what lets the mark exceed it rather than push it open.
-  min-height: var(--header-h);
-  flex-wrap: wrap;
-  // The row sets its own min-height, so it has to ease on the same curve as the
-  // bar. Without this the bar animated while the row snapped, which is what made
-  // the shrink look like it was stuttering.
-  transition: min-height 220ms ease;
+  gap: 24px;
+  min-height: var(--head-h);
+  padding-block: 12px;
+  padding-inline: max(24px, env(safe-area-inset-left, 0px)) max(24px, env(safe-area-inset-right, 0px));
 }
 
 .logoLink {
+  display: block;
+  flex: none;
+  width: var(--head-logo);
   text-decoration: none;
-  flex-shrink: 0;
-  // Fixed to the bar's own depth and aligned to its top, so the mark — which is
-  // taller, and stays that size as the bar shrinks — spills out of the bottom
-  // instead of stretching it. Nothing clips it, so it carries on over the page.
-  align-self: flex-start;
-  height: var(--header-h);
-  padding-top: var(--logo-top);
-  transition: height 220ms ease;
 
-  // The link's own box is the bar's depth, and that is the part that takes
-  // clicks. The mark inside is taller and hangs over the page, so without this
-  // it would sit on top of whatever is beneath and swallow clicks meant for it —
-  // the hero's call to action, once the bar has shrunk.
-  > * {
-    pointer-events: none;
+  &:focus-visible {
+    outline: $focus;
+    outline-offset: 3px;
+  }
+
+  // The mark grows a little under the pointer. `Logo` owns its own box, so this
+  // reaches it from outside by position.
+  > span {
+    transition: transform 0.45s var(--ease);
+  }
+
+  &:hover > span,
+  &:focus-visible > span {
+    transform: scale(1.1);
+  }
+
+  @include bp.reduced-motion {
+    > span {
+      transition: none;
+    }
+
+    &:hover > span,
+    &:focus-visible > span {
+      transform: none;
+    }
   }
 }
 
-// The focus-trap wrapper and the disclosure panel both take part in the
-// header's own flex layout at desktop width rather than nesting inside it, so
-// the row reads logo → nav → contact → controls exactly as the design draws it
-// while the markup stays a single grouped menu for small screens.
+// The focus-trap wrapper only exists to be a single child for the trap.
 .menu {
   display: contents;
 }
 
+// ---------- desktop: the nav sits in the row ----------
+
 .panel {
-  display: contents;
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1vw, 16px);
+  margin-left: auto;
 }
 
 .nav {
-  flex: 1;
-  margin-left: var(--space-4);
+  display: block;
 }
 
 .list {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
+  gap: clamp(2px, 0.9vw, 14px);
   list-style: none;
   margin: 0;
   padding: 0;
-}
 
-.controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  > li {
+    position: relative;
+  }
 }
 
 .navLink {
-  display: inline-block;
-  color: var(--fg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 8px;
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  color: var(--color-white);
   text-decoration: none;
-  font-weight: var(--weight-semibold);
-  // The design marks the current section with a violet underline. It is drawn
-  // below the link's own box rather than as a border with padding above it:
-  // padding-bottom made every item sit that much above the centre of the bar,
-  // which is what left the row looking unaligned.
-  position: relative;
-  transition: color 0.16s ease;
 
-  &::after {
+  &:focus-visible {
+    outline: $focus;
+    outline-offset: 0;
+  }
+}
+
+// Hover-widen: the export's `font-stretch: 135%; font-weight: 800` on a 100%/600 link.
+// The label holds the box at the wide width, so neighbours don't move.
+.navLink .label {
+  @include mixins.hover-widen-more;
+}
+
+// Underline the label rather than the link: an inline-flex label is an atomic
+// inline, which a decoration on the link would not reach.
+.navLink[aria-current='page'] .label {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 7px;
+}
+
+.hasSubmenu {
+  display: flex;
+  align-items: center;
+
+  > .navLink {
+    padding-right: 2px;
+  }
+}
+
+.submenuToggle {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-white);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: $focus;
+    outline-offset: 0;
+  }
+}
+
+.chevron {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border-right: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.35s var(--ease);
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}
+
+.submenuToggle[aria-expanded='true'] .chevron {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+// Three stacked buttons, no frame (the export's final "About SVEF dropdown").
+.submenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 5;
+  display: none;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 4px 0 0;
+  list-style: none;
+
+  // A bridge over the gap, so the pointer can travel from the trigger to the
+  // buttons without the menu closing under it.
+  &::before {
     content: '';
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -6px;
-    height: 3px;
-    background: transparent;
+    inset: -14px 0 auto;
+    height: 14px;
   }
 
-  &:hover {
-    color: var(--color-violet-light);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-violet-light);
-    outline-offset: 3px;
-  }
-
-  &[aria-current='page']::after {
-    background: var(--color-violet);
+  &[data-open='true'] {
+    display: flex;
   }
 }
 
-
-// The way out to the other language. Styled as a nav item rather than a control
-// so it sits on the same line as the rest of the row.
-.langLink {
-  color: var(--fg-muted);
-  text-decoration: none;
-  font-weight: var(--weight-semibold);
+.submenuLink {
+  display: inline-block;
+  padding: 13px 18px;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
   white-space: nowrap;
-  transition: color 0.16s ease;
+  text-decoration: none;
+  background: var(--color-white);
+  color: var(--color-black);
 
-  &:hover {
-    color: var(--fg);
+  &[aria-current='page'] {
+    background: var(--accent-yellow);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-violet-light);
+    outline: $focus;
     outline-offset: 3px;
   }
 }
 
-// Hidden above the breakpoint, where the nav is a row and there is nothing to
-// disclose. `display: none` rather than `visibility`, so it is out of the tab
-// ring too.
+.submenuLink .subLabel {
+  @include mixins.hover-widen-button;
+}
+
+.navFoot {
+  display: contents;
+}
+
+.navMail {
+  display: none;
+}
+
+// ---------- language toggle ----------
+// One link to the other language, drawn as the export's `IS/EN` button: at desktop
+// width a white chip showing the language you are reading, on a phone the
+// two-segment switch. Which one is current is decoration; the link's name is the
+// hidden text, "English — Skipta yfir í ensku".
+
+.langLink {
+  display: inline-grid;
+  place-items: center;
+  margin-left: 10px;
+  padding: 9px 12px;
+  background: var(--color-white);
+  color: var(--color-black);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  line-height: 1;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: $focus;
+    outline-offset: 3px;
+  }
+}
+
+.langCurrent .langText {
+  @include mixins.grow-text(var(--stretch-normal), 700, var(--stretch-button), 850);
+}
+
+.langSeg {
+  display: none;
+}
+
+// ---------- the menu button ----------
+
+.controls {
+  display: contents;
+}
+
 .toggle {
   display: none;
   align-items: center;
-  gap: var(--space-2);
-  font: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  color: var(--fg);
-  background: none;
-  border: 1px solid var(--surface-4);
-  border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-3);
-  min-height: 44px;
+  gap: 10px;
+  margin-left: auto;
+  padding: 10px 14px;
+  background: var(--color-violet);
+  color: var(--color-white);
+  border: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
 
-  &:hover {
-    border-color: var(--color-violet);
-  }
-
   &:focus-visible {
-    outline: 2px solid var(--color-violet-light);
-    outline-offset: 2px;
-  }
-
-  // Shy White on Electric Violet is 6.05:1 — AA for this size, and the one
-  // place the brand violet carries text.
-  &[aria-expanded='true'] {
-    background: var(--color-violet);
-    border-color: var(--color-violet);
+    outline: $focus;
+    outline-offset: 3px;
   }
 }
 
-.bars {
+// Burger into an X in two steps: the bars snap together at the middle, then turn;
+// closing runs it backwards.
+.brg {
   position: relative;
-  display: block;
-  width: 16px;
-  height: 12px;
+  display: inline-block;
   flex: none;
+  width: 22px;
+  height: 10px;
+  transition: transform 0.35s var(--ease);
 
-  span {
+  i {
     position: absolute;
     left: 0;
     width: 100%;
-    height: 2px;
-    background: currentcolor;
+    height: 2.5px;
+    background: currentColor;
+    transform-origin: 50% 50%;
     transition:
-      transform 0.16s ease,
-      opacity 0.16s ease;
+      top 0.18s cubic-bezier(0.7, 0, 0.3, 1) 0.2s,
+      transform 0.22s cubic-bezier(0.3, 1.6, 0.5, 1) 0s,
+      width 0.25s var(--ease);
 
     &:nth-child(1) {
       top: 0;
     }
 
     &:nth-child(2) {
-      top: 5px;
-    }
-
-    &:nth-child(3) {
-      top: 10px;
+      top: 7.5px;
     }
   }
 }
 
-.toggle[aria-expanded='true'] .bars span {
+.toggle[aria-expanded='false']:hover .brg i:nth-child(2) {
+  width: 65%;
+}
+
+.toggle[aria-expanded='true']:hover .brg {
+  transform: rotate(90deg);
+}
+
+.toggle[aria-expanded='true'] .brg i {
+  top: 3.75px;
+  width: 100%;
+  transition:
+    top 0.18s cubic-bezier(0.7, 0, 0.3, 1) 0s,
+    transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1) 0.18s,
+    width 0.2s;
+
   &:nth-child(1) {
-    transform: translateY(5px) rotate(45deg);
+    transform: rotate(45deg);
   }
 
   &:nth-child(2) {
-    opacity: 0;
-  }
-
-  &:nth-child(3) {
-    transform: translateY(-5px) rotate(-45deg);
+    transform: rotate(-45deg);
   }
 }
 
-@media (max-width: $nav-breakpoint) {
-  .header {
-    padding: 0 var(--space-4);
+@include bp.reduced-motion {
+  .brg,
+  .brg i,
+  .toggle[aria-expanded='true'] .brg i {
+    transition: none;
   }
+}
 
+// ---------- a phone: the nav is a full-screen menu ----------
+
+@include bp.below(bp.$md) {
   .toggle {
     display: inline-flex;
   }
 
-  .controls {
-    margin-left: auto;
+  // Open: the header takes over the screen. It is fixed only for as long as the menu
+  // is open, so the mark and the button are where the reader can see them even if
+  // the page was scrolled; closed, it is back in the flow and scrolls away.
+  .header:has(.panel[data-open='true']) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
   }
 
-  // The panel stops being a pass-through and becomes the header's second row:
-  // full width, in normal flow, so opening it pushes the page down instead of
-  // covering it and nothing can overflow sideways.
+  // The strip behind the mark and the button turns solid black, so nothing scrolls
+  // through it while the menu is up.
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: -1;
+    height: calc(var(--head-h) + env(safe-area-inset-top, 0px));
+    background: var(--color-black);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .header:has(.panel[data-open='true'])::before {
+    opacity: 1;
+  }
+
+  // Scroll lock, in CSS: the page underneath is simply not scrollable while the
+  // menu is open, and the menu scrolls on its own. Nothing listens to wheel, touch
+  // or keys, so native scrolling is never hijacked.
+  :global(html):has(.panel[data-open='true']) {
+    overflow: hidden;
+  }
+
   .panel {
-    display: none;
-    order: 2;
-    flex-basis: 100%;
-    width: 100%;
-    // Clear the mark, which is taller than the bar and hangs over whatever is
-    // below it — here, the first item of the open menu. Derived rather than
-    // hard-coded, so it still holds when the bar is shallow from scrolling.
-    padding-top: calc(
-      var(--logo-top) + var(--logo-width) - var(--header-h) + var(--space-2)
-    );
-    border-top: 1px solid var(--surface-3);
-    animation: menuIn 0.18s ease-out;
+    position: fixed;
+    top: calc(var(--head-h) + env(safe-area-inset-top, 0px));
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    margin: 0;
+    padding: 40px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+    background: var(--color-black);
+    overflow: auto;
+    overscroll-behavior: contain;
+    visibility: hidden;
+    pointer-events: none;
+    // The menu wipes down in three steps, like the shapes.
+    clip-path: polygon(0 0, 100% 0, 100% 0, 66% 0, 66% 0, 33% 0, 33% 0, 0 0);
+    transition:
+      clip-path 0.55s var(--ease) 0.12s,
+      visibility 0s 0.67s;
 
     &[data-open='true'] {
-      display: block;
+      visibility: visible;
+      pointer-events: auto;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 66% 100%, 66% 100%, 33% 100%, 33% 100%, 0 100%);
+      transition:
+        clip-path 0.55s var(--ease),
+        visibility 0s;
     }
-  }
-
-  .nav {
-    flex: none;
-    margin-left: 0;
   }
 
   .list {
     flex-direction: column;
     align-items: stretch;
     gap: 0;
+
+    > li {
+      border-bottom: 1px solid rgba(252, 251, 254, 0.14);
+      opacity: 0;
+      transform: translateY(18px);
+      transition:
+        opacity 0.25s,
+        transform 0.25s;
+    }
+  }
+
+  .panel[data-open='true'] .list > li {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.45s var(--ease),
+      transform 0.55s cubic-bezier(0.2, 0.75, 0.2, 1);
+
+    @for $i from 1 through 5 {
+      &:nth-child(#{$i}) {
+        transition-delay: 0.12s + 0.06s * $i;
+      }
+    }
   }
 
   .navLink {
-    display: block;
-    // Comfortably past the 44px target size the association's own award asks
-    // for, on the axis where a thumb misses.
-    padding: var(--space-4);
-    border: 0;
-    border-bottom: 1px solid var(--surface-3);
-    border-left: 3px solid transparent;
-    color: var(--fg);
-    text-decoration: none;
+    display: flex;
+    justify-content: flex-start;
+    padding: 14px 0 12px;
+    font-size: clamp(1.5rem, 8.6vw, 2.4rem);
+    white-space: nowrap;
 
-    &[aria-current='page'] {
-      border-left-color: var(--color-violet);
-      background: var(--surface-1);
-    }
-
-    // The underline belongs to the desktop row; down here the current item is
-    // marked by the violet edge on its left instead.
-    &::after {
-      content: none;
+    &:focus-visible {
+      outline-offset: -3px;
     }
   }
-}
 
-@keyframes menuIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
+  .navLink .label {
+    --grow-stretch: var(--stretch-hover);
+    align-items: flex-start;
+    text-align: left;
   }
 
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .panel {
-    animation: none;
+  .navLink[aria-current='page'] .label {
+    text-decoration-color: var(--color-violet);
+    text-decoration-thickness: 4px;
+    text-underline-offset: 9px;
   }
 
-  .header,
-  .logoLink {
-    transition: none;
+  // A touch screen has no hover: the widen runs on press instead.
+  @media (hover: none) {
+    .navLink:active .label {
+      font-stretch: var(--grow-stretch);
+      font-weight: var(--grow-weight);
+    }
   }
 
-  .navLink,
-  .bars span {
-    transition: none;
-  }
-}
-
-// --- Submenus -------------------------------------------------------------
-// A parent is a real link to its own page, with the disclosure as a separate
-// button beside it. Making the parent itself the trigger would put a page
-// behind a menu and leave no way to reach it.
-
-.hasSubmenu {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.submenuToggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--fg-muted);
-  cursor: pointer;
-
-  &:hover {
-    color: var(--fg);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-violet-light);
-    outline-offset: 2px;
-  }
-}
-
-.chevron {
-  display: block;
-  width: 7px;
-  height: 7px;
-  border-right: 2px solid currentcolor;
-  border-bottom: 2px solid currentcolor;
-  transform: translateY(-2px) rotate(45deg);
-  transition: transform 0.16s ease;
-}
-
-.submenuToggle[aria-expanded='true'] .chevron {
-  transform: translateY(1px) rotate(225deg);
-}
-
-// A parent holding the current page is marked, but not with `aria-current` —
-// that belongs to the page you are actually on, and claiming it here would
-// announce two current pages.
-.navLink[data-holds-current='true']::after {
-  background: var(--surface-4);
-}
-
-.submenu {
-  display: none;
-  position: absolute;
-  top: calc(100% + var(--space-3));
-  left: 0;
-  z-index: 1;
-  min-width: 13rem;
-  margin: 0;
-  padding: var(--space-2) 0;
-  list-style: none;
-  background: var(--surface-2);
-  border: 1px solid var(--surface-4);
-
-  &[data-open='true'] {
-    display: block;
-  }
-
-  // The panel sits a gap below its trigger, and that gap is outside the
-  // parent's box — so moving the pointer down onto the panel left the parent
-  // and closed it before you arrived. This bridges the gap so the pointer
-  // never leaves. Invisible, and inside the panel, so it only exists while the
-  // panel does.
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 100%;
-    height: var(--space-3);
-  }
-}
-
-.submenuLink {
-  display: block;
-  padding: var(--space-2) var(--space-4);
-  color: var(--fg);
-  text-decoration: none;
-  font-weight: var(--weight-medium);
-  white-space: nowrap;
-
-  &:hover {
-    background: var(--surface-3);
-    color: var(--color-violet-light);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-violet-light);
-    outline-offset: -2px;
-  }
-
-  &[aria-current='page'] {
-    box-shadow: inset 3px 0 0 var(--color-violet);
-  }
-}
-
-@media (max-width: $nav-breakpoint) {
-  // Inside the open menu the panel is already a disclosure, so a second one
-  // nested in it is a door behind a door. The subpages are simply listed,
-  // indented under their parent, and the toggle has nothing left to do.
   .hasSubmenu {
-    display: block;
+    flex-wrap: wrap;
+
+    > .navLink {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
   .submenuToggle {
-    display: none;
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--color-violet);
+
+    &[aria-expanded='true'] {
+      background: var(--color-violet);
+    }
+  }
+
+  .chevron {
+    width: 10px;
+    height: 10px;
   }
 
   .submenu {
-    display: block;
     position: static;
-    min-width: 0;
-    padding: 0;
-    background: none;
-    border: 0;
+    width: 100%;
+    gap: 6px;
+    padding: 6px 0 16px 26px;
+
+    &::before {
+      display: none;
+    }
   }
 
   .submenuLink {
-    padding: var(--space-4) var(--space-4) var(--space-4) var(--space-8);
-    border-bottom: 1px solid var(--surface-3);
+    padding: 6px 0;
+    font-size: clamp(1.05rem, 5vw, 1.3rem);
+    letter-spacing: 0;
+    text-transform: none;
+    background: none;
+    color: rgba(252, 251, 254, 0.75);
 
+    &:hover,
+    &:focus-visible,
     &[aria-current='page'] {
-      box-shadow: none;
-      border-left: 3px solid var(--color-violet);
-      background: var(--surface-1);
+      background: none;
+      color: var(--color-white);
+      text-decoration: underline;
+      text-decoration-color: var(--color-violet);
+      text-decoration-thickness: 3px;
+      text-underline-offset: 6px;
+    }
+
+    &:focus-visible {
+      outline-offset: 0;
+    }
+  }
+
+  .submenuLink .subLabel {
+    --grow-stretch: var(--stretch-normal);
+    font-weight: 600;
+  }
+
+  // The foot of the menu: a violet stepped block bleeding to the bottom edge, with
+  // the address and the language switch in it.
+  .navFoot {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin: auto calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0;
+    padding: 44px max(16px, env(safe-area-inset-left, 0px)) calc(26px + env(safe-area-inset-bottom, 0px));
+    background: var(--color-violet);
+    clip-path: polygon(0 22px, 58% 22px, 58% 0, 100% 0, 100% 100%, 0 100%);
+    transform: translateY(100%);
+    transition: transform 0.25s cubic-bezier(0.7, 0, 0.3, 1);
+  }
+
+  .panel[data-open='true'] .navFoot {
+    transform: none;
+    transition: transform 0.5s cubic-bezier(0.2, 0.75, 0.2, 1) 0.42s;
+  }
+
+  .navMail {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    margin: 0;
+
+    a {
+      justify-self: start;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(1.15rem, 5.4vw, 1.5rem);
+      color: var(--color-white);
+      text-decoration: none;
+      white-space: nowrap;
+      transition:
+        font-stretch 0.35s var(--ease),
+        font-weight 0.35s;
+
+      &:hover,
+      &:active {
+        font-stretch: var(--stretch-hover);
+        font-weight: 800;
+      }
+
+      &:focus-visible {
+        outline: $focus;
+        outline-offset: 3px;
+      }
+    }
+  }
+
+  .langLink {
+    flex: none;
+    margin: 0;
+    padding: 0;
+    background: none;
+    color: var(--color-white);
+  }
+
+  .langCurrent {
+    display: none;
+  }
+
+  .langSeg {
+    display: flex;
+    gap: 3px;
+    padding: 3px;
+    background: var(--color-black);
+
+    b {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 34px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: rgba(252, 251, 254, 0.55);
+      transition:
+        background 0.25s,
+        color 0.25s,
+        font-stretch 0.3s;
+
+      &[data-on='true'] {
+        background: var(--color-white);
+        color: var(--color-black);
+      }
+    }
+  }
+
+  .langLink:hover .langSeg b {
+    font-stretch: var(--stretch-count);
+  }
+
+  // Very narrow screens let the labels wrap rather than push past the edge.
+  @media (max-width: bp.$xxs) {
+    .navLink,
+    .submenuLink {
+      white-space: normal;
+    }
+  }
+
+  @include bp.reduced-motion {
+    .panel,
+    .panel[data-open='true'],
+    .list > li,
+    .panel[data-open='true'] .list > li,
+    .navFoot,
+    .panel[data-open='true'] .navFoot,
+    .header::before {
+      transition: none;
+    }
+
+    .panel,
+    .navFoot {
+      // No wipe and no slide: the menu is simply there or not.
+      clip-path: none;
+    }
+
+    .list > li {
+      opacity: 1;
+      transform: none;
+    }
+
+    .navFoot {
+      transform: none;
+      clip-path: polygon(0 22px, 58% 22px, 58% 0, 100% 0, 100% 100%, 0 100%);
     }
   }
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { FocusTrap } from '@mantine/core'
+import { GrowText } from '@/components/GrowText/GrowText'
 import { isHiddenPath, localePath, withoutHiddenLinks, type Locale } from '@/lib/i18n'
 import styles from './Header.module.scss'
 
@@ -22,12 +23,12 @@ export interface HeaderNavItem {
 /**
  * The width at which the nav collapses into a menu, in pixels.
  *
- * Duplicated from `$nav-breakpoint` in `Header.module.scss` because the two
+ * Duplicated from `bp.$md` in `breakpoints.scss`, which `Header.module.scss` uses, because the two
  * jobs are genuinely different: CSS decides what is *shown*, this decides when
  * an open menu has stopped being a menu (see the resize effect below). Keep
  * them equal — a mismatch is only visible in the narrow band between them.
  */
-const NAV_BREAKPOINT = 900
+const NAV_BREAKPOINT = 920
 
 /**
  * The id `aria-controls` points at.
@@ -59,8 +60,10 @@ const PANEL_ID = 'site-menu'
 function SiteNavMenu({
   items,
   menuLabel,
+  closeLabel,
   navLabel,
   submenuLabel,
+  email,
   locale,
   children,
 }: {
@@ -69,9 +72,17 @@ function SiteNavMenu({
   submenuLabel: string
   /** Visible text of the toggle, and therefore its whole accessible name. */
   menuLabel: string
+  /**
+   * The toggle's text while the menu is open (`Loka`). Optional so the label can
+   * stay put where there is no word for it; with it, the visible text and the
+   * accessible name change together, which is what keeps WCAG 2.5.3 satisfied.
+   */
+  closeLabel?: string
   navLabel: string
+  /** Shown in the foot of the small-screen menu, beside the language toggle. */
+  email?: string
   locale: Locale
-  /** Rendered beside the toggle; the language toggle in practice. */
+  /** Rendered in the foot of the menu; the language toggle in practice. */
   children?: ReactNode
 }) {
   const pathname = usePathname()
@@ -120,7 +131,7 @@ function SiteNavMenu({
     }
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Element | null
-      if (!target?.closest?.('header')) setOpenSubmenu(null)
+      if (!target?.closest?.('[data-submenu-root]')) setOpenSubmenu(null)
     }
     document.addEventListener('keydown', onKeyDown, { capture: true })
     document.addEventListener('pointerdown', onPointerDown)
@@ -169,7 +180,17 @@ function SiteNavMenu({
   const close = useCallback((returnFocus: boolean) => {
     setOpen(false)
     setOpenSubmenu(null)
-    if (returnFocus) toggleRef.current?.focus()
+    if (returnFocus) {
+      toggleRef.current?.focus()
+      // The focus trap moves focus to the first link a beat after it activates. If
+      // Escape lands before that beat, the trap would take focus back off the toggle
+      // and onto a link that is about to be hidden, leaving it on `body`. Settling
+      // it once more after that has happened keeps focus where the reader was.
+      window.setTimeout(() => {
+        const toggle = toggleRef.current
+        if (toggle && document.activeElement !== toggle) toggle.focus()
+      }, 60)
+    }
   }, [])
 
   useEffect(() => {
@@ -229,6 +250,7 @@ function SiteNavMenu({
                   <li
                     key={item.href}
                     className={item.children ? styles.hasSubmenu : undefined}
+                    data-submenu-root={item.children ? '' : undefined}
                     // Pointer-only: `onMouseEnter` fires on a tap too, which
                     // would fight the button's own click. `hoverCapable` is
                     // false on a touch screen, so there the button is the only
@@ -258,7 +280,7 @@ function SiteNavMenu({
                       data-autofocus={index === 0 ? true : undefined}
                       onClick={() => close(isCurrent(item.href))}
                     >
-                      {item.label}
+                      <GrowText className={styles.label}>{item.label}</GrowText>
                     </Link>
 
                     {item.children && (
@@ -299,7 +321,7 @@ function SiteNavMenu({
                                 aria-current={isCurrent(child.href) ? 'page' : undefined}
                                 onClick={() => close(isCurrent(child.href))}
                               >
-                                {child.label}
+                                <GrowText className={styles.subLabel}>{child.label}</GrowText>
                               </Link>
                             </li>
                           ))}
@@ -311,9 +333,22 @@ function SiteNavMenu({
               })}
             </ul>
           </nav>
+          {/*
+            The foot of the menu. At desktop width it is `display: contents`, so
+            the language toggle is simply the last thing in the header's row; on a
+            phone it is the violet block at the bottom of the open menu, holding
+            the address and the toggle.
+          */}
+          <div className={styles.navFoot}>
+            {email && (
+              <p className={styles.navMail}>
+                <a href={`mailto:${email}`}>{email}</a>
+              </p>
+            )}
+            {children}
+          </div>
         </div>
         <div className={styles.controls}>
-          {children}
           <button
             type="button"
             ref={toggleRef}
@@ -322,12 +357,11 @@ function SiteNavMenu({
             aria-controls={PANEL_ID}
             onClick={() => (open ? close(false) : setOpen(true))}
           >
-            <span className={styles.bars} aria-hidden="true">
-              <span />
-              <span />
-              <span />
+            <span className={styles.brg} aria-hidden="true">
+              <i />
+              <i />
             </span>
-            {menuLabel}
+            {open && closeLabel ? closeLabel : menuLabel}
           </button>
         </div>
       </div>

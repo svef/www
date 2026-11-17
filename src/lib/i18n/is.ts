@@ -326,6 +326,13 @@ export const is = {
     },
   },
   footer: {
+    // Accessible name of the footer's page columns, which are a `<nav>`.
+    pages: 'Síður',
+    contactHeading: 'Hafðu samband',
+    programme: 'Dagskrá',
+    about: 'Um SVEF',
+    aboutClub: 'Um félagið',
+    involved: 'Taktu þátt',
     rights: 'Öll réttindi áskilin',
     blurb:
       'SVEF er félag fólks sem starfar við vefinn á Íslandi. Við miðlum þekkingu og eflum fagleg vinnubrögð í greininni.',

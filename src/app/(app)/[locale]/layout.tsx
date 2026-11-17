@@ -12,7 +12,7 @@ import {
 } from '@mantine/core'
 import { theme } from '@/lib/theme'
 import { getDictionary, isLocale, localePath, LOCALES } from '@/lib/i18n'
-import { buildNavItems } from '@/lib/nav'
+import { buildNavItems, visibleFooterColumns } from '@/lib/nav'
 import { getSiteChrome } from '@/lib/content/site-settings'
 import { getSiteUrl } from '@/lib/site-url'
 import { Analytics } from '@/components/Analytics/Analytics'
@@ -94,8 +94,10 @@ export default async function LocaleLayout({
             homeHref={`/${locale}`}
             navItems={navItems}
             menuLabel={t.nav.menu}
+            closeLabel={t.close}
             submenuLabel={t.nav.submenu}
             navLabel={t.nav.primary}
+            email={chrome.contactEmail}
             locale={locale}
           />
           {/*
@@ -121,19 +123,24 @@ export default async function LocaleLayout({
                 : undefined
             }
             email={chrome.contactEmail}
-            // Dropped while the site is hidden: the contact page is not
-            // reachable then, so the link would bounce to the landing.
-            contactHref={LANDING_ONLY ? undefined : localePath('/hafa-samband', locale)}
-            contactLabel={LANDING_ONLY ? undefined : t.nav.contact}
-            write={{
-              heading: t.forms.writeHeading,
-              links: [
-                { href: localePath('/abendingar', locale), label: t.forms.feedback.title },
-                { href: localePath('/erindi', locale), label: t.forms.talk.title },
-              ],
-            }}
+            contactHeading={t.footer.contactHeading}
+            columnsLabel={t.footer.pages}
+            // While the rest of the site is hidden only the two forms are
+            // reachable, so they are all the footer links to.
+            columns={
+              LANDING_ONLY
+                ? [
+                    {
+                      heading: t.footer.involved,
+                      links: [
+                        { href: localePath('/erindi', locale), label: t.forms.talk.title },
+                        { href: localePath('/abendingar', locale), label: t.forms.feedback.title },
+                      ],
+                    },
+                  ]
+                : visibleFooterColumns(locale, t)
+            }
             socials={chrome.socials}
-            year={2026}
           />
         </MantineProvider>
         <Analytics />

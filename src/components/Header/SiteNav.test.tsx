@@ -21,6 +21,17 @@ const items = [
   { href: '/is/frettir', label: is.nav.news },
 ]
 
+const withSubmenu = [
+  {
+    href: '/is/um-svef',
+    label: is.nav.about,
+    children: [
+      { href: '/is/stjorn', label: 'Stjórn SVEF' },
+      { href: '/is/log-svef', label: 'Lög SVEF' },
+    ],
+  },
+]
+
 /** Entries for pages switched off in `HIDDEN_PAGES`, mixed in by the filtering tests. */
 const hiddenItems = [
   { href: '/is/vefverdlaunin', label: is.nav.awards },
@@ -34,7 +45,9 @@ function markup(navItems: typeof items = items) {
         <SiteNav
           items={navItems}
           menuLabel={is.nav.menu}
-        submenuLabel="undirsíður"
+          closeLabel={is.close}
+          email="svef@svef.is"
+          submenuLabel="undirsíður"
           navLabel={is.nav.primary}
           locale="is"
         >
@@ -59,7 +72,9 @@ function navigate(rerender: (ui: React.ReactElement) => void, path: string) {
   rerender(markup())
 }
 
-const toggle = () => screen.getByRole('button', { name: is.nav.menu })
+/** The menu button: its text swaps to `Loka` while open, so it is found by what it controls. */
+const toggle = () =>
+  document.querySelector<HTMLButtonElement>('button[aria-controls="site-menu"]')!
 
 beforeEach(() => {
   // jsdom has `matchMedia` only when asked; `SiteNav` subscribes to it while open.
@@ -89,6 +104,24 @@ describe('SiteNav', () => {
     expect(toggle()).toHaveAttribute('aria-controls', 'site-menu')
     // `aria-controls` has to resolve to something, open or closed.
     expect(document.getElementById('site-menu')).toBeInTheDocument()
+  })
+
+  it('swaps the toggle text between Valmynd and Loka', async () => {
+    const user = userEvent.setup()
+    renderNav()
+    expect(toggle()).toHaveAccessibleName(is.nav.menu)
+    await user.click(toggle())
+    expect(toggle()).toHaveAccessibleName(is.close)
+  })
+
+  it('puts the address and the passed-in children in the foot of the menu', () => {
+    renderNav()
+    const panel = document.getElementById('site-menu')!
+    expect(within(panel).getByRole('link', { name: 'svef@svef.is' })).toHaveAttribute(
+      'href',
+      'mailto:svef@svef.is',
+    )
+    expect(within(panel).getByRole('button', { name: 'EN' })).toBeInTheDocument()
   })
 
   it('opens and closes on the toggle', async () => {
@@ -261,5 +294,62 @@ describe('SiteNav', () => {
     expect((await axe(container)).violations).toEqual([])
     await user.click(toggle())
     expect((await axe(container)).violations).toEqual([])
+  })
+
+  describe('submenu', () => {
+    const trigger = () => screen.getByRole('button', { name: /undirsíður/ })
+
+    function renderSubmenu() {
+      pathname.current = '/is'
+      return render(
+        <MantineProvider forceColorScheme="dark">
+          <header>
+            <SiteNav
+              items={withSubmenu}
+              menuLabel={is.nav.menu}
+              submenuLabel="undirsíður"
+              navLabel={is.nav.primary}
+              locale="is"
+            />
+          </header>
+          <main>
+            <button type="button">Annað</button>
+          </main>
+        </MantineProvider>,
+      )
+    }
+
+    it('keeps the parent a link and the disclosure a separate button', () => {
+      renderSubmenu()
+      expect(screen.getByRole('link', { name: is.nav.about })).toHaveAttribute('href', '/is/um-svef')
+      expect(trigger()).toHaveAttribute('aria-expanded', 'false')
+    })
+
+    it('opens on the button and closes on Escape, returning focus to it', async () => {
+      const user = userEvent.setup()
+      renderSubmenu()
+      await user.click(trigger())
+      expect(trigger()).toHaveAttribute('aria-expanded', 'true')
+
+      await user.keyboard('{Escape}')
+      expect(trigger()).toHaveAttribute('aria-expanded', 'false')
+      expect(trigger()).toHaveFocus()
+    })
+
+    it('opens with ArrowDown from the button', async () => {
+      const user = userEvent.setup()
+      renderSubmenu()
+      trigger().focus()
+      await user.keyboard('{ArrowDown}')
+      expect(trigger()).toHaveAttribute('aria-expanded', 'true')
+    })
+
+    it('closes on a click outside it', async () => {
+      const user = userEvent.setup()
+      renderSubmenu()
+      await user.click(trigger())
+      await user.click(screen.getByRole('button', { name: 'Annað' }))
+      expect(trigger()).toHaveAttribute('aria-expanded', 'false')
+    })
   })
 })
