@@ -1,0 +1,164 @@
+// Ported from the export's "stickers" rules (design of record). Colours are the tokens.
+@use '../../styles/breakpoints' as bp;
+
+.sticker {
+  --sc: var(--color-violet);
+  --st: var(--color-white);
+  // Parallax (--py) and the mouse spring (--rx, --ry, --rr) write these; unset, the
+  // sticker rests exactly where it is placed.
+  translate: var(--rx, 0px) calc(var(--py, 0px) + var(--ry, 0px));
+  rotate: calc(var(--rot, 0deg) + var(--rr, 0deg));
+  // Decoration: never takes a pointer event, never selected, never dragged.
+  pointer-events: none;
+  user-select: none;
+  // The die-cut edge: a 3px white outline, then a soft shadow.
+  filter: drop-shadow(3px 0 0 var(--color-white)) drop-shadow(-3px 0 0 var(--color-white))
+    drop-shadow(0 3px 0 var(--color-white)) drop-shadow(0 -3px 0 var(--color-white))
+    drop-shadow(0 10px 14px rgb(0 0 0 / 45%));
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-stretch: var(--stretch-normal);
+  line-height: 1;
+  font-size: clamp(0.9rem, 1.3vw, 1.2rem);
+  width: max-content;
+  transition: translate 0.6s cubic-bezier(0.2, 0.6, 0.2, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.placed {
+  position: absolute;
+  z-index: 4;
+  top: var(--t, auto);
+  right: var(--r, auto);
+  bottom: var(--b, auto);
+  left: var(--l, auto);
+
+  // The export hides stickers on phones; a few opt back in at their own place.
+  @include bp.below(bp.$sm) {
+    display: none;
+
+    &.mobile {
+      display: block;
+      top: var(--mt, auto);
+      right: var(--mr, auto);
+      bottom: var(--mb, auto);
+      left: var(--ml, auto);
+    }
+  }
+}
+
+.art {
+  display: block;
+  width: clamp(130px, 11vw, 190px);
+  height: auto;
+
+  @include bp.below(bp.$sm) {
+    .mobile & {
+      width: var(--mw, 130px);
+    }
+  }
+}
+
+// ---- Text stickers: the brand die-cut label ---------------------------------
+
+.yellow {
+  --sc: var(--accent-yellow);
+  --st: var(--color-black);
+}
+
+.pink {
+  --sc: var(--accent-pink);
+  --st: var(--color-black);
+}
+
+.violet {
+  --sc: var(--color-violet);
+  --st: var(--color-white);
+}
+
+.red {
+  --sc: var(--accent-red);
+  --st: var(--color-black);
+}
+
+.sk {
+  display: flex;
+  flex-direction: column;
+  color: var(--color-white);
+
+  > span,
+  .frame > span {
+    display: block;
+  }
+}
+
+.up {
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 1.32em;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  white-space: nowrap;
+}
+
+// A: label strip on top, the coloured stepped block with the line below
+.skA {
+  > .up {
+    align-self: flex-end;
+    background: var(--color-black);
+    padding: 0.42em 0.5em 0.18em 0.6em;
+  }
+
+  .frame {
+    background: var(--color-black);
+    padding: 0.3em;
+  }
+
+  .block {
+    background: var(--sc);
+    color: var(--st);
+    padding: 1.1em 1.1em 0.7em 1.4em;
+    font-size: 1.05em;
+    line-height: 1.02;
+    white-space: nowrap;
+    clip-path: polygon(0 0, 58% 0, 58% 34%, 100% 34%, 100% 100%, 0 100%);
+  }
+
+  // Three-line copy: the block holds the upper-case words, with room for the step above them.
+  .blockUpper {
+    font-size: 1.2em;
+    padding-top: 1.9em;
+  }
+}
+
+// B: a word, the coloured stepped block, a word
+.skB {
+  background: var(--color-black);
+  padding: 0.42em 0.5em 0.4em;
+
+  .blk {
+    height: 2.6em;
+    margin: 0.3em 0;
+    background: var(--sc);
+    clip-path: polygon(0 30%, 24% 30%, 24% 0, 100% 0, 100% 74%, 64% 74%, 64% 100%, 0 100%);
+  }
+}
+
+// C: the block with the text in it
+.skC {
+  background: var(--color-black);
+  padding: 0.3em;
+
+  .block {
+    background: var(--sc);
+    color: var(--st);
+    padding: 1.5em 1.2em 0.7em 1em;
+    font-size: 1.05em;
+    line-height: 1.05;
+    white-space: nowrap;
+    clip-path: polygon(0 26%, 20% 26%, 20% 0, 78% 0, 78% 26%, 100% 26%, 100% 100%, 0 100%);
+  }
+}

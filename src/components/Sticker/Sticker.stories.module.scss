@@ -1,0 +1,78 @@
+// Story-only layout. Pages bring their own bands.
+
+.page {
+  background: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-body, system-ui, sans-serif);
+  min-height: 100vh;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 48px 24px;
+  padding: 48px 24px;
+  align-items: end;
+  justify-items: center;
+}
+
+.cell {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+}
+
+.label {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+// A band as a page header: the sticker is placed inside it, so it is relative.
+.header {
+  position: relative;
+  min-height: 560px;
+  padding-block: clamp(150px, 13vw, 200px) clamp(120px, 13vw, 190px);
+}
+
+.band {
+  position: relative;
+  min-height: 420px;
+  padding-block: 80px;
+}
+
+.h1 {
+  margin: 0;
+  padding-inline: 24px;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  font-size: clamp(2.4rem, 7.4vw, 6.6rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+  color: var(--color-white);
+}
+
+.filler {
+  padding-block: 40vh;
+  text-align: center;
+  opacity: 0.6;
+}
+
+.photo {
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 720px);
+  height: 420px;
+  margin: 0 auto;
+}
+
+// A stand-in photo, so the story needs no asset. The drift is written as --drift by lib/parallax.
+.fakePhotoImg {
+  width: 100%;
+  height: calc(100% + 40px);
+  margin-top: -20px;
+  background: linear-gradient(135deg, var(--color-violet) 0 33%, var(--accent-pink) 33% 66%, var(--accent-yellow) 66%);
+  translate: 0 var(--drift, 0px);
+}
