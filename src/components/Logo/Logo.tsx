@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BOX, LOCKUPS } from './lockups'
 import styles from './Logo.module.scss'
 
@@ -37,6 +37,7 @@ export function Logo({
   size?: string
 }) {
   const [i, setI] = useState(0)
+  const ref = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
     const start = Math.floor(Math.random() * LOCKUPS.length)
@@ -50,14 +51,44 @@ export function Logo({
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
     if (motion.matches) return
 
-    const id = window.setInterval(() => setI((n) => (n + 1) % LOCKUPS.length), HOLD_MS)
-    return () => window.clearInterval(id)
+    // Cycle only while someone can see it: not in a hidden tab, and not while the mark
+    // is scrolled out of view (the footer's, nearly always), where each step would be a
+    // re-render and a style change for nothing. The timer is stopped, not just skipped,
+    // so a page nobody is looking at has no timer from here at all.
+    let id: number | undefined
+    let inView = typeof IntersectionObserver === 'undefined'
+    const sync = () => {
+      const run = inView && !document.hidden
+      if (run && id === undefined) {
+        id = window.setInterval(() => setI((n) => (n + 1) % LOCKUPS.length), HOLD_MS)
+      } else if (!run && id !== undefined) {
+        window.clearInterval(id)
+        id = undefined
+      }
+    }
+    const el = ref.current
+    const io =
+      el && typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver((entries) => {
+            inView = entries[entries.length - 1].isIntersecting
+            sync()
+          })
+        : null
+    io?.observe(el!)
+    document.addEventListener('visibilitychange', sync)
+    sync()
+    return () => {
+      if (id !== undefined) window.clearInterval(id)
+      io?.disconnect()
+      document.removeEventListener('visibilitychange', sync)
+    }
   }, [])
 
   const lockup = LOCKUPS[i]
 
   return (
     <span
+      ref={ref}
       className={`${styles.logo} ${tone === 'inverse' ? styles.inverse : ''}`}
       role="img"
       aria-label={label}
