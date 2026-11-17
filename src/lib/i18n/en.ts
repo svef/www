@@ -8,6 +8,11 @@ export const en = {
       writeHeading: 'Get in touch',
       optional: 'optional',
       required: 'required',
+      steps: {
+        about: 'About you',
+        talk: 'The talk',
+        send: 'Send',
+      },
       sending: 'Sending…',
       errors: {
         required: 'This needs filling in.',
@@ -17,6 +22,7 @@ export const en = {
       },
       feedback: {
         title: 'Feedback',
+        heading: 'Tell us',
         lead: 'Have a suggestion, an idea or a question? We read everything that comes in.',
         subject: 'What is this about?',
         subjectPlaceholder: 'Choose a subject',
@@ -38,6 +44,8 @@ export const en = {
       },
       talk: {
         title: 'Propose a talk',
+        heading: 'Tell us about the talk',
+        intro: 'We read every proposal and will be in touch if the talk fits the programme.',
         lead: 'Would you like to speak at an SVEF event? Tell us about it and we will be in touch.',
         name: 'Name',
         email: 'Email',

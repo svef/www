@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getDictionary, isLocale } from '@/lib/i18n'
-import { PageHeader } from '@/components/PageHeader/PageHeader'
-import { Section } from '@/components/Section/Section'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
+import styles from '../form-page.module.scss'
 import { FeedbackForm } from '@/components/FeedbackForm/FeedbackForm'
 
 export async function generateMetadata({
@@ -22,10 +23,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <>
-      <PageHeader title={forms.feedback.title} lead={forms.feedback.lead} />
-      <Section>
-        <FeedbackForm locale={locale} copy={forms} />
-      </Section>
+      <PageHead title={forms.feedback.title} lede={forms.feedback.lead} locale={locale} />
+      <PageSection last>
+        <div className={styles.page}>
+          <FeedbackForm locale={locale} copy={forms} />
+        </div>
+      </PageSection>
     </>
   )
 }

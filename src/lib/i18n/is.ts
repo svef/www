@@ -12,6 +12,11 @@ export const is = {
       writeHeading: 'Heyrðu í okkur',
       optional: 'valfrjálst',
       required: 'nauðsynlegt',
+      steps: {
+        about: 'Um þig',
+        talk: 'Erindið',
+        send: 'Senda',
+      },
       sending: 'Sendi…',
       errors: {
         required: 'Þetta þarf að fylla út.',
@@ -21,6 +26,7 @@ export const is = {
       },
       feedback: {
         title: 'Ábendingar',
+        heading: 'Segðu okkur',
         lead: 'Hefurðu ábendingu, hugmynd eða spurningu? Við lesum allt sem kemur inn.',
         subject: 'Hvað snýst þetta um?',
         subjectPlaceholder: 'Veldu efni',
@@ -42,6 +48,8 @@ export const is = {
       },
       talk: {
         title: 'Bjóða fram erindi',
+        heading: 'Segðu okkur frá erindinu',
+        intro: 'Við förum yfir allar tillögur og höfum samband ef erindið passar inn í dagskrána.',
         lead: 'Viltu halda erindi á viðburði hjá SVEF? Segðu okkur frá því. Við höfum samband.',
         name: 'Nafn',
         email: 'Netfang',

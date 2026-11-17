@@ -1,43 +1,66 @@
-.layout {
-  display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: var(--space-12);
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+// The contact page's head: the direct address big, the socials beside it (the export's
+// `.c-head`). The form below it is `FormParts`.
+.direct {
+  .title {
+    margin-bottom: 12px;
   }
-}
-
-.subhead {
-  font-size: var(--text-lg);
-  margin: 0 0 var(--space-4);
 }
 
 .email {
   display: inline-block;
-  font-family: var(--font-heading), system-ui, sans-serif;
-  font-weight: var(--weight-bold);
-  font-size: var(--text-xl);
-  color: var(--fg);
+  font-family: var(--font-display);
+  font-weight: var(--weight-heading);
+  font-size: clamp(1.8rem, 4.4vw, 3.4rem);
+  line-height: 1.1;
+  word-break: break-all;
   text-decoration: none;
-  border-bottom: 2px solid var(--color-violet);
-  padding-bottom: 2px;
+  border-bottom: 3px solid var(--color-violet);
+  transition: font-stretch var(--dur-hover) var(--ease);
+
+  &:hover {
+    font-stretch: var(--stretch-hover);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }
 
 .socials {
-  list-style: none;
-  padding: 0;
-  margin: var(--space-6) 0 0;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 
   a {
-    color: var(--fg-muted);
-    text-decoration: none;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    background: var(--color-white);
+    color: var(--color-black);
+    transition:
+      background 0.2s,
+      color 0.2s;
 
     &:hover {
-      color: var(--color-violet-light);
+      background: var(--color-black);
+      color: var(--color-white);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
     }
   }
 }

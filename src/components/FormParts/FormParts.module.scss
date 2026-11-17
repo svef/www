@@ -1,3 +1,8 @@
+// The redesign's form styling (the export's `.j2` forms, with its later overrides folded
+// in): numbered steps divided by hairlines, underlined text inputs, boxed textareas, chips
+// that fill with a stepped shape when chosen, and the white sticker button.
+@use '../../styles/breakpoints' as bp;
+
 .honeypot {
   position: absolute;
   left: -10000px;
@@ -7,13 +12,396 @@
   overflow: hidden;
 }
 
+// ---- Section head -------------------------------------------------------
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px 40px;
+  padding-bottom: clamp(24px, 3vw, 40px);
+
+  h2 {
+    margin: 0;
+    font-size: clamp(2.2rem, 5vw, 4.4rem);
+    font-weight: var(--weight-heading);
+    line-height: 0.95;
+  }
+
+  p {
+    margin: 0;
+    max-width: 36ch;
+    color: var(--muted);
+    font-size: 1.05rem;
+    font-stretch: var(--stretch-body);
+    letter-spacing: var(--tracking-body);
+  }
+}
+
+// ---- Form and steps -----------------------------------------------------
+
+.form {
+  position: relative;
+  display: grid;
+  gap: 0;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 4fr);
+  grid-template-rows: auto 1fr;
+  column-gap: clamp(20px, 4vw, 64px);
+  border-top: 1px solid var(--line);
+  min-width: 0;
+  padding: clamp(24px, 3vw, 40px) 0 clamp(32px, 4vw, 56px);
+
+  > :not(.num):not(.stepTitle) {
+    grid-column: 2;
+  }
+
+  @include bp.below(bp.$md) {
+    grid-template-columns: 1fr;
+
+    > :not(.num):not(.stepTitle),
+    .stepTitle {
+      grid-column: 1;
+    }
+  }
+}
+
+.num {
+  grid-row: 1 / span 2;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-stretch: var(--stretch-display);
+  font-size: clamp(3rem, 6vw, 6rem);
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  color: var(--color-violet);
+  font-variant-numeric: tabular-nums;
+
+  @include bp.below(bp.$md) {
+    grid-row: auto;
+    margin-bottom: 12px;
+  }
+}
+
+.stepTitle {
+  grid-column: 2;
+  margin: 0 0 clamp(18px, 2vw, 26px);
+  font-family: var(--font-display);
+  font-weight: var(--weight-heading);
+  font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+
+  label {
+    font: inherit;
+    cursor: pointer;
+  }
+}
+
+.stepOptional {
+  color: var(--muted);
+  font-weight: var(--weight-medium);
+  font-size: 0.7em;
+}
+
+.stepHint {
+  margin: -10px 0 18px;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+
+  @include bp.below(bp.$xs) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+// ---- Fields -------------------------------------------------------------
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.label {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: 1.02rem;
+}
+
+.optional {
+  color: var(--muted);
+  font-weight: var(--weight-medium);
+}
+
+.hint {
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-stretch: var(--stretch-body);
+  letter-spacing: var(--tracking-body);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--accent-yellow);
+}
+
+.input {
+  width: 100%;
+  font: inherit;
+  color: var(--color-white);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid var(--line);
+  border-radius: 0;
+  padding: 12px 0;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-bottom-color: var(--muted);
+  }
+
+  &:focus {
+    border-bottom-color: var(--color-violet);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 4px;
+  }
+
+  &[aria-invalid='true'] {
+    border-bottom-color: var(--accent-yellow);
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}
+
+.textarea {
+  min-height: 160px;
+  max-height: 32rem;
+  resize: vertical;
+  line-height: 1.5;
+  border: 2px solid var(--line);
+  padding: 14px 16px;
+
+  &:hover {
+    border-color: var(--muted);
+  }
+
+  &:focus {
+    border-color: var(--color-violet);
+  }
+
+  &[aria-invalid='true'] {
+    border-color: var(--accent-yellow);
+  }
+}
+
+// ---- Chips (radio and checkbox groups) -----------------------------------
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+// Cycles through the four accents, as the export does.
+.chip {
+  --c: var(--accent-pink);
+  position: relative;
+
+  &:nth-child(4n + 2) {
+    --c: var(--accent-yellow);
+  }
+
+  &:nth-child(4n + 3) {
+    --c: var(--color-violet);
+    --chosen: var(--color-white);
+  }
+
+  &:nth-child(4n + 4) {
+    --c: var(--accent-red);
+    --chosen: var(--color-white);
+  }
+}
+
+.chipInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  z-index: 1;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.chipLabel {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  padding: 12px 18px;
+  border: 2px solid var(--line);
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+  cursor: pointer;
+  transition:
+    border-color 0.25s,
+    color 0.3s var(--ease);
+
+  // The chosen shape grows up from the bottom edge; a notch is cut from its top-right.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    background: var(--c);
+    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+    transition: clip-path 0.45s var(--ease);
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+
+    &::before {
+      transition: none;
+    }
+  }
+}
+
+// Holds the box at the chosen (bold) width so choosing a chip never reflows its neighbours.
+.chipText {
+  display: inline-block;
+
+  &::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 800;
+  }
+}
+
+.chipInput:hover + .chipLabel {
+  border-color: var(--c);
+}
+
+.chipInput:checked + .chipLabel {
+  background: transparent;
+  border-color: transparent;
+  color: var(--chosen, var(--color-black));
+  font-weight: 800;
+
+  &::before {
+    clip-path: polygon(0 0, calc(100% - 22px) 0, calc(100% - 22px) 10px, 100% 10px, 100% 100%, 0 100%);
+  }
+}
+
+.chipInput:focus-visible + .chipLabel {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.chipInput[aria-invalid='true'] + .chipLabel {
+  border-color: var(--accent-yellow);
+}
+
+// Revealed under the chips when "other" is chosen; the violet rule ties it to them.
+.other {
+  margin-top: var(--space-6);
+  border-left: var(--space-1) solid var(--color-violet);
+  padding-left: var(--space-4);
+}
+
+// ---- Submit -------------------------------------------------------------
+
+.send {
+  display: grid;
+  gap: 24px;
+  justify-items: start;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+// The export's `.btn.btn-white`: a white sticker that goes yellow and widens on hover.
+.submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 22px;
+  border: 0;
+  border-radius: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  background: var(--color-white);
+  color: var(--color-black);
+  transition:
+    background 0.25s,
+    color 0.25s;
+
+  &:hover {
+    background: var(--accent-yellow);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 4px;
+  }
+
+  &:active {
+    opacity: 0.85;
+  }
+
+  &[aria-disabled='true'] {
+    cursor: progress;
+    opacity: 0.7;
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}
+
+.pending {
+  font-weight: var(--weight-bold);
+  color: var(--accent-yellow);
+}
+
+// ---- Error summary and success -------------------------------------------
+
 .summary {
+  margin-bottom: var(--space-8);
   border: 2px solid var(--accent-yellow);
-  background: var(--surface-2);
+  background: var(--ink-2);
   padding: var(--space-4) var(--space-6);
 
   &:focus {
-    outline: 3px solid var(--color-white);
+    outline: 3px solid var(--focus-ring);
     outline-offset: 2px;
   }
 
@@ -23,7 +411,7 @@
   }
 
   a {
-    color: var(--fg);
+    color: var(--color-white);
     text-decoration: underline;
   }
 }
@@ -33,130 +421,26 @@
   font-weight: var(--weight-bold);
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.label {
-  font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
-  color: var(--fg);
-}
-
-.optional {
-  font-weight: var(--weight-regular);
-  color: var(--fg-muted);
-}
-
-.hint {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--fg-muted);
-}
-
-.error {
-  margin: 0;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  color: var(--accent-yellow);
-}
-
-.pending {
-  color: var(--fg-muted);
-}
-
 .success {
-  max-width: 40rem;
-  border-left: var(--space-2) solid var(--color-violet);
-  padding: var(--space-4) var(--space-6);
+  border-left: 8px solid var(--color-violet);
+  padding: var(--space-4) 0 var(--space-4) clamp(20px, 3vw, 40px);
 
   &:focus {
-    outline: 3px solid var(--color-white);
-    outline-offset: 2px;
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 4px;
   }
 
   p {
     margin: 0;
-    color: var(--fg-muted);
-    font-size: var(--text-lg);
+    max-width: 36ch;
+    color: var(--muted);
+    font-size: 1.05rem;
   }
 }
 
 .successTitle {
-  margin: 0 0 var(--space-3);
-  font-size: var(--text-xl);
-}
-
-.form {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  max-width: 40rem;
-}
-
-.input {
-  width: 100%;
-  font-family: var(--font-body), system-ui, sans-serif;
-  font-size: var(--text-base);
-  color: var(--fg);
-  background: var(--surface-2);
-  border: 1px solid var(--fg-muted);
-  padding: var(--space-3) var(--space-4);
-  border-radius: 0;
-
-  &:focus-visible {
-    outline: 3px solid var(--color-violet-light);
-    outline-offset: 2px;
-    border-color: var(--color-violet-light);
-  }
-
-  &[aria-invalid='true'] {
-    border: 2px solid var(--accent-yellow);
-  }
-}
-
-.textarea {
-  min-height: 8rem;
-  max-height: 32rem;
-  resize: vertical;
-  line-height: 1.5;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-}
-
-.submit {
-  font-family: var(--font-body), system-ui, sans-serif;
-  font-weight: var(--weight-bold);
-  font-size: var(--text-base);
-  padding: var(--space-4) var(--space-6);
-  border: 0;
-  border-radius: 0;
-  cursor: pointer;
-  background: var(--color-violet);
-  // Shy White on Electric Violet is 6.22:1 and passes AA. Blakety Black on the
-  // same violet is 3.14:1 and does not — the trap this codebase has had to be
-  // corrected for before.
-  color: var(--color-white);
-
-  &:hover {
-    background: var(--color-violet-bright);
-  }
-
-  &:focus-visible {
-    outline: 3px solid var(--color-violet-light);
-    outline-offset: 3px;
-  }
-
-  &[aria-disabled='true'] {
-    cursor: progress;
-    opacity: 0.7;
-  }
+  margin: 0 0 var(--space-4);
+  font-size: clamp(2.2rem, 5vw, 4.4rem);
+  font-weight: var(--weight-heading);
+  line-height: 0.95;
 }

@@ -1,0 +1,5 @@
+// The width the form pages share: the export's `.wrap` content column.
+.page {
+  max-width: var(--maxw);
+  margin: 0 auto;
+}

@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation'
 import { isLocale, type Locale } from '@/lib/i18n'
-import { PageHeader } from '@/components/PageHeader/PageHeader'
-import { Section } from '@/components/Section/Section'
-import { ContactForm } from '@/components/ContactForm/ContactForm'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
+import { FormHead } from '@/components/FormParts/FormParts'
+import { ContactForm, type ContactFormLabels } from '@/components/ContactForm/ContactForm'
 import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
 import { getSiteChrome } from '@/lib/content/site-settings'
 import styles from './contact.module.scss'
+import page from '../form-page.module.scss'
 
 const content: Record<
   Locale,
@@ -13,7 +15,7 @@ const content: Record<
     title: string
     lead: string
     reachUs: string
-    labels: { name: string; email: string; message: string; submit: string; success: string }
+    labels: ContactFormLabels
   }
 > = {
   is: {
@@ -26,6 +28,8 @@ const content: Record<
       message: 'Skilaboð',
       submit: 'Senda',
       success: 'Takk! Við höfum samband við þig fljótlega.',
+      steps: { about: 'Um þig', send: 'Senda' },
+      formLabel: 'Senda skilaboð',
     },
   },
   en: {
@@ -38,6 +42,8 @@ const content: Record<
       message: 'Message',
       submit: 'Send',
       success: 'Thanks! We’ll get back to you soon.',
+      steps: { about: 'About you', send: 'Send' },
+      formLabel: 'Send a message',
     },
   },
 }
@@ -54,14 +60,18 @@ export default async function ContactPage({
 
   return (
     <>
-      <PageHeader title={c.title} lead={c.lead} />
-      <Section>
-        <div className={styles.layout}>
-          <div className={styles.direct}>
-            <h2 className={styles.subhead}>{c.reachUs}</h2>
-            <a href={`mailto:${chrome.contactEmail}`} className={styles.email}>
-              {chrome.contactEmail}
-            </a>
+      <PageHead title={c.title} lede={c.lead} stickers="hafa-samband" locale={locale} />
+      <PageSection last>
+        <div className={page.page}>
+          <FormHead id="c-heading" title={c.reachUs}>
+            <div className={styles.direct}>
+              <h2 id="c-heading" className={styles.title}>
+                {c.reachUs}
+              </h2>
+              <a href={`mailto:${chrome.contactEmail}`} className={styles.email}>
+                {chrome.contactEmail}
+              </a>
+            </div>
             {chrome.socials.length > 0 && (
               <ul className={styles.socials}>
                 {chrome.socials.map((social) => (
@@ -73,10 +83,10 @@ export default async function ContactPage({
                 ))}
               </ul>
             )}
-          </div>
+          </FormHead>
           <ContactForm labels={c.labels} />
         </div>
-      </Section>
+      </PageSection>
     </>
   )
 }
