@@ -69,10 +69,10 @@ describe('HomeOpening', () => {
     expect(screen.queryByRole('link', { name: 'Gerast félagi' })).toBeNull()
   })
 
-  it('renders no intro band without intro text', () => {
+  it('renders the intro band with its statement', () => {
     setReducedMotion(true)
-    render(<HomeOpening {...props} intro={undefined} />)
-    expect(screen.queryByText('Við erum fólkið á bak við vefinn.')).toBeNull()
+    render(<HomeOpening {...props} />)
+    expect(screen.getByText('Við erum fólkið á bak við vefinn.')).toBeInTheDocument()
   })
 
   it('under reduced motion shows the settled headline and the buttons at once', () => {

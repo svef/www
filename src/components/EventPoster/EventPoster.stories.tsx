@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { EventPoster } from './EventPoster'
 import { EventGrid } from './EventGrid'
+import { EventZigzag } from './EventZigzag'
 import { EVENT_POSTER_LOOKS } from './looks'
 
 const meta: Meta<typeof EventPoster> = {
@@ -54,5 +55,24 @@ export const Looks: Story = {
         <EventPoster key={i} {...args} title={`Viðburður ${i + 1}`} index={i} />
       ))}
     </EventGrid>
+  ),
+}
+
+/** The home page's zig-zag: four posters, left and right in turn, one column under 900px. */
+export const Zigzag: Story = {
+  parameters: { layout: 'fullscreen' },
+  decorators: [
+    (Story) => (
+      <div style={{ padding: '48px 24px' }}>
+        <Story />
+      </div>
+    ),
+  ],
+  render: (args) => (
+    <EventZigzag>
+      {EVENT_POSTER_LOOKS.slice(0, 4).map((look, i) => (
+        <EventPoster key={i} {...args} title={`Viðburður ${i + 1}`} index={i} />
+      ))}
+    </EventZigzag>
   ),
 }

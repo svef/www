@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { EventPoster } from './EventPoster'
 import { EVENT_POSTER_LOOKS, eventPosterLook } from './looks'
 import { EventGrid } from './EventGrid'
+import { EventZigzag } from './EventZigzag'
 
 const props = {
   title: 'Klúðurkvöld',
@@ -57,5 +58,20 @@ describe('EventGrid', () => {
       </EventGrid>,
     )
     expect(screen.getAllByRole('listitem')).toHaveLength(2)
+  })
+})
+
+describe('EventZigzag', () => {
+  it('is one list, each poster in its own item and each a link', () => {
+    render(
+      <EventZigzag>
+        {['a', 'b', 'c', 'd'].map((slug) => (
+          <EventPoster key={slug} {...props} href={`/is/vidburdir/${slug}`} />
+        ))}
+      </EventZigzag>,
+    )
+    expect(screen.getAllByRole('list')).toHaveLength(1)
+    expect(screen.getAllByRole('listitem')).toHaveLength(4)
+    expect(screen.getAllByRole('link')).toHaveLength(4)
   })
 })

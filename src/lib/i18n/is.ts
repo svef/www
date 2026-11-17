@@ -97,24 +97,24 @@ export const is = {
     menu: 'Valmynd',
   },
   home: {
-    /**
-     * The `<h1>` when `home-page` has no hero lines and no sentence.
-     *
-     * A page with no `<h1>` is an accessibility failure and an e2e failure, so there has
-     * to be something, but it must not be invented content standing in for the
-     * association's own words. The name is the one thing that is true without anyone
-     * writing it, and it is already on the page in the header and the footer.
-     */
-    fallbackTitle: 'Samtök vefiðnaðarins',
-    // The rest of this block is what the page says when an editor has not written the
-    // copy in the `home-page` global; the seeded copy there is what the site shows.
+    // What the home page says when an editor has not written the copy in the `home-page`
+    // global: the export's own copy, so a database with nothing in it (production, for
+    // now) still shows the designed page.
+    /** The headline, one entry per line, broken as the export breaks it. */
+    heroLines: ['Félag fólksins', 'sem býr til', 'vefinn á Íslandi.'],
     joinCta: 'Gerast félagi',
     eventsCta: 'Sjá viðburði',
+    intro:
+      'Við erum fólkið á bak við vefinn á Íslandi. Við hittumst á viðburðum, veitum Íslensku vefverðlaunin og lærum hvert af öðru.',
     eventsTitle: 'Næstu viðburðir',
+    // The same section when nothing is coming up: the latest events that have been.
+    pastEventsTitle: 'Liðnir viðburðir',
+    eventsLead:
+      'Fyrirlestrar, vinnustofur og hátíðir fyrir fólkið í vefiðnaðinum. Félagar komast frítt á alla viðburði nema vefverðlaunin.',
     allEvents: 'Allir viðburðir',
-    newsTitle: 'Fréttir',
-    allNews: 'Allar fréttir',
     aboutTitle: 'Um SVEF',
+    aboutText:
+      'SVEF — Samtök vefiðnaðarins — er félag fólks sem starfar við vefinn á Íslandi: forritarar, hönnuðir, markaðsfólk, verkefnastjórar og UX-fólk.',
     moreAbout: 'Meira um SVEF',
   },
   events: {

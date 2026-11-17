@@ -53,9 +53,11 @@ $ease-rise: cubic-bezier(0.2, 0.75, 0.2, 1);
   }
 }
 
+// One line of the headline per block, as the export breaks it. Unlike the export's
+// `.ln`, a line may still wrap between words: a line written longer than the screen is
+// wide breaks again rather than running off it.
 .line {
   display: block;
-  white-space: nowrap;
 }
 
 // Each word in a box fixed to its settled size (`useHeroMorph`), so the morph only
@@ -196,8 +198,9 @@ $ease-rise: cubic-bezier(0.2, 0.75, 0.2, 1);
   margin-top: -3px;
 }
 
+// The statement sits at the right (`.wrap` is a column; this one is a row).
 .introWrap {
-  display: flex;
+  flex-direction: row;
   justify-content: flex-end;
 }
 
@@ -207,7 +210,9 @@ $ease-rise: cubic-bezier(0.2, 0.75, 0.2, 1);
   margin: 0;
   padding-top: clamp(36px, 4vw, 72px);
   padding-bottom: clamp(80px, 8vw, 140px);
-  max-width: 33ch;
+  // The export's `33ch` of its narrower face, held in em so the statement keeps the
+  // export's measure (and its line count) in Archivo.
+  max-width: 11.6em;
   color: var(--color-white);
   font-weight: 600;
   font-stretch: var(--stretch-lede);

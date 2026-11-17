@@ -11,19 +11,15 @@ import {
 /**
  * Reading the home page's copy.
  *
- * The page is a shop window onto three sources — the `home-page` global for the copy and
- * which sections show, `events` for the next ones and `news` for the latest — so each has
- * its own read: the events and news come from `./events` and `./news`, and a section the
- * global turns off then costs no query at all.
+ * The page reads two sources: the `home-page` global for the copy and whether the events
+ * section shows, and `events` (through `./events`) for the posters. A section the global
+ * turns off costs no query at all.
  */
 
 export type { Copy, HomeFallbacks, HomeSettings } from './home-mapping'
 
-/** How many posters the events carousel draws, at most. */
-export const HOME_EVENT_COUNT = 6
-
-/** How many news cards the home page shows. */
-export const HOME_NEWS_COUNT = 3
+/** How many posters the events zig-zag draws, at most (the export's grid holds four). */
+export const HOME_EVENT_COUNT = 4
 
 /**
  * The copy on the home page, resolved for a locale.
@@ -44,14 +40,15 @@ export const getHomeSettings = cache(async function getHomeSettings(
   })) as unknown as HomePageAllLocales
   const c = getDictionary(locale).home
   const fallbacks: HomeFallbacks = {
-    title: c.fallbackTitle,
+    heroLines: c.heroLines,
     primaryLabel: c.joinCta,
     secondaryLabel: c.eventsCta,
+    intro: c.intro,
     eventsHeading: c.eventsTitle,
+    eventsLead: c.eventsLead,
     eventsLinkLabel: c.allEvents,
-    newsHeading: c.newsTitle,
-    newsLinkLabel: c.allNews,
     aboutHeading: c.aboutTitle,
+    aboutText: c.aboutText,
     aboutLinkLabel: c.moreAbout,
   }
   return toHomeSettings(doc, locale, fallbacks)

@@ -2,14 +2,15 @@ import { describe, it, expect } from 'vitest'
 import { toHomeSettings, type HomeFallbacks, type HomePageAllLocales } from './home-mapping'
 
 const fallbacks: HomeFallbacks = {
-  title: 'Samtök vefiðnaðarins',
+  heroLines: ['Félag fólksins', 'sem býr til', 'vefinn á Íslandi.'],
   primaryLabel: 'Gerast félagi',
   secondaryLabel: 'Sjá viðburði',
+  intro: 'Við erum fólkið á bak við vefinn á Íslandi.',
   eventsHeading: 'Næstu viðburðir',
+  eventsLead: 'Fyrirlestrar, vinnustofur og hátíðir.',
   eventsLinkLabel: 'Allir viðburðir',
-  newsHeading: 'Fréttir',
-  newsLinkLabel: 'Allar fréttir',
   aboutHeading: 'Um SVEF',
+  aboutText: 'SVEF — Samtök vefiðnaðarins.',
   aboutLinkLabel: 'Meira um SVEF',
 }
 
@@ -48,15 +49,19 @@ describe('toHomeSettings: the hero', () => {
     expect(s.heroLines).toEqual(['Eitt', 'Tvö'])
   })
 
-  it('uses the one-sentence field when there are no lines', () => {
-    const s = toHomeSettings(global({ heroSentence: { is: 'Heil setning.' } }), 'is', fallbacks)
-    expect(s.heroLines).toEqual(['Heil setning.'])
+  it('ignores the old one-sentence field: one long line is what ran off the screen', () => {
+    const s = toHomeSettings(
+      global({ heroSentence: { is: 'Félag fólksins sem býr til vefinn á Íslandi.' } } as unknown as Partial<HomePageAllLocales>),
+      'is',
+      fallbacks,
+    )
+    expect(s.heroLines).toEqual(['Félag fólksins', 'sem býr til', 'vefinn á Íslandi.'])
   })
 
-  it('ends at the association’s name, so the page always has an h1', () => {
-    const s = toHomeSettings(global(), 'is', fallbacks)
-    expect(s.heroLines).toEqual(['Samtök vefiðnaðarins'])
-    expect(s.heroLocale).toBe('is')
+  it('ends at the designed headline, line by line, in the page’s language', () => {
+    const s = toHomeSettings(global(), 'en', { ...fallbacks, heroLines: ['The people who', 'build the web', 'in Iceland.'] })
+    expect(s.heroLines).toEqual(['The people who', 'build the web', 'in Iceland.'])
+    expect(s.heroLocale).toBe('en')
   })
 })
 
@@ -67,11 +72,12 @@ describe('toHomeSettings: copy', () => {
     expect(s.primaryLabel.lang).toBeUndefined()
   })
 
-  it('has no intro band, events lead or about text until they are written', () => {
+  it('shows the designed intro, events lead and about text until they are written', () => {
     const s = toHomeSettings(global(), 'is', fallbacks)
-    expect(s.introText).toBeNull()
-    expect(s.eventsLead).toBeNull()
-    expect(s.aboutText).toBeNull()
+    expect(s.introText).toEqual({ text: fallbacks.intro, locale: 'is', lang: undefined })
+    expect(s.eventsLead.text).toBe(fallbacks.eventsLead)
+    expect(s.aboutText.text).toBe(fallbacks.aboutText)
+    expect(new Set(s.locales)).toEqual(new Set(['is']))
   })
 
   it('treats a blank field as unwritten', () => {
@@ -80,7 +86,7 @@ describe('toHomeSettings: copy', () => {
       'is',
       fallbacks,
     )
-    expect(s.introText).toBeNull()
+    expect(s.introText.text).toBe(fallbacks.intro)
     expect(s.eventsHeading.text).toBe('Næstu viðburðir')
   })
 
@@ -109,19 +115,13 @@ describe('toHomeSettings: copy', () => {
 })
 
 describe('toHomeSettings: which sections show', () => {
-  it('shows events and news by default: a fresh global has no flags saved', () => {
+  it('shows the events by default: a fresh global has no flags saved', () => {
     const s = toHomeSettings(global(), 'is', fallbacks)
     expect(s.showUpcomingEvents).toBe(true)
-    expect(s.showLatestNews).toBe(true)
   })
 
-  it('honours a switch that has been turned off', () => {
-    const s = toHomeSettings(
-      global({ showUpcomingEvents: false, showLatestNews: false }),
-      'is',
-      fallbacks,
-    )
+  it('honours the switch when it has been turned off', () => {
+    const s = toHomeSettings(global({ showUpcomingEvents: false }), 'is', fallbacks)
     expect(s.showUpcomingEvents).toBe(false)
-    expect(s.showLatestNews).toBe(false)
   })
 })

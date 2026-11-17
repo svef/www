@@ -87,14 +87,19 @@ export const en = {
     menu: 'Menu',
   },
   home: {
-    fallbackTitle: 'The Icelandic Web Industry Association',
+    heroLines: ['The people who', 'build the web', 'in Iceland.'],
     joinCta: 'Become a member',
     eventsCta: 'See events',
+    intro:
+      'We are the people behind the web in Iceland. We meet at events, host the Icelandic Web Awards and learn from each other.',
     eventsTitle: 'Upcoming events',
+    pastEventsTitle: 'Past events',
+    eventsLead:
+      'Talks, workshops and celebrations for people in the web industry. Members get into every event for free, except the Web Awards.',
     allEvents: 'All events',
-    newsTitle: 'News',
-    allNews: 'All news',
     aboutTitle: 'About SVEF',
+    aboutText:
+      'SVEF — the Icelandic Web Industry Association — is a community of people who work on the web in Iceland: developers, designers, marketers, project managers and UX people.',
     moreAbout: 'More about SVEF',
   },
   events: {

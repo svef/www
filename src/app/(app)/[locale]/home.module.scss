@@ -1,15 +1,15 @@
-// The export's home page sections: `.ev-head`, `.ev-h`, `.ev-aside`, `.sh-p`, `.about-home`.
+// The export's home page sections after the opening: `.ev-zig` (`.ev-head`, `.ev-h`,
+// `.ev-aside`, `.sh-p`) and `.about-home` (`.ah-text`).
 @use '../../../styles/breakpoints' as bp;
 
-// The sections after the opening carry the export's extra space above them
-// (`[aria-labelledby="h-um"]{margin-top:…}`) on top of the section's own.
-.after {
-  margin-top: clamp(80px, 10vw, 180px);
-}
-
-// The stickers sit against this section.
-.events {
+// The export's extra space above both sections
+// (`[aria-labelledby="h-naest"], [aria-labelledby="h-um"] { margin-top: … }`), on top of
+// the section's own padding. The stickers sit against the events section. `section.`
+// outranks `PageSection`'s own `margin: 0 auto`.
+section.events,
+section.about {
   position: relative;
+  margin-top: clamp(80px, 10vw, 180px);
 }
 
 // Heading on the left, the lead and the link on the right, level with its foot.
@@ -26,7 +26,8 @@
   }
 }
 
-.eventsTitle {
+// `h2.` outranks the global `.h2` size and weight.
+h2.eventsTitle {
   margin: 0;
   font-size: clamp(3.2rem, 10.5vw, 10.5rem);
   font-weight: 850;
@@ -37,6 +38,7 @@
 .eventsWord {
   display: block;
   width: max-content;
+  max-width: 100%;
 }
 
 .eventsAside {
@@ -51,36 +53,47 @@
   }
 }
 
-// `.sh-p`: the narrow display-face standfirst.
-// The wrapping selectors outrank the global `p:not(.no-condense)` stretch.
+// `.sh-p`: the display-face standfirst. Its own `font-stretch: 62%` loses to the export's
+// `p:not(…)` running-text rule, so what renders is the running-text width.
 .eventsAside .lead {
   margin: 0;
-  font-stretch: var(--stretch-lede);
   max-width: 30ch;
   font-family: var(--font-display);
+  font-stretch: var(--stretch-body);
   font-size: clamp(1.3rem, 1.9vw, 1.8rem);
   font-weight: 500;
   line-height: 1.15;
 }
 
-.about {
-  display: grid;
-  justify-items: start;
+// `[aria-labelledby="h-um"] { padding-bottom: … }`, then the page's own bottom padding.
+section.about {
+  padding-bottom: calc(clamp(100px, 12vw, 220px) + var(--page-pad-bottom));
+}
+
+// `.about-home .ah-text`: one column, centred, the text set from its left edge.
+.aboutText {
+  position: relative;
+  z-index: 1;
   width: min(100%, 720px);
   margin-inline: auto;
 }
 
-.aboutTitle {
+h2.aboutTitle {
   margin: 0 0 clamp(20px, 2.4vw, 32px);
   font-weight: 850;
   letter-spacing: -0.02em;
 }
 
-.about .aboutText {
-  margin: 0 0 clamp(24px, 2.8vw, 40px);
-  font-stretch: var(--stretch-lede);
+// `.ah-text p`: as with the lead, the running-text width is what renders.
+.about .aboutBody {
+  margin: 0;
   font-family: var(--font-display);
+  font-stretch: var(--stretch-body);
   font-size: clamp(1.6rem, 2.8vw, 2.6rem);
   font-weight: 500;
   line-height: 1.1;
+}
+
+.aboutButton {
+  margin-top: clamp(24px, 2.8vw, 40px);
 }

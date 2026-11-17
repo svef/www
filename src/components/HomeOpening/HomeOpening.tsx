@@ -18,8 +18,8 @@ export interface HomeOpeningProps {
   titleLang?: string
   /** The hero's buttons. A hidden page's button is left out by the caller. */
   actions: { label: string; href: string; lang?: string }[]
-  /** The statement in the intro band. Left out: no band. */
-  intro?: { text: string; lang?: string }
+  /** The statement in the intro band. */
+  intro: { text: string; lang?: string }
 }
 
 /**
@@ -95,27 +95,25 @@ export function HomeOpening({ locale, lines, titleLang, actions, intro }: HomeOp
         />
       </section>
 
-      {intro && (
-        <Shape
-          as="section"
-          band
-          inset
-          insetAnchor={heroStair}
-          auto="bl"
-          nocap
-          ambient="lively"
-          riseDelay={520}
-          className={styles.introBand}
-        >
-          <div className={`${styles.wrap} ${styles.introWrap}`}>
-            <Notch corner="tr" drift={120}>
-              <p className={styles.introText} lang={intro.lang}>
-                {intro.text}
-              </p>
-            </Notch>
-          </div>
-        </Shape>
-      )}
+      <Shape
+        as="section"
+        band
+        inset
+        insetAnchor={heroStair}
+        auto="bl"
+        nocap
+        ambient="lively"
+        riseDelay={520}
+        className={styles.introBand}
+      >
+        <div className={`${styles.wrap} ${styles.introWrap}`}>
+          {/* The paragraph is the notch itself, as in the export: its width (and so the
+              notch's) is measured against the band, not against a wrapper. */}
+          <Notch as="p" corner="tr" drift={120} className={styles.introText} lang={intro.lang}>
+            {intro.text}
+          </Notch>
+        </div>
+      </Shape>
     </>
   )
 }

@@ -31,7 +31,6 @@ export const Default: Story = {}
 export const OneButton: Story = {
   args: { actions: [{ label: 'Sjá viðburði', href: '/is/vidburdir' }] },
 }
-export const NoIntroBand: Story = { args: { intro: undefined } }
 export const English: Story = {
   args: {
     locale: 'en',

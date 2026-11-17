@@ -1,26 +1,16 @@
 import { notFound } from 'next/navigation'
 import { Fragment } from 'react'
-import {
-  getDictionary,
-  isHiddenPath,
-  isLocale,
-  localePath,
-} from '@/lib/i18n'
-import { formatLongDate } from '@/lib/dates'
+import { getDictionary, isHiddenPath, isLocale, localePath } from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
-import { HOME_EVENT_COUNT, HOME_NEWS_COUNT, getHomeSettings } from '@/lib/content/home'
+import { HOME_EVENT_COUNT, getHomeSettings } from '@/lib/content/home'
 import { listEvents } from '@/lib/content/events'
-import { listNews } from '@/lib/content/news'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { HomeOpening } from '@/components/HomeOpening/HomeOpening'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { PageStickers } from '@/components/Sticker/PageStickers'
-import { SectionHead } from '@/components/SectionHead/SectionHead'
 import { ButtonLink } from '@/components/ButtonLink/ButtonLink'
 import { EventPoster } from '@/components/EventPoster/EventPoster'
-import { EventsCarousel } from '@/components/EventsCarousel/EventsCarousel'
-import { NewsGrid } from '@/components/NewsGrid/NewsGrid'
-import { NewsCard } from '@/components/NewsCard/NewsCard'
+import { EventZigzag } from '@/components/EventPoster/EventZigzag'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import styles from './home.module.scss'
 
@@ -31,11 +21,18 @@ import styles from './home.module.scss'
  * dynamic segment of its own.
  *
  * Which events are still upcoming is evaluated when the page is *rendered*, so an event
- * that ends during a revalidation window keeps its place in the carousel for the rest of
- * it, plus the one request that finds the page stale and is served it anyway.
+ * that ends during a revalidation window keeps its place in the grid for the rest of it,
+ * plus the one request that finds the page stale and is served it anyway.
  */
 export const revalidate = 300
 
+/**
+ * The export's `forsida`: the hero and the intro band, the events zig-zag, and the about
+ * block. Its Web Awards section is left out while that page is on hold (#128).
+ *
+ * Every piece of copy comes from the `home-page` global and falls back to the export's own
+ * (the dictionary), so the page is whole with nothing written.
+ */
 export default async function HomePage({
   params,
 }: {
@@ -47,25 +44,24 @@ export default async function HomePage({
   const t = getDictionary(locale)
   const settings = await getHomeSettings(locale)
 
-  // A section the global turns off costs no query.
-  const [upcoming, news] = await Promise.all([
-    settings.showUpcomingEvents
-      ? listEvents(locale).then((lists) => lists.upcoming.slice(0, HOME_EVENT_COUNT))
-      : [],
-    settings.showLatestNews
-      ? listNews(locale).then((all) => all.slice(0, HOME_NEWS_COUNT))
-      : [],
-  ])
+  // A section the global turns off costs no query. With nothing coming up, the grid shows
+  // the latest events that have been, under a heading that says so, rather than a hole.
+  const lists = settings.showUpcomingEvents ? await listEvents(locale) : null
+  const upcoming = lists?.upcoming.slice(0, HOME_EVENT_COUNT) ?? []
+  const showingPast = upcoming.length === 0
+  const events = showingPast ? (lists?.past.slice(0, HOME_EVENT_COUNT) ?? []) : upcoming
+  const eventsHeading = showingPast
+    ? { text: t.home.pastEventsTitle, lang: undefined }
+    : settings.eventsHeading
 
   const langOf = (of: string) => (of === locale ? undefined : of)
 
-  // One untranslated piece of copy is enough for the strip to say so. The home copy,
-  // the events' titles and venues and the news headlines all count.
+  // One untranslated piece of copy is enough for the strip to say so. The home copy and
+  // the events' titles and venues all count.
   const contentLocale = resolveContentLocale(
     [
       ...settings.locales,
-      ...upcoming.flatMap((event) => [event.contentLocale, event.locationLocale]),
-      ...news.flatMap((article) => [article.contentLocale, article.excerptLocale]),
+      ...events.flatMap((event) => [event.contentLocale, event.locationLocale]),
     ],
     locale,
   )
@@ -78,8 +74,6 @@ export default async function HomePage({
     .filter((action) => !isHiddenPath(action.href))
     .map(({ label, href }) => ({ label: label.text, lang: label.lang, href }))
 
-  const eventsHeadingWords = settings.eventsHeading.text.split(/\s+/)
-
   // The note is the first thing inside `<main>`, so the skip link lands on it rather
   // than past it. It renders nothing when the content is already in the locale asked for.
   return (
@@ -91,11 +85,7 @@ export default async function HomePage({
         lines={settings.heroLines}
         titleLang={langOf(settings.heroLocale)}
         actions={actions}
-        intro={
-          settings.introText
-            ? { text: settings.introText.text, lang: settings.introText.lang }
-            : undefined
-        }
+        intro={{ text: settings.introText.text, lang: settings.introText.lang }}
       />
 
       {settings.showUpcomingEvents && (
@@ -104,12 +94,8 @@ export default async function HomePage({
           <div className={styles.eventsHead}>
             {/* Each word on its own line, as the export sets it. The spaces stay in the
                 text so the heading reads as one phrase. */}
-            <h2
-              id="home-events"
-              className={`h2 ${styles.eventsTitle}`}
-              lang={settings.eventsHeading.lang}
-            >
-              {eventsHeadingWords.map((word, i) => (
+            <h2 id="home-events" className={`h2 ${styles.eventsTitle}`} lang={eventsHeading.lang}>
+              {eventsHeading.text.split(/\s+/).map((word, i) => (
                 <Fragment key={i}>
                   {i > 0 && ' '}
                   <span className={styles.eventsWord}>{word}</span>
@@ -117,11 +103,9 @@ export default async function HomePage({
               ))}
             </h2>
             <div className={styles.eventsAside}>
-              {settings.eventsLead && (
-                <p className={styles.lead} lang={settings.eventsLead.lang}>
-                  {settings.eventsLead.text}
-                </p>
-              )}
+              <p className={styles.lead} lang={settings.eventsLead.lang}>
+                {settings.eventsLead.text}
+              </p>
               <ButtonLink
                 href={localePath('/vidburdir', locale)}
                 lang={settings.eventsLinkLabel.lang}
@@ -131,11 +115,11 @@ export default async function HomePage({
             </div>
           </div>
 
-          {upcoming.length === 0 ? (
+          {events.length === 0 ? (
             <EmptyState title={t.events.empty.title} body={t.events.empty.body} headingLevel={3} />
           ) : (
-            <EventsCarousel label={t.events.carouselLabel} dotLabel={t.events.dotLabel}>
-              {upcoming.map((event, i) => (
+            <EventZigzag>
+              {events.map((event, i) => (
                 <EventPoster
                   key={event.slug}
                   index={i}
@@ -148,67 +132,28 @@ export default async function HomePage({
                   metaLang={langOf(event.locationLocale)}
                 />
               ))}
-            </EventsCarousel>
+            </EventZigzag>
           )}
         </PageSection>
       )}
 
-      {settings.showLatestNews && news.length > 0 && (
-        <PageSection aria-labelledby="home-news" className={styles.after}>
-          <SectionHead
-            id="home-news"
-            title={settings.newsHeading.text}
-            titleLang={settings.newsHeading.lang}
+      <PageSection aria-labelledby="home-about" className={styles.about}>
+        <div className={styles.aboutText}>
+          <h2 id="home-about" className={`h2 ${styles.aboutTitle}`} lang={settings.aboutHeading.lang}>
+            {settings.aboutHeading.text}
+          </h2>
+          <p className={styles.aboutBody} lang={settings.aboutText.lang}>
+            {settings.aboutText.text}
+          </p>
+          <ButtonLink
+            href={localePath('/um-svef', locale)}
+            lang={settings.aboutLinkLabel.lang}
+            className={styles.aboutButton}
           >
-            <ButtonLink
-              href={localePath('/frettir', locale)}
-              lang={settings.newsLinkLabel.lang}
-            >
-              {settings.newsLinkLabel.text}
-            </ButtonLink>
-          </SectionHead>
-          <NewsGrid>
-            {news.map((article, i) => (
-              <NewsCard
-                key={article.slug}
-                index={i}
-                href={article.href}
-                date={formatLongDate(article.publishedAt, locale)}
-                dateTime={article.publishedAt}
-                title={article.title}
-                excerpt={article.excerpt}
-                cta={t.news.readArticle}
-                headingLevel={3}
-                titleLang={langOf(article.contentLocale)}
-                excerptLang={langOf(article.excerptLocale)}
-              />
-            ))}
-          </NewsGrid>
-        </PageSection>
-      )}
-
-      {settings.aboutText && (
-        <PageSection aria-labelledby="home-about" className={styles.after} last>
-          <div className={styles.about}>
-            <h2
-              id="home-about"
-              className={`h2 ${styles.aboutTitle}`}
-              lang={settings.aboutHeading.lang}
-            >
-              {settings.aboutHeading.text}
-            </h2>
-            <p className={styles.aboutText} lang={settings.aboutText.lang}>
-              {settings.aboutText.text}
-            </p>
-            <ButtonLink
-              href={localePath('/um-svef', locale)}
-              lang={settings.aboutLinkLabel.lang}
-            >
-              {settings.aboutLinkLabel.text}
-            </ButtonLink>
-          </div>
-        </PageSection>
-      )}
+            {settings.aboutLinkLabel.text}
+          </ButtonLink>
+        </div>
+      </PageSection>
     </>
   )
 }
