@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SVEF x Aranja — event screen</title>
+
+<!-- Archivo is the site's own display face (see src/app/(app)/[locale]/layout.tsx).
+     The original of this screen used Roc Grotesk, which is licensed and cannot
+     live in a public repository, so the bar is set in Archivo instead. Both axes
+     are loaded as a variable font so the weight and width below are adjustable. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+
+<style>
+  :root {
+    --black: #09060c;
+    --white: #fcfbfe;
+
+    /* ---- The knobs worth turning ----------------------------------------
+       Archivo runs wdth 62–125 and wght 100–900. Raising --title-wdth makes
+       the title wider and more open; lowering it tightens it up. Change these
+       rather than hunting through the rules below. */
+    --title-size: 3.9vh;
+    --title-wght: 600;
+    --title-wdth: 110;
+
+    --label-size: 1.7vh;
+    --label-wght: 500;
+    --label-wdth: 100;
+
+    --logo-h: 4.6vh;
+    --bar-pad-y: 2.2vh;
+    --bar-pad-x: 3.4vw;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: var(--black); }
+
+  /* The video does not sit *behind* the bar — the page is a column, so the
+     stage takes whatever height is left once the bar has had its own. */
+  body {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Archivo', system-ui, sans-serif;
+    color: var(--white);
+    cursor: none; /* it is a display, not something anyone clicks */
+  }
+
+  .stage { flex: 1; min-height: 0; display: flex; }
+
+  video {
+    width: 100%;
+    height: 100%;
+    /* `cover`, not `contain`. The stage is wider than 16:9 once the bar has
+       taken its height, so `contain` left a ~95px gutter down each side. Those
+       gutters are invisible on a laptop — the video's black is #09060b against
+       the page's #09060c — but plainly visible on a TV, which renders the video
+       plane and the graphics plane with different black levels and gamma. No
+       CSS colour will match across that boundary, so the boundary has to go.
+       The cost is ~54px cropped off the top and bottom of a 1080-tall source,
+       which the animation has the margins to absorb. */
+    object-fit: cover;
+    background: var(--black);
+  }
+
+  /* A plain black strip. No gradient: nothing overlaps the video, so there is
+     nothing to lift the text off. */
+  .bar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4vw;
+    padding: var(--bar-pad-y) var(--bar-pad-x);
+    background: var(--black);
+  }
+
+  .title {
+    font-size: var(--title-size);
+    font-variation-settings: 'wght' var(--title-wght), 'wdth' var(--title-wdth);
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .sponsors { display: flex; align-items: center; gap: 2.4vw; }
+
+  .sponsors-label {
+    font-size: var(--label-size);
+    font-variation-settings: 'wght' var(--label-wght), 'wdth' var(--label-wdth);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.78;
+    white-space: nowrap;
+  }
+
+  .logos { display: flex; align-items: center; gap: 2.4vw; }
+
+  /* Normalised by height, which is what makes a mixed row read as one line.
+     The per-logo nudges are optical, not arithmetic: a wide wordmark and a
+     near-square mark set to the same height do not carry the same weight. */
+  .logos img { height: var(--logo-h); width: auto; display: block; }
+  .logos .kombucha { height: calc(var(--logo-h) * 1.1); }
+  .logos .olgerdin { height: calc(var(--logo-h) * 1.2); }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <video src="assets/screensaver.mp4" autoplay muted loop playsinline disablepictureinpicture></video>
+  </div>
+
+  <div class="bar">
+    <div class="title">SVEF x Aranja</div>
+
+    <div class="sponsors">
+      <span class="sponsors-label">Beverages sponsored by</span>
+      <div class="logos">
+        <img class="kombucha" src="assets/kombucha.svg" alt="Kombucha Iceland">
+        <img class="olgerdin" src="assets/olgerdin.png" alt="Ölgerðin">
+        <img class="bera" src="assets/bera.webp" alt="Bera">
+      </div>
+    </div>
+  </div>
+
+<script>
+  // Autoplay can still be refused (a background tab, an unusual setting). The
+  // loop attribute covers normal playback; this only recovers a refusal, and a
+  // click is the one gesture that always unblocks it.
+  const video = document.querySelector('video')
+  const play = () => video.play().catch(() => {})
+  play()
+  document.addEventListener('click', play)
+  document.addEventListener('keydown', play)
+  // A long unattended run can stall; if it ever ends despite `loop`, start it
+  // again rather than leaving a frozen frame on screen all evening.
+  video.addEventListener('ended', () => { video.currentTime = 0; play() })
+</script>
+</body>
+</html>

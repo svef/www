@@ -68,8 +68,22 @@ const nextConfig: NextConfig = {
    * for every branch build, and unset locally.
    */
   async headers() {
-    if (!process.env.VERCEL_ENV || process.env.VERCEL_ENV === 'production') return []
+    /**
+     * `/skjar/*` is the event screens: full-screen pages shown on a display at
+     * an event, never linked from the site and of no use to a reader. They are
+     * static files under `public/`, so they are public the moment the site is —
+     * obscure, not secret, and the repository is public, so treat the URL as
+     * known rather than hidden. The header keeps them out of search results on
+     * every deployment, production included.
+     */
+    const screens = {
+      source: '/skjar/:path*',
+      headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+    }
+
+    if (!process.env.VERCEL_ENV || process.env.VERCEL_ENV === 'production') return [screens]
     return [
+      screens,
       {
         source: '/:path*',
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
