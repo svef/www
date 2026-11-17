@@ -59,6 +59,12 @@ $focus: 3px solid var(--focus-ring);
   color: var(--color-white);
 }
 
+// With the sticker in place the blurb is the export's `.foot-about-ghost`: it
+// still lays out, so the notch is cut to its size, but it is never seen or read.
+.aboutGhost {
+  visibility: hidden;
+}
+
 .contact {
   grid-column: 2;
   grid-row: 1;

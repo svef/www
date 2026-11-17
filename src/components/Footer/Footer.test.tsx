@@ -41,6 +41,19 @@ describe('Footer', () => {
     expect(screen.getByText('Hello')).toHaveAttribute('lang', 'en')
   })
 
+  it('with a locale, carries the sticker and keeps the blurb only as a hidden sizer', () => {
+    const { container } = renderFooter({ blurb: 'Hello', locale: 'is' })
+    // The export's `.foot-about-ghost`: still laid out to size the notch, never read.
+    expect(screen.getByText('Hello')).toHaveAttribute('aria-hidden', 'true')
+    expect(container.querySelector('img[src*="/stickers/"]')).not.toBeNull()
+  })
+
+  it('without a locale, shows the blurb and no sticker', () => {
+    const { container } = renderFooter({ blurb: 'Hello' })
+    expect(screen.getByText('Hello')).not.toHaveAttribute('aria-hidden')
+    expect(container.querySelector('img[src*="/stickers/"]')).toBeNull()
+  })
+
   it('renders the page columns as a named navigation, headings and all', () => {
     renderFooter()
     const nav = screen.getByRole('navigation', { name: is.footer.pages })

@@ -116,6 +116,7 @@ export default async function LocaleLayout({
             fallback copy. See the note on `SiteChrome.footerBlurb`.
           */}
           <Footer
+            locale={locale}
             blurb={chrome.footerBlurb ?? t.footer.blurb}
             blurbLang={
               chrome.footerBlurb && chrome.footerBlurbLocale !== locale

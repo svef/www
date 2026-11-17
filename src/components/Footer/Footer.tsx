@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { GrowText } from '@/components/GrowText/GrowText'
 import { Notch } from '@/components/Shape/Notch'
 import { Shape } from '@/components/Shape/Shape'
+import { PageStickers } from '@/components/Sticker/PageStickers'
+import type { Locale } from '@/lib/i18n'
 import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
 import { withoutHiddenLinks } from '@/lib/i18n'
 import type { SocialLink } from '@/lib/content/site-settings'
@@ -30,6 +32,7 @@ export function Footer({
   columns,
   columnsLabel,
   socials,
+  locale,
 }: {
   blurb: string
   /**
@@ -56,7 +59,16 @@ export function Footer({
    * nowhere is worse than no row.
    */
   socials: FooterSocial[]
+  /**
+   * The page's locale. When given, the footer carries its sticker, as the export
+   * does: the "not accessible" sticker sits in the top-left notch and the blurb
+   * stays behind it only as an invisible, `aria-hidden` sizer for that notch
+   * (#121). Without it, as on the landing page, the blurb is shown as text.
+   */
+  locale?: Locale
 }) {
+  const withSticker = locale !== undefined
+
   const visible = columns
     .map((column) => ({ ...column, links: withoutHiddenLinks(column.links) }))
     .filter((column) => column.links.length > 0)
@@ -71,10 +83,22 @@ export function Footer({
         ambient="lively"
         className={styles.band}
       >
+        {withSticker && <PageStickers page="footer" band="footer" locale={locale} />}
         <div className={styles.wrap}>
-          <Notch corner="tl" as="p" className={styles.about} lang={blurbLang}>
-            {blurb}
-          </Notch>
+          {withSticker ? (
+            <Notch
+              corner="tl"
+              as="p"
+              className={`${styles.about} ${styles.aboutGhost}`}
+              aria-hidden="true"
+            >
+              {blurb}
+            </Notch>
+          ) : (
+            <Notch corner="tl" as="p" className={styles.about} lang={blurbLang}>
+              {blurb}
+            </Notch>
+          )}
 
           <div className={styles.contact}>
             <p className={styles.chip}>{contactHeading}</p>
