@@ -17,7 +17,14 @@ import { getSiteChrome } from '@/lib/content/site-settings'
 import { getSiteUrl } from '@/lib/site-url'
 import { Analytics } from '@/components/Analytics/Analytics'
 import { NavigationProgress } from '@/components/NavigationProgress/NavigationProgress'
-import '@mantine/core/styles.css'
+// Not `@mantine/core/styles.css`: that is every Mantine component's CSS (~200KB, ~29KB gzip,
+// render-blocking on every page) for a site that uses two of them. This is the baseline,
+// the default theme variables, the globals and the one component with a stylesheet
+// (`VisuallyHidden`; `FocusTrap` has none). Add a component's file here when one is used.
+import '@mantine/core/styles/baseline.css'
+import '@mantine/core/styles/default-css-variables.css'
+import '@mantine/core/styles/global.css'
+import '@mantine/core/styles/VisuallyHidden.css'
 import '@/styles/globals.scss'
 
 // Archivo carries body and headings alike, as the *variable* font with both axes:
