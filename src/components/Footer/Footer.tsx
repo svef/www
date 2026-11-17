@@ -81,6 +81,7 @@ export function Footer({
         auto="tr,bl,br"
         autoMobile="tr"
         ambient="lively"
+        inset
         className={styles.band}
       >
         {withSticker && <PageStickers page="footer" band="footer" locale={locale} />}
