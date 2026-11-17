@@ -26,6 +26,7 @@ export type {
   BrandAssetView,
   FaqItemView,
   PressLinkView,
+  StatView,
 } from './about-mapping'
 
 /**

@@ -151,6 +151,40 @@ test.describe('news article route', () => {
     })
   }
 
+  // The three byline cases (#142), one seeded article each. Fixture slugs are pinned here on
+  // purpose: the byline is data, so the test needs the article that has each kind.
+  test.describe('byline', () => {
+    for (const locale of LOCALES) {
+      test(`${locale}: a board-member author shows photo block, name and role`, async ({ page }) => {
+        await page.goto(urlFor(locale, locale === 'is' ? '/frettir/ny-stjorn-er-tekin-vid' : '/news/ny-stjorn-er-tekin-vid'))
+        const byline = page.locator('article footer').locator('div:has(> p:has-text("Salena"))')
+        await expect(byline).toHaveCount(1)
+        await expect(byline).toContainText('Salena Raquel Kauffman')
+        await expect(byline).toContainText('Formaður')
+        // The photo block is drawn even when the member has no photo uploaded.
+        await expect(byline.locator('span').first()).toBeVisible()
+      })
+
+      test(`${locale}: a text author shows the name alone`, async ({ page }) => {
+        await page.goto(urlFor(locale, locale === 'is' ? '/frettir/innsendingar-opna-i-agust' : '/news/innsendingar-opna-i-agust'))
+        const foot = page.locator('article footer')
+        await expect(foot).toContainText('Ritstjórn vefsins')
+        // No role line and no photo block: the byline is a single paragraph of label + name.
+        await expect(foot.locator('p', { hasText: 'Ritstjórn vefsins' }).locator('> span')).toHaveCount(2)
+        await expect(foot.locator('img')).toHaveCount(0)
+      })
+
+      test(`${locale}: an article with neither has no byline`, async ({ page }) => {
+        await page.goto(urlFor(locale, locale === 'is' ? '/frettir/adgengi-verdur-ahersluatridi-arsins' : '/news/adgengi-verdur-ahersluatridi-arsins'))
+        const foot = page.locator('article footer')
+        await expect(foot).toBeVisible()
+        await expect(foot.getByText(locale === 'is' ? 'Höfundur' : 'Author')).toHaveCount(0)
+        // The share row is still there.
+        await expect(foot.getByRole('group')).toHaveCount(1)
+      })
+    }
+  })
+
   test("/is/<other-language page name>/<slug> redirects to the page's own name", async ({
     page,
     request,

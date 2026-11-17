@@ -20,7 +20,7 @@ import {
  * having.
  */
 
-export type { NewsArticle, NewsCover, NewsSummary } from './news-mapping'
+export type { NewsArticle, NewsByline, NewsCover, NewsSummary } from './news-mapping'
 
 /**
  * Fields a `news` read needs, and nothing else.
@@ -103,7 +103,8 @@ export const findNewsArticle = cache(async function findNewsArticle(
     ...publicReadArgs,
     where: { and: [{ slug: { equals: slug } }, publishedByNow()] },
     limit: 1,
-    depth: 1,
+    // 2: the byline's board member (1), then that member's photo (2).
+    depth: 2,
   })
   const doc = docs[0] as unknown as NewsAllLocales | undefined
   return doc ? toNewsArticle(doc, locale) : null

@@ -167,11 +167,38 @@ export default async function NewsArticlePage({ params }: { params: Params }) {
             )}
 
             <footer className={styles.foot}>
-              {article.author && (
-                <p className={styles.byline}>
-                  <span className={styles.bylineLabel}>{t.news.author}</span>
-                  <span className={styles.bylineName}>{article.author}</span>
-                </p>
+              {article.byline && (
+                <div className={styles.byline}>
+                  {article.byline.member && (
+                    // Decorative: the name sits beside it.
+                    <span className={styles.byPhoto}>
+                      {article.byline.member.portrait && (
+                        <Image
+                          src={article.byline.member.portrait.url}
+                          alt=""
+                          width={128}
+                          height={128}
+                        />
+                      )}
+                    </span>
+                  )}
+                  <p className={styles.bylineText}>
+                    <span className={styles.bylineLabel}>{t.news.author}</span>
+                    <span className={styles.bylineName}>{article.byline.name}</span>
+                    {article.byline.member?.role && (
+                      <span
+                        className={styles.bylineRole}
+                        lang={
+                          article.byline.member.roleLocale === locale
+                            ? undefined
+                            : article.byline.member.roleLocale
+                        }
+                      >
+                        {article.byline.member.role}
+                      </span>
+                    )}
+                  </p>
+                </div>
               )}
               <ShareRow
                 bare

@@ -35,7 +35,9 @@ export function FeedbackForm({ locale, copy }: { locale: Locale; copy: FormsCopy
 
   // Controlled, because React resets a form after its action finishes and we do
   // not want a failed submit to wipe what somebody just wrote.
-  const [subject, setSubject] = useState('')
+  // "General" is pre-selected, as in the export: most feedback is general, and a chosen
+  // chip means the "required" error for the subject can no longer be reached from here.
+  const [subject, setSubject] = useState<string>('general')
   const [subjectOther, setSubjectOther] = useState('')
   const [message, setMessage] = useState('')
   const [name, setName] = useState('')

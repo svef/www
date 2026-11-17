@@ -337,11 +337,20 @@ export type NewsFixture = {
   publishedAt: string
   excerpt: string
   body?: Block[]
+  /**
+   * Byline, one fixture per case (svef/www#142): a board member by `name`
+   * (the relation, shown with photo and role), a plain-text author who is not
+   * on the board, or neither.
+   */
+  authorMemberName?: string
+  author?: string
 }
 
 export const news: NewsFixture[] = [
   {
     slug: 'ny-stjorn-er-tekin-vid',
+    // The export's byline for this article: the chair, with role.
+    authorMemberName: 'Salena Raquel Kauffman',
     title: 'Ný stjórn er tekin við',
     publishedAt: '2026-05-22T12:00:00.000Z',
     excerpt: 'Ný stjórn SVEF tók við störfum á aðalfundi samtakanna þann 22. maí.',
@@ -359,6 +368,8 @@ export const news: NewsFixture[] = [
   },
   {
     slug: 'innsendingar-opna-i-agust',
+    // A text-only author: someone outside the board, shown as a name alone.
+    author: 'Ritstjórn vefsins',
     title: 'Innsendingar opna í ágúst',
     publishedAt: '2026-05-08T12:00:00.000Z',
     excerpt: 'Flokkarnir verða 13 talsins og nýr flokkur bætist við: Nýliði ársins.',
@@ -708,7 +719,7 @@ export const faq: FaqFixture[] = [
   },
 ]
 
-export type PressFixture = { title: string; outlet: string; url?: string }
+export type PressFixture = { title: string; outlet: string; url?: string; date?: string }
 
 /**
  * The three press mentions the export's "Fjölmiðlar" list shows, verbatim.
@@ -721,9 +732,18 @@ export type PressFixture = { title: string; outlet: string; url?: string }
  * exercised as it will look once real links are entered.
  */
 export const press: PressFixture[] = [
-  { title: 'Vefur ársins 2025 valinn í Hörpu', outlet: 'RÚV' },
-  { title: 'Aðgengi á íslenskum vefjum batnar hægt', outlet: 'Vísir' },
-  { title: 'Ný stjórn tekin við hjá SVEF', outlet: 'Kjarninn' },
+  { title: 'Vefur ársins 2025 valinn í Hörpu', outlet: 'RÚV', date: '2025-03-01T12:00:00.000Z' },
+  { title: 'Aðgengi á íslenskum vefjum batnar hægt', outlet: 'Vísir', date: '2025-01-01T12:00:00.000Z' },
+  { title: 'Ný stjórn tekin við hjá SVEF', outlet: 'Kjarninn', date: '2024-10-01T12:00:00.000Z' },
+]
+
+export type StatFixture = { value: string; label: string; labelEn: string }
+
+/** The export's About figures row: founded, members, board members. */
+export const aboutStats: StatFixture[] = [
+  { value: '2005', label: 'Stofnað', labelEn: 'Founded' },
+  { value: '300', label: 'Félagar', labelEn: 'Members' },
+  { value: '6', label: 'Í stjórn', labelEn: 'On the board' },
 ]
 
 export type TierFixture = {

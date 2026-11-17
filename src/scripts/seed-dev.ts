@@ -28,6 +28,7 @@ import type { CollectionSlug, Payload, Where } from 'payload'
 
 import config from '../payload.config'
 import {
+  aboutStats,
   aboutStory,
   awardCategories,
   awardEditions,
@@ -228,6 +229,23 @@ async function seed(payload: Payload): Promise<void> {
     }
   }
 
+  // --- Board members ------------------------------------------------------
+  const memberIds = new Map<string, number | string>()
+  for (const member of boardMembers) {
+    const id = await upsert(
+      payload,
+      'board-members',
+      { name: { equals: member.name } },
+      {
+        company: member.company ?? null,
+        name: member.name,
+        order: member.order,
+        role: member.role,
+      },
+    )
+    memberIds.set(member.name, id)
+  }
+
   // --- News ---------------------------------------------------------------
   for (const item of news) {
     await upsert(
@@ -235,6 +253,8 @@ async function seed(payload: Payload): Promise<void> {
       'news',
       { slug: { equals: item.slug } },
       {
+        author: item.author ?? null,
+        authorMember: item.authorMemberName ? (memberIds.get(item.authorMemberName) ?? null) : null,
         body: item.body ? richText(item.body) : null,
         excerpt: item.excerpt,
         publishedAt: item.publishedAt,
@@ -256,21 +276,6 @@ async function seed(payload: Payload): Promise<void> {
         event: gallery.eventSlug ? (eventIds.get(gallery.eventSlug) ?? null) : null,
         images: [],
         title: gallery.title,
-      },
-    )
-  }
-
-  // --- Board members ------------------------------------------------------
-  for (const member of boardMembers) {
-    await upsert(
-      payload,
-      'board-members',
-      { name: { equals: member.name } },
-      {
-        company: member.company ?? null,
-        name: member.name,
-        order: member.order,
-        role: member.role,
       },
     )
   }
@@ -354,8 +359,28 @@ async function seed(payload: Payload): Promise<void> {
   await payload.updateGlobal({ data: homePageEn as never, locale: 'en', slug: 'home-page' })
 
   await payload.updateGlobal({
-    data: { faq, press, story: richText(aboutStory) } as never,
+    data: {
+      faq,
+      press,
+      stats: aboutStats.map(({ value, label }) => ({ value, label })),
+      story: richText(aboutStory),
+    } as never,
     locale: 'is',
+    slug: 'about-page',
+  })
+
+  // English labels for the stats: read the row ids back so Payload translates the rows
+  // rather than replacing them (see the membership page below).
+  const aboutIs = await payload.findGlobal({ slug: 'about-page', locale: 'is', depth: 0 })
+  await payload.updateGlobal({
+    data: {
+      stats: (aboutIs.stats ?? []).map((row, index) => ({
+        id: row.id,
+        value: row.value,
+        label: aboutStats[index]?.labelEn ?? row.label,
+      })),
+    } as never,
+    locale: 'en',
     slug: 'about-page',
   })
 

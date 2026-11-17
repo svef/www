@@ -26,6 +26,20 @@ for (const locale of LOCALES) {
       expect((await page.request.get('/brand/logo-02.svg')).ok()).toBe(true)
     })
 
+    test('about: the stats row and a press date come from the CMS', async ({ page }) => {
+      await page.goto(urlFor(locale, '/um-svef'))
+      const stats = page.locator('main ul', { has: page.locator('b:text-is("2005")') })
+      await expect(stats.locator('li')).toHaveCount(3)
+      await expect(stats.locator('li b')).toHaveText(['2005', '300', '6'])
+      await expect(stats.locator('li span')).toHaveText(
+        locale === 'is' ? ['Stofnað', 'Félagar', 'Í stjórn'] : ['Founded', 'Members', 'On the board'],
+      )
+      // Month and year under the outlet, in the page's language.
+      const date = page.locator('section[aria-labelledby="h-press"] ol time').first()
+      await expect(date).toHaveText(locale === 'is' ? 'Mars 2025' : 'March 2025')
+      await expect(date).toHaveAttribute('datetime', /^2025-03-01/)
+    })
+
     test('brand kit: a swatch copies its hex code, by keyboard, and says so', async ({
       page,
       context,

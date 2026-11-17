@@ -27,3 +27,23 @@ export function formatLongDate(iso: string, locale: Locale): string {
     timeZone: TIME_ZONE,
   }).format(date)
 }
+
+/**
+ * Month and year, `Mars 2025` / `March 2025`, in the given language.
+ *
+ * Icelandic month names are lower case in `Intl`; the design capitalises them as
+ * a label, so the first letter is raised here rather than with CSS, where
+ * `capitalize` would also touch the year's neighbours. Returns `''` for an
+ * empty or unparseable date, so callers can render nothing.
+ */
+export function formatMonthYear(iso: string | null | undefined, locale: Locale): string {
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  const text = new Intl.DateTimeFormat(INTL_LOCALE[locale], {
+    month: 'long',
+    year: 'numeric',
+    timeZone: TIME_ZONE,
+  }).format(date)
+  return text.charAt(0).toLocaleUpperCase(INTL_LOCALE[locale]) + text.slice(1)
+}

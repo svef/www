@@ -172,3 +172,41 @@ describe('toNewsArticle', () => {
     expect(toNewsArticle(translated, 'en').bodyLocale).toBe('en')
   })
 })
+
+describe('toNewsArticle byline', () => {
+  const member = {
+    id: 3,
+    name: 'Salena Raquel Kauffman',
+    role: { is: 'Formaður · UX/UI hönnuður', en: null },
+    photo: { id: 9, url: '/media/salena.webp', alt: { is: null, en: null }, width: 400, height: 400 },
+  }
+  const withAuthor = (extra: object) =>
+    ({ ...doc, ...extra }) as unknown as Parameters<typeof toNewsSummary>[0]
+
+  it('shows the board member with photo and role when the relation is set', () => {
+    const { byline } = toNewsArticle(withAuthor({ authorMember: member }), 'is')
+    expect(byline?.name).toBe('Salena Raquel Kauffman')
+    expect(byline?.member?.role).toBe('Formaður · UX/UI hönnuður')
+    expect(byline?.member?.portrait?.url).toBe('/media/salena.webp')
+  })
+
+  it('lets the relation win over the text author', () => {
+    const { byline } = toNewsArticle(withAuthor({ authorMember: member, author: 'Someone Else' }), 'is')
+    expect(byline?.name).toBe('Salena Raquel Kauffman')
+  })
+
+  it('falls back to the text author as a bare name', () => {
+    const { byline } = toNewsArticle(withAuthor({ authorMember: null, author: '  Ritstjórn  ' }), 'is')
+    expect(byline).toEqual({ name: 'Ritstjórn', member: null })
+  })
+
+  it('falls back to the text author when the relation did not resolve', () => {
+    const { byline } = toNewsArticle(withAuthor({ authorMember: 3, author: 'Ritstjórn' }), 'is')
+    expect(byline?.member).toBeNull()
+    expect(byline?.name).toBe('Ritstjórn')
+  })
+
+  it('has no byline when neither is set', () => {
+    expect(toNewsArticle(withAuthor({ authorMember: null, author: ' ' }), 'is').byline).toBeNull()
+  })
+})

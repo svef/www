@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getDictionary, isLocale, DEFAULT_LOCALE } from '@/lib/i18n'
 import { formatFileSize } from '@/lib/filesize'
+import { formatMonthYear } from '@/lib/dates'
 import { resolveContentLocale } from '@/lib/localized'
 import { getAboutContent } from '@/lib/content/about'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
@@ -8,6 +9,7 @@ import { PageHead } from '@/components/PageHead/PageHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { RichText } from '@/components/RichText/RichText'
 import { SectionHead } from '@/components/SectionHead/SectionHead'
+import { StatsRow } from '@/components/StatsRow/StatsRow'
 import { PressList } from '@/components/PressList/PressList'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { BrandKit } from '@/components/BrandKit/BrandKit'
@@ -76,6 +78,12 @@ export default async function AboutPage({
     size: formatFileSize(asset.filesize, locale),
   }))
 
+  // Press is Icelandic, but its dates follow the page: the month name is chrome, not copy.
+  const pressItems = about.press.map((item) => {
+    const label = formatMonthYear(item.date, locale)
+    return { ...item, date: label && item.date ? { iso: item.date, label } : null }
+  })
+
   // The note is the first thing inside `<main>`, so the skip link lands on it
   // rather than past it.
   return (
@@ -86,6 +94,18 @@ export default async function AboutPage({
       <PageSection>
         <RichText data={about.story} className={styles.story} lang={storyLang} />
       </PageSection>
+
+      {about.stats.length > 0 && (
+        <PageSection>
+          <StatsRow
+            items={about.stats.map((stat) => ({
+              value: stat.value,
+              label: stat.label,
+              labelLang: stat.labelLocale === locale ? undefined : stat.labelLocale,
+            }))}
+          />
+        </PageSection>
+      )}
 
       <PageSection aria-labelledby="h-press">
         <SectionHead id="h-press" title={t.about.pressTitle}>
@@ -98,7 +118,11 @@ export default async function AboutPage({
             headingLevel={3}
           />
         ) : (
-          <PressList items={about.press} lang={DEFAULT_LOCALE} />
+          <PressList
+            items={pressItems}
+            lang={DEFAULT_LOCALE}
+            dateLang={locale === DEFAULT_LOCALE ? undefined : locale}
+          />
         )}
       </PageSection>
 

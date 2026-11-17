@@ -1,0 +1,49 @@
+// The export's `.about-stats .ah-stats`.
+@use '../../styles/breakpoints' as bp;
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(20px, 3vw, 48px);
+
+  @include bp.below(bp.$sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.item {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid var(--line);
+  padding-top: clamp(14px, 1.6vw, 22px);
+
+  span {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+}
+
+.value {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-stretch: 150%;
+  font-size: clamp(3rem, 6vw, 6rem);
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  color: var(--c);
+  font-variant-numeric: tabular-nums;
+}
+
+.pink {
+  --c: var(--accent-pink);
+}
+.yellow {
+  --c: var(--accent-yellow);
+}
+.violet {
+  --c: var(--color-violet);
+}

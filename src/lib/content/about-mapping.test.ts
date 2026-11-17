@@ -30,7 +30,12 @@ const aboutPage = {
   ],
   press: [
     { title: 'Ný stjórn tekin við hjá SVEF', outlet: 'Kjarninn', url: '  ' },
-    { title: 'Vefur ársins 2025 valinn í Hörpu', outlet: 'RÚV', url: 'https://ruv.is/x' },
+    { title: 'Vefur ársins 2025 valinn í Hörpu', outlet: 'RÚV', url: 'https://ruv.is/x', date: '2025-03-01T12:00:00.000Z' },
+  ],
+  stats: [
+    { id: 'a', value: '300+', label: { is: 'Félagar', en: 'Members' } },
+    { id: 'b', value: '6', label: { is: 'Í stjórn', en: null } },
+    { id: 'c', value: '  ', label: { is: 'Tómt', en: null } },
   ],
   brandAssets: [],
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -113,6 +118,19 @@ describe('toAboutContent', () => {
     expect(linked?.url).toBe('https://ruv.is/x')
   })
 
+  it('passes a press date through, and null when it is empty', () => {
+    const [undated, dated] = toAboutContent(aboutPage, 'is').press
+    expect(undated?.date).toBeNull()
+    expect(dated?.date).toBe('2025-03-01T12:00:00.000Z')
+  })
+
+  it('maps stats with their localized label, falling back to Icelandic', () => {
+    expect(toAboutContent(aboutPage, 'en').stats).toEqual([
+      { value: '300+', label: 'Members', labelLocale: 'en' },
+      { value: '6', label: 'Í stjórn', labelLocale: 'is' },
+    ])
+  })
+
   it('has no brand assets while none have been uploaded', () => {
     expect(toAboutContent(aboutPage, 'is').brandAssets).toEqual([])
   })
@@ -140,6 +158,6 @@ describe('toAboutContent', () => {
   it('renders nothing rather than throwing when the global has never been saved', () => {
     const empty = { id: 1, updatedAt: '', createdAt: '' } as unknown as AboutDoc
     const content = toAboutContent(empty, 'is')
-    expect(content).toMatchObject({ story: null, faq: [], press: [], brandAssets: [] })
+    expect(content).toMatchObject({ story: null, faq: [], stats: [], press: [], brandAssets: [] })
   })
 })

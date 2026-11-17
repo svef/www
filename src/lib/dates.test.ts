@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatLongDate } from './dates'
+import { formatLongDate, formatMonthYear } from './dates'
 
 describe('formatLongDate', () => {
   it('uses the Icelandic long form the design shows', () => {
@@ -18,5 +18,21 @@ describe('formatLongDate', () => {
 
   it('returns an empty string for an unusable date', () => {
     expect(formatLongDate('not a date', 'is')).toBe('')
+  })
+})
+
+describe('formatMonthYear', () => {
+  it('capitalises the Icelandic month, as the design sets it', () => {
+    expect(formatMonthYear('2025-03-01T12:00:00.000Z', 'is')).toBe('Mars 2025')
+  })
+
+  it('uses the English month for the English site', () => {
+    expect(formatMonthYear('2025-03-01T12:00:00.000Z', 'en')).toBe('March 2025')
+  })
+
+  it('returns an empty string for an empty or unusable date', () => {
+    expect(formatMonthYear(null, 'is')).toBe('')
+    expect(formatMonthYear('', 'is')).toBe('')
+    expect(formatMonthYear('nope', 'en')).toBe('')
   })
 })

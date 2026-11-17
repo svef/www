@@ -77,6 +77,13 @@ $gutter: max(24px, env(safe-area-inset-left, 0px));
   text-transform: none;
 }
 
+// The export's `.wl-cat b`: the month under the outlet, a step lighter.
+.date {
+  display: block;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
 .title {
   margin: 0;
   font-family: var(--font-display);

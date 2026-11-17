@@ -1,6 +1,11 @@
 import { pickLocalized, type AllLocales } from '@/lib/localized'
 import { localePath, type Locale } from '@/lib/i18n'
 import type { Media, News } from '@/payload-types'
+import {
+  toBoardMember,
+  type BoardMemberAllLocales,
+  type BoardMemberView,
+} from './about-mapping'
 
 /**
  * Shaping `news` documents into what a page renders.
@@ -24,7 +29,7 @@ import type { Media, News } from '@/payload-types'
 /** A `news` document as a `locale: 'all'` read actually returns it. */
 export type NewsAllLocales = Omit<
   News,
-  'slug' | 'title' | 'excerpt' | 'body' | 'coverImage'
+  'slug' | 'title' | 'excerpt' | 'body' | 'coverImage' | 'authorMember'
 > & {
   // Localized since svef/www#98. No article has an English version today, so in
   // practice every one of these falls back to its Icelandic slug — which is the
@@ -34,6 +39,8 @@ export type NewsAllLocales = Omit<
   excerpt: AllLocales<string>
   body: AllLocales<News['body']>
   coverImage?: number | MediaAllLocales | null
+  /** Resolved at depth 2 so the member's photo comes with it. */
+  authorMember?: number | BoardMemberAllLocales | null
 }
 
 type MediaAllLocales = Omit<Media, 'alt' | 'caption'> & {
@@ -81,9 +88,20 @@ export type NewsSummary = {
   excerptLocale: Locale
 }
 
+/**
+ * The article's byline.
+ *
+ * A board member gives `member` (photo, name, role); a plain-text author gives
+ * `name` alone. `null` on the article means no byline at all.
+ */
+export type NewsByline = {
+  name: string
+  /** Set only for a board member; the role is empty when the member has none. */
+  member: Pick<BoardMemberView, 'role' | 'portrait' | 'roleLocale'> | null
+}
+
 export type NewsArticle = NewsSummary & {
-  /** The byline, as the editor typed it. `null` when none is set. */
-  author: string | null
+  byline: NewsByline | null
   body: News['body'] | null
   /**
    * The language of `body`.
@@ -128,12 +146,29 @@ export function toNewsSummary(doc: NewsAllLocales, locale: Locale): NewsSummary 
   }
 }
 
+/**
+ * The relation wins over the text author. An unresolved relation (an id, or a
+ * member deleted since — Payload nulls it) falls through to the text.
+ */
+export function toByline(doc: NewsAllLocales, locale: Locale): NewsByline | null {
+  const related = doc.authorMember
+  if (related && typeof related !== 'number') {
+    const member = toBoardMember(related, locale)
+    return {
+      name: member.name,
+      member: { role: member.role, portrait: member.portrait, roleLocale: member.roleLocale },
+    }
+  }
+  const name = doc.author?.trim()
+  return name ? { name, member: null } : null
+}
+
 export function toNewsArticle(doc: NewsAllLocales, locale: Locale): NewsArticle {
   const summary = toNewsSummary(doc, locale)
   const body = pickLocalized(doc.body, locale)
   return {
     ...summary,
-    author: doc.author?.trim() || null,
+    byline: toByline(doc, locale),
     body: body.value,
     bodyLocale: body.value ? body.locale : summary.contentLocale,
   }

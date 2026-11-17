@@ -24,12 +24,13 @@ export type BoardMemberAllLocales = Omit<BoardMember, 'role' | 'bio' | 'photo'> 
 }
 
 /** An `about-page` global as a `locale: 'all'` read actually returns it. */
-export type AboutPageAllLocales = Omit<AboutPage, 'story' | 'boardIntro' | 'faq' | 'brandAssets'> & {
+export type AboutPageAllLocales = Omit<AboutPage, 'story' | 'boardIntro' | 'faq' | 'brandAssets' | 'stats'> & {
   story: AllLocales<AboutPage['story']>
   boardIntro: AllLocales<string>
   faq?:
     | { question: AllLocales<string>; answer: AllLocales<string>; id?: string | null }[]
     | null
+  stats?: { value: string; label: AllLocales<string>; id?: string | null }[] | null
   brandAssets?: { label: string; file: number | MediaAllLocales; id?: string | null }[] | null
 }
 
@@ -70,6 +71,15 @@ export type PressLinkView = {
   outlet: string
   /** `null` for a mention with no usable link; the page renders it unlinked. */
   url: string | null
+  /** ISO instant (the first of the month), or `null` when the editor left it empty. */
+  date: string | null
+}
+
+export type StatView = {
+  /** Text, so `300+` works. */
+  value: string
+  label: string
+  labelLocale: Locale
 }
 
 export type BrandAssetView = {
@@ -89,6 +99,7 @@ export type AboutContent = {
   story: AboutPage['story'] | null
   storyLocale: Locale
   faq: FaqItemView[]
+  stats: StatView[]
   press: PressLinkView[]
   brandAssets: BrandAssetView[]
 }
@@ -134,6 +145,17 @@ function toFaqItem(
   }
 }
 
+/** A figure with nothing to show (no value or no label) is dropped rather than half-rendered. */
+function toStat(
+  row: NonNullable<AboutPageAllLocales['stats']>[number],
+  locale: Locale,
+): StatView | null {
+  const label = pickLocalized(row.label, locale)
+  const value = row.value?.trim()
+  if (!value || !label.value) return null
+  return { value, label: label.value, labelLocale: label.locale }
+}
+
 /**
  * Press rows, dropping anything with nothing to show.
  *
@@ -145,7 +167,7 @@ function toPressLink(
   row: NonNullable<AboutPage['press']>[number],
 ): PressLinkView {
   const url = row.url?.trim()
-  return { title: row.title, outlet: row.outlet, url: url ? url : null }
+  return { title: row.title, outlet: row.outlet, url: url ? url : null, date: row.date || null }
 }
 
 /**
@@ -173,6 +195,9 @@ export function toAboutContent(doc: AboutPageAllLocales, locale: Locale): AboutC
     story: story.value ?? null,
     storyLocale: story.locale,
     faq: (doc.faq ?? []).map((row) => toFaqItem(row, locale)),
+    stats: (doc.stats ?? [])
+      .map((row) => toStat(row, locale))
+      .filter((stat): stat is StatView => stat !== null),
     press: (doc.press ?? []).map(toPressLink),
     brandAssets: (doc.brandAssets ?? [])
       .map(toBrandAsset)
