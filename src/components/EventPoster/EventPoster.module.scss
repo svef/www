@@ -41,15 +41,17 @@
 
 .foot {
   align-self: flex-start;
-  max-width: 80%;
+  // The export holds this to 80% because its date is set in a narrower face; Archivo's
+  // "26. nóv 2026" is wider than that, so the date gets the poster's whole width.
+  max-width: 100%;
 }
 
 .date {
   display: block;
   font-family: var(--font-display);
-  font-size: clamp(2.2rem, 3.6vw, 3.2rem);
-  // A touch narrower than the other titles: at the full title width a date like
-  // "26. nóv 2026" no longer fits its notch on one line.
+  font-size: clamp(2rem, 3.6vw, 3.2rem);
+  // A touch narrower than the other titles, and kept on one line like the export's.
+  white-space: nowrap;
   font-stretch: var(--stretch-cta);
   font-weight: var(--weight-title);
   line-height: 1.1;

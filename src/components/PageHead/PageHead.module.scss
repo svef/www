@@ -58,7 +58,7 @@
   letter-spacing: var(--tracking-eyebrow);
 }
 
-// The export's `.crumb.btn.btn-line`: no border, no left padding, the arrow nudges left on hover.
+// The export's `.crumb.btn.btn-line`: no border, no left padding, no arrow.
 .crumb {
   display: inline-flex;
   align-items: center;
@@ -75,26 +75,14 @@
     color: var(--accent-yellow);
   }
 
-  // `.crumb .grow-text` in globals.scss gives the label its hover-widen.
+  // `.crumb .grow-text` in globals.scss gives the label its hover-widen. No arrow: the export's
+  // crumb is the label alone.
 }
 
-.arrow {
-  flex: none;
-  width: 1.2em;
-  height: 1.2em;
-  transition: transform var(--dur-hover) var(--ease);
-
-  .crumb:hover & {
-    transform: translateX(-3px);
-  }
-
-  @include bp.reduced-motion {
-    transition: none;
-
-    .crumb:hover & {
-      transform: none;
-    }
-  }
+// With no eyebrow between them, the title keeps the eyebrow's distance from the crumb
+// (the export gives that `h1` an inline `margin-top: 22px`).
+.title h1.afterCrumb {
+  margin-top: 22px;
 }
 
 // The foot of the band, indented so it keeps clear of the pattern's edge. It follows the

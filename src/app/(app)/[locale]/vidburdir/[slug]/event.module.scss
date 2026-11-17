@@ -1,70 +1,33 @@
-// The export's event page: `.ev-hb`, `.ev-big`, `.ev-body`, `.ev-text`, `.ev-ticket`, `.tk-*`.
+// The export's event page, as the real events have it: the `.meta` pills and a ticket button
+// in the band, then `.detail` (text left, the `.facts` card right).
 @use '../../../../../styles/breakpoints' as bp;
+@use '../../../../../styles/mixins' as m;
 
-// The foot of the band holds only the big date, kept clear of the pattern's edges.
-// Doubled class: it has to outrank `PageHead`'s own `.body`, whichever sheet loads last.
-.heroBody.heroBody {
-  width: 100%;
-  max-width: none;
+// The export's `.meta`: black blocks on the band, in a wrapping row.
+.meta {
   display: flex;
-  justify-content: center;
-  padding: clamp(24px, 3vw, 48px) clamp(40px, 5vw, 96px) clamp(16px, 2vw, 32px);
+  flex-wrap: wrap;
+  gap: 8px;
 
-  @include bp.above(900px) {
-    padding-left: 44%;
-    justify-content: flex-start;
+  > * {
+    padding: 7px 12px 5px;
+    background: var(--color-black);
+    color: var(--color-white);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.98rem;
   }
 }
 
-.big {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-stretch: var(--stretch-display);
-  font-size: clamp(3rem, 9vw, 10rem);
-  line-height: 0.82;
-  letter-spacing: -0.03em;
-  color: var(--shape-on);
-
-  time {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 0.22em;
-    white-space: nowrap;
-  }
-
-  @include bp.below(900px) {
-    font-size: 17vw;
-  }
-}
-
+// The export's `.detail`.
 .body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  gap: clamp(32px, 6vw, 110px);
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: clamp(28px, 5vw, 72px);
   align-items: start;
-  padding-bottom: 0;
 
   @include bp.below(900px) {
     grid-template-columns: 1fr;
-  }
-
-  // The ticket on the left, the text starting under the date's left edge (44% across).
-  @include bp.above(900px) {
-    grid-template-columns: 380px minmax(0, 1fr);
-    container-type: inline-size;
-
-    .ticket {
-      order: -1;
-    }
-
-    .text {
-      justify-self: start;
-      width: auto;
-      max-width: min(720px, 44cqw);
-      margin-left: calc(44cqw - 380px - clamp(32px, 6vw, 110px));
-      padding-top: clamp(8px, 1vw, 16px);
-    }
   }
 }
 
@@ -77,51 +40,6 @@
   width: 100%;
   height: auto;
   margin-bottom: clamp(28px, 3vw, 44px);
-}
-
-// The first paragraph is the lede; the rest is running text set narrow, like the export's `.ev-text`.
-.prose {
-  max-width: none;
-  gap: 0;
-  font-size: inherit;
-
-  p {
-    max-width: 60ch;
-    font-family: var(--font-display);
-    font-size: clamp(1.1rem, 1.3vw, 1.25rem);
-    line-height: 1.5;
-    color: var(--muted);
-  }
-
-  p + p {
-    margin-top: 1em;
-  }
-
-  > p:first-child {
-    max-width: 26ch;
-    margin-bottom: 0.9em;
-    font-stretch: var(--stretch-lede);
-    font-weight: 500;
-    font-size: clamp(1.7rem, 2.8vw, 2.6rem);
-    line-height: 1.1;
-    color: var(--color-white);
-  }
-
-  h2 {
-    margin: 1.8em 0 0.6em;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(1.4rem, 2vw, 1.9rem);
-    line-height: 1.1;
-    color: var(--color-white);
-  }
-
-  @include bp.above(900px) {
-    p,
-    > p:first-child {
-      max-width: none;
-    }
-  }
 }
 
 // "Myndir frá viðburði": the call to the album.
@@ -141,106 +59,81 @@
   }
 }
 
-// ---- The ticket ------------------------------------------------------------------------------
+// ---- The facts card (the export's `.facts`) -----------------------------------------------------
 
-.ticket {
-  --c: var(--color-violet);
+// Doubled: `Shape` sets `position: relative` and has to lose to `sticky`.
+.facts.facts {
   position: sticky;
   top: 100px;
-  border: 2px solid var(--c);
-  background: var(--color-black);
-
-  &[data-color='red'] {
-    --c: var(--accent-red);
-  }
-
-  &[data-color='pink'] {
-    --c: var(--accent-pink);
-  }
-
-  &[data-color='yellow'] {
-    --c: var(--accent-yellow);
-  }
+  padding: 22px 24px 30px;
+  display: grid;
+  gap: 22px;
+  color: var(--shape-on);
 
   @include bp.below(900px) {
-    position: static;
+    position: relative;
+    top: auto;
   }
-}
 
-// A block of the event's colour with a stepped notch cut from its foot.
-.ticketTop {
-  height: 72px;
-  background: var(--c);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 62% 100%, 62% calc(100% - 30px), 0 calc(100% - 30px));
-}
-
-.facts {
-  margin: 0;
-  padding: 8px 22px 4px;
-  display: grid;
-
-  > div {
-    padding: 14px 0;
-    border-bottom: 1px solid var(--line);
+  dl {
+    margin: 0;
+    display: grid;
+    gap: 16px;
   }
 
   dt {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 0.82rem;
-    color: var(--muted);
+    font-size: 0.85rem;
+    opacity: 0.8;
   }
 
   dd {
     margin: 4px 0 0;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.05rem;
   }
 
   a {
-    color: var(--color-white);
+    color: inherit;
   }
 }
 
-.address {
-  font-weight: 500;
-  color: var(--muted);
-  font-size: 0.95rem;
+.factsTitle {
+  justify-self: start;
+
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
 }
 
-// The export's white `.btn.tk-btn`.
+// The export's `.btn-black` on a yellow card: its later override makes it pink with black type.
 .cta {
-  display: flex;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  margin: 18px 22px 0;
-  padding: 0.95rem 1.5rem;
-  background: var(--color-white);
+  padding: 15px 22px;
+  background: var(--accent-pink);
   color: var(--color-black);
   font-family: var(--font-display);
-  font-weight: 600;
-  font-stretch: var(--stretch-button);
+  font-size: 1.05rem;
+  line-height: 1;
   text-decoration: none;
 
-  &:last-child {
-    margin-bottom: 22px;
-  }
-
-  &:hover,
-  &:focus-visible {
-    background: var(--accent-yellow);
+  :global(.grow-text) {
+    @include m.grow-text(var(--stretch-normal), 700, var(--stretch-button), 850);
   }
 
   &:focus-visible {
-    outline: 3px solid var(--color-white);
+    outline: 3px solid var(--color-black);
     outline-offset: 3px;
   }
 }
 
 .discount {
-  margin: 10px 22px 22px;
+  margin: 0;
   font-size: 0.9rem;
-  color: var(--muted);
 }
 
 // ---- Below the text ---------------------------------------------------------------------------

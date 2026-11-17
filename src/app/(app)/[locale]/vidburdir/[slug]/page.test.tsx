@@ -94,13 +94,15 @@ describe('event page ticket CTA', () => {
     })
     render(page)
 
-    // One button, on the ticket card (the redesign dropped the hero's duplicate).
+    // One in the band, one on the facts card (the export has both).
     const links = screen.getAllByRole('link', { name: /Kaupa miða/ })
-    expect(links).toHaveLength(1)
-    expect(links[0]).toHaveAttribute(
-      'href',
-      'https://www.sky.is/vidburdur/3165-2026-vidburdur-1021',
-    )
+    expect(links).toHaveLength(2)
+    for (const link of links) {
+      expect(link).toHaveAttribute(
+        'href',
+        'https://www.sky.is/vidburdur/3165-2026-vidburdur-1021',
+      )
+    }
   })
 
   it('renders no button, and no member-discount sentence, when the event is free', async () => {
@@ -136,7 +138,8 @@ describe('event page content', () => {
     render(page)
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Vefþróun og gervigreind')
-    expect(screen.getByText('Harpa, Kaldalón (1. hæð)')).toBeInTheDocument()
+    // The venue is a pill in the band and again in the facts card.
+    expect(screen.getAllByText('Harpa, Kaldalón (1. hæð)')).toHaveLength(2)
     expect(screen.getByText('Austurbakki 2, 101 Reykjavík')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Opna kort' })).toBeInTheDocument()
 

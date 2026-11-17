@@ -37,7 +37,8 @@ for (const locale of LOCALES) {
         found = true
         await expect(page.locator('main#main h1')).toHaveCount(1)
         await expect(page.locator('main#main dl dt').first()).toBeVisible()
-        await expect(page.locator('main#main dl time[datetime]')).toHaveCount(1)
+        // The date is a pill in the band, as in the export, not a row of the facts card.
+        await expect(page.locator('main#main header time[datetime]')).toHaveCount(1)
         await expect(page.locator('main#main dl a[href^="mailto:"]')).toHaveCount(1)
         const logos = sponsors.locator('img')
         expect(await logos.count()).toBeGreaterThanOrEqual(2)

@@ -1,7 +1,6 @@
 import clsx from 'clsx'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { ArrowLeft } from '@phosphor-icons/react/dist/ssr'
 import { Shape, type ShapeColor } from '@/components/Shape/Shape'
 import { Notch } from '@/components/Shape/Notch'
 import { PageStickers } from '@/components/Sticker/PageStickers'
@@ -90,12 +89,11 @@ export function PageHead({
         <Notch corner="tl" drift={preset.titleDrift} className={styles.title}>
           {crumb && (
             <Link className={styles.crumb} href={crumb.href} aria-label={crumb.ariaLabel}>
-              <ArrowLeft className={styles.arrow} weight="bold" aria-hidden="true" />
               <GrowText>{crumb.label}</GrowText>
             </Link>
           )}
           {eyebrow && <p className={clsx('no-condense', styles.eyebrow)}>{eyebrow}</p>}
-          <h1 className={clsx(long && styles.long)} lang={titleLang}>
+          <h1 className={clsx(long && styles.long, !eyebrow && crumb && styles.afterCrumb)} lang={titleLang}>
             {title}
           </h1>
         </Notch>

@@ -5,7 +5,6 @@ import { notFound, redirect } from 'next/navigation'
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr'
 import { getDictionary, isLocale, localePath, type Locale } from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
-import { toSeed } from '@/lib/shape/random'
 import {
   contactEmail,
   findEvent,
@@ -15,11 +14,13 @@ import {
 } from '@/lib/content/events'
 import { RichText } from '@/components/RichText/RichText'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
+import { Shape } from '@/components/Shape/Shape'
+import { Notch } from '@/components/Shape/Notch'
+import { ButtonLink } from '@/components/ButtonLink/ButtonLink'
 import { PageHead } from '@/components/PageHead/PageHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { GrowText } from '@/components/GrowText/GrowText'
 import { EventPoster } from '@/components/EventPoster/EventPoster'
-import { EVENT_POSTER_LOOKS } from '@/components/EventPoster/looks'
 import { EventsCarousel } from '@/components/EventsCarousel/EventsCarousel'
 import { EventSponsors } from '@/components/EventSponsors/EventSponsors'
 import styles from './event.module.scss'
@@ -135,8 +136,6 @@ export default async function EventPage({ params }: { params: Params }) {
       ? `${localePath('/myndir', locale)}#album-${event.galleryId}`
       : null
 
-  // The ticket's colour is the event's own: the same six the posters wear, picked from the slug.
-  const ticketColor = EVENT_POSTER_LOOKS[toSeed(event.slug) % EVENT_POSTER_LOOKS.length].color
   // A ticket on sale for something that is over is a dead end.
   const ticketUrl = event.isPast ? null : event.ticketUrl
 
@@ -157,14 +156,18 @@ export default async function EventPage({ params }: { params: Params }) {
             ariaLabel: t.events.backLabel,
           }}
           eyebrow={isNext ? t.events.nextEvent : undefined}
-          bodyClassName={styles.heroBody}
         >
-          {/* The date, set huge. The ticket card spells it out, so this one is decoration. */}
-          <p className={styles.big} aria-hidden="true">
-            <time dateTime={event.startDate}>
-              <span>{Number(event.badge.day)}.</span> <span>{event.badge.month}</span>
-            </time>
-          </p>
+          {/* The export's `.meta` pills: black blocks on the violet band, then the ticket button. */}
+          <div className={styles.meta}>
+            <time dateTime={event.startDate}>{event.dateLabel}</time>
+            {event.timeRange && <span>{event.timeRange}</span>}
+            {event.location && <span lang={lang(event.locationLocale)}>{event.location}</span>}
+          </div>
+          {ticketUrl && (
+            <div>
+              <ButtonLink href={ticketUrl}>{t.events.buyTickets}</ButtonLink>
+            </div>
+          )}
         </PageHead>
 
         <PageSection className={styles.body}>
@@ -180,7 +183,7 @@ export default async function EventPage({ params }: { params: Params }) {
               />
             )}
 
-            <RichText data={event.body} className={styles.prose} lang={lang(event.bodyLocale)} />
+            <RichText data={event.body} lang={lang(event.bodyLocale)} />
 
             <EventSponsors
               sponsors={event.sponsors}
@@ -196,27 +199,19 @@ export default async function EventPage({ params }: { params: Params }) {
             )}
           </div>
 
-          <aside
-            className={styles.ticket}
-            data-color={ticketColor}
+          {/* The export's yellow `.facts` card (violet once the event is over). */}
+          <Shape
+            as="aside"
+            color={event.isPast ? 'violet' : 'yellow'}
+            auto={['tr']}
+            seed={event.slug}
+            className={styles.facts}
             aria-label={t.events.practical.title}
           >
-            <div className={styles.ticketTop} aria-hidden="true" />
-            <dl className={styles.facts}>
-              <div>
-                <dt>{t.events.practical.date}</dt>
-                <dd>
-                  <time dateTime={event.startDate}>{event.dateLabel}</time>
-                </dd>
-              </div>
-
-              {event.timeRange && (
-                <div>
-                  <dt>{t.events.practical.time}</dt>
-                  <dd>{event.timeRange}</dd>
-                </div>
-              )}
-
+            <Notch corner="tl" className={styles.factsTitle}>
+              <h2>{t.events.practical.title}</h2>
+            </Notch>
+            <dl>
               {(event.location || event.venueAddress) && (
                 <div>
                   <dt>{t.events.practical.venue}</dt>
@@ -225,7 +220,7 @@ export default async function EventPage({ params }: { params: Params }) {
                     {event.venueAddress && (
                       <>
                         {event.location && <br />}
-                        <span className={styles.address}>{event.venueAddress}</span>
+                        {event.venueAddress}
                       </>
                     )}
                     <br />
@@ -263,11 +258,7 @@ export default async function EventPage({ params }: { params: Params }) {
             {ticketUrl && (
               <>
                 <a className={styles.cta} href={ticketUrl}>
-                  <GrowText>
-                    {event.ticketPrice
-                      ? `${t.events.buyTickets} — ${event.ticketPrice}`
-                      : t.events.buyTickets}
-                  </GrowText>
+                  <GrowText>{t.events.buyTickets}</GrowText>
                 </a>
                 {event.memberDiscount !== null && (
                   <p className={styles.discount}>
@@ -276,7 +267,7 @@ export default async function EventPage({ params }: { params: Params }) {
                 )}
               </>
             )}
-          </aside>
+          </Shape>
         </PageSection>
 
         {event.photos.length > 0 && (
