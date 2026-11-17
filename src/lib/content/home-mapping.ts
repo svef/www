@@ -1,168 +1,172 @@
+import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n'
 import { pickLocalized, type AllLocales } from '@/lib/localized'
-import type { Locale } from '@/lib/i18n'
-import type { AwardWinnerView } from './awards-mapping'
-import type { GalleryAlbum, GalleryPhoto } from './galleries-mapping'
 import type { HomePage } from '@/payload-types'
 
 /**
- * Shaping the `home-page` global, and choosing what the home page shows.
+ * Shaping the `home-page` global.
  *
- * Pure, for the same reasons as `./awards-mapping.ts`: `./home.ts` owns the
- * Payload reads and calls in here, so the re-typing a `locale: 'all'` read
- * forces happens in one place, and the decisions below — what an unsaved global
- * means, which winners are "recent", which photos make the strip — are unit
- * tested without a database.
+ * Pure, for the same reasons as `./awards-mapping.ts`: `./home.ts` owns the Payload read
+ * and calls in here, so the re-typing a `locale: 'all'` read forces happens in one place
+ * and what an unsaved global means is unit tested without a database.
  */
 
+type Group<T> = { [K in keyof T]?: AllLocales<string> } | null | undefined
+
 /** The `home-page` global as a `locale: 'all'` read actually returns it. */
-export type HomePageAllLocales = Omit<HomePage, 'heroSentence' | 'heroHook'> & {
-  heroSentence: AllLocales<string>
-  heroHook: AllLocales<string>
+export type HomePageAllLocales = Omit<
+  HomePage,
+  | 'heroSentence'
+  | 'heroLines'
+  | 'heroPrimaryLabel'
+  | 'heroSecondaryLabel'
+  | 'introBand'
+  | 'eventsSection'
+  | 'newsSection'
+  | 'aboutSection'
+> & {
+  heroSentence?: AllLocales<string>
+  heroLines?: Partial<Record<Locale, { id?: string | null; text: string }[] | null>> | null
+  heroPrimaryLabel?: AllLocales<string>
+  heroSecondaryLabel?: AllLocales<string>
+  introBand?: Group<{ text: string }>
+  eventsSection?: Group<{ heading: string; lead: string; linkLabel: string }>
+  newsSection?: Group<{ heading: string; linkLabel: string }>
+  aboutSection?: Group<{ heading: string; text: string; linkLabel: string }>
 }
 
-/** Which block the "Það sem er að gerast núna" slot shows, if any. */
-export type SpotlightMode = 'nextEvent' | 'winner' | 'hidden'
+/** A piece of copy and the language it is written in. */
+export type Copy = {
+  text: string
+  /** `lang` for the element, or undefined when it is the page's own language. */
+  lang: Locale | undefined
+  locale: Locale
+}
+
+/** Interface strings the page falls back to for copy an editor has not written. */
+export type HomeFallbacks = {
+  title: string
+  primaryLabel: string
+  secondaryLabel: string
+  eventsHeading: string
+  eventsLinkLabel: string
+  newsHeading: string
+  newsLinkLabel: string
+  aboutHeading: string
+  aboutLinkLabel: string
+}
 
 export type HomeSettings = {
-  /** The `<h1>`. Null when nobody has written one — see `toHomeSettings`. */
-  heroSentence: string | null
-  /** The language `heroSentence` is written in. Meaningless when it is null. */
-  heroSentenceLocale: Locale
-  /** The paragraph under the `<h1>`, or null. */
-  heroHook: string | null
-  heroHookLocale: Locale
-  spotlightMode: SpotlightMode
-  /**
-   * The `award-winners` document the spotlight is about, when the mode is
-   * `winner`. Null in every other mode, and when the mode is `winner` but no
-   * winner has been picked — the page then draws no spotlight rather than an
-   * empty panel.
-   */
-  spotlightWinnerId: number | null
+  /** The headline, one entry per line. Never empty: ends at the fallback title. */
+  heroLines: string[]
+  /** The language the headline is written in. */
+  heroLocale: Locale
+  primaryLabel: Copy
+  secondaryLabel: Copy
+  /** The statement in the intro band, or null: the band then does not render. */
+  introText: Copy | null
   showUpcomingEvents: boolean
-  showRecentWinners: boolean
-  showPhotos: boolean
+  eventsHeading: Copy
+  eventsLead: Copy | null
+  eventsLinkLabel: Copy
+  showLatestNews: boolean
+  newsHeading: Copy
+  newsLinkLabel: Copy
+  aboutHeading: Copy
+  aboutText: Copy | null
+  aboutLinkLabel: Copy
+  /** Every language the copy above is actually in, for the translation note. */
+  locales: Locale[]
+}
+
+function toCopy(
+  field: AllLocales<string>,
+  locale: Locale,
+  fallback: string | null,
+): Copy | null {
+  const picked = pickLocalized(field, locale)
+  if (picked.value !== null) {
+    return {
+      text: picked.value,
+      locale: picked.locale,
+      lang: picked.locale === locale ? undefined : picked.locale,
+    }
+  }
+  // An interface string: written in the page's own language by definition.
+  return fallback === null ? null : { text: fallback, locale, lang: undefined }
+}
+
+/**
+ * Hero lines for a locale: the locale's own rows, else Icelandic's, else the one-sentence
+ * field, else the association's name. A row that is blank is dropped.
+ */
+function toHeroLines(
+  doc: HomePageAllLocales,
+  locale: Locale,
+  fallbackTitle: string,
+): { lines: string[]; locale: Locale } {
+  const rows = (l: Locale) =>
+    (doc.heroLines?.[l] ?? []).map((r) => r.text.trim()).filter(Boolean)
+  const own = rows(locale)
+  if (own.length > 0) return { lines: own, locale }
+  const is = rows(DEFAULT_LOCALE)
+  if (is.length > 0) return { lines: is, locale: DEFAULT_LOCALE }
+  const sentence = pickLocalized(doc.heroSentence, locale)
+  if (sentence.value !== null) return { lines: [sentence.value], locale: sentence.locale }
+  return { lines: [fallbackTitle], locale }
 }
 
 /**
  * The global's defaults, applied here rather than trusted from Payload.
  *
- * `defaultValue` on a global field is applied when a document is *created*, so
- * a `home-page` that no editor has ever opened comes back as an almost-empty
- * object and every `show*` flag reads `undefined`. Defaulting them to `false`
- * there would hide the whole page on a fresh database — a site that renders a
- * hero and nothing else, with no error anywhere to explain it. Showing a
- * section is therefore the default, and hiding one is the deliberate act.
+ * `defaultValue` on a global field applies when a document is *created*, so a `home-page`
+ * that no editor has ever opened comes back almost empty and every flag reads `undefined`.
+ * Showing a section is the default and hiding one is the deliberate act.
  */
-export function toHomeSettings(doc: HomePageAllLocales, locale: Locale): HomeSettings {
-  const sentence = pickLocalized(doc.heroSentence, locale)
-  const hook = pickLocalized(doc.heroHook, locale)
-  const mode: SpotlightMode = doc.happeningNow?.mode ?? 'nextEvent'
-  const winner = doc.happeningNow?.winner
+export function toHomeSettings(
+  doc: HomePageAllLocales,
+  locale: Locale,
+  fb: HomeFallbacks,
+): HomeSettings {
+  const hero = toHeroLines(doc, locale, fb.title)
+  const need = (field: AllLocales<string>, fallback: string) =>
+    toCopy(field, locale, fallback) as Copy
 
-  return {
-    heroSentence: sentence.value ?? null,
-    heroSentenceLocale: sentence.locale,
-    heroHook: hook.value ?? null,
-    heroHookLocale: hook.locale,
-    spotlightMode: mode,
-    spotlightWinnerId:
-      mode === 'winner' ? (typeof winner === 'number' ? winner : (winner?.id ?? null)) : null,
+  const settings = {
+    heroLines: hero.lines,
+    heroLocale: hero.locale,
+    primaryLabel: need(doc.heroPrimaryLabel, fb.primaryLabel),
+    secondaryLabel: need(doc.heroSecondaryLabel, fb.secondaryLabel),
+    introText: toCopy(doc.introBand?.text, locale, null),
     showUpcomingEvents: doc.showUpcomingEvents ?? true,
-    showRecentWinners: doc.showRecentWinners ?? true,
-    showPhotos: doc.showPhotos ?? true,
+    eventsHeading: need(doc.eventsSection?.heading, fb.eventsHeading),
+    eventsLead: toCopy(doc.eventsSection?.lead, locale, null),
+    eventsLinkLabel: need(doc.eventsSection?.linkLabel, fb.eventsLinkLabel),
+    showLatestNews: doc.showLatestNews ?? true,
+    newsHeading: need(doc.newsSection?.heading, fb.newsHeading),
+    newsLinkLabel: need(doc.newsSection?.linkLabel, fb.newsLinkLabel),
+    aboutHeading: need(doc.aboutSection?.heading, fb.aboutHeading),
+    aboutText: toCopy(doc.aboutSection?.text, locale, null),
+    aboutLinkLabel: need(doc.aboutSection?.linkLabel, fb.aboutLinkLabel),
   }
-}
 
-/**
- * The winners the "Verðlaunavefir" strip shows: the most recent ones.
- *
- * Newest year first, and within a year by site name — the same ordering the
- * archive uses, because a year's winners are a set of equals rather than a
- * ranking, and an arbitrary order out of Postgres would reshuffle the strip on
- * every deploy.
- *
- * Sorting here rather than in the query is not a preference: the year lives on
- * the related `award-editions` document, so `sort: '-edition'` would order by
- * the relationship's row id — which is the order the editions happened to be
- * created in, not the order of the years.
- */
-export function pickRecentWinners(
-  winners: readonly AwardWinnerView[],
-  limit: number,
-): AwardWinnerView[] {
-  return [...winners]
-    .sort((a, b) => b.year - a.year || a.siteName.localeCompare(b.siteName, 'is'))
-    .slice(0, limit)
-}
-
-/**
- * The photos in the home page's strip: the newest ones the site has.
- *
- * Taken across albums rather than from the newest album alone. An album is
- * created when an event happens and its photos are uploaded afterwards, so the
- * newest album is routinely the emptiest one — drawing the strip from it alone
- * would leave the home page showing one photo, or none, while a full album sat
- * directly below it in the same list.
- *
- * `albums` is expected newest-first, which is what `listGalleries` returns.
- */
-export function recentPhotos(
-  albums: readonly GalleryAlbum[],
-  limit: number,
-): GalleryPhoto[] {
-  const photos: GalleryPhoto[] = []
-  for (const album of albums) {
-    for (const photo of album.photos) {
-      if (photos.length === limit) return photos
-      photos.push(photo)
-    }
+  const copies = [
+    settings.primaryLabel,
+    settings.secondaryLabel,
+    settings.introText,
+    settings.eventsHeading,
+    settings.eventsLead,
+    settings.eventsLinkLabel,
+    settings.newsHeading,
+    settings.newsLinkLabel,
+    settings.aboutHeading,
+    settings.aboutText,
+    settings.aboutLinkLabel,
+  ]
+  return {
+    ...settings,
+    locales: [
+      hero.locale,
+      ...copies.flatMap((c) => (c ? [c.locale] : [])),
+    ],
   }
-  return photos
-}
-
-/** What the home page does with the upcoming events it was given. */
-export type EventSectionPlan<T> = {
-  /** The event the spotlight announces, or null when it shows something else. */
-  spotlight: T | null
-  /** The rows under "Næstu viðburðir". Empty unless `section` is `'list'`. */
-  rows: T[]
-  /**
-   * Whether the section renders, and as what.
-   *
-   * - `'list'` — the heading and the rows.
-   * - `'empty'` — the heading and "Engir viðburðir framundan".
-   * - `'hidden'` — nothing at all.
-   */
-  section: 'list' | 'empty' | 'hidden'
-}
-
-/**
- * Split the upcoming events between the spotlight and the list.
- *
- * A decision rather than a lookup, so it lives here and is tested directly —
- * and this one earned that. The rule that matters is the third line: **the
- * empty state is about the calendar, not about the list.** With exactly one
- * event upcoming the spotlight takes it and the list is left with nothing, and
- * an earlier version drew "Engir viðburðir framundan" two blocks below a
- * spotlight announcing that very event. One event on the calendar is the
- * ordinary state for this association, and this is the front page.
- *
- * So: the empty state fires on `upcoming` being empty, and a list that has been
- * emptied by the spotlight drops the section instead of contradicting it.
- * `/vidburdir` makes the same distinction for the same reason.
- *
- * Generic in the event type because none of this reads a field — it is entirely
- * about how many there are and who took the first one.
- */
-export function planEventSection<T>(
-  upcoming: readonly T[],
-  options: { spotlightNextEvent: boolean; showSection: boolean },
-): EventSectionPlan<T> {
-  const spotlight = options.spotlightNextEvent ? (upcoming[0] ?? null) : null
-  if (!options.showSection) return { spotlight, rows: [], section: 'hidden' }
-  if (upcoming.length === 0) return { spotlight, rows: [], section: 'empty' }
-
-  const rows = spotlight === null ? [...upcoming] : upcoming.slice(1)
-  return { spotlight, rows, section: rows.length > 0 ? 'list' : 'hidden' }
 }

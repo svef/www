@@ -623,27 +623,60 @@ export const siteSettingsEn = {
 
 export const homePage = {
   heroSentence: 'Félag fólksins sem býr til vefinn á Íslandi.',
-  heroHook:
-    'Um 300 hönnuðir, forritarar, markaðsfólk og UX-fólk. Við höldum viðburði, veitum Íslensku vefverðlaunin og gerum vefinn okkar betri — saman.',
-  happeningNow: { mode: 'nextEvent' as const },
+  // One row per line, as the export breaks the headline.
+  heroLines: [
+    { text: 'Félag fólksins' },
+    { text: 'sem býr til' },
+    { text: 'vefinn á Íslandi.' },
+  ],
+  heroPrimaryLabel: 'Gerast félagi',
+  heroSecondaryLabel: 'Sjá viðburði',
+  introBand: {
+    text: 'Við erum fólkið á bak við vefinn á Íslandi. Við hittumst á viðburðum, veitum Íslensku vefverðlaunin og lærum hvert af öðru.',
+  },
+  eventsSection: {
+    heading: 'Næstu viðburðir',
+    lead: 'Fyrirlestrar, vinnustofur og hátíðir fyrir fólkið í vefiðnaðinum. Félagar komast frítt á alla viðburði nema vefverðlaunin.',
+    linkLabel: 'Allir viðburðir',
+  },
+  newsSection: { heading: 'Fréttir', linkLabel: 'Allar fréttir' },
+  aboutSection: {
+    heading: 'Um SVEF',
+    text: 'SVEF — Samtök vefiðnaðarins — er félag fólks sem starfar við vefinn á Íslandi: forritarar, hönnuðir, markaðsfólk, verkefnastjórar og UX-fólk.',
+    linkLabel: 'Meira um SVEF',
+  },
   showUpcomingEvents: true,
-  showRecentWinners: true,
-  showPhotos: true,
+  showLatestNews: true,
 }
 
 /**
- * English for the home page's two localized fields.
+ * English for the home page's localized fields, from the export's own translation.
  *
- * Seeded, unlike most English on this site, because the home `<h1>` *is*
- * `heroSentence`: left to fall back, `/en` would open on an Icelandic headline
- * and every reader of the English site would meet the translation note before
- * anything else. The `is` → `en` fallback is still exercised on the same page by
- * the events, whose titles are Icelandic-only in these fixtures.
+ * Seeded, unlike most English on this site, because the home `<h1>` is the hero lines:
+ * left to fall back, `/en` would open on an Icelandic headline and every reader of the
+ * English site would meet the translation note before anything else. The `is` -> `en`
+ * fallback is still exercised on the same page by the events, whose titles are
+ * Icelandic-only in these fixtures.
  */
 export const homePageEn = {
-  heroSentence: 'The association of people who build the web in Iceland.',
-  heroHook:
-    'Around 300 designers, developers, marketers and UX folk. We run events, present the Icelandic Web Awards, and make our web better — together.',
+  heroSentence: 'The people who build the web in Iceland.',
+  heroLines: [{ text: 'The people who' }, { text: 'build the web' }, { text: 'in Iceland.' }],
+  heroPrimaryLabel: 'Become a member',
+  heroSecondaryLabel: 'See events',
+  introBand: {
+    text: 'We are the people behind the web in Iceland. We meet at events, host the Icelandic Web Awards and learn from each other.',
+  },
+  eventsSection: {
+    heading: 'Upcoming events',
+    lead: 'Talks, workshops and celebrations for people in the web industry. Members get into every event for free, except the Web Awards.',
+    linkLabel: 'All events',
+  },
+  newsSection: { heading: 'News', linkLabel: 'All news' },
+  aboutSection: {
+    heading: 'About SVEF',
+    text: 'SVEF — the Icelandic Web Industry Association — is a community of people who work on the web in Iceland: developers, designers, marketers, project managers and UX people.',
+    linkLabel: 'More about SVEF',
+  },
 }
 
 export const aboutStory: Block[] = [

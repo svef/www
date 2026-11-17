@@ -36,13 +36,8 @@ main {
   flex: 1;
 }
 
-// The header overlays the top of the page, as the export's does over its first band.
-// A page built on the stepped-shape band carries that band's own padding; a page that
-// has not been rebuilt yet has no band, so it is moved down out from under the header.
-// Temporary: it goes when the last page is on the band (#121).
-main:not(:has([data-shape])) {
-  padding-top: var(--head-h);
-}
+// The header overlays the top of the page, as the export's does over its first band:
+// every page opens with a shape band (or the home hero) that carries its own top padding.
 
 h1,
 h2,

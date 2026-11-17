@@ -1,76 +1,86 @@
-// The export's section header: heading on the left, the link on the right, and
-// a hairline rule filling whatever is between them.
-.head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-4);
-  // The rule wraps onto its own line below ~420px in Icelandic — "Myndir frá
-  // viðburðum" and "Allar myndir →" do not fit one line at 320px — so the
-  // margin belongs to the row rather than to the heading.
-  flex-wrap: wrap;
-  margin-bottom: var(--space-8);
+// The export's home page sections: `.ev-head`, `.ev-h`, `.ev-aside`, `.sh-p`, `.about-home`.
+@use '../../../styles/breakpoints' as bp;
+
+// The sections after the opening carry the export's extra space above them
+// (`[aria-labelledby="h-um"]{margin-top:…}`) on top of the section's own.
+.after {
+  margin-top: clamp(80px, 10vw, 180px);
 }
 
-.headTitle {
-  margin: 0;
-  font-size: var(--text-3xl);
-  // Long Icelandic compounds ("Verðlaunavefir", "Vefverðlaunin") set a
-  // min-content width wider than a 320px viewport once the rule and the link
-  // claim their share of the row. `min-width: 0` is what actually lets the
-  // heading shrink below that; `overflow-wrap` alone does not reduce
-  // min-content size, so on its own the row still overflows the page.
-  min-width: 0;
-  overflow-wrap: break-word;
+// The stickers sit against this section.
+.events {
+  position: relative;
 }
 
-.rule {
-  flex: 1;
-  min-width: var(--space-8);
-  height: 1px;
-  background: var(--surface-3);
-}
-
-.headLink {
-  color: var(--color-violet-light);
-  font-weight: var(--weight-semibold);
-  text-decoration: none;
-  white-space: nowrap;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-// The export's winner grid: three cards across the content width.
-//
-// Explicit tracks rather than `repeat(auto-fit, minmax(260px, 1fr))` as the
-// export writes it, because the strip is capped at three cards and neither
-// auto- keyword survives that. `auto-fill` leaves a fourth, empty track at
-// 1440 and shrinks the three cards to 282px — measured, not assumed — and
-// `auto-fit` collapses it the other way, so a year with one recorded winner
-// would draw a single card the full width of the page. Three, two, one is the
-// same sequence the auto version produces at these widths, said outright.
-.winners {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+// Heading on the left, the lead and the link on the right, level with its foot.
+.eventsHead {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 25rem);
+  column-gap: clamp(24px, 4vw, 72px);
+  align-items: end;
+  margin: 0 0 clamp(40px, 5vw, 80px);
 
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 620px) {
+  @include bp.below(820px) {
     grid-template-columns: 1fr;
+    row-gap: 28px;
   }
 }
 
-// `1fr` tracks are `minmax(auto, 1fr)`, so a long unbroken Icelandic compound in
-// a card sets the column's minimum and pushes the grid past the viewport.
-// `min-width: 0` is what lets the track shrink below its content; the card's own
-// `overflow-wrap` cannot, because wrapping does not reduce min-content width.
-.winners > li {
-  min-width: 0;
+.eventsTitle {
+  margin: 0;
+  font-size: clamp(3.2rem, 10.5vw, 10.5rem);
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  line-height: 0.86;
+}
+
+.eventsWord {
+  display: block;
+  width: max-content;
+}
+
+.eventsAside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(18px, 2vw, 28px);
+  padding-bottom: 0.6em;
+
+  @include bp.below(820px) {
+    padding-bottom: 0;
+  }
+}
+
+// `.sh-p`: the narrow display-face standfirst.
+// The wrapping selectors outrank the global `p:not(.no-condense)` stretch.
+.eventsAside .lead {
+  margin: 0;
+  font-stretch: var(--stretch-lede);
+  max-width: 30ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 1.9vw, 1.8rem);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.about {
+  display: grid;
+  justify-items: start;
+  width: min(100%, 720px);
+  margin-inline: auto;
+}
+
+.aboutTitle {
+  margin: 0 0 clamp(20px, 2.4vw, 32px);
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+.about .aboutText {
+  margin: 0 0 clamp(24px, 2.8vw, 40px);
+  font-stretch: var(--stretch-lede);
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.8vw, 2.6rem);
+  font-weight: 500;
+  line-height: 1.1;
 }

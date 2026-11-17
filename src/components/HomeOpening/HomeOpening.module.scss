@@ -1,0 +1,222 @@
+// The export's `.hero`, `.hero-title`, `.hero-actions`, `.hero-stair`, `.intro-band` and
+// `.intro-text`, with the later overrides folded in.
+@use '../../styles/breakpoints' as bp;
+
+$ease-rise: cubic-bezier(0.2, 0.75, 0.2, 1);
+
+// ---------- hero ----------
+
+.hero {
+  --sh: clamp(300px, 40svh, 460px);
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  // The stair takes the bottom `--sh`; the buttons sit above it.
+  padding-block: clamp(150px, 13vw, 200px) calc(var(--sh) + clamp(28px, 3vw, 48px));
+
+  @include bp.below(bp.$sm) {
+    --sh: clamp(220px, 34svh, 320px);
+  }
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0 auto;
+  padding-inline: max(24px, env(safe-area-inset-left, 0px))
+    max(24px, env(safe-area-inset-right, 0px));
+}
+
+// The title's box is fixed by `useHeroMorph` once measured, so nothing inside it can
+// push the layout around.
+.title {
+  align-self: flex-start;
+  margin-top: auto;
+  max-width: min(100%, 1180px);
+  contain: layout;
+}
+
+.h1 {
+  margin: 0;
+  font-size: var(--text-h1-hero);
+  font-weight: var(--weight-hero);
+  letter-spacing: var(--tracking-hero);
+  line-height: var(--lh-hero);
+
+  @include bp.below(600px) {
+    font-size: calc((100vw - 64px) / 7.9);
+  }
+}
+
+.line {
+  display: block;
+  white-space: nowrap;
+}
+
+// Each word in a box fixed to its settled size (`useHeroMorph`), so the morph only
+// repaints the word.
+.word {
+  display: inline-flex;
+  justify-content: center;
+  vertical-align: top;
+  white-space: nowrap;
+  contain: layout style;
+  font-weight: var(--weight-hero);
+  font-stretch: var(--stretch-normal);
+}
+
+.actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(28px, 3vw, 44px);
+  // Indented so the buttons keep clear of the stair's left edge.
+  padding-left: clamp(80px, 11vw, 180px);
+
+  @include bp.below(bp.$sm) {
+    padding-left: 0;
+  }
+}
+
+// The hero's own colour is the violet stair at its foot.
+.hero .heroStair {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: var(--sh);
+  z-index: 0;
+}
+
+// ---------- the headline's entrance ----------
+// Without scripting, and under reduced motion, none of this applies: the words are in
+// place and settled. With both, the words and buttons are held back until the hook has
+// measured the boxes; if it never runs a failsafe shows them after 3s.
+
+@media (prefers-reduced-motion: no-preference) {
+  @media (scripting: enabled) {
+    .hero:not([data-hero]) {
+      .word,
+      .actions {
+        opacity: 0;
+        animation: hero-failsafe 0s 3s forwards;
+      }
+    }
+
+    .hero[data-hero='wait'] .word {
+      opacity: 0;
+    }
+
+    .hero[data-hero]:not([data-actions]) .actions {
+      opacity: 0;
+      translate: 0 18px;
+    }
+
+    .hero[data-actions] .actions {
+      transition:
+        opacity 0.6s var(--ease),
+        translate 0.7s $ease-rise;
+    }
+  }
+
+  .hero[data-hero='play'] .word {
+    will-change: transform, opacity;
+    animation:
+      word-rise 0.95s $ease-rise both,
+      word-flip 1.7s var(--ease) both;
+    animation-delay: calc(var(--i) * 90ms + 0.45s), calc(var(--i) * 90ms + 0.45s);
+
+    &:nth-child(even) {
+      animation-name: word-rise, word-flip-alt;
+    }
+  }
+}
+
+@keyframes hero-failsafe {
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes word-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0.5em);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// The export's `wflip`: weight and width swing from narrow-and-light to wide-and-heavy
+// and settle, at the remapped widths.
+@keyframes word-flip {
+  0% {
+    font-stretch: var(--stretch-min);
+    font-weight: 100;
+  }
+  50% {
+    font-stretch: var(--stretch-flip);
+    font-weight: 900;
+  }
+  100% {
+    font-stretch: var(--stretch-normal);
+    font-weight: 800;
+  }
+}
+
+// `wflip2`: the same, the other way round, for every second word.
+@keyframes word-flip-alt {
+  0% {
+    font-stretch: var(--stretch-flip);
+    font-weight: 900;
+  }
+  50% {
+    font-stretch: var(--stretch-min);
+    font-weight: 100;
+  }
+  100% {
+    font-stretch: var(--stretch-normal);
+    font-weight: 800;
+  }
+}
+
+// ---------- intro band ----------
+
+.introBand {
+  padding-block: clamp(18px, 1.8vw, 30px) 0;
+  // Tucks under the stair's last step.
+  margin-top: -3px;
+}
+
+.introWrap {
+  display: flex;
+  justify-content: flex-end;
+}
+
+// `.introBand` in the selector outranks the global `p:not(.no-condense)` stretch.
+.introBand .introText {
+  display: inline-block;
+  margin: 0;
+  padding-top: clamp(36px, 4vw, 72px);
+  padding-bottom: clamp(80px, 8vw, 140px);
+  max-width: 33ch;
+  color: var(--color-white);
+  font-weight: 600;
+  font-stretch: var(--stretch-lede);
+  font-size: clamp(2.2rem, 5.4vw, 6.4rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+
+  @include bp.below(640px) {
+    max-width: calc(100% - clamp(64px, 16vw, 110px));
+    font-size: clamp(1.7rem, 7.4vw, 2.4rem);
+  }
+}

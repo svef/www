@@ -1,0 +1,66 @@
+// The export's `.btn` / `.hbtn` after its "buttons, toned down" overrides: flat fills,
+// sentence case, hover just firms up the type. The label's width is held by `GrowText`.
+@use '../../styles/breakpoints' as bp;
+@use '../../styles/mixins' as m;
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 22px;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    background-color 0.25s,
+    color 0.25s;
+
+  // The label is the one thing that widens: weight 700 at rest, 850 on hover.
+  :global(.grow-text) {
+    @include m.grow-text(var(--stretch-normal), 700, var(--stretch-button), 850);
+  }
+
+  &:active {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+.solid {
+  background: var(--color-violet);
+  color: var(--color-white);
+}
+
+// `.hbtn-2` in its last form: no fill, a little air to its left, widens further.
+.text {
+  margin-left: clamp(16px, 1.8vw, 28px);
+  padding-inline: 8px;
+  background: none;
+  color: inherit;
+
+  :global(.grow-text) {
+    @include m.grow-text(var(--stretch-normal), 600, var(--stretch-button-hover), 800);
+  }
+
+  @include bp.below(bp.$xs) {
+    margin-left: 0;
+    padding-left: 0;
+  }
+}
+
+// `.hbtn`
+.large {
+  min-height: 62px;
+  padding: 0 30px;
+  font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+
+  &.text {
+    padding-inline: 8px;
+  }
+}
