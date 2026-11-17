@@ -54,26 +54,12 @@ export interface KnownDeadLink {
   matches: (link: PageLink) => boolean
 }
 
-/** Both locales of a path, mapped to the same expected count. */
-function bothLocales(paths: readonly string[], count: number): Record<string, number> {
-  const out: Record<string, number> = {}
-  for (const p of paths) {
-    out[p === '' ? '/' : p] = count
-    out[`/en${p}`] = count
-  }
-  return out
-}
-
-// `hafa-samband/page.tsx` repeats the same four placeholders in the page body.
-const CONTACT_SOCIAL_PLACEHOLDERS: KnownDeadLink = {
-  issue: 23,
-  why: 'Contact page social links are `href="#"` placeholders; real URLs land with svef/www#23.',
-  problem: 'placeholder-hash',
-  urls: bothLocales(['/hafa-samband'], 4),
-  matches: (link) => link.where === 'main',
-}
-
-export const KNOWN_DEAD_LINKS: readonly KnownDeadLink[] = [CONTACT_SOCIAL_PLACEHOLDERS]
+// Empty: the contact page's social placeholders (svef/www#23) are gone — the
+// socials now come from the `site-settings` global and a network without a URL
+// is omitted. The guard test in `links.spec.ts` went red, as designed, and the
+// entry was deleted so those links are enforced. Add an entry here (with the
+// issue that removes it) the next time a dead link is knowingly accepted.
+export const KNOWN_DEAD_LINKS: readonly KnownDeadLink[] = []
 
 export function findKnownDeadLink(
   problem: LinkProblem,

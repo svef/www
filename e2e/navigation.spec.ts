@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
-import { getDictionary, isHiddenPath } from '@/lib/i18n'
+import { getDictionary } from '@/lib/i18n'
+import { visibleNavItems } from '@/lib/nav'
 import { LOCALES, settle, urlFor } from './pages'
 
 /**
@@ -12,21 +13,12 @@ import { LOCALES, settle, urlFor } from './pages'
  * available, and it is exactly the kind of thing a careless refactor does.
  *
  * So the pairing is pinned: each nav label must point at the page that label
- * names. Labels come from the i18n dictionary rather than being retyped here —
- * the point is to catch a changed `href`, not to duplicate copy.
+ * names. The expectation is **derived from the nav's own data**
+ * (`visibleNavItems`, which the layout renders from, with `HIDDEN_PAGES`
+ * applied) rather than retyped here, so adding a submenu, reordering the items
+ * or hiding a page needs no edit in this file. What this catches is the
+ * rendered header drifting from that data.
  */
-const ALL_NAV = [
-  { key: 'awards', path: '/vefverdlaunin' },
-  { key: 'events', path: '/vidburdir' },
-  { key: 'news', path: '/frettir' },
-  { key: 'about', path: '/um-svef' },
-  { key: 'membership', path: '/skraning' },
-] as const
-
-// Pages switched off in `HIDDEN_PAGES` are not in the nav; un-hiding one puts
-// its row back here without an edit.
-const NAV_ORDER = ALL_NAV.filter(({ path }) => !isHiddenPath(path))
-
 test.describe('site chrome links', () => {
   for (const locale of LOCALES) {
     const t = getDictionary(locale)
@@ -35,10 +27,13 @@ test.describe('site chrome links', () => {
       await page.goto(urlFor(locale, ''))
       await settle(page)
 
-      const expected = NAV_ORDER.map(({ key, path }) => ({
-        label: t.nav[key],
-        href: urlFor(locale, path),
-      }))
+      // A parent link is followed by its submenu's links, which is also the
+      // order they appear in the DOM.
+      const expected = visibleNavItems(locale, t).flatMap((item) => [
+        { label: item.label, href: item.href },
+        ...(item.children ?? []),
+      ])
+      expect(expected.length, 'the nav data is empty').toBeGreaterThan(0)
 
       // The nav's accessible name is localized chrome copy like everything else
       // in the header, so the selector reads it from the dictionary rather than
@@ -59,12 +54,17 @@ test.describe('site chrome links', () => {
       expect(actual, 'the primary nav label → href pairing').toEqual(expected)
     })
 
-    test(`${locale}: the contact link and logo point where they should`, async ({ page }) => {
+    test(`${locale}: the footer's contact link and the header logo point where they should`, async ({
+      page,
+    }) => {
       await page.goto(urlFor(locale, '/um-svef'))
       await settle(page)
 
-      const contact = page.locator('header a', { hasText: t.nav.contact })
+      // The contact page is linked from the footer and nowhere else (svef/www#107):
+      // the header has no room for it, and it is not a nav item.
+      const contact = page.locator('footer a', { hasText: t.nav.contact })
       await expect(contact).toHaveAttribute('href', urlFor(locale, '/hafa-samband'))
+      await expect(page.locator('header a', { hasText: t.nav.contact })).toHaveCount(0)
 
       // The logo is the way back to the home page from everywhere.
       await expect(page.locator('header a[aria-label="SVEF"]')).toHaveAttribute(

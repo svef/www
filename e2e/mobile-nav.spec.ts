@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { getDictionary } from '@/lib/i18n'
+import { visibleNavItems } from '@/lib/nav'
 import { LOCALES, VISIBLE_PAGES, settle, urlFor } from './pages'
 import { triage } from './a11y/known-issues'
 
@@ -181,29 +182,39 @@ test.describe('header at 390px', () => {
 
 test.describe('the current page is marked in the nav', () => {
   for (const locale of LOCALES) {
-    // Home and the photo gallery are not nav items, so nothing is marked there.
-    const marked = [
-      { path: '/vidburdir', key: 'events' },
-      { path: '/frettir', key: 'news' },
-      { path: '/hafa-samband', key: 'contact' },
-    ] as const
+    // Every nav link, submenu children included, derived from the nav's own
+    // data so a redesigned header or a new item needs no edit here.
+    const t = getDictionary(locale)
+    const links = visibleNavItems(locale, t).flatMap((item) => [
+      { href: item.href, label: item.label },
+      ...(item.children ?? []),
+    ])
 
-    for (const { path, key } of marked) {
+    for (const path of ['/vidburdir', '/frettir', '/stjorn']) {
+      const href = urlFor(locale, path)
+      const link = links.find((l) => l.href === href)
+
       test(`${locale}: ${path} carries aria-current="page"`, async ({ page }) => {
-        const t = getDictionary(locale)
-        await page.goto(urlFor(locale, path))
+        expect(link, `${href} is not in the nav data`).toBeDefined()
+        await page.goto(href)
         await settle(page)
 
         const current = page.locator('header [aria-current="page"]')
         await expect(current).toHaveCount(1)
-        await expect(current).toHaveText(t.nav[key])
+        await expect(current).toHaveText(link!.label)
       })
     }
 
-    test(`${locale}: nothing is marked on a page the nav does not list`, async ({ page }) => {
-      await page.goto(urlFor(locale, '/myndir'))
-      await settle(page)
-      await expect(page.locator('header [aria-current]')).toHaveCount(0)
-    })
+    // Home, the photo gallery and the contact page are not nav items (contact is
+    // linked from the footer, svef/www#107), so nothing is marked on them.
+    for (const path of ['', '/myndir', '/hafa-samband']) {
+      test(`${locale}: nothing is marked on ${path || 'the home page'}, which the nav does not list`, async ({
+        page,
+      }) => {
+        await page.goto(urlFor(locale, path))
+        await settle(page)
+        await expect(page.locator('header [aria-current]')).toHaveCount(0)
+      })
+    }
   }
 })

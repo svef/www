@@ -1,6 +1,13 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { collectPageErrors, describeProblem, LOCALES, settle, urlFor } from './pages'
+import {
+  collectPageErrors,
+  describeProblem,
+  dynamicHrefsInMain,
+  LOCALES,
+  settle,
+  urlFor,
+} from './pages'
 import { triage } from './a11y/known-issues'
 
 /**
@@ -24,11 +31,7 @@ async function firstArticleUrl(page: Page, locale: (typeof LOCALES)[number]): Pr
   await page.goto(index)
   await settle(page)
 
-  const href = await page.evaluate(() =>
-    Array.from(document.querySelectorAll<HTMLAnchorElement>('main#main a[href]'))
-      .map((a) => a.getAttribute('href') ?? '')
-      .find((h) => /^(\/en)?\/frettir\/[^/]+$/.test(h)),
-  )
+  const [href] = await dynamicHrefsInMain(page, '/frettir/[slug]')
 
   expect(
     href,
@@ -48,7 +51,7 @@ test.describe('news article route', () => {
 
       const response = await page.goto(url)
       expect(response?.status(), `status for ${url}`).toBe(200)
-      // No redirect, and no internal `/is` prefix in the address bar.
+      // Served where it was linked: no redirect on the way.
       expect(new URL(page.url()).pathname).toBe(url)
       await settle(page)
 
@@ -99,11 +102,18 @@ test.describe('news article route', () => {
     })
   }
 
-  test('/is/frettir/<slug> redirects to the unprefixed path', async ({ page, request }) => {
+  test('/is/<other-language page name>/<slug> redirects to the page\'s own name', async ({
+    page,
+    request,
+  }) => {
     const url = await firstArticleUrl(page, 'is')
+    // `/is/frettir/x` is the canonical form; the English name for the same page
+    // is a real page under the wrong name, so it is sent to the right one.
+    const wrongName = url.replace('/is/frettir/', '/is/news/')
+    expect(wrongName, 'the test did not build a different URL').not.toBe(url)
 
-    const response = await request.get(`/is${url}`, { maxRedirects: 0 })
-    expect(response.status(), `/is${url} should redirect`).toBeGreaterThanOrEqual(300)
+    const response = await request.get(wrongName, { maxRedirects: 0 })
+    expect(response.status(), `${wrongName} should redirect`).toBeGreaterThanOrEqual(300)
     expect(response.status()).toBeLessThan(400)
     expect(new URL(response.headers()['location'], 'http://localhost').pathname).toBe(url)
   })

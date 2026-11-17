@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { isHiddenPath } from '@/lib/i18n'
-import { LOCALES, settle, urlFor } from './pages'
+import { dynamicHrefsInMain, LOCALES, settle, urlFor } from './pages'
 
 /**
  * The home page's content, `/` and `/en` (#18).
@@ -67,15 +67,17 @@ test.describe('home', () => {
       await page.goto(urlFor(locale, ''))
       await settle(page)
 
-      const hrefs = await page.evaluate(() =>
-        Array.from(document.querySelectorAll<HTMLAnchorElement>('main#main a[href]'))
-          .map((a) => a.getAttribute('href') ?? '')
-          .filter((h) => /^(\/en)?\/vidburdir\/[^/]+$/.test(h)),
-      )
-      expect(
-        hrefs.length,
-        'the home page linked to no event — is the database seeded?',
-      ).toBeGreaterThan(0)
+      const hrefs = await dynamicHrefsInMain(page, '/vidburdir/[slug]')
+      // The seeded events have dates, so once they pass there is nothing
+      // upcoming (svef/www#141). The page must then say so instead of linking
+      // nothing in silence; with events, none may appear twice.
+      if (hrefs.length === 0) {
+        await expect(
+          page.getByRole('heading', { name: /Engir viðburðir framundan|No upcoming events/ }),
+          'the home page linked to no event and did not say there were none',
+        ).toHaveCount(1)
+        return
+      }
       // The spotlight names the soonest event and the list below it starts at
       // the one after, so no event may appear twice.
       expect(new Set(hrefs).size, `an event was listed twice: ${hrefs.join(', ')}`).toBe(
@@ -92,9 +94,7 @@ test.describe('home', () => {
       // empty state fired off the list would sit two blocks below a spotlight
       // announcing that very event. `planEventSection` owns the rule and is unit
       // tested on every input; this is the assertion against the rendered page.
-      const spotlightEvent = await page
-        .locator('main#main a[href*="/vidburdir/"]')
-        .count()
+      const spotlightEvent = (await dynamicHrefsInMain(page, '/vidburdir/[slug]')).length
       const emptyState = await page
         .getByRole('heading', { name: /Engir viðburðir framundan|No upcoming events/ })
         .count()

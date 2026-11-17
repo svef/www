@@ -80,6 +80,20 @@ export const PAGES = [
     name: 'photos',
     h1: { is: 'Myndir', en: 'Photos' },
   },
+  // The two public forms, linked from the footer. They are not in
+  // `ROUTE_SEGMENTS`, so their path is the same in both locales
+  // (`/en/abendingar`), and they are the pages that stay reachable while
+  // `LANDING_ONLY` is set (see `LANDING_PAGES` in src/proxy.ts).
+  {
+    path: '/abendingar',
+    name: 'feedback',
+    h1: { is: 'Ábendingar', en: 'Feedback' },
+  },
+  {
+    path: '/erindi',
+    name: 'talk proposal',
+    h1: { is: 'Bjóða fram erindi', en: 'Propose a talk' },
+  },
 ] as const
 
 export type PageSpec = (typeof PAGES)[number]
@@ -135,6 +149,23 @@ export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
  */
 export function urlFor(locale: Locale, path: string): string {
   return localePath(path === '' ? '/' : path, locale)
+}
+
+/**
+ * The hrefs in `<main>` that belong to a dynamic route (`/frettir/[slug]`,
+ * `/vidburdir/[slug]`), in document order.
+ *
+ * Matched by route rather than by a regex on the visible URL, because the
+ * visible URL depends on the locale (`/is/vidburdir/x`, `/en/events/x`) and the
+ * route table already knows how to undo that.
+ */
+export async function dynamicHrefsInMain(page: Page, pattern: string): Promise<string[]> {
+  const hrefs = await page.evaluate(() =>
+    Array.from(document.querySelectorAll<HTMLAnchorElement>('main#main a[href]')).map(
+      (a) => a.getAttribute('href') ?? '',
+    ),
+  )
+  return hrefs.filter((href) => dynamicRouteFor(href)?.pattern === pattern)
 }
 
 /** Every (locale, served page) pair, flattened for `for (const … of …)` in a spec. */

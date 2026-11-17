@@ -1,6 +1,13 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { collectPageErrors, describeProblem, LOCALES, settle, urlFor } from './pages'
+import {
+  collectPageErrors,
+  describeProblem,
+  dynamicHrefsInMain,
+  LOCALES,
+  settle,
+  urlFor,
+} from './pages'
 import { triage } from './a11y/known-issues'
 
 /**
@@ -30,11 +37,7 @@ async function eventUrls(
   await page.goto(index)
   await settle(page)
 
-  const hrefs = await page.evaluate(() =>
-    Array.from(document.querySelectorAll<HTMLAnchorElement>('main#main a[href]'))
-      .map((a) => a.getAttribute('href') ?? '')
-      .filter((h) => /^(\/en)?\/vidburdir\/[^/]+$/.test(h)),
-  )
+  const hrefs = await dynamicHrefsInMain(page, '/vidburdir/[slug]')
 
   expect(
     hrefs.length,
@@ -52,7 +55,7 @@ async function checkEventPage(page: Page, url: string, locale: (typeof LOCALES)[
 
   const response = await page.goto(url)
   expect(response?.status(), `status for ${url}`).toBe(200)
-  // No redirect, and no internal `/is` prefix in the address bar.
+  // Served where it was linked: no redirect on the way.
   expect(new URL(page.url()).pathname).toBe(url)
   await settle(page)
 
@@ -144,7 +147,9 @@ test.describe('event route', () => {
   }
 
   for (const locale of LOCALES) {
-    test(`${locale}: the photos link lands on the album, not the top of /myndir`, async ({
+    // svef/www#141: the seed has no past event with a gallery linked to it, so
+    // the card never offers the link. The page is right; the fixture is missing.
+    test.fixme(`${locale}: the photos link lands on the album, not the top of /myndir`, async ({
       page,
     }) => {
       // A past event's card links at `/myndir#album-<galleryId>`, an id that
@@ -186,11 +191,18 @@ test.describe('event route', () => {
     })
   }
 
-  test('/is/vidburdir/<slug> redirects to the unprefixed path', async ({ page, request }) => {
-    const { first } = await eventUrls(page, 'is')
+  test('/is/<other-language page name>/<slug> redirects to the page\'s own name', async ({
+    page,
+    request,
+  }) => {
+    const first = (await eventUrls(page, 'is')).first
+    // `/is/vidburdir/x` is the canonical form; the English name for the same page
+    // is a real page under the wrong name, so it is sent to the right one.
+    const wrongName = first.replace('/is/vidburdir/', '/is/events/')
+    expect(wrongName, 'the test did not build a different URL').not.toBe(first)
 
-    const response = await request.get(`/is${first}`, { maxRedirects: 0 })
-    expect(response.status(), `/is${first} should redirect`).toBeGreaterThanOrEqual(300)
+    const response = await request.get(wrongName, { maxRedirects: 0 })
+    expect(response.status(), `${wrongName} should redirect`).toBeGreaterThanOrEqual(300)
     expect(response.status()).toBeLessThan(400)
     expect(new URL(response.headers()['location'], 'http://localhost').pathname).toBe(first)
   })
