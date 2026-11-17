@@ -11,7 +11,7 @@
   --color-lavender: #e7dcf5; // muted text on dark
 
   // Canvas + elevated dark surfaces (violet-tinted ramp)
-  --color-black: #09060c; // page canvas (Blakety Black)
+  --color-black: #09060c; // page canvas (Blakety Black) — the export's --black
   --surface-1: #0e0912;
   --surface-2: #12091c;
   --surface-3: #1b1522;
@@ -19,10 +19,27 @@
 
   --color-white: #fcfbfe; // Shy White — text / spotlight panels
 
-  // Loud accents (emphasis + large shapes only, not body text)
+  // Export neutrals (design of record: --ink-2, --ink-3, --muted, --line)
+  --ink-2: #16101d; // raised panel on the canvas
+  --ink-3: #241a2e; // raised panel, one step up
+  --muted: #b4acbe; // secondary text (FAQ answers, captions)
+  --line: #3a2e46; // hairlines and dividers
+
+  // Loud accents (emphasis + large shapes only, not body text). Values match the
+  // export's :root exactly: --red #FF0000, --pink #FF0FCA, --yellow #FFF511.
   --accent-red: #ff0000;
   --accent-pink: #ff0fca;
   --accent-yellow: #fff511;
+
+  // The export's colour classes (.c-violet / .c-pink / .c-yellow / .c-red / .c-white)
+  // set a block's fill and the text colour that sits on it (--on). The shape engine
+  // and every page read these pairs; the matching utility classes are in globals.scss.
+  --on-violet: var(--color-white);
+  --on-pink: var(--color-black);
+  --on-yellow: var(--color-black);
+  --on-red: var(--color-black);
+  --on-white: var(--color-black);
+  --focus-ring: var(--accent-yellow); // export: :focus-visible 3px solid yellow
 
   // Semantic
   --bg: var(--color-black);
@@ -30,7 +47,65 @@
   --fg-muted: var(--color-lavender);
   --brand: var(--color-violet);
 
-  // Type scale
+  // ---- Type ------------------------------------------------------------
+  // The export is set in Roc Grotesk (wdth 50-150%); we use Archivo (wdth 62-125%).
+  // Every font-stretch is remapped proportionally either side of 100%
+  // (svef/www#121), keeping 100% at 100%:
+  //   below 100:  62 + (v - 50) * 0.76
+  //   above 100:  100 + (v - 100) * 0.5
+  // Components must use these tokens and never write a stretch percentage.
+  //
+  //   token                  export  ->  Archivo   used for
+  --stretch-min: 62%; //        50      62       extreme-narrow end of morphs (wflip, gA/gB, specimen hover)
+  --stretch-intro: 65.8%; //    55      65.8     intro statement, narrow words
+  --stretch-lede: 71.12%; //    62      71.12    ledes, footer statement, big mail, standfirsts
+  --stretch-body: 81%; //       75      81       running text (paragraphs, list items, answers)
+  --stretch-loop-low: 83.28%; // 78     83.28    looping word animation, narrow end
+  --stretch-normal: 100%; //   100     100      headings, nav links at rest
+  --stretch-loop-high: 106%; // 112     106      looping word animation wide end; category hover
+  --stretch-flip: 107%; //     114      107      hero word flip peak
+  --stretch-button: 107.5%; // 115      107.5    sticker buttons (.btn/.hbtn) at rest; submenu
+  --stretch-cta: 109%; //      118      109      hero call-to-action hover
+  --stretch-count: 110%; //    120      110      counters, footer back-to-top hover
+  --stretch-hover: 112.5%; //  125      112.5    nav links, submenu, FAQ, contact hover
+  --stretch-crumb: 115%; //    130      115      crumb hover, intro emphasis
+  --stretch-button-hover: 117.5%; // 135 117.5   buttons and .more hover
+  --stretch-row: 120%; //      140      120      event time / read-more hover
+  --stretch-display: 125%; //  150      125      big numerals and specimen glyphs (the face's widest)
+
+  --font-display: var(--font-heading), var(--font-body), system-ui, sans-serif;
+  --font-text: var(--font-body), system-ui, sans-serif;
+
+  // Type scale (export values; fluid ones are clamp()s from its CSS)
+  --text-body: 1.125rem; // export body: 18px / 1.6
+  --text-eyebrow: 0.95rem;
+  --text-h1-hero: clamp(2rem, 8.8vw, 8.8rem); // .hero h1
+  --text-h1-page: clamp(2.4rem, 7.4vw, 6.6rem); // .phead h1
+  --text-h1-page-long: clamp(2.1rem, 5.6vw, 4.8rem); // .phead h1.long
+  --text-h2: clamp(2.1rem, 5.4vw, 4rem); // .h2
+  --text-h2-stair: clamp(2.6rem, 6.4vw, 7.5rem); // .stair-txt .h2
+  --text-h3: clamp(1.5rem, 2.8vw, 2.3rem); // .ev h3, .news h2, .prose h2
+  --text-lede: clamp(1.15rem, 1.7vw, 1.4rem); // .lede
+  --text-lede-hero: clamp(1.5rem, 2.6vw, 2.6rem); // .hero .lede
+  --text-lede-page: clamp(1.6rem, 2.7vw, 2.5rem); // .phead .lede
+
+  --lh-heading: 1;
+  --lh-hero: 0.95;
+  --lh-lede: 1.4;
+  --lh-lede-display: 1.1;
+  --lh-body: 1.6;
+
+  --tracking-hero: -0.025em; // .hero h1, .phead h1
+  --tracking-h2: -0.01em; // .h2
+  --tracking-body: 0.008em; // running text
+  --tracking-eyebrow: 0.01em;
+  --weight-hero: 800;
+  --weight-heading: 600;
+
+  --ease: cubic-bezier(0.7, 0, 0.2, 1);
+  --dur-hover: 0.3s; // hover-widen and colour transitions
+
+  // Legacy type scale (kept: existing components use it)
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -66,6 +141,13 @@
   --space-16: 4rem;
   --space-24: 6rem;
 
+  // Rhythm (export section spacing)
+  --section-pad-top: clamp(56px, 7vw, 110px); // .band
+  --section-pad-bottom: clamp(110px, 12vw, 170px);
+  --page-pad-bottom: clamp(64px, 9vw, 140px); // .page
+  --gutter: max(24px, env(safe-area-inset-left, 0px)); // .wrap side padding
+
   // Layout
-  --content-max: 1200px;
+  --maxw: 1280px;
+  --content-max: var(--maxw); // legacy name
 }

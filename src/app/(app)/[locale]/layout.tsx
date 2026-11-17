@@ -19,14 +19,16 @@ import { NavigationProgress } from '@/components/NavigationProgress/NavigationPr
 import '@mantine/core/styles.css'
 import '@/styles/globals.scss'
 
-// Archivo carries body and headings alike. The Figma specifies Interstate, which
-// is commercial; Archivo is the closest open substitute and reads correctly at
-// both text and display sizes. It replaced Noto Sans and Overpass on the landing
-// page first, and this brings the full site in line.
+// Archivo carries body and headings alike, as the *variable* font with both axes:
+// wght 100-900 and wdth 62-125. The redesign leans on the width axis everywhere
+// (hover-widen, the hero word morph, condensed running text), so a static cut would
+// silently ignore `font-stretch`. Omitting `weight` selects the variable weight
+// range; `axes: ['wdth']` adds the width axis. (Roc Grotesk, which the export uses,
+// is licensed and cannot go in a public repository.)
 const archivo = Archivo({
   subsets: ['latin'],
   variable: '--font-archivo',
-  weight: ['300', '400', '500', '600', '700', '800'],
+  axes: ['wdth'],
   display: 'swap',
 })
 

@@ -1,0 +1,49 @@
+// Breakpoints, reduced from the export's 117 @media queries (design of record) to
+// five named widths. Import with `@use '../../styles/breakpoints' as bp;` and write
+// `@include bp.below(bp.$md) { ... }`.
+//
+// The export's max-width / min-width values and where they land:
+//   $xxs  360  <- 340
+//   $xs   520  <- 480, 520, 560
+//   $sm   760  <- 600, 640, 700, 760 (max)  and  640, 761 (min)
+//   $md   920  <- 800, 820, 900, 920, 960 (max)  and  901, 921, 980 (min) — the
+//                 header's burger/desktop switch, the dominant split of the export
+//   $lg  1100  <- 1080, 1100
+// Desktop-first, as the export is: `below` is `max-width`, `above` is the matching
+// `min-width` one pixel higher so the two never overlap.
+$xxs: 360px;
+$xs: 520px;
+$sm: 760px;
+$md: 920px;
+$lg: 1100px;
+
+@mixin below($width) {
+  @media (max-width: $width) {
+    @content;
+  }
+}
+
+@mixin above($width) {
+  @media (min-width: $width + 1px) {
+    @content;
+  }
+}
+
+// Motion and pointer queries the export uses (9 reduce, 6 no-preference, 1 hover:none)
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+@mixin motion-ok {
+  @media (prefers-reduced-motion: no-preference) {
+    @content;
+  }
+}
+
+@mixin hover-capable {
+  @media (hover: hover) {
+    @content;
+  }
+}

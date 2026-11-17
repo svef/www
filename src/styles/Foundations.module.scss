@@ -1,0 +1,112 @@
+@use './breakpoints' as bp;
+
+.page {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-16);
+  display: grid;
+  gap: var(--space-12);
+}
+
+.swatches {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-6) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
+}
+
+.swatch {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  min-height: 96px;
+  border: 1px solid var(--line);
+
+  code {
+    font-size: var(--text-xs);
+    font-family: var(--font-mono), monospace;
+  }
+}
+
+.hero {
+  font-size: var(--text-h1-hero);
+  font-weight: var(--weight-hero);
+  letter-spacing: var(--tracking-hero);
+  line-height: var(--lh-hero);
+}
+
+.phead {
+  font-size: var(--text-h1-page);
+  font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-hero);
+  line-height: var(--lh-hero);
+}
+
+.h3 {
+  font-size: var(--text-h3);
+  font-weight: var(--weight-heading);
+  line-height: var(--lh-heading);
+}
+
+.stretches {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-6) 0 0;
+  display: grid;
+
+  li {
+    display: grid;
+    grid-template-columns: 14rem 7rem 1fr;
+    align-items: baseline;
+    gap: var(--space-4);
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--line);
+    letter-spacing: 0;
+  }
+
+  code {
+    font-family: var(--font-mono), monospace;
+    font-size: var(--text-xs);
+  }
+
+  @include bp.below(bp.$sm) {
+    li {
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+    }
+  }
+}
+
+.sample {
+  font-size: var(--text-h3);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+}
+
+.btn {
+  display: inline-flex;
+  padding: 15px 22px;
+  background: var(--color-violet);
+  color: var(--color-white);
+  text-decoration: none;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.link {
+  color: var(--color-white);
+  text-decoration: none;
+  font-size: 1.08rem;
+}

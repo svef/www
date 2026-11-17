@@ -1,4 +1,5 @@
 @use './tokens.scss';
+@use './mixins';
 
 *,
 *::before,
@@ -20,7 +21,7 @@ body {
   color: var(--fg);
   font-family: var(--font-body), system-ui, sans-serif;
   font-weight: var(--weight-regular);
-  line-height: 1.6;
+  line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -37,7 +38,72 @@ h4 {
   letter-spacing: var(--tracking-tight);
   line-height: 1.05;
   margin: 0 0 var(--space-4);
+  text-wrap: balance;
 }
+
+// Running text is set in the display face at a condensed width, as the export does
+// (its `p:not(.eyebrow)…` rule). Opt out with `.no-condense` (eyebrows, prices…).
+p:not(.no-condense),
+dd,
+li {
+  font-stretch: var(--stretch-body);
+  letter-spacing: var(--tracking-body);
+}
+
+// Type roles, from the export
+.h2 {
+  font-size: var(--text-h2);
+  font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-h2);
+}
+
+.lede {
+  font-size: var(--text-lede);
+  font-weight: var(--weight-heading);
+  line-height: var(--lh-lede);
+  max-width: 46ch;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+}
+
+// Colour classes: fill + the text colour that sits on it
+.c-violet { background: var(--color-violet); --on: var(--on-violet); }
+.c-pink { background: var(--accent-pink); --on: var(--on-pink); }
+.c-yellow { background: var(--accent-yellow); --on: var(--on-yellow); }
+.c-red { background: var(--accent-red); --on: var(--on-red); }
+.c-white { background: var(--color-white); --on: var(--on-white); }
+.on { color: var(--on); }
+
+:focus-visible {
+  outline-color: var(--focus-ring);
+}
+
+// Hover-widen label (see _mixins.scss). Markup: <span class="grow-text" data-text="Label">Label</span>
+.grow-text {
+  @include mixins.hover-widen-link;
+}
+
+@media (hover: hover) {
+  :is(a, button, [role='button']):hover .grow-text,
+  .grow-text:hover {
+    @include mixins.grow-text-active;
+  }
+}
+
+:is(a, button, [role='button']):focus-visible .grow-text,
+.grow-text:focus-visible {
+  @include mixins.grow-text-active;
+}
+
+// Per-control presets
+.btn-grow .grow-text { @include mixins.hover-widen-button; }
+.more .grow-text { @include mixins.hover-widen-more; }
+.crumb .grow-text { @include mixins.hover-widen-crumb; }
 
 a {
   color: inherit;

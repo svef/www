@@ -1,0 +1,73 @@
+// Shared interaction idioms from the export.
+//
+// HOVER-WIDEN. Buttons and links (.btn, .hbtn, .more, .crumb, .navlink) widen on
+// hover by moving `font-stretch` and `font-weight`. The export's `reserve()` script
+// measures the hovered width and locks the element's width so the text grows from
+// the centre instead of pushing its neighbours. Here it is CSS only: the label sits
+// in a `.grow-text` span that carries its own text in `data-text`, and a hidden,
+// zero-height `::after` copy set in the *hover* face holds the box open at the wide
+// width. The visible text is centred inside it. `GrowText` renders that markup.
+//
+//   <a class="btn"><GrowText>Read more</GrowText></a>
+//
+// Hover state is driven by the nearest link/button, so a label inside a larger
+// target grows when the target is hovered or keyboard-focused.
+@use './breakpoints' as bp;
+
+@mixin grow-text(
+  $rest-stretch: var(--stretch-normal),
+  $rest-weight: var(--weight-heading),
+  $hover-stretch: var(--stretch-button-hover),
+  $hover-weight: 800
+) {
+  --grow-stretch: #{$hover-stretch};
+  --grow-weight: #{$hover-weight};
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-stretch: #{$rest-stretch};
+  font-weight: #{$rest-weight};
+  transition:
+    font-stretch var(--dur-hover) var(--ease),
+    font-weight var(--dur-hover) var(--ease);
+
+  &::after {
+    content: attr(data-text);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden; // also keeps the copy out of the accessibility tree
+    pointer-events: none;
+    user-select: none;
+    font-stretch: var(--grow-stretch);
+    font-weight: var(--grow-weight);
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}
+
+// Apply the hovered face. `$trigger` is the element whose hover/focus drives it.
+@mixin grow-text-active {
+  font-stretch: var(--grow-stretch);
+  font-weight: var(--grow-weight);
+}
+
+// The hover-widen preset per control, using the export's final values.
+@mixin hover-widen-button {
+  @include grow-text(var(--stretch-button), 900, var(--stretch-button-hover), 900);
+}
+
+@mixin hover-widen-link {
+  @include grow-text(var(--stretch-normal), 600, var(--stretch-hover), 800);
+}
+
+@mixin hover-widen-more {
+  @include grow-text(var(--stretch-normal), 600, var(--stretch-button-hover), 800);
+}
+
+@mixin hover-widen-crumb {
+  @include grow-text(var(--stretch-normal), 600, var(--stretch-crumb), 600);
+}
