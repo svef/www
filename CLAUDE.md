@@ -272,8 +272,11 @@ verification is the gate; that is not a figure of speech.
 - **Every branch pushed to GitHub gets a Vercel preview build, and every build runs
   `npm run migrate` (`vercel.json`) against the Preview environment's database — which is
   currently the production database, deliberately.** So pushing *any* branch that carries a
-  new migration applies it to production. Never push a branch with a migration — not even
-  "for safekeeping" — without the maintainer's explicit OK for that migration.
+  new migration applies it to production. **Until launch, migrations are approved in
+  advance** (the maintainer's standing decision, #121): every piece of content on the site is
+  a placeholder, so there is nothing to lose. Still, migrations reach production only through
+  `dev` — never push a side branch "for safekeeping". After launch, a migration needs the
+  maintainer's explicit OK before anything carrying it is pushed.
 - Run the full local gate before pushing.
 - If you're blocked, stop and say precisely what and why. Don't improvise around it.
 - Report what you actually did, including what didn't work.
