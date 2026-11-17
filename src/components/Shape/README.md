@@ -134,7 +134,9 @@ hydration. When the client takes over, shapes below the fold hide their content 
 the entrance as they scroll in; shapes already above the fold on the **first load of a
 document** settle in place (`data-shape-state="settled"`) and skip it — the rectangle
 snaps to its shape, which measured at ~1s LCP instead of 2.2–3.7s on a throttled
-phone-class load. Shapes mounted by a client navigation always play the entrance.
+phone-class load. Shapes mounted by a client navigation always play the entrance — and when a page turn
+(`lib/page-turn.ts`, #138) is covering the screen, they hold it for `PAGE_TURN_RISE_HOLD_MS` so
+they rise as the block leaves rather than behind it.
 
 ## Motion
 

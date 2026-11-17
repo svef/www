@@ -21,6 +21,7 @@
  */
 import type { ShapeController } from './controller'
 import { byDocumentOrder } from './measure'
+import { pageTurnHold, readPageTurnEnv } from '../page-turn'
 import {
   AMBIENT_INTERVAL,
   AMBIENT_STAGGER,
@@ -161,11 +162,14 @@ function flushArm() {
   // LCP back until hydration). Later batches, from client navigations, keep the entrance.
   const hydrating = !firstBatchDone
   firstBatchDone = true
+  // A page turn (#138) is covering the screen while this page mounts: wait for the block
+  // to leave so the shapes rise as it goes, not behind it.
+  const hold = hydrating ? 0 : pageTurnHold(readPageTurnEnv())
   queue.forEach((c, i) => {
     const r = c.el.getBoundingClientRect()
     if (r.top < window.innerHeight * RISE_VIEWPORT && r.bottom > 0) {
       if (hydrating) c.settle()
-      else c.later(() => c.rise(), RISE_DELAY + i * RISE_STAGGER)
+      else c.later(() => c.rise(), hold + RISE_DELAY + i * RISE_STAGGER)
     } else riseObs()?.observe(c.el)
   })
 }

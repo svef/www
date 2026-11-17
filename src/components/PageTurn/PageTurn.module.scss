@@ -1,0 +1,11 @@
+// Parked just below the screen; the sweep itself is in `styles/page-turn.scss`.
+.block {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 160vh;
+  // Above the header, the progress bar and the skip link: it is meant to cover them.
+  z-index: 190;
+  background: var(--color-violet);
+  transform: translateY(100vh);
+  pointer-events: none;
+}

@@ -1,0 +1,116 @@
+// The page turn (#138). Timings mirror src/lib/page-turn.ts: 1210ms in all, the page
+// swapping at 520ms (43%) while the block covers the screen.
+//
+// React starts the browser's view transition for a navigation (see `<ViewTransition>` in
+// the locale layout). The root group is the page; the block is its own named group on top.
+
+@media (prefers-reduced-motion: no-preference) {
+  // Hold the old page until the block covers it, then show the new one: a hard swap
+  // under cover rather than a cross-fade.
+  ::view-transition-group(root) {
+    animation-duration: 1210ms;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 1210ms;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(root) {
+    animation-name: page-turn-old;
+  }
+
+  ::view-transition-new(root) {
+    animation-name: page-turn-new;
+  }
+
+  ::view-transition-group(page-turn) {
+    animation: page-turn-sweep 1210ms linear both;
+    z-index: 190;
+  }
+
+  // The block's own old and new images are identical; show one, un-blended.
+  ::view-transition-image-pair(page-turn) {
+    isolation: auto;
+  }
+
+  ::view-transition-old(page-turn) {
+    display: none;
+  }
+
+  ::view-transition-new(page-turn) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  // Let clicks and keys through to the live page while it plays.
+  ::view-transition {
+    pointer-events: none;
+  }
+}
+
+// Reduced motion: no transition at all. The page swaps at once and the block is never
+// drawn.
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  ::view-transition-group(page-turn) {
+    display: none;
+  }
+
+  ::view-transition-old(root) {
+    display: none;
+  }
+}
+
+@keyframes page-turn-old {
+  0%,
+  43% {
+    opacity: 1;
+  }
+
+  43.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes page-turn-new {
+  0%,
+  43% {
+    opacity: 0;
+  }
+
+  43.01%,
+  100% {
+    opacity: 1;
+  }
+}
+
+// Leg one 0-43% (520ms) up to -22vh; hold to 48.8% (70ms); leg two out to -175vh.
+@keyframes page-turn-sweep {
+  0% {
+    transform: translateY(100vh);
+    animation-timing-function: cubic-bezier(0.7, 0, 0.25, 1);
+  }
+
+  43% {
+    transform: translateY(-22vh);
+  }
+
+  48.8% {
+    transform: translateY(-22vh);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.3, 1);
+  }
+
+  100% {
+    transform: translateY(-175vh);
+  }
+}
