@@ -152,27 +152,41 @@ test.describe('event route', () => {
     test(`${locale}: the photos link lands on the album, not the top of /myndir`, async ({
       page,
     }) => {
-      // A past event's card links at `/myndir#album-<galleryId>`, an id that
-      // `/myndir` renders (#73). `links.spec.ts` cannot check this: it resolves
-      // the *path* of a cross-page link and never looks at the fragment, so a
-      // rename on either side would break the link silently. This is the test
-      // that makes it a contract rather than a hopeful string.
+      // A past event's page links at `/myndir#album-<galleryId>`, an id that
+      // `/myndir` renders (#73). The link moved from the index card onto the event
+      // page in the redesign (#130), since a poster card can't hold a second link.
+      // `links.spec.ts` cannot check this: it resolves the *path* of a cross-page
+      // link and never looks at the fragment, so a rename on either side would
+      // break the link silently. This is the test that makes it a contract rather
+      // than a hopeful string.
       const index = urlFor(locale, '/vidburdir')
       await page.goto(index)
       await settle(page)
 
-      const href = await page.evaluate(() =>
+      const eventPages = await page.evaluate(() =>
         Array.from(document.querySelectorAll<HTMLAnchorElement>('main#main a[href]'))
           .map((a) => a.getAttribute('href') ?? '')
-          .find((h) => /#album-\d+$/.test(h)),
+          .filter((h) => /\/(vidburdir|events)\/[^/#?]+$/.test(h)),
       )
+
+      let href: string | undefined
+      for (const eventPage of [...new Set(eventPages)]) {
+        await page.goto(eventPage)
+        await settle(page)
+        href = await page.evaluate(() =>
+          Array.from(document.querySelectorAll<HTMLAnchorElement>('main#main a[href]'))
+            .map((a) => a.getAttribute('href') ?? '')
+            .find((h) => /#album-\d+$/.test(h)),
+        )
+        if (href) break
+      }
 
       // The seed links one album to a past event. If that ever stops being true
       // this fails loudly rather than skipping quietly, which is the point — a
       // test that silently covers nothing is worse than none.
       expect(
         href,
-        `${index} offered no "Myndir frá viðburði" link — are galleries seeded ` +
+        `no event linked from ${index} offered a "Myndir frá viðburði" link — are galleries seeded ` +
           `against past events?`,
       ).toBeTruthy()
 
