@@ -1,0 +1,311 @@
+// Story-only layout, ported from the export's band and poster rules so the shapes
+// can be compared with it like for like. Pages bring their own layout.
+
+.page {
+  background: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.wrap {
+  margin: 0 auto;
+  padding-inline: 24px;
+}
+
+// .phead
+.phead {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding-block: clamp(150px, 13vw, 200px) clamp(120px, 13vw, 190px);
+
+  > .wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-heading, system-ui, sans-serif);
+    font-size: clamp(2.4rem, 7.4vw, 6.6rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 0.95;
+    text-wrap: balance;
+    @media (max-width: 760px) {
+      font-size: clamp(2.4rem, 10.4vw, 3.4rem);
+    }
+  }
+
+  @media (max-width: 760px) {
+    min-height: calc(100svh - 56px);
+  }
+}
+
+.title {
+  display: inline-block;
+  max-width: min(100%, 980px);
+}
+
+.body {
+  margin-top: auto;
+  padding-top: clamp(40px, 6vw, 80px);
+  padding-left: clamp(28px, 4vw, 72px);
+  display: grid;
+  gap: 22px;
+  max-width: calc(620px + clamp(28px, 4vw, 72px));
+}
+
+.lede {
+  margin: 0;
+  color: var(--shape-on);
+  font-family: var(--font-heading, system-ui, sans-serif);
+  font-stretch: 71%;
+  font-weight: 500;
+  font-size: clamp(1.6rem, 2.7vw, 2.5rem);
+  line-height: 1.08;
+  max-width: 28ch;
+}
+
+// .hero
+.hero {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding-block: clamp(150px, 13vw, 200px) clamp(90px, 12svh, 140px);
+
+  > .wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-heading, system-ui, sans-serif);
+    font-size: clamp(2rem, 8.8vw, 8.8rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 0.95;
+  }
+}
+
+.heroTitle {
+  display: inline-block;
+  margin-top: auto;
+  max-width: min(100%, 1180px);
+}
+
+.line {
+  display: block;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(32px, 3.4vw, 52px);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 62px;
+  padding: 0 30px;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  font-weight: 800;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: var(--color-black);
+  color: var(--color-white);
+  border: 3px solid var(--color-black);
+  box-shadow: 5px 5px 0 var(--color-black);
+
+  &:focus-visible {
+    outline: 3px solid var(--accent-yellow);
+    outline-offset: 3px;
+  }
+}
+
+// .cards + .poster
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 980px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.poster {
+  min-height: 380px;
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  color: var(--color-white);
+  text-decoration: none;
+
+  h3,
+  h2 {
+    margin: 0;
+    font-family: var(--font-heading, system-ui, sans-serif);
+    font-size: clamp(1.9rem, 3vw, 2.5rem);
+    font-weight: 600;
+    line-height: 1;
+    word-break: break-word;
+  }
+
+  &:focus-within {
+    outline: 3px solid var(--color-white);
+    outline-offset: 6px;
+  }
+}
+
+.cat {
+  align-self: flex-start;
+  max-width: 80%;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.15;
+  color: inherit;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  // the whole card is the link's hit area
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+  }
+}
+
+.foot {
+  align-self: flex-start;
+  max-width: 80%;
+}
+
+.right {
+  align-self: flex-end;
+  text-align: right;
+}
+
+.blurb {
+  margin: 10px 0 0;
+  font-size: 0.95rem;
+  max-width: 30ch;
+  color: #b4acbe;
+}
+
+.right .blurb {
+  margin-left: auto;
+}
+
+.news {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr;
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (min-width: 980px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.date {
+  align-self: flex-start;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.read {
+  display: block;
+  margin-top: 14px;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  font-weight: 600;
+}
+
+// a generic box for the corner gallery
+.grid {
+  display: grid;
+  gap: 40px 24px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  padding: 24px;
+}
+
+.box {
+  height: 260px;
+}
+
+.caption {
+  margin: 10px 0 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  color: var(--color-lavender);
+}
+
+.colourBox {
+  min-height: 320px;
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-heading, system-ui, sans-serif);
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  p {
+    margin: 0;
+    color: var(--shape-on);
+    max-width: 24ch;
+    font-weight: 600;
+  }
+}
+
+.band {
+  min-height: 420px;
+  padding-block: clamp(56px, 7vw, 110px) clamp(110px, 12vw, 170px);
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-heading, system-ui, sans-serif);
+    font-size: clamp(2.1rem, 5.4vw, 4rem);
+    font-weight: 600;
+    line-height: 1;
+  }
+}
+
+.inline {
+  display: inline-block;
+}
+
+.date.right {
+  align-self: flex-end;
+  text-align: right;
+}

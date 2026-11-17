@@ -1,0 +1,164 @@
+// The stepped-shape engine's styles. Ported from the export's "shape engine" rules
+// ([data-shape], .shp, .c-*, .mark, .bar, .mask, .fadein, .pending).
+
+$ease: cubic-bezier(0.7, 0, 0.2, 1); // the export's --ease
+
+.shape {
+  position: relative;
+  isolation: isolate;
+  --shape-on: var(--color-white);
+}
+
+// The colour itself, clipped to the stepped outline by the engine.
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.violet {
+  --shape-on: var(--color-white);
+  > .layer {
+    background: var(--color-violet);
+  }
+}
+.red {
+  --shape-on: var(--color-black);
+  > .layer {
+    background: var(--accent-red);
+  }
+}
+.pink {
+  --shape-on: var(--color-black);
+  > .layer {
+    background: var(--accent-pink);
+  }
+}
+.yellow {
+  --shape-on: var(--color-black);
+  > .layer {
+    background: var(--accent-yellow);
+  }
+}
+.white {
+  --shape-on: var(--color-black);
+  > .layer {
+    background: var(--color-white);
+  }
+}
+
+// The "SVEF" mark, in the bottom-left notch. `left` is set by the engine.
+.mark {
+  position: absolute;
+  z-index: 1;
+  left: 16px;
+  bottom: 14px;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--shape-on);
+  pointer-events: none;
+  transition: opacity 0.5s 0.6s;
+}
+
+// White bars hugging a notch's inner corner. Positioned by the engine with `translate`.
+.bar {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: 0;
+  background: var(--color-white);
+  width: clamp(40px, 6vw, 90px);
+  height: clamp(14px, 1.6vw, 24px);
+  pointer-events: none;
+  transition: opacity 0.5s 0.9s;
+
+  @media (max-width: 760px) {
+    display: none;
+  }
+}
+
+// Until the client has measured and painted the shape the colour layer is a plain
+// rectangle, so content meant to sit in a black notch gets a black backing of its own.
+.shape:not([data-shape-painted]) :global([data-notch]) {
+  background: var(--color-black);
+  box-shadow: 0 0 0 0.5em var(--color-black);
+}
+
+// ---------- entrance ----------
+// The engine marks headings `data-shape-reveal` and body content `data-shape-fade`,
+// and moves the shape from `pending` to `in`. Under reduced motion it never sets
+// `pending`, and nothing here runs.
+
+@media (prefers-reduced-motion: no-preference) {
+  // Before the client takes over (scripting on): hold the content back so the first
+  // thing seen is the entrance. A failsafe shows it after 3s if the client never runs.
+  @media (scripting: enabled) {
+    .shape:not([data-shape-state]) > * {
+      opacity: 0;
+      animation: shape-failsafe 0s 3s forwards;
+    }
+  }
+
+  .shape[data-shape-state='pending'] {
+    // Headings sit below their own bottom edge, clipped to where they will rest: the
+    // clip moves against the translate, so the window stays put while the text rises
+    // into it (the export's `.mask` without the wrapper elements).
+    :global([data-shape-reveal]) {
+      translate: 0 105%;
+      clip-path: inset(-105% 0 105% 0);
+    }
+    :global([data-shape-fade]) {
+      opacity: 0;
+      translate: 0 28px;
+    }
+    > .mark,
+    > .bar {
+      opacity: 0;
+      transition: none;
+    }
+  }
+
+  // Animations rather than transitions, so they never replace an element's own
+  // `transition` (button hovers and the like). `backwards` fill only: once done, the
+  // element's own styles apply again.
+  .shape[data-shape-state='in'] {
+    :global([data-shape-reveal]) {
+      animation: shape-reveal 0.95s $ease backwards;
+    }
+    :global([data-shape-fade]) {
+      animation:
+        shape-fade 0.8s $ease 0.35s backwards,
+        shape-lift 0.9s $ease 0.35s backwards;
+    }
+  }
+}
+
+@keyframes shape-reveal {
+  from {
+    translate: 0 105%;
+    clip-path: inset(-105% 0 105% 0);
+  }
+  to {
+    translate: 0 0;
+    clip-path: inset(-0.1em);
+  }
+}
+
+@keyframes shape-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes shape-lift {
+  from {
+    translate: 0 28px;
+  }
+}
+
+@keyframes shape-failsafe {
+  to {
+    opacity: 1;
+  }
+}
