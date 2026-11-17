@@ -12,12 +12,9 @@
   text-decoration: none;
 }
 
-// The notches are cut from the colour with a clip-path, which a contrast checker cannot see:
-// it would measure white text against the card's yellow. Each notch's content therefore also
-// carries its own black backing — invisible (it sits inside the cut-out), but true to what is drawn.
+// Notch content sits on the black the shape cuts out (`Shape` backs every notch with it).
 .date,
 .foot {
-  background: var(--color-black);
   color: var(--color-white);
 }
 

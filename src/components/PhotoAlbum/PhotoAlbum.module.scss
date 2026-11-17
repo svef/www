@@ -64,10 +64,6 @@
   position: absolute;
   z-index: 1;
   font-family: var(--font-display);
-  // The notch is cut from the colour with a clip-path, which a contrast checker cannot see:
-  // it would measure white text against the tile's yellow. The text carries the black it
-  // sits on — invisible, since it fills the cut-out, but true to what is drawn.
-  background: var(--color-black);
   color: var(--color-white);
 }
 

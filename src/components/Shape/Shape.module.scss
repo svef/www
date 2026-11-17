@@ -85,8 +85,18 @@ $ease: cubic-bezier(0.7, 0, 0.2, 1); // the export's --ease
   }
 }
 
+// A notch is cut out of the colour with a `clip-path`, which a contrast checker cannot see:
+// it would measure notch text against the shape's yellow, red, pink or white. So every
+// `[data-notch]` carries the black it sits on as its own background — invisible once the
+// shape is painted (the cut-out is black and at least as big as the element's box), but
+// true to what is drawn. `:where()` keeps it at zero specificity, so a notch that sets
+// its own background still wins.
+:where(.shape [data-notch]) {
+  background: var(--color-black);
+}
+
 // Until the client has measured and painted the shape the colour layer is a plain
-// rectangle, so content meant to sit in a black notch gets a black backing of its own.
+// rectangle, so notch content also gets a margin of black around itself.
 .shape:not([data-shape-painted]) :global([data-notch]) {
   background: var(--color-black);
   box-shadow: 0 0 0 0.5em var(--color-black);

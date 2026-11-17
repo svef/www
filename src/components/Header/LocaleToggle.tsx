@@ -74,9 +74,10 @@ function useLocationSuffix(): string {
  * languages, so the current one does not need stating, and a lone word sits on
  * the nav's line instead of looking like a control dropped beside it.
  *
- * The hidden phrase follows the visible word rather than replacing it, so the
- * accessible name still begins with what is on screen (WCAG 2.5.3 Label in
- * Name) while saying what the link actually does.
+ * The hidden phrase begins with the letters drawn on the button (`IS` on the
+ * desktop chip, `IS` and `EN` on the phone switch, so `IS/EN` covers both) and then
+ * says what the link does, so the accessible name contains the visible label
+ * (WCAG 2.5.3 Label in Name).
  *
  * The href preserves the page you are on, carrying the query and hash with it;
  * see `useLocationSuffix` above for why those are read from `window.location`.
@@ -102,7 +103,10 @@ export function LocaleToggle({ locale }: { locale: Locale }) {
         <b data-on={locale === 'en'}>EN</b>
       </span>
       <VisuallyHidden>
-        <span lang={target}>{getDictionary(target).languageName}</span> {t.switchLanguage}
+        {/* Starts with what is drawn: the chip shows the current code, the phone switch both. */}
+        <span lang="en">IS/EN</span>,{' '}
+        <span lang={target}>{getDictionary(target).languageName}</span>.{' '}
+        {t.switchLanguage}
       </VisuallyHidden>
     </Link>
   )
