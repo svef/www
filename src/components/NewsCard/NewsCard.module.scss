@@ -1,93 +1,101 @@
+// The export's `.poster` and `.news …` rules.
+@use '../../styles/breakpoints' as bp;
+
 .card {
+  min-height: 380px;
+  padding: 20px 22px 22px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  color: inherit;
   text-decoration: none;
-  color: var(--fg);
-  background: var(--surface-1);
-  border: 1px solid rgb(252 251 254 / 12%);
-  transition: border-color 0.16s ease;
-
-  &:hover {
-    border-color: rgb(137 23 225 / 60%);
-  }
-
-  &:hover .title {
-    color: var(--color-violet-light);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-violet-light);
-    outline-offset: 3px;
-  }
 }
 
-.cover {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  background: repeating-linear-gradient(
-    135deg,
-    var(--surface-3) 0 8px,
-    var(--surface-4) 8px 16px
-  );
-}
-
-.body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-6);
+// The notches are cut from the colour with a clip-path, which a contrast checker cannot see:
+// it would measure white text against the card's yellow. Each notch's content therefore also
+// carries its own black backing — invisible (it sits inside the cut-out), but true to what is drawn.
+.date,
+.foot {
+  background: var(--color-black);
+  color: var(--color-white);
 }
 
 .date {
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  color: var(--color-violet-light);
+  align-self: flex-start;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+// A notch is as big as its box, so both are fitted to their content (align-self in a flex column).
+.foot {
+  align-self: flex-start;
+  max-width: 80%;
+}
+
+.right {
+  align-self: flex-end;
+  text-align: right;
 }
 
 .title {
-  font-family: var(--font-heading), system-ui, sans-serif;
-  font-weight: var(--weight-black);
-  font-size: 1.375rem; // 22px
-  transition: color 0.16s ease;
-  // Rendered as a heading; neutralise the global heading defaults so the card
-  // keeps the exact size, weight, rhythm and spacing it had as a <span>.
   margin: 0;
-  line-height: 1.18;
-  letter-spacing: inherit;
+  font-size: var(--text-h3);
+  font-weight: var(--weight-heading);
+  overflow-wrap: anywhere;
 }
 
 .excerpt {
-  color: rgb(252 251 254 / 62%);
-  font-size: 0.90625rem; // 14.5px
-  line-height: 1.6;
+  display: block;
+  margin-top: 10px;
+  max-width: 44ch;
+  font-size: 0.98rem;
+  color: var(--muted);
 }
 
 .cta {
-  margin-top: var(--space-1);
-  font-weight: var(--weight-bold);
-  font-size: var(--text-sm);
-  color: var(--color-violet-light);
+  display: flex;
+  align-items: center;
+  gap: 0.2em;
+  margin-top: 14px;
+  font-family: var(--font-display);
+  font-weight: 600;
+
+  // `.foot.right`: the call to action lines up on the right too.
+  .right & {
+    justify-content: flex-end;
+  }
+
+  // Hover-widen goes further here than on a plain link: the export's 140%.
+  :global(.grow-text) {
+    --grow-stretch: var(--stretch-row);
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .right & :global(.grow-text) {
+    align-items: flex-end;
+    text-align: right;
+  }
 }
 
 .arrow {
-  // Nudge the arrow along on hover — the card is the link, so the whole card
-  // reacts, not just this line.
-  display: inline-block;
-  transition: transform 0.16s ease;
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  transition: transform var(--dur-hover) var(--ease);
 
-  .card:hover & {
-    transform: translateX(3px);
+  .card:hover &,
+  .card:focus-visible & {
+    transform: translateX(5px);
   }
 
-  @media (prefers-reduced-motion: reduce) {
+  @include bp.reduced-motion {
     transition: none;
 
-    .card:hover & {
+    .card:hover &,
+    .card:focus-visible & {
       transform: none;
     }
   }

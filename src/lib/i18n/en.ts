@@ -133,6 +133,9 @@ export const en = {
     lead: 'Everything we announce appears here first — social posts always link back.',
     readArticle: 'Read the article',
     backToIndex: 'News',
+    back: 'Back',
+    backLabel: 'Back to news',
+    author: 'Author',
     empty: {
       title: 'No news yet',
       body: 'Announcements from SVEF appear here as soon as they are made.',

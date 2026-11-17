@@ -1,65 +1,54 @@
-// Prose styling for Payload rich text. The converter emits bare semantic
-// elements, so these are element selectors on purpose — there are no classes to
-// hook onto, and editors should not have to know about any.
+// Prose styling for Payload rich text, from the export's `.prose` and `[data-news] .prose`.
+// The converter emits bare semantic elements, so these are element selectors on purpose —
+// there are no classes to hook onto, and editors should not have to know about any.
+@use '../../styles/breakpoints' as bp;
+
 .prose {
-  color: rgb(252 251 254 / 68%);
-  font-size: var(--text-lg);
-  line-height: 1.75;
+  max-width: 66ch;
+  display: grid;
+  gap: 18px;
+  font-size: 1.1rem;
 
-  > :first-child {
-    margin-top: 0;
-  }
-
-  > :last-child {
-    margin-bottom: 0;
-  }
-
-  p {
-    margin: 0 0 var(--space-6);
-  }
-
-  // The opening paragraph carries the article's lead, a size up and brighter.
-  > p:first-of-type {
-    font-size: 1.1875rem; // 19px
-    line-height: 1.7;
-    color: rgb(252 251 254 / 82%);
+  > * {
+    margin: 0;
   }
 
   h2,
   h3 {
     color: var(--fg);
-    margin: var(--space-12) 0 var(--space-4);
+    font-weight: var(--weight-heading);
   }
 
   h2 {
-    font-size: 1.625rem; // 26px
-    line-height: 1.15;
+    margin-top: 14px;
+    font-size: clamp(1.6rem, 2.8vw, 2.2rem);
   }
 
   h3 {
+    margin-top: 10px;
     font-size: var(--text-xl);
   }
 
   blockquote {
-    margin: var(--space-8) 0;
-    padding: var(--space-6) var(--space-8);
-    background: var(--surface-2);
-    border-left: 8px solid var(--color-violet);
-    color: var(--fg);
-    font-family: var(--font-body), system-ui, sans-serif;
-    font-size: 1.25rem; // 20px
-    font-weight: var(--weight-semibold);
-    line-height: 1.5;
+    margin: 16px 0;
+    padding: 28px 28px 70px;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+    font-weight: 500;
+    line-height: 1.15;
   }
 
   ul,
   ol {
-    margin: 0 0 var(--space-6);
-    padding-left: var(--space-6);
+    margin: 0;
+    padding-left: 1.3em;
+    display: grid;
+    gap: 8px;
   }
 
-  li {
-    margin-bottom: var(--space-2);
+  li::marker {
+    color: var(--accent-pink);
+    font-weight: 700;
   }
 
   a {
@@ -72,12 +61,39 @@
   }
 
   strong {
-    color: var(--fg);
     font-weight: var(--weight-bold);
   }
 
   img {
     max-width: 100%;
     height: auto;
+  }
+}
+
+// A news article: a centred reading column with larger text, and quotes that break out of it.
+.article {
+  margin-inline: auto;
+  max-width: 780px;
+
+  p,
+  li {
+    font-size: clamp(1.2rem, 1.5vw, 1.42rem);
+    line-height: 1.55;
+  }
+
+  h2 {
+    margin-top: 1.4em;
+    font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+  }
+
+  // The quote is a shape (`.quote`): its text sits on the violet, so it is white.
+  .quote {
+    margin: clamp(48px, 6vw, 96px) calc(-1 * clamp(0px, 7vw, 140px));
+    padding: clamp(96px, 10vw, 150px) clamp(48px, 7vw, 130px) clamp(88px, 8vw, 130px);
+    color: var(--shape-on);
+
+    @include bp.below(bp.$lg) {
+      margin-inline: 0;
+    }
   }
 }

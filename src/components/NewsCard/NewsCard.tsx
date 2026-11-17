@@ -1,23 +1,54 @@
-import Image from 'next/image'
+'use client'
+
+// A client component only because `Shape` can render a `Link` (a function) as its element,
+// and a function cannot cross from a Server Component into the client `Shape`.
+
 import Link from 'next/link'
+import clsx from 'clsx'
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr'
+import { Shape, type ShapeColor } from '@/components/Shape/Shape'
+import { Notch } from '@/components/Shape/Notch'
+import { GrowText } from '@/components/GrowText/GrowText'
+import type { Corner } from '@/lib/shape/geometry'
 import styles from './NewsCard.module.scss'
 
-export interface NewsCardCover {
-  url: string
-  width: number | null
-  height: number | null
+/**
+ * The export's news posters are hand-dressed: each card has its own colour, its own
+ * decorative corners, and the date and the foot sit on whichever side suits it. Six
+ * looks, repeated in order, so a card's look depends only on its place in the list.
+ */
+export interface NewsCardLook {
+  color: ShapeColor
+  /** Where the date sits: `tl` or `tr`. */
+  dateAt: 'tl' | 'tr'
+  /** Where the foot (title, excerpt, call to action) sits: `bl` or `br`. */
+  footAt: 'bl' | 'br'
+  /** Decorative corners, drawn to a seeded size. */
+  auto: Corner[]
 }
 
+export const NEWS_CARD_LOOKS: readonly NewsCardLook[] = [
+  { color: 'violet', dateAt: 'tl', footAt: 'bl', auto: ['tr'] },
+  { color: 'yellow', dateAt: 'tr', footAt: 'bl', auto: ['tl', 'br'] },
+  { color: 'red', dateAt: 'tr', footAt: 'br', auto: ['tl'] },
+  { color: 'pink', dateAt: 'tl', footAt: 'bl', auto: ['tr', 'br'] },
+  { color: 'violet', dateAt: 'tr', footAt: 'bl', auto: ['tl'] },
+  { color: 'yellow', dateAt: 'tl', footAt: 'bl', auto: ['br'] },
+]
+
 export interface NewsCardProps {
-  /** Publication date, already formatted for the locale. Uppercased in CSS. */
+  /** Publication date, already formatted for the locale. */
   date: string
   /** Machine-readable form of `date`, for the `<time datetime>` attribute. */
   dateTime?: string
   title: string
   excerpt?: string | null
   href: string
-  /** Cover image; a striped placeholder stands in when there is none. */
-  cover?: NewsCardCover | null
+  /**
+   * The card's place in its list. Picks its look (colour, corners, which side the text
+   * sits on), cycling through `NEWS_CARD_LOOKS`.
+   */
+  index?: number
   /** Call to action, e.g. "Lesa fréttina". Hidden from the card's link name. */
   cta?: string
   /**
@@ -38,46 +69,59 @@ export interface NewsCardProps {
    *
    * Separate from `titleLang` because the two are separately localized fields:
    * an article can have an English headline and no English summary, and marking
-   * the summary as English would have a screen reader read Icelandic in an
-   * English voice.
+   * the summary as English would have a screen reader read Icelandic in an English voice.
    */
   excerptLang?: string
 }
 
+/**
+ * A news poster: a stepped colour block (the shape engine) with the date and the
+ * headline set in black notches cut from its corners. The whole card is one link, and the
+ * notches open on hover and keyboard focus.
+ *
+ * Put the cards in a grid (`NewsGrid`); the colour and the corners come from `index`.
+ */
 export function NewsCard({
   date,
   dateTime,
   title,
   excerpt,
   href,
-  cover,
+  index = 0,
   cta,
   headingLevel = 2,
   titleLang,
   excerptLang,
 }: NewsCardProps) {
   const Heading = `h${headingLevel}` as const
+  const look =
+    NEWS_CARD_LOOKS[
+      ((index % NEWS_CARD_LOOKS.length) + NEWS_CARD_LOOKS.length) % NEWS_CARD_LOOKS.length
+    ]
+  const right = look.dateAt === 'tr'
+  const footRight = look.footAt === 'br'
 
   return (
-    <Link href={href} className={styles.card}>
-      {cover ? (
-        // Decorative here: the card's link is already named by the title next to
-        // it, so the alt text would only repeat it. The detail page carries the
-        // image's real alt text.
-        <Image
-          className={styles.cover}
-          src={cover.url}
-          alt=""
-          width={cover.width ?? 800}
-          height={cover.height ?? 450}
-        />
-      ) : (
-        <div className={styles.cover} aria-hidden="true" />
-      )}
-      <div className={styles.body}>
-        <time className={styles.date} dateTime={dateTime}>
-          {date}
-        </time>
+    <Shape
+      as={Link}
+      href={href}
+      color={look.color}
+      auto={look.auto}
+      morphOnHover
+      className={styles.card}
+    >
+      <Notch
+        as="time"
+        corner={look.dateAt}
+        dateTime={dateTime}
+        className={clsx(styles.date, right && styles.right)}
+      >
+        {date}
+      </Notch>
+      <Notch
+        corner={look.footAt}
+        className={clsx(styles.foot, footRight && styles.right)}
+      >
         <Heading className={styles.title} lang={titleLang}>
           {title}
         </Heading>
@@ -88,10 +132,11 @@ export function NewsCard({
         )}
         {cta && (
           <span className={styles.cta} aria-hidden="true">
-            {cta} <span className={styles.arrow}>→</span>
+            <GrowText>{cta}</GrowText>
+            <ArrowRight className={styles.arrow} weight="bold" />
           </span>
         )}
-      </div>
-    </Link>
+      </Notch>
+    </Shape>
   )
 }

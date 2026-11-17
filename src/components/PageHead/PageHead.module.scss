@@ -1,0 +1,120 @@
+// The export's `.phead` rules (page header bands), with its later overrides folded in.
+@use '../../styles/breakpoints' as bp;
+
+.head {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding-block: clamp(150px, 13vw, 200px) clamp(120px, 13vw, 190px);
+
+  @include bp.below(bp.$sm) {
+    min-height: calc(100svh - 56px);
+  }
+}
+
+.wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0 auto;
+  padding-inline: max(24px, env(safe-area-inset-left, 0px))
+    max(24px, env(safe-area-inset-right, 0px));
+}
+
+// The notch is as big as this box, so it is fitted to its content.
+.title {
+  display: inline-block;
+  align-self: flex-start;
+  max-width: min(100%, 980px);
+
+  h1 {
+    margin: 0;
+    font-size: var(--text-h1-page);
+    font-weight: var(--weight-heading);
+    letter-spacing: var(--tracking-hero);
+    line-height: var(--lh-hero);
+
+    @include bp.below(bp.$sm) {
+      font-size: clamp(2.4rem, 10.4vw, 3.4rem);
+    }
+  }
+
+  h1.long {
+    font-size: var(--text-h1-page-long);
+
+    @include bp.below(bp.$sm) {
+      font-size: clamp(2.1rem, 8.6vw, 3rem);
+    }
+  }
+}
+
+.eyebrow {
+  display: block;
+  margin: 22px 0 14px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+}
+
+// The export's `.crumb.btn.btn-line`: no border, no left padding, the arrow nudges left on hover.
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px 10px 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color var(--dur-hover) var(--ease);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--accent-yellow);
+  }
+
+  // `.crumb .grow-text` in globals.scss gives the label its hover-widen.
+}
+
+.arrow {
+  flex: none;
+  width: 1.2em;
+  height: 1.2em;
+  transition: transform var(--dur-hover) var(--ease);
+
+  .crumb:hover & {
+    transform: translateX(-3px);
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+
+    .crumb:hover & {
+      transform: none;
+    }
+  }
+}
+
+// The foot of the band: pushed to the bottom, indented so it keeps clear of the pattern's edge.
+.body {
+  margin-top: auto;
+  padding-top: clamp(40px, 6vw, 80px);
+  padding-left: clamp(28px, 4vw, 72px);
+  display: grid;
+  gap: 22px;
+  max-width: calc(620px + clamp(28px, 4vw, 72px));
+}
+
+.lede {
+  margin: 0;
+  color: var(--shape-on);
+  font-family: var(--font-display);
+  font-stretch: var(--stretch-lede);
+  font-weight: 500;
+  font-size: var(--text-lede-page);
+  line-height: var(--lh-lede-display);
+  max-width: 28ch;
+  letter-spacing: 0;
+}

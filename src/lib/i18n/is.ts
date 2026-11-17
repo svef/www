@@ -161,6 +161,9 @@ export const is = {
     lead: 'Allt sem við tilkynnum birtist hér fyrst — samfélagsmiðlar vísa alltaf hingað.',
     readArticle: 'Lesa fréttina',
     backToIndex: 'Fréttir',
+    back: 'Til baka',
+    backLabel: 'Til baka í fréttir',
+    author: 'Höfundur',
     empty: {
       title: 'Engar fréttir enn',
       body: 'Hér birtast tilkynningar frá SVEF um leið og þær koma.',

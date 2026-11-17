@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { NewsCard } from './NewsCard'
+import { NewsCard, NEWS_CARD_LOOKS } from './NewsCard'
 
 const props = {
   date: '22. maí 2026',
@@ -62,12 +62,23 @@ describe('NewsCard', () => {
     expect(screen.getByText(props.excerpt)).toHaveAttribute('lang', 'is')
   })
 
-  it('renders a cover image when there is one', () => {
-    render(
-      <NewsCard {...props} cover={{ url: '/cover.jpg', width: 800, height: 450 }} />,
+  it('gives each position in a list its own look, repeating after six', () => {
+    const { rerender } = render(<NewsCard {...props} index={0} />)
+    const colourAt = () => screen.getByRole('link').className
+    const first = colourAt()
+    rerender(<NewsCard {...props} index={1} />)
+    expect(colourAt()).not.toBe(first)
+    expect(NEWS_CARD_LOOKS).toHaveLength(6)
+    expect(NEWS_CARD_LOOKS[0].color).not.toBe(NEWS_CARD_LOOKS[1].color)
+  })
+
+  it('sets the date and the foot in notches on the sides its look asks for', () => {
+    render(<NewsCard {...props} index={2} />)
+    // Third look: date top-right, foot bottom-right.
+    expect(screen.getByText(props.date)).toHaveAttribute('data-notch', 'tr')
+    expect(screen.getByRole('heading', { level: 2 }).parentElement).toHaveAttribute(
+      'data-notch',
+      'br',
     )
-    // Decorative next to the title it illustrates, so it has an empty alt and
-    // stays out of the accessible tree.
-    expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 })

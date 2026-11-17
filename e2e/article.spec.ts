@@ -26,7 +26,10 @@ import { triage } from './a11y/known-issues'
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 
 /** The href of the first article on the news index, in this locale. */
-async function firstArticleUrl(page: Page, locale: (typeof LOCALES)[number]): Promise<string> {
+async function firstArticleUrl(
+  page: Page,
+  locale: (typeof LOCALES)[number],
+): Promise<string> {
   const index = urlFor(locale, '/frettir')
   await page.goto(index)
   await settle(page)
@@ -42,7 +45,9 @@ async function firstArticleUrl(page: Page, locale: (typeof LOCALES)[number]): Pr
 
 test.describe('news article route', () => {
   for (const locale of LOCALES) {
-    test(`${locale}: an article renders, is accessible and stays quiet`, async ({ page }) => {
+    test(`${locale}: an article renders, is accessible and stays quiet`, async ({
+      page,
+    }) => {
       // Resolve the slug first, then start listening: the collector would
       // otherwise also pick up whatever the news index logged on the way here,
       // and this test is about the article route.
@@ -91,7 +96,51 @@ test.describe('news article route', () => {
       expect(unexpected.join('\n\n'), `axe violations on ${url}`).toBe('')
     })
 
-    test(`${locale}: an unknown slug is a 404, not a crash`, async ({ page, request }) => {
+    test(`${locale}: the index is a page head over cards that link to articles`, async ({
+      page,
+    }) => {
+      await page.goto(urlFor(locale, '/frettir'))
+      await settle(page)
+
+      await expect(page.locator('h1')).toHaveText(locale === 'is' ? 'Fréttir' : 'News')
+      // The page opens with the violet band, and its title sits in a notch.
+      await expect(page.locator('main header [data-notch="tl"] h1')).toHaveCount(1)
+
+      const cards = page.locator('main a[href*="/frettir/"], main a[href*="/news/"]')
+      expect(await cards.count(), 'no news cards on the index').toBeGreaterThan(0)
+      const first = cards.first()
+      await expect(first.locator('h2')).not.toHaveText('')
+      await expect(first.locator('time[datetime]')).toHaveCount(1)
+      const href = await first.getAttribute('href')
+      await first.click()
+      await expect(page).toHaveURL(new RegExp(`${href}$`))
+      await expect(page.locator('h1')).toHaveCount(1)
+    })
+
+    test(`${locale}: an article has a crumb back, a dated head, a body and a share row`, async ({
+      page,
+    }) => {
+      const url = await firstArticleUrl(page, locale)
+      await page.goto(url)
+      await settle(page)
+
+      const head = page.locator('main article > header')
+      await expect(head.locator('h1')).not.toHaveText('')
+      await expect(head.locator('time[datetime]')).toHaveCount(1)
+      await expect(
+        head.locator('a[href$="' + (locale === 'is' ? '/frettir' : '/news') + '"]'),
+      ).toHaveCount(1)
+
+      // Body: the article's text (or its summary when it has no body) under the head.
+      const body = page.locator('main article > section')
+      await expect(body.locator('p').first()).not.toHaveText('')
+      await expect(body.getByRole('group').getByRole('link')).toHaveCount(3)
+    })
+
+    test(`${locale}: an unknown slug is a 404, not a crash`, async ({
+      page,
+      request,
+    }) => {
       const url = urlFor(locale, '/frettir/there-is-no-article-with-this-slug')
       const response = await request.get(url, { maxRedirects: 0 })
       expect(response.status(), `status for ${url}`).toBe(404)
@@ -102,7 +151,7 @@ test.describe('news article route', () => {
     })
   }
 
-  test('/is/<other-language page name>/<slug> redirects to the page\'s own name', async ({
+  test("/is/<other-language page name>/<slug> redirects to the page's own name", async ({
     page,
     request,
   }) => {

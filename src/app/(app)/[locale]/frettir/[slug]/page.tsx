@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { getDictionary, isLocale, localePath, type Locale } from '@/lib/i18n'
 import { formatLongDate } from '@/lib/dates'
@@ -9,6 +8,8 @@ import { findNewsArticle, listNewsSlugs } from '@/lib/content/news'
 import { RichText } from '@/components/RichText/RichText'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { ShareRow } from '@/components/ShareRow/ShareRow'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
 import { getSiteUrl } from '@/lib/site-url'
 import styles from './article.module.scss'
 
@@ -121,52 +122,66 @@ export default async function NewsArticlePage({ params }: { params: Params }) {
   return (
     <>
       <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
-      <article className={styles.article}>
-        <Link className={styles.back} href={localePath('/frettir', locale)}>
-          <span aria-hidden="true">←</span> {t.news.backToIndex}
-        </Link>
-
-        <time className={styles.date} dateTime={article.publishedAt}>
-          {formatLongDate(article.publishedAt, locale)}
-        </time>
-
-        <h1 className={styles.title} lang={titleLang}>
-          {article.title}
-        </h1>
-
-        <div className={styles.coverFrame}>
-          <span className={styles.coverBlock} aria-hidden="true" />
-          {article.cover ? (
-            <Image
-              className={styles.cover}
-              src={article.cover.url}
-              alt={article.cover.alt}
-              width={article.cover.width ?? 1200}
-              height={article.cover.height ?? 675}
-              priority
-            />
-          ) : (
-            <div className={styles.cover} aria-hidden="true" />
-          )}
-        </div>
-
-        {article.body ? (
-          <RichText data={article.body} className={styles.body} lang={bodyLang} />
-        ) : (
-          // Not every article has a body written out — some are a headline and a
-          // summary. Showing the summary beats showing a title over nothing.
-          article.excerpt && (
-            <p className={styles.lead} lang={excerptLang}>
-              {article.excerpt}
-            </p>
-          )
-        )}
-
-        <ShareRow
-          url={absoluteUrl(article.href)}
+      <article>
+        <PageHead
+          long
           title={article.title}
-          labels={t.news.share}
+          titleLang={titleLang}
+          locale={locale}
+          seed={article.slug}
+          crumb={{
+            href: localePath('/frettir', locale),
+            label: t.news.back,
+            ariaLabel: t.news.backLabel,
+          }}
+          eyebrow={
+            <time dateTime={article.publishedAt}>
+              {formatLongDate(article.publishedAt, locale)}
+            </time>
+          }
         />
+
+        <PageSection last>
+          <div className={styles.column}>
+            {article.cover && (
+              <Image
+                className={styles.cover}
+                src={article.cover.url}
+                alt={article.cover.alt}
+                width={article.cover.width ?? 1200}
+                height={article.cover.height ?? 675}
+                priority
+              />
+            )}
+
+            {article.body ? (
+              <RichText data={article.body} variant="article" lang={bodyLang} />
+            ) : (
+              // Not every article has a body written out — some are a headline and a
+              // summary. Showing the summary beats showing a title over nothing.
+              article.excerpt && (
+                <p className={styles.lead} lang={excerptLang}>
+                  {article.excerpt}
+                </p>
+              )
+            )}
+
+            <footer className={styles.foot}>
+              {article.author && (
+                <p className={styles.byline}>
+                  <span className={styles.bylineLabel}>{t.news.author}</span>
+                  <span className={styles.bylineName}>{article.author}</span>
+                </p>
+              )}
+              <ShareRow
+                bare
+                url={absoluteUrl(article.href)}
+                title={article.title}
+                labels={t.news.share}
+              />
+            </footer>
+          </div>
+        </PageSection>
       </article>
     </>
   )

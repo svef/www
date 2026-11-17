@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { NewsCard } from './NewsCard'
+import { NewsGrid } from '../NewsGrid/NewsGrid'
 
 const meta: Meta<typeof NewsCard> = {
   title: 'Content/NewsCard',
@@ -26,3 +27,14 @@ export const FallbackLanguage: Story = {
 }
 /** A translated headline whose summary has not been translated yet. */
 export const PartiallyTranslated: Story = { args: { excerptLang: 'is' } }
+
+/** The six looks, in order — what the news index cycles through. */
+export const Looks: Story = {
+  render: (args) => (
+    <NewsGrid>
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <NewsCard key={i} {...args} index={i} />
+      ))}
+    </NewsGrid>
+  ),
+}

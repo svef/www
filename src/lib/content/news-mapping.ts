@@ -82,6 +82,8 @@ export type NewsSummary = {
 }
 
 export type NewsArticle = NewsSummary & {
+  /** The byline, as the editor typed it. `null` when none is set. */
+  author: string | null
   body: News['body'] | null
   /**
    * The language of `body`.
@@ -131,6 +133,7 @@ export function toNewsArticle(doc: NewsAllLocales, locale: Locale): NewsArticle 
   const body = pickLocalized(doc.body, locale)
   return {
     ...summary,
+    author: doc.author?.trim() || null,
     body: body.value,
     bodyLocale: body.value ? body.locale : summary.contentLocale,
   }

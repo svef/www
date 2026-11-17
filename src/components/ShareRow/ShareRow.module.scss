@@ -1,49 +1,51 @@
+// The export's `.share`: white-outlined squares that fill on hover. Use `bare` inside
+// the article foot, which draws its own rule above.
 .row {
   display: flex;
-  gap: var(--space-3);
-  align-items: center;
   flex-wrap: wrap;
-  border-top: 1px solid rgb(252 251 254 / 12%);
-  padding-top: var(--space-6);
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.bare {
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .label {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  color: rgb(252 251 254 / 50%);
+  margin-right: 8px;
+  font-family: var(--font-display);
+  font-weight: 600;
 }
 
 .target {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  background: rgb(252 251 254 / 10%);
+  display: inline-grid;
+  place-items: center;
+  min-width: 46px;
+  height: 46px;
+  padding: 0 10px;
+  border: 2px solid var(--color-white);
+  background: none;
   color: var(--color-white);
-  font-family: var(--font-body), system-ui, sans-serif;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
+  font-family: var(--font-display);
+  font-weight: 700;
   text-decoration: none;
-  transition: background 0.16s ease;
+  cursor: pointer;
+  transition:
+    background var(--dur-hover),
+    color var(--dur-hover);
 
   &:hover {
-    background: var(--color-violet);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-violet-light);
-    outline-offset: 3px;
+    background: var(--color-white);
+    color: var(--color-black);
   }
 }
 
 .status {
-  font-size: var(--text-xs);
-  color: var(--color-violet-light);
+  font-weight: 600;
+  color: var(--accent-yellow);
 }

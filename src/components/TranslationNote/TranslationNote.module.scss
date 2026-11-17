@@ -7,6 +7,12 @@
   padding-block-start: var(--space-12);
 }
 
+// On a page that opens with a band, `main` has no top padding (the band carries it), so the
+// note clears the header itself.
+:global(main):has([data-shape]) .wrap {
+  padding-block-start: var(--head-h);
+}
+
 .note {
   max-width: var(--content-max);
   margin: 0 auto;

@@ -1,0 +1,10 @@
+.section {
+  margin: 0 auto;
+  padding-top: clamp(112px, 14vw, 220px);
+  padding-inline: max(24px, env(safe-area-inset-left, 0px))
+    max(24px, env(safe-area-inset-right, 0px));
+}
+
+.last {
+  padding-bottom: var(--page-pad-bottom);
+}

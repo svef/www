@@ -9,9 +9,7 @@ describe('TranslationNote', () => {
   })
 
   it('renders nothing when the content is in the requested locale', () => {
-    const { container } = render(
-      <TranslationNote pageLocale="en" contentLocale="en" />,
-    )
+    const { container } = render(<TranslationNote pageLocale="en" contentLocale="en" />)
     expect(container).toBeEmptyDOMElement()
   })
 
@@ -19,11 +17,7 @@ describe('TranslationNote', () => {
     // The winners archive, press and the bylaws are Icelandic by decision.
     // "not available yet" would imply an omission that will never be filled.
     render(
-      <TranslationNote
-        pageLocale="en"
-        contentLocale="is"
-        reason="icelandic-by-design"
-      />,
+      <TranslationNote pageLocale="en" contentLocale="is" reason="icelandic-by-design" />,
     )
     expect(screen.getByText(/published in Icelandic only/)).toBeInTheDocument()
     expect(screen.queryByText(/yet/)).not.toBeInTheDocument()

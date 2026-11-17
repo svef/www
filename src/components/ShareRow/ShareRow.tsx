@@ -1,6 +1,7 @@
 'use client'
 
 import { useId, useState } from 'react'
+import clsx from 'clsx'
 import { LinkSimple } from '@phosphor-icons/react/dist/ssr'
 import styles from './ShareRow.module.scss'
 
@@ -20,6 +21,8 @@ export interface ShareRowProps {
   /** Title of the page being shared, used as the suggested post text. */
   title: string
   labels: ShareRowLabels
+  /** Without the rule and spacing above it, for a row that sits inside a foot that has its own. */
+  bare?: boolean
 }
 
 /**
@@ -31,7 +34,7 @@ export interface ShareRowProps {
  * on the page rather than going anywhere, and it confirms in a live region so
  * the result is announced instead of only flashing on screen.
  */
-export function ShareRow({ url, title, labels }: ShareRowProps) {
+export function ShareRow({ url, title, labels, bare = false }: ShareRowProps) {
   const labelId = useId()
   const [copied, setCopied] = useState(false)
 
@@ -68,7 +71,11 @@ export function ShareRow({ url, title, labels }: ShareRowProps) {
   }
 
   return (
-    <div className={styles.row} role="group" aria-labelledby={labelId}>
+    <div
+      className={clsx(styles.row, bare && styles.bare)}
+      role="group"
+      aria-labelledby={labelId}
+    >
       <span className={styles.label} id={labelId}>
         {labels.label}
       </span>
@@ -90,7 +97,7 @@ export function ShareRow({ url, title, labels }: ShareRowProps) {
         onClick={copyLink}
         aria-label={labels.copyLink}
       >
-        <LinkSimple size={16} weight="bold" aria-hidden="true" />
+        <LinkSimple size={22} weight="bold" aria-hidden="true" />
       </button>
       <span className={styles.status} role="status">
         {copied ? labels.copied : ''}

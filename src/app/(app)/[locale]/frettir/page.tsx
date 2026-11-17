@@ -4,11 +4,11 @@ import { formatLongDate } from '@/lib/dates'
 import { resolveContentLocale } from '@/lib/localized'
 import { listNews } from '@/lib/content/news'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
-import { PageHeader } from '@/components/PageHeader/PageHeader'
-import { Section } from '@/components/Section/Section'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
+import { NewsGrid } from '@/components/NewsGrid/NewsGrid'
 import { NewsCard } from '@/components/NewsCard/NewsCard'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
-import styles from './news.module.scss'
 
 /**
  * Statically prerendered for both locales (`generateStaticParams` lives in the
@@ -52,31 +52,38 @@ export default async function NewsPage({
   return (
     <>
       <TranslationNote pageLocale={locale} contentLocale={contentLocale} />
-      <PageHeader title={t.news.title} lead={t.news.lead} />
-      <Section>
+      <PageHead
+        title={t.news.title}
+        lede={t.news.lead}
+        stickers="frettir"
+        locale={locale}
+      />
+      <PageSection last>
         {articles.length === 0 ? (
           <EmptyState title={t.news.empty.title} body={t.news.empty.body} />
         ) : (
-          <div className={styles.grid}>
-            {articles.map((article) => (
+          <NewsGrid>
+            {articles.map((article, i) => (
               <NewsCard
                 key={article.slug}
+                index={i}
                 href={article.href}
                 date={formatLongDate(article.publishedAt, locale)}
                 dateTime={article.publishedAt}
                 title={article.title}
                 excerpt={article.excerpt}
-                cover={article.cover}
                 cta={t.news.readArticle}
-                titleLang={article.contentLocale === locale ? undefined : article.contentLocale}
+                titleLang={
+                  article.contentLocale === locale ? undefined : article.contentLocale
+                }
                 excerptLang={
                   article.excerptLocale === locale ? undefined : article.excerptLocale
                 }
               />
             ))}
-          </div>
+          </NewsGrid>
         )}
-      </Section>
+      </PageSection>
     </>
   )
 }
