@@ -71,3 +71,19 @@
 @mixin hover-widen-crumb {
   @include grow-text(var(--stretch-normal), 600, var(--stretch-crumb), 600);
 }
+
+// BAND INSET. A full-width band or stair pulls in from both edges as you scroll past
+// where it first sits (`src/lib/inset.ts` writes `--hin`, in px, on the element). The
+// mask fades the outer `--hin` on each side to nothing, so at rest (`--hin` unset) it
+// is the whole shape. Apply it to the element that carries the colour.
+@mixin inset-mask {
+  $mask: linear-gradient(
+    90deg,
+    transparent var(--hin, 0px),
+    #000 var(--hin, 0px),
+    #000 calc(100% - var(--hin, 0px)),
+    transparent calc(100% - var(--hin, 0px))
+  );
+  -webkit-mask: $mask;
+  mask: $mask;
+}

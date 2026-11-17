@@ -48,6 +48,8 @@ the colour does the shouting. Ported from the export's "shape engine"
 | `morphOnHover`   | `.ev-stagger>.poster` | Text notches step open on hover **and keyboard focus**.                                                                             |
 | `bars`           | `.bar`                | Number of white bars in the bottom-right (else top-right) notch. Hidden ≤ 760px.                                                    |
 | `mark`           | `data-mark`           | The "SVEF" mark in the bottom-left.                                                                                                 |
+| `inset`          | `--hin`               | Band inset: the colour pulls in 24px (12px on phones) from both edges as you scroll past. See `components/Stair/README.md`.         |
+| `insetAnchor`    | `ref` in the export   | Another element's ref that decides when the inset starts.                                                                           |
 | `layer`          | `.shp` children       | Content of the clipped colour layer, e.g. a photo filling the shape.                                                                |
 | `riseDelay`      | `el._hold`            | Extra wait before the entrance, ms.                                                                                                 |
 | `motion`         |                       | `false`: the resting shape, no motion — what reduced motion gets.                                                                   |

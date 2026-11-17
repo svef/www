@@ -149,7 +149,7 @@ export const PageHeadAsMarkup: Story = {
 /**
  * The home hero: one decorative top-right corner, a lively drift, and a title notch that
  * breathes up to 140px wider as it drifts. In the export the hero's own colour layer is
- * hidden behind the violet staircase (#124); here it is shown so the shape can be seen.
+ * hidden behind the violet staircase (`Stair`, #124); here it is shown so the shape can be seen.
  * The headline has its own word animation, so it opts out of the reveal.
  */
 export const Hero: Story = {

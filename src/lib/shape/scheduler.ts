@@ -12,6 +12,11 @@
  *   phone address bar showing or hiding mid-scroll, which the export ignores too — and
  *   honoured otherwise (content inside the shape changed size).
  * - **Fonts.** Every shape re-measures when web fonts finish loading.
+ * - **Stairs** (`components/Stair`) borrow two things: the on-screen tracking, and a
+ *   third beat — one 5s timer that steps every visible stair — plus one shared
+ *   IntersectionObserver for "its section head has arrived". Same rules as the shapes:
+ *   off-screen ones are skipped and the timer stops while the tab is hidden or motion
+ *   is reduced.
  */
 import type { ShapeController } from './controller'
 import { byDocumentOrder } from './measure'
@@ -23,6 +28,8 @@ import {
   RISE_STAGGER,
   RISE_THRESHOLD,
   RISE_VIEWPORT,
+  STAIR_INTERVAL,
+  STAIR_THRESHOLD,
 } from './motion'
 
 const RESIZE_DEBOUNCE = 120
@@ -43,6 +50,11 @@ let armFrame: number | null = null
 
 let calmTimer: ReturnType<typeof setInterval> | null = null
 let livelyTimer: ReturnType<typeof setInterval> | null = null
+let stairTimer: ReturnType<typeof setInterval> | null = null
+
+const stairs = new Map<Element, () => void>()
+const arrivals = new Map<Element, () => void>()
+let arrivalObserver: IntersectionObserver | null = null
 
 function start() {
   if (started) return
@@ -86,6 +98,15 @@ function screenObs(): IntersectionObserver | null {
     })
   }
   return screenObserver
+}
+
+function arrivalObs(): IntersectionObserver | null {
+  if (!arrivalObserver && typeof IntersectionObserver !== 'undefined') {
+    arrivalObserver = new IntersectionObserver(onArrivals, {
+      threshold: [0, 0.05, 0.1, 0.15, STAIR_THRESHOLD],
+    })
+  }
+  return arrivalObserver
 }
 
 function refreshAll() {
@@ -218,7 +239,7 @@ function syncAmbient() {
     if (c.config.ambient === 'calm') calm = true
     if (c.config.ambient === 'lively') lively = true
   })
-  // under reduced motion nothing drifts, so nothing needs to tick
+  // under reduced motion nothing drifts or steps, so nothing needs to tick
   const reduce =
     typeof window.matchMedia === 'function' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -233,10 +254,82 @@ function syncAmbient() {
     clearInterval(livelyTimer)
     livelyTimer = null
   }
+  if (stairs.size > 0 && visible) stairTimer ??= setInterval(stairBeat, STAIR_INTERVAL)
+  else if (stairTimer) {
+    clearInterval(stairTimer)
+    stairTimer = null
+  }
+}
+
+// ---------- stairs ----------
+
+/** Hosts a stair on the ambient beat: `step` runs each beat while the stair is on screen. */
+export function registerStair(el: Element, step: () => void): void {
+  start()
+  stairs.set(el, step)
+  screenObs()?.observe(el)
+  syncAmbient()
+}
+
+export function unregisterStair(el: Element): void {
+  if (!stairs.delete(el)) return
+  onScreen.delete(el)
+  screenObserver?.unobserve(el)
+  syncAmbient()
+}
+
+function stairBeat() {
+  if (document.hidden) return
+  stairs.forEach((step, el) => {
+    if (screenObserver && !onScreen.has(el)) return
+    if ((el as HTMLElement).offsetParent === null) return
+    step()
+  })
+}
+
+/**
+ * Calls `cb` once, when `el` (a stair's section head) has arrived: a quarter of it, or
+ * a quarter of the screen for a very tall one, is in view. Without an
+ * IntersectionObserver it arrives at once, as the export's shapes do.
+ */
+export function onArrival(el: Element, cb: () => void): () => void {
+  const obs = arrivalObs()
+  if (!obs) {
+    cb()
+    return () => {}
+  }
+  arrivals.set(el, cb)
+  obs.observe(el)
+  return () => {
+    arrivals.delete(el)
+    arrivalObserver?.unobserve(el)
+  }
+}
+
+function onArrivals(entries: IntersectionObserverEntry[]) {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue
+    const root = e.rootBounds?.height ?? window.innerHeight
+    if (
+      e.intersectionRatio < STAIR_THRESHOLD &&
+      e.intersectionRect.height < root * STAIR_THRESHOLD
+    ) {
+      continue
+    }
+    const cb = arrivals.get(e.target)
+    arrivals.delete(e.target)
+    arrivalObserver?.unobserve(e.target)
+    cb?.()
+  }
 }
 
 export function ambientChanged(): void {
   if (started) syncAmbient()
+}
+
+/** For tests: whether the stair beat is running. */
+export function _stairTimerCount(): number {
+  return stairTimer ? 1 : 0
 }
 
 /** For tests: how many ambient timers are running. */

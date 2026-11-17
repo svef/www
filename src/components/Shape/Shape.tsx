@@ -5,8 +5,10 @@ import {
   type ComponentPropsWithoutRef,
   type ElementType,
   type ReactNode,
+  type RefObject,
 } from 'react'
 import clsx from 'clsx'
+import { useInset } from '@/lib/useInset'
 import { useShape, type ShapeOptions } from './useShape'
 import styles from './Shape.module.scss'
 
@@ -21,6 +23,14 @@ interface ShapeOwnProps extends ShapeOptions {
   mark?: boolean
   /** Content of the clipped colour layer itself, e.g. a photo filling the shape. */
   layer?: ReactNode
+  /**
+   * The band inset: the colour pulls in from both edges (24px, 12px on phones) as you
+   * scroll past where the shape first sits. For full-width bands. One shared passive
+   * scroll listener serves every inset element; reduced motion gets none.
+   */
+  inset?: boolean
+  /** Another element that decides when the inset starts (the export's intro band follows the hero stair). */
+  insetAnchor?: RefObject<HTMLElement | null>
   className?: string
   children?: ReactNode
 }
@@ -56,6 +66,8 @@ export function Shape<T extends ElementType = 'div'>(props: ShapeProps<T>) {
     bars = 0,
     mark = false,
     layer,
+    inset = false,
+    insetAnchor,
     className,
     children,
     // engine options
@@ -93,11 +105,13 @@ export function Shape<T extends ElementType = 'div'>(props: ShapeProps<T>) {
     seed,
   })
 
+  useInset(ref, inset && motion !== false, insetAnchor)
+
   return (
     <Tag
       ref={ref}
       data-shape=""
-      className={clsx(styles.shape, styles[color], className)}
+      className={clsx(styles.shape, styles[color], inset && styles.inset, className)}
       {...rest}
     >
       <span className={styles.layer} data-shape-layer="" aria-hidden="true">

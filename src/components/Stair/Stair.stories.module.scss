@@ -1,0 +1,134 @@
+// Story-only layout, ported from the export's hero, intro band and section rules so
+// the stairs can be compared with it like for like. Pages bring their own layout.
+
+.page {
+  background: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.wrap {
+  margin: 0 auto;
+  padding-inline: 24px;
+}
+
+// Text to scroll past, so the stair is not on screen at the start.
+.filler {
+  padding-block: 40vh;
+  text-align: center;
+  color: var(--color-white);
+  opacity: 0.6;
+}
+
+.h2 {
+  margin: 0;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  font-size: clamp(2.6rem, 6.4vw, 7.5rem);
+  font-weight: 600;
+  line-height: 0.92;
+  color: var(--color-white);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 26px;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  font-weight: 800;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: var(--color-black);
+  color: var(--color-white);
+  border: 3px solid var(--color-black);
+  box-shadow: 5px 5px 0 var(--color-black);
+
+  &:focus-visible {
+    outline: 3px solid var(--accent-yellow);
+    outline-offset: 3px;
+  }
+}
+
+// The export's .stair-head sits inside a padded wrap and bleeds out to the edge.
+.bleed {
+  margin-inline: -24px;
+}
+
+// A stair on its own, in a box, to see the polygon.
+.alone {
+  height: clamp(320px, 38vw, 560px);
+}
+
+// .band, .intro-band
+.band {
+  padding-block: clamp(56px, 7vw, 110px) clamp(110px, 12vw, 170px);
+  min-height: 420px;
+}
+
+.introBand {
+  padding-block: clamp(18px, 1.8vw, 30px) 0;
+  margin-top: -3px;
+}
+
+.introText {
+  display: inline-block;
+  margin: 0;
+  padding-top: clamp(36px, 4vw, 72px);
+  padding-bottom: clamp(80px, 8vw, 140px);
+  font-weight: 600;
+  color: var(--color-white);
+  font-size: clamp(1.7rem, 5.4vw, 6.4rem);
+  line-height: 1;
+  max-width: 33ch;
+  letter-spacing: -0.01em;
+}
+
+.introWrap {
+  display: flex;
+  justify-content: flex-end;
+}
+
+// .hero: violet staircase rising from the bottom
+.hero {
+  --sh: clamp(220px, 34svh, 320px);
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding-block: clamp(150px, 13vw, 200px) 0;
+
+  @media (min-width: 761px) {
+    --sh: clamp(300px, 40svh, 460px);
+  }
+
+  > .wrap {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    width: 100%;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-heading, system-ui, sans-serif);
+    font-size: clamp(2rem, 8.8vw, 8.8rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 0.95;
+  }
+}
+
+.heroStair {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: var(--sh);
+  z-index: 0;
+}
+
+.line {
+  display: block;
+  white-space: nowrap;
+}

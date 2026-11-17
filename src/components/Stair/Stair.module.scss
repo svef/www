@@ -1,0 +1,126 @@
+// The stair dividers. Ported from the export's `.stair-head`, `.stair`, `.stair-txt`
+// and the `.pre` entrance. Page composition (overlap with the next section, button
+// placement) stays with the pages.
+@use '../../styles/mixins' as m;
+
+$ease: cubic-bezier(0.7, 0, 0.2, 1); // the export's --ease
+
+.head {
+  position: relative;
+  height: clamp(440px, 52vw, 760px);
+  // The stair is decoration: never let it sit on top of content that tucks under it.
+  pointer-events: none;
+
+  > :not([data-stair]) {
+    pointer-events: auto;
+  }
+
+  @media (max-width: 760px) {
+    height: auto;
+    min-height: 0;
+    padding-top: 62vw;
+
+    > .stair {
+      height: 62vw;
+      bottom: auto;
+    }
+  }
+}
+
+.stair {
+  position: absolute;
+  inset: 0;
+  will-change: clip-path;
+  pointer-events: none;
+  // The outline is the engine's `clip-path`; the inset is a mask over it.
+  @include m.inset-mask;
+}
+
+.flip {
+  transform: scaleX(-1);
+}
+
+.pink {
+  background: var(--accent-pink);
+}
+.yellow {
+  background: var(--accent-yellow);
+}
+.red {
+  background: var(--accent-red);
+}
+.violet {
+  background: var(--color-violet);
+}
+
+// The text block, positioned the way each preset's `.stair-txt` is in the export.
+.txt {
+  position: absolute;
+  left: 59.5%;
+  right: max(24px, env(safe-area-inset-left, 0px));
+  bottom: 14%;
+  display: grid;
+  gap: clamp(20px, 2.4vw, 36px);
+  justify-items: start;
+
+  .head-yellow & {
+    left: 26.5%;
+    bottom: 10%;
+  }
+  .head-red & {
+    left: 27.4%;
+    bottom: 7%;
+  }
+
+  @media (max-width: 760px) {
+    position: static;
+    padding-inline: max(24px, env(safe-area-inset-left, 0px));
+    padding-top: 24px;
+  }
+}
+
+// ---------- entrance ----------
+// The controller marks the head `pending` until a quarter of it is on screen, then
+// `in`. Under reduced motion it goes straight to `in` and nothing here runs.
+
+@media (prefers-reduced-motion: no-preference) {
+  // Before the client takes over (scripting on) hold the children back so the first
+  // thing seen is the entrance; a failsafe shows them after 3s if it never runs.
+  @media (scripting: enabled) {
+    .head:not([data-stair-state]) > :not([data-stair]) {
+      opacity: 0;
+      animation: stair-failsafe 0s 3s forwards;
+    }
+  }
+
+  .head[data-stair-state='pending'] > :not([data-stair]) {
+    opacity: 0;
+    translate: 0 24px;
+  }
+
+  // An animation rather than a transition, so it never replaces a button's own hover
+  // transition. `backwards` only: once done, the element's own styles apply again.
+  .head[data-stair-state='in'] > :not([data-stair]) {
+    animation:
+      stair-fade 0.6s 0.5s backwards,
+      stair-lift 0.8s $ease 0.5s backwards;
+  }
+}
+
+@keyframes stair-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes stair-lift {
+  from {
+    translate: 0 24px;
+  }
+}
+
+@keyframes stair-failsafe {
+  to {
+    opacity: 1;
+  }
+}

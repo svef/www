@@ -1,6 +1,8 @@
 // The stepped-shape engine's styles. Ported from the export's "shape engine" rules
 // ([data-shape], .shp, .c-*, .mark, .bar, .mask, .fadein, .pending).
 
+@use '../../styles/mixins' as m;
+
 $ease: cubic-bezier(0.7, 0, 0.2, 1); // the export's --ease
 
 .shape {
@@ -45,6 +47,11 @@ $ease: cubic-bezier(0.7, 0, 0.2, 1); // the export's --ease
   > .layer {
     background: var(--color-white);
   }
+}
+
+// Band inset: the colour pulls in from both edges (`--hin`, written by `useInset`).
+.inset > .layer {
+  @include m.inset-mask;
 }
 
 // The "SVEF" mark, in the bottom-left notch. `left` is set by the engine.

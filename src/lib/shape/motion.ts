@@ -59,6 +59,10 @@ export function interpolateGeometry(
 export const AMBIENT_INTERVAL = 8000
 export const AMBIENT_STAGGER = 900
 export const LIVELY_INTERVAL = 6000
+/** Stair dividers step one edge every 5s, all together (the export's beat). */
+export const STAIR_INTERVAL = 5000
+/** A stair rises when 25% of its section head is on screen. */
+export const STAIR_THRESHOLD = 0.25
 
 /** The drift's random walk: every draw moves by up to ±0.2 (±0.3 when lively), clamped to [0, 1]. */
 export function walkDraws(draws: readonly number[], rng: Rng, lively: boolean): number[] {
