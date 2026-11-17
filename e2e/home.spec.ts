@@ -14,10 +14,13 @@ import { dynamicHrefsInMain, LOCALES, settle, urlFor } from './pages'
  */
 test.describe('home', () => {
   for (const locale of LOCALES) {
-    test(`${locale}: one h1, set on several lines that wrap inside the screen`, async ({
+    // `scrollWidth` is no proof: the layout clips horizontal overflow, so a headline can run
+    // off the right edge with no sideways scroll at all (#129). Every visible piece of
+    // text is measured instead.
+    test(`${locale}: no text leaves the screen, and the headline keeps its lines`, async ({
       page,
     }) => {
-      for (const width of [320, 390, 1440]) {
+      for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         await page.setViewportSize({ width, height: 900 })
         await page.goto(urlFor(locale, ''))
         await settle(page)
@@ -29,19 +32,47 @@ test.describe('home', () => {
         expect(text.split(' ').length).toBeGreaterThan(3)
         expect(await h1.locator('[data-word]').count()).toBeGreaterThan(3)
 
-        // More than one line, and none of it past the right edge.
-        const box = (await h1.boundingBox())!
-        const lineHeight = await h1.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight))
-        expect(box.height, `${width}px: the headline is on one line`).toBeGreaterThan(
-          lineHeight * 1.5,
-        )
-        expect(box.x + box.width, `${width}px: the headline runs off the screen`).toBeLessThanOrEqual(
-          width,
-        )
-        expect(
-          await page.evaluate(() => document.documentElement.scrollWidth),
-          `${width}px: the page scrolls sideways`,
-        ).toBeLessThanOrEqual(width)
+        // Set on several lines, each line one line on screen: no line wraps, and none
+        // is run together with the next.
+        const lines = await h1.evaluate((el) => {
+          const lh = parseFloat(getComputedStyle(el).lineHeight)
+          return Array.from(el.children).map((line) => line.getBoundingClientRect().height / lh)
+        })
+        expect(lines.length, `${width}px: the headline is on one line`).toBeGreaterThan(1)
+        for (const [i, h] of lines.entries()) {
+          expect(h, `${width}px: headline line ${i + 1} wraps`).toBeLessThan(1.5)
+        }
+
+        const outside = await page.evaluate(() => {
+          const selector = [
+            'h1',
+            'h2',
+            'h3',
+            '[data-word]',
+            'p',
+            'a',
+            'button',
+            'time',
+            'li',
+          ].join(',')
+          return Array.from(document.querySelectorAll<HTMLElement>(
+            `header ${selector.split(',').join(', header ')}, main ${selector.split(',').join(', main ')}`,
+          ))
+            .filter(
+              (el) =>
+                !el.closest('[aria-hidden="true"]') &&
+                el.getAttribute('href') !== '#main' &&
+                el.checkVisibility({ opacityProperty: true, visibilityProperty: true }) &&
+                (el.textContent ?? '').trim() !== '',
+            )
+            .map((el) => ({ el, r: el.getBoundingClientRect() }))
+            .filter(({ r }) => r.width > 0 && (r.right > innerWidth + 1 || r.left < -1))
+            .map(
+              ({ el, r }) =>
+                `<${el.tagName.toLowerCase()}> "${(el.textContent ?? '').trim().slice(0, 40)}" ${Math.round(r.left)}–${Math.round(r.right)}`,
+            )
+        })
+        expect(outside, `${width}px: text outside the screen`).toEqual([])
       }
     })
 
