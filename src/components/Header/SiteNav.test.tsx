@@ -1,7 +1,7 @@
 import type React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { axe } from 'vitest-axe'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MantineProvider } from '@mantine/core'
 import { SiteNav } from './SiteNav'
@@ -17,17 +17,22 @@ const pathname = vi.hoisted(() => ({ current: '/is' }))
 vi.mock('next/navigation', () => ({ usePathname: () => pathname.current }))
 
 const items = [
-  { href: '/is/vefverdlaunin', label: is.nav.awards },
   { href: '/is/vidburdir', label: is.nav.events },
   { href: '/is/frettir', label: is.nav.news },
 ]
 
-function markup() {
+/** Entries for pages switched off in `HIDDEN_PAGES`, mixed in by the filtering tests. */
+const hiddenItems = [
+  { href: '/is/vefverdlaunin', label: is.nav.awards },
+  { href: '/is/skraning', label: is.nav.membership },
+]
+
+function markup(navItems: typeof items = items) {
   return (
     <MantineProvider forceColorScheme="dark">
       <header>
         <SiteNav
-          items={items}
+          items={navItems}
           menuLabel={is.nav.menu}
         submenuLabel="undirsíður"
           navLabel={is.nav.primary}
@@ -199,6 +204,55 @@ describe('SiteNav', () => {
   it('marks nothing on a page the nav does not list', () => {
     renderNav('/is/frettir/einhver-frett')
     expect(document.querySelectorAll('[aria-current]')).toHaveLength(0)
+  })
+
+  it('drops hidden pages from the nav, in both languages', () => {
+    pathname.current = '/is'
+    render(
+      <MantineProvider forceColorScheme="dark">
+        <SiteNav
+          items={[
+            hiddenItems[0],
+            ...items,
+            { href: '/en/web-awards', label: 'Web Awards' },
+            { href: '/en/membership', label: 'Membership' },
+            hiddenItems[1],
+          ]}
+          menuLabel={is.nav.menu}
+          submenuLabel="undirsíður"
+          navLabel={is.nav.primary}
+          locale="is"
+        />
+      </MantineProvider>,
+    )
+    const nav = screen.getByRole('navigation', { name: is.nav.primary })
+    const hrefs = within(nav)
+      .getAllByRole('link')
+      .map((a) => a.getAttribute('href'))
+    expect(hrefs).toEqual(['/is/vidburdir', '/is/frettir'])
+  })
+
+  it('drops a hidden page from a submenu and keeps the parent', () => {
+    pathname.current = '/is'
+    render(
+      <MantineProvider forceColorScheme="dark">
+        <SiteNav
+          items={[
+            {
+              href: '/is/um-svef',
+              label: is.nav.about,
+              children: [{ href: '/is/stjorn', label: 'Stjórn' }, hiddenItems[1]],
+            },
+          ]}
+          menuLabel={is.nav.menu}
+          submenuLabel="undirsíður"
+          navLabel={is.nav.primary}
+          locale="is"
+        />
+      </MantineProvider>,
+    )
+    expect(screen.getByRole('link', { name: 'Stjórn' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: is.nav.membership })).not.toBeInTheDocument()
   })
 
   it('has no axe violations open or closed', async () => {

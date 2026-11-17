@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { isHiddenPath } from '@/lib/i18n'
 import { LOCALES, settle, urlFor } from './pages'
 
 /**
@@ -36,17 +37,22 @@ test.describe('home', () => {
       // out when the spotlight has taken the only upcoming event, so it is
       // asserted as an ordered subsequence rather than a fixed list — pinning
       // all three would make this test a hostage to the fixture dates.
+      // The winners link is only present while `/vefverdlaunin` is not hidden.
       const expected = [
         urlFor(locale, '/vidburdir'),
         urlFor(locale, '/vefverdlaunin'),
         urlFor(locale, '/myndir'),
-      ]
+      ].filter((href) => !isHiddenPath(href))
       expect(sectionLinks).toEqual(expected.filter((href) => sectionLinks.includes(href)))
-      expect(sectionLinks).toContain(urlFor(locale, '/vefverdlaunin'))
       expect(sectionLinks).toContain(urlFor(locale, '/myndir'))
+      if (!isHiddenPath('/vefverdlaunin')) {
+        expect(sectionLinks).toContain(urlFor(locale, '/vefverdlaunin'))
+      }
 
-      // The hero's primary call to action.
-      await expect(main.locator(`a[href="${urlFor(locale, '/skraning')}"]`)).toHaveCount(1)
+      // The hero's primary call to action, which is the membership page's.
+      await expect(main.locator(`a[href="${urlFor(locale, '/skraning')}"]`)).toHaveCount(
+        isHiddenPath('/skraning') ? 0 : 1,
+      )
 
       // Exactly one `<h1>`, and three or four `<h2>`s: the spotlight plus the
       // three section headings. The spotlight is absent when nothing is

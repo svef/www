@@ -1,5 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { getDictionary, isLocale, localePath, DEFAULT_LOCALE } from './index'
+import {
+  getDictionary,
+  isLocale,
+  localePath,
+  DEFAULT_LOCALE,
+  HIDDEN_PAGES,
+  isHiddenPage,
+  isHiddenPath,
+  withoutHiddenLinks,
+} from './index'
 
 describe('i18n', () => {
   it('recognizes valid locales only', () => {
@@ -92,5 +101,59 @@ describe('localePath', () => {
     expect(localePath('/is//evil.com', 'en')).toBe('/en/evil.com')
     expect(localePath('///evil.com', 'is')).toBe('/is/evil.com')
     expect(localePath('//evil.com?a=1#b', 'is')).toBe('/is/evil.com?a=1#b')
+  })
+})
+
+describe('hidden pages', () => {
+  it('hides the Web Awards and membership pages', () => {
+    expect([...HIDDEN_PAGES].sort()).toEqual(['skraning', 'vefverdlaunin'])
+    expect(isHiddenPage('vefverdlaunin')).toBe(true)
+    expect(isHiddenPage('skraning')).toBe(true)
+    expect(isHiddenPage('vidburdir')).toBe(false)
+  })
+
+  it('recognises a hidden page by either name, with or without a locale prefix', () => {
+    for (const path of [
+      '/vefverdlaunin',
+      '/is/vefverdlaunin',
+      '/en/web-awards',
+      '/web-awards',
+      '/is/skraning',
+      '/en/membership',
+      '/en/membership#umsokn',
+      '/en/web-awards?year=2025',
+      '/is/vefverdlaunin/2025',
+    ]) {
+      expect(isHiddenPath(path), path).toBe(true)
+    }
+  })
+
+  it('leaves every other path alone', () => {
+    for (const path of [
+      '/',
+      '/is',
+      '/en/events',
+      '/is/vidburdir',
+      '/is/frettir/vefverdlaunin-faerast-i-silfurberg',
+      '/en/news/web-awards-moves',
+      '#umsokn',
+      'https://example.com/membership',
+      'mailto:svef@svef.is',
+    ]) {
+      expect(isHiddenPath(path), path).toBe(false)
+    }
+  })
+
+  it('filters links by the same rule', () => {
+    const links = [
+      { href: '/is/vidburdir' },
+      { href: '/is/vefverdlaunin' },
+      { href: '/en/membership' },
+      { href: 'https://example.com' },
+    ]
+    expect(withoutHiddenLinks(links)).toEqual([
+      { href: '/is/vidburdir' },
+      { href: 'https://example.com' },
+    ])
   })
 })

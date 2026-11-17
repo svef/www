@@ -61,4 +61,13 @@ export function localePath(path: string, target: Locale): string {
   return `/${target}${translated}${query}${hash}`
 }
 
-export { ROUTE_SEGMENTS, toInternalSegment, toPublicSegment, type RouteKey } from './routes'
+export {
+  ROUTE_SEGMENTS,
+  HIDDEN_PAGES,
+  isHiddenPage,
+  isHiddenPath,
+  withoutHiddenLinks,
+  toInternalSegment,
+  toPublicSegment,
+  type RouteKey,
+} from './routes'

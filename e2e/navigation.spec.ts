@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { getDictionary } from '@/lib/i18n'
+import { getDictionary, isHiddenPath } from '@/lib/i18n'
 import { LOCALES, settle, urlFor } from './pages'
 
 /**
@@ -15,13 +15,17 @@ import { LOCALES, settle, urlFor } from './pages'
  * names. Labels come from the i18n dictionary rather than being retyped here —
  * the point is to catch a changed `href`, not to duplicate copy.
  */
-const NAV_ORDER = [
+const ALL_NAV = [
   { key: 'awards', path: '/vefverdlaunin' },
   { key: 'events', path: '/vidburdir' },
   { key: 'news', path: '/frettir' },
   { key: 'about', path: '/um-svef' },
   { key: 'membership', path: '/skraning' },
 ] as const
+
+// Pages switched off in `HIDDEN_PAGES` are not in the nav; un-hiding one puts
+// its row back here without an edit.
+const NAV_ORDER = ALL_NAV.filter(({ path }) => !isHiddenPath(path))
 
 test.describe('site chrome links', () => {
   for (const locale of LOCALES) {

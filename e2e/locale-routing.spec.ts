@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { LOCALES, PAGES, urlFor } from './pages'
+import { LOCALES, VISIBLE_PAGES, urlFor } from './pages'
 
 /**
  * Locale routing is asymmetric (see `src/proxy.ts`): Icelandic is served
@@ -8,7 +8,7 @@ import { LOCALES, PAGES, urlFor } from './pages'
  * prefix must never reach the browser — not in the address bar, not in an href.
  */
 test.describe('locale routing', () => {
-  for (const spec of PAGES) {
+  for (const spec of VISIBLE_PAGES) {
     const prefixed = `/is${spec.path}`
 
     test(`${prefixed} redirects to the unprefixed path`, async ({ request }) => {
@@ -27,7 +27,7 @@ test.describe('locale routing', () => {
   }
 
   for (const locale of LOCALES) {
-    for (const spec of PAGES) {
+    for (const spec of VISIBLE_PAGES) {
       const url = urlFor(locale, spec.path)
 
       test(`${url} declares lang="${locale}" and leaks no /is href`, async ({ page }) => {
@@ -47,7 +47,7 @@ test.describe('locale routing', () => {
 
   // #40: the toggle used to send you to the other locale's home page. It has to
   // keep you where you are.
-  for (const spec of PAGES) {
+  for (const spec of VISIBLE_PAGES) {
     test(`language toggle keeps you on ${spec.name}`, async ({ page }) => {
       const toggle = page.locator('header a[hreflang]')
 

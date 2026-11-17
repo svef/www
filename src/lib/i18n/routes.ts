@@ -24,6 +24,51 @@ export const ROUTE_SEGMENTS = {
   'hafa-samband': { is: 'hafa-samband', en: 'contact' },
 } as const
 
+/**
+ * Pages that are built but switched off: they answer 404, and every link,
+ * nav item and sitemap entry that points at them is dropped.
+ *
+ * Both are on hold for more design work (svef/www#128). This is the one switch —
+ * the pages, components, collections and forms all stay, so un-hiding a page is
+ * a one-line change: remove its key here. Everything else (the 404 in the page,
+ * the nav, footer, home page, sitemap and the e2e route sweep) follows from this
+ * set, so nothing else needs touching.
+ *
+ * #111 may later move the membership switch into the CMS; if so this set is the
+ * place to read it from, and `isHiddenPage` stays the only thing callers use.
+ */
+export const HIDDEN_PAGES: ReadonlySet<RouteKey> = new Set<RouteKey>([
+  'vefverdlaunin',
+  'skraning',
+])
+
+/** Whether the page with this directory name is currently switched off. */
+export function isHiddenPage(key: RouteKey): boolean {
+  return HIDDEN_PAGES.has(key)
+}
+
+/**
+ * Whether a path or href points at a hidden page, or at anything beneath one.
+ *
+ * Takes the path in either language, with or without a locale prefix, so it
+ * works on the hrefs the site actually renders (`/en/web-awards`, `/skraning`)
+ * as well as on directory names. A query string, hash or absolute URL is not a
+ * concern of the caller's: only the first path segment is read. External and
+ * `mailto:` links are never hidden pages.
+ */
+export function isHiddenPath(path: string): boolean {
+  if (!path.startsWith('/')) return false
+  const [, first = '', second = ''] = path.split(/[?#]/)[0].split('/')
+  const segment = first === 'is' || first === 'en' ? second : first
+  const key = toInternalSegment(segment)
+  return key !== undefined && isHiddenPage(key)
+}
+
+/** Drops the entries whose `href` points at a hidden page. */
+export function withoutHiddenLinks<T extends { href: string }>(links: readonly T[]): T[] {
+  return links.filter((link) => !isHiddenPath(link.href))
+}
+
 /** The directory name on disk, which is also the Icelandic public name. */
 export type RouteKey = keyof typeof ROUTE_SEGMENTS
 

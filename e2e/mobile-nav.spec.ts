@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { getDictionary } from '@/lib/i18n'
-import { LOCALES, PAGES, settle, urlFor } from './pages'
+import { LOCALES, VISIBLE_PAGES, settle, urlFor } from './pages'
 import { triage } from './a11y/known-issues'
 
 // The same rule sets the page sweep uses.
@@ -164,7 +164,7 @@ test.describe('header at 390px', () => {
 
   // A menu that overflows sideways is the failure this replaced, so it is
   // checked on every page rather than on the home page alone.
-  for (const { path, name } of PAGES) {
+  for (const { path, name } of VISIBLE_PAGES) {
     test(`no page scrolls sideways with the menu open: ${name}`, async ({ page }) => {
       await page.goto(urlFor('is', path))
       await settle(page)

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getDictionary, isLocale, DEFAULT_LOCALE } from '@/lib/i18n'
+import { getDictionary, isHiddenPage, isLocale, DEFAULT_LOCALE } from '@/lib/i18n'
 import { formatLongDate } from '@/lib/dates'
 import { resolveContentLocale } from '@/lib/localized'
 import { getAwardsIntro, getCeremony, getWinnersArchive, listAwardCategories } from '@/lib/content/awards'
@@ -34,6 +34,8 @@ export default async function AwardsPage({
 }) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
+  // Switched off while the page is on hold (svef/www#128); see `HIDDEN_PAGES`.
+  if (isHiddenPage('vefverdlaunin')) notFound()
 
   const t = getDictionary(locale)
   const [{ intro, introLocale }, categories, ceremony] = await Promise.all([

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {
   DEFAULT_LOCALE,
   getDictionary,
+  isHiddenPath,
   isLocale,
   localePath,
   type Locale,
@@ -53,6 +54,11 @@ function spotlightBody(event: EventSummary): string {
   return [facts || null, event.summary].filter(Boolean).join(' — ')
 }
 
+/** A call to action, or nothing if it points at a hidden page (see `HIDDEN_PAGES`). */
+function visibleCta(cta: { label: string; href: string }) {
+  return isHiddenPath(cta.href) ? undefined : cta
+}
+
 /**
  * The export's section header: heading, a rule that fills the gap, and a link
  * to the page the section is a teaser for.
@@ -72,13 +78,18 @@ function SectionHead({
   href: string
   linkLabel: string
 }) {
+  // The link is dropped, not the section, when its page is hidden
+  // (see `HIDDEN_PAGES`). The grid track the link sat in stays empty.
+  const linked = !isHiddenPath(href)
   return (
     <div className={styles.head}>
       <h2 className={styles.headTitle}>{title}</h2>
       <span className={styles.rule} aria-hidden="true" />
-      <Link href={href} className={styles.headLink}>
-        {linkLabel} →
-      </Link>
+      {linked && (
+        <Link href={href} className={styles.headLink}>
+          {linkLabel} →
+        </Link>
+      )}
     </div>
   )
 }
@@ -176,7 +187,7 @@ export default async function HomePage({
         }
         lead={settings.heroHook ?? undefined}
         leadLang={settings.heroHook ? langOf(settings.heroHookLocale) : undefined}
-        primary={{ label: c.joinCta, href: localePath('/skraning', locale) }}
+        primary={visibleCta({ label: c.joinCta, href: localePath('/skraning', locale) })}
         secondary={{ label: c.eventsCta, href: localePath('/vidburdir', locale) }}
       />
 
@@ -207,10 +218,10 @@ export default async function HomePage({
                 ? { label: c.visitSite, href: spotlightWinner.url }
                 : undefined
             }
-            secondary={{
+            secondary={visibleCta({
               label: `${c.aboutAwards} →`,
               href: localePath('/vefverdlaunin', locale),
-            }}
+            })}
           />
         </Section>
       )}

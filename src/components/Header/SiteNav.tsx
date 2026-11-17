@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { FocusTrap } from '@mantine/core'
-import { localePath, type Locale } from '@/lib/i18n'
+import { isHiddenPath, localePath, withoutHiddenLinks, type Locale } from '@/lib/i18n'
 import styles from './Header.module.scss'
 
 export interface HeaderNavItem {
@@ -56,7 +56,7 @@ const PANEL_ID = 'site-menu'
  * toggle is passed in as `children` rather than imported here, which keeps it
  * inside the focus trap without this component knowing anything about it.
  */
-export function SiteNav({
+function SiteNavMenu({
   items,
   menuLabel,
   navLabel,
@@ -333,4 +333,19 @@ export function SiteNav({
       </div>
     </FocusTrap>
   )
+}
+
+/**
+ * Drops hidden pages (see `HIDDEN_PAGES`) before anything is rendered, so
+ * nothing that feeds the nav can put one back. A hidden parent takes its
+ * submenu with it. Kept as a wrapper rather than inline in the component, which
+ * the React Compiler's memoization check does not accept.
+ */
+export function SiteNav(props: Parameters<typeof SiteNavMenu>[0]) {
+  const items = props.items
+    .filter((item) => !isHiddenPath(item.href))
+    .map((item) =>
+      item.children ? { ...item, children: withoutHiddenLinks(item.children) } : item,
+    )
+  return <SiteNavMenu {...props} items={items} />
 }

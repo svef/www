@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getDictionary, isLocale } from '@/lib/i18n'
+import { getDictionary, isHiddenPage, isLocale } from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
 import { getMembership } from '@/lib/content/membership'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
@@ -38,6 +38,8 @@ export default async function MembershipPage({
 }) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
+  // Switched off while the page is on hold (svef/www#128); see `HIDDEN_PAGES`.
+  if (isHiddenPage('skraning')) notFound()
 
   const t = getDictionary(locale)
   const membership = await getMembership(locale)

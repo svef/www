@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
+import { isHiddenPath, withoutHiddenLinks } from '@/lib/i18n'
 import type { SocialLink } from '@/lib/content/site-settings'
 import styles from './Footer.module.scss'
 
@@ -43,6 +44,11 @@ export function Footer({
   socials: FooterSocial[]
   year: number
 }) {
+  // Dropped here whatever the caller passed: a hidden page must not be linked
+  // from the footer (see `HIDDEN_PAGES`).
+  const writeLinks = write ? withoutHiddenLinks(write.links) : []
+  const showContact = contactHref && contactLabel && !isHiddenPath(contactHref)
+
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
@@ -51,10 +57,10 @@ export function Footer({
             {blurb}
           </p>
         </div>
-        {write && write.links.length > 0 && (
+        {write && writeLinks.length > 0 && (
           <div className={styles.write}>
             <h2 className={styles.writeHeading}>{write.heading}</h2>
-            {write.links.map((link) => (
+            {writeLinks.map((link) => (
               <Link key={link.href} href={link.href} className={styles.writeLink}>
                 {link.label}
               </Link>
@@ -62,7 +68,7 @@ export function Footer({
           </div>
         )}
         <div className={styles.contact}>
-          {contactHref && contactLabel ? (
+          {showContact ? (
             <Link href={contactHref} className={styles.contactLink}>
               {contactLabel}
             </Link>

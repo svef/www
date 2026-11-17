@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { LOCALES, localePath, ROUTE_SEGMENTS, type Locale, type RouteKey } from '@/lib/i18n'
+import { LOCALES, localePath, isHiddenPage, ROUTE_SEGMENTS, type Locale, type RouteKey } from '@/lib/i18n'
 import { getSiteUrl } from '@/lib/site-url'
 import { listEventSlugs } from '@/lib/content/events'
 import { listNewsSlugs } from '@/lib/content/news'
@@ -20,7 +20,9 @@ import { listNewsSlugs } from '@/lib/content/news'
 export const revalidate = 300
 
 /** Pages with fixed names, written as the route keys the segment map is keyed by. */
-const STATIC_ROUTES = Object.keys(ROUTE_SEGMENTS) as RouteKey[]
+const STATIC_ROUTES = (Object.keys(ROUTE_SEGMENTS) as RouteKey[]).filter(
+  (route) => !isHiddenPage(route),
+)
 
 /** `{ is: '…', en: '…' }` for one path, for the `alternates` field. */
 function languages(path: string): Record<Locale, string> {

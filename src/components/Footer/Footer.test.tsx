@@ -67,4 +67,29 @@ describe('Footer', () => {
       '/is/hafa-samband',
     )
   })
+
+  it('drops links to hidden pages', () => {
+    renderFooter({
+      contactHref: '/is/skraning',
+      write: {
+        heading: 'Skrifaðu okkur',
+        links: [
+          { href: '/is/abendingar', label: 'Ábending' },
+          { href: '/en/web-awards', label: 'Awards' },
+          { href: '/is/vefverdlaunin', label: 'Vefverðlaun' },
+        ],
+      },
+    })
+    expect(screen.getByRole('link', { name: 'Ábending' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Awards' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Vefverðlaun' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: is.nav.contact })).not.toBeInTheDocument()
+  })
+
+  it('drops the whole write block when every link in it is hidden', () => {
+    renderFooter({
+      write: { heading: 'Skrifaðu okkur', links: [{ href: '/is/skraning', label: 'Skrá' }] },
+    })
+    expect(screen.queryByText('Skrifaðu okkur')).not.toBeInTheDocument()
+  })
 })

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { localePath, toInternalSegment } from '../src/lib/i18n'
+import { isHiddenPath, localePath, toInternalSegment } from '../src/lib/i18n'
 
 export const LOCALES = ['is', 'en'] as const
 export type Locale = (typeof LOCALES)[number]
@@ -14,6 +14,12 @@ export type Locale = (typeof LOCALES)[number]
  * Adding a page to `src/app/(app)/[locale]/` means adding it here — that is the
  * point: the smoke, heading-outline and axe sweeps all iterate this table, so a
  * new page is covered the moment it is listed.
+ *
+ * A page switched off in `HIDDEN_PAGES` (src/lib/i18n/routes.ts) **stays in this
+ * table** — it still exists on disk, which `routes.spec.ts` checks. What changes
+ * is which sweep it is in: `VISIBLE_PAGES` / `everyPage()` leave it out, and
+ * `HIDDEN_PAGE_SPECS` / `everyHiddenPage()` expect it to 404. Un-hiding it in the
+ * app moves it back with no edit here.
  */
 export const PAGES = [
   {
@@ -78,6 +84,17 @@ export const PAGES = [
 
 export type PageSpec = (typeof PAGES)[number]
 
+/** Whether the app currently serves this page as a 404 (see `HIDDEN_PAGES`). */
+export function isHiddenSpec(spec: PageSpec): boolean {
+  return isHiddenPath(spec.path)
+}
+
+/** The pages the site serves. Every content sweep iterates these. */
+export const VISIBLE_PAGES: readonly PageSpec[] = PAGES.filter((spec) => !isHiddenSpec(spec))
+
+/** The pages that are built but switched off, and so must answer 404. */
+export const HIDDEN_PAGE_SPECS: readonly PageSpec[] = PAGES.filter(isHiddenSpec)
+
 /**
  * Routes with a dynamic segment. They cannot be listed in `PAGES` as a fixed
  * path, so they are declared here and covered by the spec that owns them
@@ -120,10 +137,17 @@ export function urlFor(locale: Locale, path: string): string {
   return localePath(path === '' ? '/' : path, locale)
 }
 
-/** Every (locale, page) pair, flattened for `for (const … of …)` in a spec. */
+/** Every (locale, served page) pair, flattened for `for (const … of …)` in a spec. */
 export function everyPage(): { locale: Locale; page: PageSpec; url: string }[] {
   return LOCALES.flatMap((locale) =>
-    PAGES.map((page) => ({ locale, page, url: urlFor(locale, page.path) })),
+    VISIBLE_PAGES.map((page) => ({ locale, page, url: urlFor(locale, page.path) })),
+  )
+}
+
+/** Every (locale, hidden page) pair: the URLs that must 404 while hidden. */
+export function everyHiddenPage(): { locale: Locale; page: PageSpec; url: string }[] {
+  return LOCALES.flatMap((locale) =>
+    HIDDEN_PAGE_SPECS.map((page) => ({ locale, page, url: urlFor(locale, page.path) })),
   )
 }
 
@@ -191,7 +215,7 @@ export async function settle(page: Page): Promise<void> {
     .catch(() => undefined)
 }
 
-/** Every visible URL the static route table claims exists, both locales. */
+/** Every visible URL the static route table claims exists and serves, both locales. */
 export function allKnownUrls(): string[] {
   return everyPage().map(({ url }) => url)
 }
