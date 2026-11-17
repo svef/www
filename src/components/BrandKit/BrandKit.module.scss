@@ -32,7 +32,8 @@
   grid-row: 1 / span 2;
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
   font-size: clamp(1.3rem, 1.8vw, 1.7rem);
 
   @include bp.below(bp.$md) {
@@ -115,24 +116,18 @@
   padding-top: clamp(20px, 2.4vw, 32px);
 }
 
-// The export's `.btn.btn-white`.
+// The export's `.btn.btn-white` in its final form: a violet block, white label, no hover fill.
 .download {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 15px 22px;
-  background: var(--color-white);
-  color: var(--color-black);
+  background: var(--color-violet);
+  color: var(--color-white);
   font-family: var(--font-display);
   font-size: 1.05rem;
   line-height: 1;
   text-decoration: none;
-  transition: background 0.2s;
-
-  &:hover,
-  &:focus-visible {
-    background: var(--accent-yellow);
-  }
 
   &:focus-visible {
     outline: 3px solid var(--focus-ring);

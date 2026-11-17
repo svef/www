@@ -16,7 +16,8 @@
   h2,
   h3 {
     color: var(--fg);
-    font-weight: var(--weight-heading);
+    font-stretch: var(--stretch-title);
+    font-weight: var(--weight-title);
   }
 
   h2 {

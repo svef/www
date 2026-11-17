@@ -39,7 +39,8 @@
 .title {
   margin: 0;
   font-size: var(--text-h3);
-  font-weight: var(--weight-heading);
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
   overflow-wrap: anywhere;
 }
 
@@ -48,21 +49,17 @@
   margin-top: 10px;
   max-width: 44ch;
   font-size: 0.98rem;
+  // A `<span>`, so it misses the global running-text rule; the export's `.ex` is condensed.
+  font-stretch: var(--stretch-body);
+  letter-spacing: var(--tracking-body);
   color: var(--muted);
 }
 
 .cta {
-  display: flex;
-  align-items: center;
-  gap: 0.2em;
+  display: block;
   margin-top: 14px;
   font-family: var(--font-display);
   font-weight: 600;
-
-  // `.foot.right`: the call to action lines up on the right too.
-  .right & {
-    justify-content: flex-end;
-  }
 
   // Hover-widen goes further here than on a plain link: the export's 140%.
   :global(.grow-text) {
@@ -74,26 +71,5 @@
   .right & :global(.grow-text) {
     align-items: flex-end;
     text-align: right;
-  }
-}
-
-.arrow {
-  flex: none;
-  width: 1.1em;
-  height: 1.1em;
-  transition: transform var(--dur-hover) var(--ease);
-
-  .card:hover &,
-  .card:focus-visible & {
-    transform: translateX(5px);
-  }
-
-  @include bp.reduced-motion {
-    transition: none;
-
-    .card:hover &,
-    .card:focus-visible & {
-      transform: none;
-    }
   }
 }

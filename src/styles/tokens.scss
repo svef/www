@@ -71,6 +71,12 @@
   --stretch-crumb: 115%; //    130      115      crumb hover, intro emphasis
   --stretch-button-hover: 117.5%; // 135 117.5   buttons and .more hover
   --stretch-row: 120%; //      140      120      event time / read-more hover
+  // Sub-headings (card titles, FAQ questions, step titles) are set at the face's normal
+  // width in the export, but Roc Grotesk's "normal" is visibly wider and heavier than
+  // Archivo's, so the same 100% reads condensed and light here. Not an export value:
+  // widened by eye against the export's glyphs (svef/www#148).
+  --stretch-title: 115%;
+  --weight-title: 700;
   --stretch-display: 125%; //  150      125      big numerals and specimen glyphs (the face's widest)
 
   --font-display: var(--font-heading), var(--font-body), system-ui, sans-serif;

@@ -97,9 +97,12 @@
   }
 }
 
-// The foot of the band: pushed to the bottom, indented so it keeps clear of the pattern's edge.
+// The foot of the band, indented so it keeps clear of the pattern's edge. It follows the
+// title (the export's `.phead .body` ends up with `margin-top: clamp(36px, 5vw, 64px)`; its
+// earlier `margin-top: auto` is overridden), so the standfirst sits just under the notch and
+// any spare height of the band falls below it, not between.
 .body {
-  margin-top: auto;
+  margin-top: clamp(36px, 5vw, 64px);
   padding-top: clamp(40px, 6vw, 80px);
   padding-left: clamp(28px, 4vw, 72px);
   display: grid;

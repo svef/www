@@ -5,7 +5,6 @@
 
 import Link from 'next/link'
 import clsx from 'clsx'
-import { ArrowRight } from '@phosphor-icons/react/dist/ssr'
 import { Shape, type ShapeColor } from '@/components/Shape/Shape'
 import { Notch } from '@/components/Shape/Notch'
 import { GrowText } from '@/components/GrowText/GrowText'
@@ -133,7 +132,6 @@ export function NewsCard({
         {cta && (
           <span className={styles.cta} aria-hidden="true">
             <GrowText>{cta}</GrowText>
-            <ArrowRight className={styles.arrow} weight="bold" />
           </span>
         )}
       </Notch>

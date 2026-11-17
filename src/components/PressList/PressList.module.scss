@@ -87,7 +87,8 @@ $gutter: max(24px, env(safe-area-inset-left, 0px));
 .title {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
   font-size: clamp(1.5rem, 3vw, 2.8rem);
   line-height: 1.05;
   letter-spacing: -0.025em;

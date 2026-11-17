@@ -91,7 +91,8 @@
   grid-column: 2;
   margin: 0 0 clamp(18px, 2vw, 26px);
   font-family: var(--font-display);
-  font-weight: var(--weight-heading);
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
   font-size: clamp(1.3rem, 1.8vw, 1.7rem);
 
   label {
@@ -345,7 +346,8 @@
   gap: 16px;
 }
 
-// The export's `.btn.btn-white`: a white sticker that goes yellow and widens on hover.
+// The export's `.btn.btn-white` in its final form: a violet block, white label, that widens
+// on hover (the label's `GrowText`) but keeps its fill.
 .submit {
   display: inline-flex;
   align-items: center;
@@ -358,15 +360,8 @@
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  background: var(--color-white);
-  color: var(--color-black);
-  transition:
-    background 0.25s,
-    color 0.25s;
-
-  &:hover {
-    background: var(--accent-yellow);
-  }
+  background: var(--color-violet);
+  color: var(--color-white);
 
   &:focus-visible {
     outline: 3px solid var(--focus-ring);

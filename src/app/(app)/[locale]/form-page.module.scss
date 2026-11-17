@@ -1,5 +1,5 @@
-// The width the form pages share: the export's `.wrap` content column.
+// The form pages' column: the export's `.sec.wrap`, which has no max-width — the form runs
+// the full width inside the page gutter (`PageSection` carries the 24px side padding).
 .page {
-  max-width: var(--maxw);
   margin: 0 auto;
 }

@@ -32,8 +32,9 @@
 .title {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 600;
   font-size: 1.45rem;
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
@@ -46,8 +47,11 @@
 .date {
   display: block;
   font-family: var(--font-display);
-  font-weight: var(--weight-heading);
   font-size: clamp(2.2rem, 3.6vw, 3.2rem);
+  // A touch narrower than the other titles: at the full title width a date like
+  // "26. nóv 2026" no longer fits its notch on one line.
+  font-stretch: var(--stretch-cta);
+  font-weight: var(--weight-title);
   line-height: 1.1;
 }
 
