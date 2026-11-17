@@ -277,6 +277,10 @@ verification is the gate; that is not a figure of speech.
   a placeholder, so there is nothing to lose. Still, migrations reach production only through
   `dev` — never push a side branch "for safekeeping". After launch, a migration needs the
   maintainer's explicit OK before anything carrying it is pushed.
+- **While `dev` and `main` share a database, only additive migrations go through `dev`.**
+  `main` still runs the old code against the same tables, so a migration that drops or
+  renames a column `main` still declares breaks production. Drops and renames wait for the
+  cutover (#35 lists the ones held back).
 - Run the full local gate before pushing.
 - If you're blocked, stop and say precisely what and why. Don't improvise around it.
 - Report what you actually did, including what didn't work.
