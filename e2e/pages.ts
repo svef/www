@@ -27,7 +27,7 @@ export const PAGES = [
     name: 'home',
     h1: {
       is: 'Félag fólksins sem býr til vefinn á Íslandi.',
-      en: 'The association of people who build the web in Iceland.',
+      en: 'The people who build the web in Iceland.',
     },
   },
   {
@@ -243,6 +243,12 @@ const SETTLE_TIMEOUT_MS = 5_000
 export async function settle(page: Page): Promise<void> {
   await page
     .waitForLoadState('networkidle', { timeout: SETTLE_TIMEOUT_MS })
+    .catch(() => undefined)
+  // The home hero's words fade in and morph for about three seconds; a check that runs
+  // mid-animation measures half-transparent text. It marks itself settled when it is done.
+  await page
+    .locator('[data-hero]:not([data-hero="settled"])')
+    .waitFor({ state: 'detached', timeout: SETTLE_TIMEOUT_MS })
     .catch(() => undefined)
 }
 
