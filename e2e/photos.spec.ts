@@ -4,10 +4,10 @@ import { LOCALES, settle, urlFor } from './pages'
 /**
  * `/myndir` — albums, tiles and the lightbox (#133).
  *
- * The seeded albums have no photos (uploads need R2), so these run against the
- * placeholder tiles the page draws for an album that is waiting for its photos.
- * That is the same markup path, tile and lightbox included; the paging and the photo
- * description are covered in `PhotoAlbum.test.tsx`, where an album can be given photos.
+ * Uploads need R2, so the seed gives two of its three albums eight placeholder photos
+ * (`public/dev-fixtures/photos`) and leaves the third empty. That album must not appear:
+ * an album without photos reads as a broken page. The paging and the photo description
+ * are covered in `PhotoAlbum.test.tsx`, where an album can be given any number of photos.
  */
 const COPY = {
   is: { view: 'Skoða mynd', next: 'Næsta mynd', prev: 'Fyrri mynd', close: 'Loka' },
@@ -28,7 +28,7 @@ for (const locale of LOCALES) {
     }) => {
       await open(page, locale)
       const albums = page.locator('main#main section[aria-labelledby^="album-"]')
-      expect(await albums.count()).toBeGreaterThanOrEqual(3)
+      expect(await albums.count()).toBe(2)
       for (const album of await albums.all()) {
         const heading = album.locator('h2')
         await expect(heading).toHaveCount(1)
@@ -37,6 +37,11 @@ for (const locale of LOCALES) {
           album.getByRole('button', { name: new RegExp(`^${t.view} \\d+$`) }),
         ).not.toHaveCount(0)
       }
+    })
+
+    test('an album with no photos is left off the page', async ({ page }) => {
+      await open(page, locale)
+      await expect(page.getByRole('heading', { name: 'Aðalfundur 2026' })).toHaveCount(0)
     })
 
     test('a tile opens the lightbox as a dialog, and Escape closes it and returns focus', async ({

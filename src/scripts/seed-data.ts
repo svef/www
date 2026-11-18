@@ -409,12 +409,23 @@ export type GalleryFixture = {
    * are rather than pointing at a slug nothing resolves.
    */
   eventSlug?: string
+  /** Placeholder photos in the album. Zero is a deliberate case: `/myndir` hides such an album. */
+  photos: number
 }
 
+/**
+ * Two albums have photos and one has none, so the seed exercises both what `/myndir` shows
+ * and what it hides (an album with no photos is left off the page).
+ */
 export const galleries: GalleryFixture[] = [
-  { title: 'Íslensku vefverðlaunin 2025', date: '2025-11-15T12:00:00.000Z' },
-  { title: 'Klúðurkvöld', date: '2026-03-13T12:00:00.000Z', eventSlug: 'kludurkvold' },
-  { title: 'Aðalfundur 2026', date: '2026-05-22T12:00:00.000Z' },
+  { title: 'Íslensku vefverðlaunin 2025', date: '2025-11-15T12:00:00.000Z', photos: 8 },
+  {
+    title: 'Klúðurkvöld',
+    date: '2026-03-13T12:00:00.000Z',
+    eventSlug: 'kludurkvold',
+    photos: 8,
+  },
+  { title: 'Aðalfundur 2026', date: '2026-05-22T12:00:00.000Z', photos: 0 },
 ]
 
 export type BoardMemberFixture = {

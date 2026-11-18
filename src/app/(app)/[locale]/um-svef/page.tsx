@@ -95,17 +95,20 @@ export default async function AboutPage({
         <RichText data={about.story} className={styles.story} lang={storyLang} />
       </PageSection>
 
-      {about.stats.length > 0 && (
-        <PageSection>
-          <StatsRow
-            items={about.stats.map((stat) => ({
-              value: stat.value,
-              label: stat.label,
-              labelLang: stat.labelLocale === locale ? undefined : stat.labelLocale,
-            }))}
-          />
-        </PageSection>
-      )}
+      {/* The CMS figures, or the export's own when nobody has entered any. */}
+      <PageSection>
+        <StatsRow
+          items={
+            about.stats.length > 0
+              ? about.stats.map((stat) => ({
+                  value: stat.value,
+                  label: stat.label,
+                  labelLang: stat.labelLocale === locale ? undefined : stat.labelLocale,
+                }))
+              : t.about.stats
+          }
+        />
+      </PageSection>
 
       <PageSection aria-labelledby="h-press">
         <SectionHead id="h-press" title={t.about.pressTitle}>

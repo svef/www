@@ -121,6 +121,8 @@ export const listEvents = cache(async function listEvents(
  * event with no photos is a link to an empty promise. One query for the whole
  * list rather than one per card.
  *
+ * Only albums that have photos count, for the same reason.
+ *
  * An event with more than one album keeps the first: the link is "photos from
  * this event", and sending someone to one of two albums beats sending them to
  * neither. `sort` pins which one that is, so the link does not move between
@@ -136,7 +138,7 @@ async function galleriesByEvent(eventIds: number[]): Promise<Map<number, number>
     collection: 'galleries',
     ...publicReadArgs,
     where: { event: { in: eventIds } },
-    select: { event: true },
+    select: { event: true, images: true },
     sort: 'id',
     pagination: false,
     depth: 0,
@@ -144,6 +146,8 @@ async function galleriesByEvent(eventIds: number[]): Promise<Map<number, number>
   const byEvent = new Map<number, number>()
   for (const doc of docs) {
     const eventId = typeof doc.event === 'number' ? doc.event : (doc.event?.id ?? null)
+    // `/myndir` leaves an album with no photos off the page, so there is nothing to link to.
+    if ((doc.images ?? []).length === 0) continue
     if (eventId === null || byEvent.has(eventId)) continue
     byEvent.set(eventId, doc.id)
   }

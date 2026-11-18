@@ -62,6 +62,11 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
+        // The seed's placeholder album photos, ahead of the sponsor rule below.
+        {
+          source: '/api/media/file/dev-fixture-photo-:file',
+          destination: '/dev-fixtures/photos/photo-:file',
+        },
         {
           source: '/api/media/file/dev-fixture-:file',
           destination: '/dev-fixtures/sponsors/:file',

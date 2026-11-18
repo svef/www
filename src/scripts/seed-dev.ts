@@ -163,6 +163,32 @@ async function sponsorLogoId(
   return created.id
 }
 
+/** A placeholder album photo (`dev-fixture-photo-<n>.jpg`), created once and found again. */
+async function galleryPhotoId(payload: Payload, n: number): Promise<number | string> {
+  const filename = `dev-fixture-photo-${n}.jpg`
+  const found = await payload.find({
+    collection: 'media',
+    depth: 0,
+    limit: 1,
+    pagination: false,
+    where: { filename: { equals: filename } },
+  })
+  if (found.docs[0]) return found.docs[0].id
+
+  const created = await payload.db.create({
+    collection: 'media',
+    data: {
+      alt: { is: '', en: '' },
+      filename,
+      mimeType: 'image/jpeg',
+      width: 1200,
+      height: 800,
+      url: `/api/media/file/${filename}`,
+    },
+  })
+  return created.id
+}
+
 async function seed(payload: Payload): Promise<void> {
   // --- Events -------------------------------------------------------------
   const eventIds = new Map<string, number | string>()
@@ -265,8 +291,11 @@ async function seed(payload: Payload): Promise<void> {
   }
 
   // --- Galleries ----------------------------------------------------------
-  // Albums exist but stay empty: uploads need R2, which is not provisioned yet.
+  // Real uploads need R2, which local development has no bucket for, so the photos are the
+  // placeholder fixtures in `public/dev-fixtures/photos`, written straight to `media`.
   for (const gallery of galleries) {
+    const images = []
+    for (let n = 1; n <= gallery.photos; n++) images.push({ image: await galleryPhotoId(payload, n) })
     await upsert(
       payload,
       'galleries',
@@ -274,7 +303,7 @@ async function seed(payload: Payload): Promise<void> {
       {
         date: gallery.date,
         event: gallery.eventSlug ? (eventIds.get(gallery.eventSlug) ?? null) : null,
-        images: [],
+        images,
         title: gallery.title,
       },
     )

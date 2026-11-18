@@ -40,7 +40,9 @@ export default async function PhotosPage({
 
   const t = getDictionary(locale)
   const c = t.photos
-  const albums = await listGalleries(locale)
+  // An album with no photos yet is left off the page: a grid of placeholder tiles reads as a
+  // broken page, and an album an editor has not filled in is not ready to be shown.
+  const albums = (await listGalleries(locale)).filter((album) => album.photos.length > 0)
   const contentLocale = resolveContentLocale(
     albums.flatMap((a) => [a.contentLocale, a.venueLocale]),
     locale,

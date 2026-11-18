@@ -59,7 +59,7 @@ describe('listEvents', () => {
   beforeEach(() => {
     find.mockImplementation(async (args: { collection: string }) =>
       args.collection === 'galleries'
-        ? { docs: [{ id: 42, event: 1 }] }
+        ? { docs: [{ id: 42, event: 1, images: [{ id: 'a' }] }] }
         : { docs: [PAST, SOON, LATER] },
     )
   })
@@ -103,12 +103,16 @@ describe('listEvents', () => {
     expect(past[0].galleryId).toBeNull()
   })
 
-  it('keeps the first album when an event has more than one', async () => {
+  it('keeps the first album with photos when an event has more than one', async () => {
     // Sending someone to one of two albums beats sending them to neither, and
     // `sort: 'id'` is what stops the link moving between builds.
     find.mockImplementation(async (args: { collection: string }) =>
       args.collection === 'galleries'
-        ? { docs: [{ id: 7, event: 1 }, { id: 9, event: 1 }] }
+        ? { docs: [
+            { id: 6, event: 1, images: [] },
+            { id: 7, event: 1, images: [{ id: 'a' }] },
+            { id: 9, event: 1, images: [{ id: 'b' }] },
+          ] }
         : { docs: [PAST, SOON, LATER] },
     )
     const { past } = await listEvents('is')

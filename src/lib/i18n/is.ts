@@ -215,6 +215,12 @@ export const is = {
     },
     bylawsUnavailable:
       'Ekki tókst að sækja lög SVEF að svo stöddu. Lögin eru óbreytt og má lesa í heild sinni hjá upprunanum:',
+    // The figures row when the CMS has none: the export's own.
+    stats: [
+      { value: '2005', label: 'Stofnað' },
+      { value: '300', label: 'Félagar' },
+      { value: '6', label: 'Í stjórn' },
+    ],
     pressTitle: 'Fjölmiðlar',
     press: {
       // svef/www#76: split into title/body so this renders through the same

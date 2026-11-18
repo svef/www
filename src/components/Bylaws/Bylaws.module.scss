@@ -65,7 +65,10 @@ $gutter: max(24px, env(safe-area-inset-left, 0px));
 .body {
   display: grid;
   gap: 18px;
-  max-width: 62ch;
+  // The export's `max-width: 62ch`, in em: its `ch` is Overpass's zero (about 0.642em), while
+  // this element is set in Archivo, whose zero is much narrower. 62 x 0.642 = 39.8em keeps the
+  // column the export's width (1089px at 1440) instead of a quarter narrower.
+  max-width: 39.8em;
   color: var(--color-white);
   font-size: clamp(1.3rem, 1.9vw, 1.9rem);
   line-height: 1.45;

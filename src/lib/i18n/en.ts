@@ -185,7 +185,12 @@ export const en = {
     },
     bylawsUnavailable:
       'The bylaws could not be loaded right now. They are unchanged and can be read in full at the source:',
-    pressTitle: 'Press',
+    stats: [
+      { value: '2005', label: 'Founded' },
+      { value: '300', label: 'Members' },
+      { value: '6', label: 'On the board' },
+    ],
+    pressTitle: 'In the media',
     press: {
       empty: {
         title: 'No coverage listed yet',
