@@ -15,8 +15,11 @@
 .shape {
   position: absolute;
   inset: 0;
-  background: var(--color-violet);
-  transition: clip-path 400ms ease-in-out;
+  // `--logo-shape` / `--logo-letters` are set while hovered (`hoverColours`).
+  background: var(--logo-shape, var(--color-violet));
+  transition:
+    clip-path 400ms ease-in-out,
+    background-color 300ms ease;
 }
 
 .letters {
@@ -24,8 +27,10 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  fill: var(--color-white);
-  transition: transform 400ms ease-in-out;
+  fill: var(--logo-letters, var(--color-white));
+  transition:
+    transform 400ms ease-in-out,
+    fill 300ms ease;
 }
 
 // Footer treatment: the shape goes white and the letters are knocked out of it
@@ -33,11 +38,11 @@
 // outline, which is why the letters take the page's black and not `currentColor`.
 .inverse {
   .shape {
-    background: var(--color-white);
+    background: var(--logo-shape, var(--color-white));
   }
 
   .letters {
-    fill: var(--color-black);
+    fill: var(--logo-letters, var(--color-black));
   }
 }
 

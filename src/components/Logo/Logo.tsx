@@ -22,10 +22,24 @@ const HOLD_MS = 4000
  * This is a Client Component, which does not make its parents client: `Header`
  * and `Footer` stay Server Components and simply render it.
  */
+/**
+ * Hover colours, from the export: each time the mark is hovered (or its link is
+ * focused) it takes a different shape/letter pairing at random — never the one it
+ * had last, and never its resting colours — and goes back on leave.
+ */
+const HOVER_COLOURS: readonly (readonly [shape: string, letters: string])[] = [
+  ['var(--accent-pink)', 'var(--color-white)'],
+  ['var(--accent-yellow)', 'var(--color-black)'],
+  ['var(--accent-red)', 'var(--color-white)'],
+  ['var(--color-white)', 'var(--color-black)'],
+  ['var(--color-violet)', 'var(--color-white)'],
+]
+
 export function Logo({
   label = 'SVEF',
   tone = 'brand',
   size,
+  hoverColours = false,
 }: {
   label?: string
   /**
@@ -35,9 +49,43 @@ export function Logo({
   tone?: 'brand' | 'inverse'
   /** Width of the mark. Defaults to the value in the stylesheet. */
   size?: string
+  /** Change colour on hover/focus, as the header's mark does in the export. */
+  hoverColours?: boolean
 }) {
   const [i, setI] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!hoverColours || !el) return
+    // The link around the mark is what is hovered and focused, not the mark itself.
+    const host = el.closest('a') ?? el
+    // Its resting pairing is never picked: hovering must visibly change it.
+    const resting = tone === 'inverse' ? 3 : 4
+    let last = -1
+    const enter = () => {
+      let n: number
+      do n = Math.floor(Math.random() * HOVER_COLOURS.length)
+      while (n === last || n === resting)
+      last = n
+      el.style.setProperty('--logo-shape', HOVER_COLOURS[n][0])
+      el.style.setProperty('--logo-letters', HOVER_COLOURS[n][1])
+    }
+    const leave = () => {
+      el.style.removeProperty('--logo-shape')
+      el.style.removeProperty('--logo-letters')
+    }
+    host.addEventListener('pointerenter', enter)
+    host.addEventListener('pointerleave', leave)
+    host.addEventListener('focusin', enter)
+    host.addEventListener('focusout', leave)
+    return () => {
+      host.removeEventListener('pointerenter', enter)
+      host.removeEventListener('pointerleave', leave)
+      host.removeEventListener('focusin', enter)
+      host.removeEventListener('focusout', leave)
+    }
+  }, [hoverColours, tone])
 
   useEffect(() => {
     const start = Math.floor(Math.random() * LOCKUPS.length)

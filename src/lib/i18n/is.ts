@@ -110,6 +110,9 @@ export const is = {
     // the date · venue line when no edition has a ceremony date in the CMS.
     awardsLines: ['Íslensku', 'vefverðlaunin'],
     awardsMeta: '19. mars 2026 · Harpa',
+    // Where the export's 'Lesa meira' button sits. Not a link: the awards page is
+    // hidden (#128), so the section teases the next date instead.
+    awardsTeaser: 'Opnað verður fyrir innsendingar 1. desember 2026',
     eventsTitle: 'Næstu viðburðir',
     // The same section when nothing is coming up: the latest events that have been.
     pastEventsTitle: 'Liðnir viðburðir',

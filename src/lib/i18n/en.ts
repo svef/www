@@ -96,6 +96,9 @@ export const en = {
     // the date · venue line when no edition has a ceremony date in the CMS.
     awardsLines: ['The Icelandic', 'Web Awards'],
     awardsMeta: '19th of March 2026 · Harpa',
+    // Where the export's 'Lesa meira' button sits. Not a link: the awards page is
+    // hidden (#128), so the section teases the next date instead.
+    awardsTeaser: 'Submissions open 1 December 2026',
     eventsTitle: 'Upcoming events',
     pastEventsTitle: 'Past events',
     eventsLead:

@@ -46,7 +46,7 @@ export function Header({
     <header className={styles.header}>
       <div className={styles.row}>
         <Link href={homeHref} className={styles.logoLink} aria-label="SVEF">
-          <Logo size="var(--head-logo)" />
+          <Logo size="var(--head-logo)" hoverColours />
         </Link>
         <SiteNav
           items={navItems}

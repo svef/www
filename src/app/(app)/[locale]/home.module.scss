@@ -141,6 +141,20 @@ h2.awardsTitle {
   line-height: 0.92;
 }
 
+// Sits where the export's 'Lesa meira' button does, at its size, but it is a statement,
+// not a control: outlined rather than filled, so it can't be mistaken for a button.
+.awardsTeaser {
+  margin: 0;
+  padding: 15px 22px;
+  border: 2px solid var(--color-white);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--color-white);
+  text-wrap: balance;
+}
+
 .awardsLine {
   display: block;
   width: max-content;

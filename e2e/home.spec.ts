@@ -109,7 +109,9 @@ test.describe('home', () => {
         /Íslensku\s+vefverðlaunin|The Icelandic\s+Web Awards/,
       )
       // The date · venue line sits above it, and the three photos are decorative.
-      expect((await section.locator('p').innerText()).trim().length).toBeGreaterThan(5)
+      expect((await section.locator('p').first().innerText()).trim().length).toBeGreaterThan(5)
+      // Where the export's button sits, a teaser for the next submissions date — text, not a link.
+      await expect(section.getByText(/innsendingar 1\. desember 2026|Submissions open 1 December 2026/)).toBeVisible()
       await expect(section.locator('[aria-hidden="true"] img')).toHaveCount(3)
       // The export's "Lesa meira" button is left out: no link at all while the awards page is
       // on hold.

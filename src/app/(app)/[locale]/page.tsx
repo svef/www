@@ -102,6 +102,7 @@ export default async function HomePage({
               </Fragment>
             ))}
           </h2>
+          <p className={styles.awardsTeaser}>{t.home.awardsTeaser}</p>
         </div>
       </PageSection>
 
