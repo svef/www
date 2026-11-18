@@ -92,6 +92,10 @@ export const en = {
     eventsCta: 'See events',
     intro:
       'We are the people behind the web in Iceland. We meet at events, host the Icelandic Web Awards and learn from each other.',
+    // The Web Awards section: its headline, one entry per line as the export breaks it, and
+    // the date · venue line when no edition has a ceremony date in the CMS.
+    awardsLines: ['The Icelandic', 'Web Awards'],
+    awardsMeta: '19th of March 2026 · Harpa',
     eventsTitle: 'Upcoming events',
     pastEventsTitle: 'Past events',
     eventsLead:

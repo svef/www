@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { toHomeSettings, type HomeFallbacks, type HomePageAllLocales } from './home-mapping'
+import { toAwardsMeta, toHomeSettings, type HomeFallbacks, type HomePageAllLocales } from './home-mapping'
 
 const fallbacks: HomeFallbacks = {
   heroLines: ['Félag fólksins', 'sem býr til', 'vefinn á Íslandi.'],
@@ -123,5 +123,32 @@ describe('toHomeSettings: which sections show', () => {
   it('honours the switch when it has been turned off', () => {
     const s = toHomeSettings(global({ showUpcomingEvents: false }), 'is', fallbacks)
     expect(s.showUpcomingEvents).toBe(false)
+  })
+})
+
+describe('toAwardsMeta', () => {
+  const fallback = '19. mars 2026 · Harpa'
+
+  it('is the export’s line with no ceremony', () => {
+    expect(toAwardsMeta(null, 'is', fallback)).toBe(fallback)
+  })
+
+  it('is the ceremony’s date and venue', () => {
+    expect(toAwardsMeta({ ceremonyDate: '2026-11-14T18:00:00.000Z', venue: 'Harpa' }, 'is', fallback)).toBe(
+      '14. nóvember 2026 · Harpa',
+    )
+    expect(toAwardsMeta({ ceremonyDate: '2026-11-14T18:00:00.000Z', venue: 'Harpa' }, 'en', fallback)).toBe(
+      '14 November 2026 · Harpa',
+    )
+  })
+
+  it('is the date alone when no venue is set', () => {
+    expect(toAwardsMeta({ ceremonyDate: '2026-11-14T18:00:00.000Z', venue: ' ' }, 'is', fallback)).toBe(
+      '14. nóvember 2026',
+    )
+  })
+
+  it('falls back when the date cannot be read', () => {
+    expect(toAwardsMeta({ ceremonyDate: 'nope', venue: 'Harpa' }, 'is', fallback)).toBe(fallback)
   })
 })

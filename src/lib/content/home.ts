@@ -1,7 +1,9 @@
 import { cache } from 'react'
 import { getPayload, publicReadArgs } from '@/lib/payload'
 import { getDictionary, type Locale } from '@/lib/i18n'
+import { getCeremony } from './awards'
 import {
+  toAwardsMeta,
   toHomeSettings,
   type HomeFallbacks,
   type HomePageAllLocales,
@@ -52,4 +54,13 @@ export const getHomeSettings = cache(async function getHomeSettings(
     aboutLinkLabel: c.moreAbout,
   }
   return toHomeSettings(doc, locale, fallbacks)
+})
+
+/**
+ * The date · venue line of the Web Awards section: the ceremony the awards page announces
+ * when the CMS has one, else the export's own line.
+ */
+export const getAwardsMeta = cache(async function getAwardsMeta(locale: Locale): Promise<string> {
+  const ceremony = await getCeremony(locale)
+  return toAwardsMeta(ceremony, locale, getDictionary(locale).home.awardsMeta)
 })

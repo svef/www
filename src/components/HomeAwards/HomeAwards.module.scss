@@ -1,0 +1,138 @@
+// The export's `.aw-ph`: award-night photos in stepped frames (no colour blocks behind),
+// stepping up on arrival and drifting at different speeds while you scroll.
+@use '../../styles/breakpoints' as bp;
+
+.photos {
+  position: absolute;
+  inset: clamp(110px, 10vw, 180px) 0;
+  z-index: 0;
+  pointer-events: none;
+
+  @include bp.below(900px) {
+    inset: clamp(60px, 14vw, 100px) 0 clamp(40px, 8vw, 72px);
+  }
+}
+
+.card {
+  --nh: clamp(40px, 3.6vw, 52px);
+  --sw: 22%;
+  --sh: 16%;
+
+  position: absolute;
+  margin: 0;
+  translate: 0 var(--py, 0px);
+  transition:
+    transform 0.8s cubic-bezier(0.65, 0, 0.35, 1),
+    opacity 0.4s steps(2, end),
+    translate 0.6s cubic-bezier(0.2, 0.6, 0.2, 1);
+
+  @include bp.below(900px) {
+    width: clamp(130px, 40vw, 220px) !important;
+  }
+}
+
+// Only once the script has armed it: without it (or under reduced motion) the photos rest.
+.photos[data-phase='armed'] .card {
+  transform: translateY(60px);
+  opacity: 0;
+}
+
+.photos[data-phase='in'] .card:nth-child(2) {
+  transition-delay: 0.18s;
+}
+.photos[data-phase='in'] .card:nth-child(3) {
+  transition-delay: 0.36s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
+
+.ph {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// Frames: a step cut from one top corner and a smaller step out of the opposite bottom
+// corner.
+.tl .ph {
+  clip-path: polygon(
+    var(--nw) 0,
+    100% 0,
+    100% calc(100% - var(--sh)),
+    calc(100% - var(--sw)) calc(100% - var(--sh)),
+    calc(100% - var(--sw)) 100%,
+    0 100%,
+    0 var(--nh),
+    var(--nw) var(--nh)
+  );
+}
+
+.tr .ph {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--nw)) 0,
+    calc(100% - var(--nw)) var(--nh),
+    100% var(--nh),
+    100% 100%,
+    var(--sw) 100%,
+    var(--sw) calc(100% - var(--sh)),
+    0 calc(100% - var(--sh))
+  );
+}
+
+.c1 {
+  left: max(2%, calc(50% - 680px));
+  top: 2%;
+  width: clamp(180px, 19vw, 300px);
+  aspect-ratio: 4 / 5;
+  --nw: clamp(110px, 10vw, 150px);
+
+  @include bp.below(900px) {
+    left: 0;
+    top: 24px;
+  }
+}
+
+.c2 {
+  right: max(2%, calc(50% - 680px));
+  top: 62%;
+  width: clamp(200px, 21vw, 330px);
+  aspect-ratio: 5 / 4;
+  --nw: clamp(70px, 6vw, 90px);
+
+  @include bp.below(900px) {
+    right: 0;
+    left: auto;
+    top: clamp(90px, 24vw, 140px);
+    bottom: auto;
+  }
+}
+
+.c3 {
+  left: max(12%, calc(50% - 470px));
+  bottom: 1%;
+  width: clamp(150px, 15vw, 230px);
+  aspect-ratio: 1;
+  --nw: clamp(110px, 10vw, 150px);
+  --sw: 30%;
+  --sh: 20%;
+
+  @include bp.below(900px) {
+    left: 14%;
+    right: auto;
+    top: auto;
+    bottom: 0;
+    width: clamp(120px, 36vw, 200px) !important;
+  }
+}

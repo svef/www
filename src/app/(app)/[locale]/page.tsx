@@ -2,10 +2,11 @@ import { notFound } from 'next/navigation'
 import { Fragment } from 'react'
 import { getDictionary, isHiddenPath, isLocale, localePath } from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
-import { HOME_EVENT_COUNT, getHomeSettings } from '@/lib/content/home'
+import { HOME_EVENT_COUNT, getAwardsMeta, getHomeSettings } from '@/lib/content/home'
 import { listEvents } from '@/lib/content/events'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { HomeOpening } from '@/components/HomeOpening/HomeOpening'
+import { HomeAwardsPhotos } from '@/components/HomeAwards/HomeAwards'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { PageStickers } from '@/components/Sticker/PageStickers'
 import { ButtonLink } from '@/components/ButtonLink/ButtonLink'
@@ -27,8 +28,9 @@ import styles from './home.module.scss'
 export const revalidate = 300
 
 /**
- * The export's `forsida`: the hero and the intro band, the events zig-zag, and the about
- * block. Its Web Awards section is left out while that page is on hold (#128).
+ * The export's `forsida`: the hero and the intro band, the Web Awards section, the events
+ * zig-zag, and the about block. The Web Awards section has no button: the export's goes to the
+ * awards page, which is on hold (#128), so there is nothing to link to.
  *
  * Every piece of copy comes from the `home-page` global and falls back to the export's own
  * (the dictionary), so the page is whole with nothing written.
@@ -42,7 +44,7 @@ export default async function HomePage({
   if (!isLocale(locale)) notFound()
 
   const t = getDictionary(locale)
-  const settings = await getHomeSettings(locale)
+  const [settings, awardsMeta] = await Promise.all([getHomeSettings(locale), getAwardsMeta(locale)])
 
   // A section the global turns off costs no query. With nothing coming up, the grid shows
   // the latest events that have been, under a heading that says so, rather than a hole.
@@ -87,6 +89,21 @@ export default async function HomePage({
         actions={actions}
         intro={{ text: settings.introText.text, lang: settings.introText.lang }}
       />
+
+      <PageSection aria-labelledby="home-awards" className={styles.awards}>
+        <HomeAwardsPhotos />
+        <div className={styles.awardsText}>
+          <p className={styles.awardsMeta}>{awardsMeta}</p>
+          <h2 id="home-awards" className={`h2 ${styles.awardsTitle}`}>
+            {t.home.awardsLines.map((line, i) => (
+              <Fragment key={i}>
+                {i > 0 && ' '}
+                <span className={styles.awardsLine}>{line}</span>
+              </Fragment>
+            ))}
+          </h2>
+        </div>
+      </PageSection>
 
       {settings.showUpcomingEvents && (
         <PageSection aria-labelledby="home-events" className={styles.events}>

@@ -4,7 +4,7 @@ import { dynamicHrefsInMain, LOCALES, settle, urlFor } from './pages'
 
 /**
  * The home page's content, `/is` and `/en` (#129): the export's `forsida` — hero, intro
- * band, the events zig-zag and the about block, and nothing else.
+ * band, the Web Awards section, the events zig-zag and the about block, and nothing else.
  *
  * The route-level sweeps already cover this page (smoke, headings, links, axe); what they
  * deliberately do not do is assert what is *on* it. Everything here is read from the
@@ -93,11 +93,30 @@ test.describe('home', () => {
           await expect(main.locator(`a[href="${urlFor(locale, path)}"]`)).toHaveCount(0)
         }
       }
-      // The export's Web Awards section is left out while that page is on hold, and its
-      // home has no news section.
-      await expect(main.locator('#h-verdl')).toHaveCount(0)
+      // The home has no news section.
       await expect(main.locator('#home-news')).toHaveCount(0)
       expect(await dynamicHrefsInMain(page, '/frettir/[slug]')).toEqual([])
+    })
+
+    test(`${locale}: the Web Awards section is there, without a link to the awards page`, async ({
+      page,
+    }) => {
+      await page.goto(urlFor(locale, ''))
+      await settle(page)
+      const section = page.locator('section[aria-labelledby="home-awards"]')
+      await expect(section).toHaveCount(1)
+      await expect(section.getByRole('heading', { level: 2 })).toHaveText(
+        /Íslensku\s+vefverðlaunin|The Icelandic\s+Web Awards/,
+      )
+      // The date · venue line sits above it, and the three photos are decorative.
+      expect((await section.locator('p').innerText()).trim().length).toBeGreaterThan(5)
+      await expect(section.locator('[aria-hidden="true"] img')).toHaveCount(3)
+      // The export's "Lesa meira" button is left out: no link at all while the awards page is
+      // on hold.
+      await expect(section.locator('a')).toHaveCount(0)
+      await expect(
+        page.locator(`main a[href="${urlFor(locale, '/vefverdlaunin')}"]`),
+      ).toHaveCount(0)
     })
 
     test(`${locale}: the events zig-zag links to at most four events, each once`, async ({

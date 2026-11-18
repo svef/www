@@ -1,11 +1,12 @@
-// The export's home page sections after the opening: `.ev-zig` (`.ev-head`, `.ev-h`,
-// `.ev-aside`, `.sh-p`) and `.about-home` (`.ah-text`).
+// The export's home page sections after the opening: the Web Awards section (`.aw-link`),
+// `.ev-zig` (`.ev-head`, `.ev-h`, `.ev-aside`, `.sh-p`) and `.about-home` (`.ah-text`).
 @use '../../../styles/breakpoints' as bp;
 
 // The export's extra space above both sections
 // (`[aria-labelledby="h-naest"], [aria-labelledby="h-um"] { margin-top: … }`), on top of
 // the section's own padding. The stickers sit against the events section. `section.`
 // outranks `PageSection`'s own `margin: 0 auto`.
+section.awards,
 section.events,
 section.about {
   position: relative;
@@ -96,4 +97,53 @@ h2.aboutTitle {
 
 .aboutButton {
   margin-top: clamp(24px, 2.8vw, 40px);
+}
+
+// The Web Awards section: the date · venue line over the big headline, with the award-night
+// photos (`HomeAwardsPhotos`) drifting behind. Its call to action is left out while the awards
+// page is on hold (#128). `[aria-labelledby="h-verdl"]` sets the tall padding that makes room
+// for the photos; `overflow-x: clip` keeps a drifting photo from widening the page.
+section.awards {
+  isolation: isolate;
+  overflow-x: clip;
+  padding-block: clamp(240px, 22vw, 400px);
+
+  @include bp.below(900px) {
+    padding-top: clamp(300px, 78vw, 420px);
+    padding-bottom: clamp(280px, 64vw, 400px);
+  }
+}
+
+.awardsText {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--white);
+  text-align: center;
+}
+
+// `.aw-meta`: the date in the muted colour, the venue after it.
+.awardsMeta {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.4vw, 1.35rem);
+  color: var(--muted);
+}
+
+// `.aw-big`: two words, each on its own line and its own width, so the headline never wraps.
+h2.awardsTitle {
+  margin: clamp(12px, 1.4vw, 20px) 0 clamp(16px, 1.8vw, 24px);
+  font-size: clamp(2.8rem, 9vw, 9rem);
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+}
+
+.awardsLine {
+  display: block;
+  width: max-content;
+  margin-inline: auto;
+  white-space: nowrap;
 }

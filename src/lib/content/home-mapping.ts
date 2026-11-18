@@ -1,4 +1,5 @@
 import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n'
+import { formatLongDate } from '@/lib/dates'
 import { pickLocalized, type AllLocales } from '@/lib/localized'
 import type { HomePage } from '@/payload-types'
 
@@ -151,4 +152,21 @@ export function toHomeSettings(
     settings.aboutLinkLabel,
   ]
   return { ...settings, locales: [hero.locale, ...copies.map((c) => c.locale)] }
+}
+
+/**
+ * The date · venue line of the Web Awards section.
+ *
+ * The ceremony the awards page is about (`getCeremony`) supplies it: its date, and its venue
+ * when one is set. With no such edition (production's CMS, for now) it is the dictionary's,
+ * the export's own line.
+ */
+export function toAwardsMeta(
+  ceremony: { ceremonyDate: string; venue: string | null } | null,
+  locale: Locale,
+  fallback: string,
+): string {
+  const date = ceremony ? formatLongDate(ceremony.ceremonyDate, locale) : ''
+  if (!ceremony || !date) return fallback
+  return [date, ceremony.venue?.trim()].filter(Boolean).join(' · ')
 }

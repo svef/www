@@ -106,6 +106,10 @@ export const is = {
     eventsCta: 'Sjá viðburði',
     intro:
       'Við erum fólkið á bak við vefinn á Íslandi. Við hittumst á viðburðum, veitum Íslensku vefverðlaunin og lærum hvert af öðru.',
+    // The Web Awards section: its headline, one entry per line as the export breaks it, and
+    // the date · venue line when no edition has a ceremony date in the CMS.
+    awardsLines: ['Íslensku', 'vefverðlaunin'],
+    awardsMeta: '19. mars 2026 · Harpa',
     eventsTitle: 'Næstu viðburðir',
     // The same section when nothing is coming up: the latest events that have been.
     pastEventsTitle: 'Liðnir viðburðir',
