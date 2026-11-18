@@ -23,6 +23,14 @@ $focus: 3px solid var(--focus-ring);
   }
 }
 
+// With the trophy at the very bottom on phones, the band reserves its height, plus the
+// export's 44px and 48px of air above it.
+.withTrophy {
+  @include bp.below(bp.$md) {
+    padding-bottom: calc(clamp(220px, 60vw, 300px) + 44px + 48px);
+  }
+}
+
 .wrap {
   display: grid;
   flex: 1;

@@ -54,6 +54,24 @@ describe('Footer', () => {
     expect(container.querySelector('img[src*="/stickers/"]')).toBeNull()
   })
 
+  it('carries the trophy as a labelled image only when given a label', () => {
+    const { rerender } = renderFooter({ locale: 'is', trophyLabel: is.footer.trophy })
+    expect(screen.getByRole('img', { name: is.footer.trophy })).toBeInTheDocument()
+    rerender(
+      <MantineProvider forceColorScheme="dark">
+        <Footer
+          blurb="x"
+          email="svef@svef.is"
+          contactHeading="c"
+          columns={[]}
+          columnsLabel="p"
+          socials={[]}
+        />
+      </MantineProvider>,
+    )
+    expect(screen.queryByRole('img', { name: is.footer.trophy })).toBeNull()
+  })
+
   it('renders the page columns as a named navigation, headings and all', () => {
     renderFooter()
     const nav = screen.getByRole('navigation', { name: is.footer.pages })

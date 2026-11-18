@@ -305,6 +305,7 @@ export const en = {
     aboutClub: 'The association',
     involved: 'Get involved',
     rights: 'All rights reserved',
+    trophy: 'The Icelandic Web Awards trophy',
     blurb:
       'SVEF is the association of people who build the web in Iceland. We share knowledge and raise professional standards in the field.',
   },

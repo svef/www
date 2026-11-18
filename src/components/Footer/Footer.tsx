@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { GrowText } from '@/components/GrowText/GrowText'
 import { Notch } from '@/components/Shape/Notch'
 import { Shape } from '@/components/Shape/Shape'
+import { Trophy } from '@/components/Trophy/Trophy'
 import { PageStickers } from '@/components/Sticker/PageStickers'
 import type { Locale } from '@/lib/i18n'
 import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
@@ -21,8 +22,8 @@ export interface FooterColumn {
  * page columns and the socials (the export's `.site-foot`).
  *
  * Not ported: the export's `Lagalegt` column (the privacy and cookie pages are
- * skipped, #121) and the 3D trophy in the bottom-right corner, which belongs to the
- * on-hold Web Awards work. That corner is a decorative notch instead.
+ * skipped, #121). The bottom-right corner holds the 3D trophy where the page's locale
+ * is known, and is a decorative notch where it is not (the landing page).
  */
 export function Footer({
   blurb,
@@ -33,6 +34,7 @@ export function Footer({
   columnsLabel,
   socials,
   locale,
+  trophyLabel,
 }: {
   blurb: string
   /**
@@ -66,6 +68,11 @@ export function Footer({
    * (#121). Without it, as on the landing page, the blurb is shown as text.
    */
   locale?: Locale
+  /**
+   * Accessible name of the 3D trophy in the bottom-right corner. Left out: no trophy,
+   * and the corner stays a decorative notch.
+   */
+  trophyLabel?: string
 }) {
   const withSticker = locale !== undefined
 
@@ -82,7 +89,7 @@ export function Footer({
         autoMobile="tr"
         ambient="lively"
         inset
-        className={styles.band}
+        className={trophyLabel ? `${styles.band} ${styles.withTrophy}` : styles.band}
       >
         {withSticker && <PageStickers page="footer" band="footer" locale={locale} />}
         <div className={styles.wrap}>
@@ -144,6 +151,7 @@ export function Footer({
             )}
           </div>
         </div>
+        {trophyLabel && <Trophy label={trophyLabel} />}
       </Shape>
     </footer>
   )

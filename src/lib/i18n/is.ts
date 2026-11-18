@@ -375,6 +375,7 @@ export const is = {
     aboutClub: 'Um félagið',
     involved: 'Taktu þátt',
     rights: 'Öll réttindi áskilin',
+    trophy: 'Verðlaunagripur Íslensku vefverðlaunanna',
     blurb:
       'SVEF er félag fólks sem starfar við vefinn á Íslandi. Við miðlum þekkingu og eflum fagleg vinnubrögð í greininni.',
   },

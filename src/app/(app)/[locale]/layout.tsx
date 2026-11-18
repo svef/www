@@ -124,6 +124,7 @@ export default async function LocaleLayout({
           */}
           <Footer
             locale={locale}
+            trophyLabel={t.footer.trophy}
             blurb={chrome.footerBlurb ?? t.footer.blurb}
             blurbLang={
               chrome.footerBlurb && chrome.footerBlurbLocale !== locale

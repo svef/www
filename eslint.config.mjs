@@ -11,6 +11,8 @@ const config = [
       // ESLint flat config matches relative paths, so no leading slash here —
       // '/_work/**' would silently match nothing (see #50).
       '_work/**',
+      // Vendored third-party bundles (see public/vendor/README.md).
+      'public/vendor/**',
       '.next/**',
       'out/**',
       'build/**',
