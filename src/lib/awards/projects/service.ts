@@ -297,6 +297,7 @@ export async function loadContext(q: Queryable, projectId: string): Promise<Cont
       fieldKeys: r.fieldKeys,
       deadlineAt: r.deadlineAt,
       resolvedAt: r.resolvedAt,
+      entryCategory: entries.find((e) => e.id === r.entryId)?.category,
     })),
     categoryIds: new Map(cats.map((c) => [c.slug, c.id])),
   }

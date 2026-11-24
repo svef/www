@@ -366,6 +366,38 @@ describe.skipIf(!url)('project service', () => {
       expect(r.saved).toEqual(['title'])
     })
 
+    it('a request on one entry unlocks its entry-scope fields only there; project-scope fields for the whole project', async () => {
+      const { id, owner } = await editing(['marketing-website', 'app'])
+      const entries = await db
+        .select({ id: schema.entry.id, slug: schema.category.slug })
+        .from(schema.entry)
+        .innerJoin(schema.category, eq(schema.category.id, schema.entry.categoryId))
+        .where(eq(schema.entry.projectId, id))
+      await db.update(schema.entry).set({ status: 'submitted', submittedAt: T0 }).where(eq(schema.entry.projectId, id))
+      const appEntry = entries.find((e) => e.slug === 'app')!
+      const staff = await makeUser('Staff')
+      await db.insert(schema.entryRequest).values({
+        entryId: appEntry.id, authorUserId: staff, message: 'fix', fieldKeys: ['categoryPitch', 'title'], deadlineAt: at(60 * 60_000),
+      })
+      const r = await saveAnswers(db, {
+        userId: owner, projectId: id, now: at(1),
+        patch: {
+          answers: { title: 'Fixed' },
+          entryAnswers: {
+            app: { categoryPitch: 'Pitch for the app' },
+            'marketing-website': { categoryPitch: 'Pitch for the site' },
+          },
+        },
+      })
+      expect(r.saved).toEqual(expect.arrayContaining(['title', 'app:categoryPitch']))
+      expect(r.saved).not.toContain('marketing-website:categoryPitch')
+      expect(r.rejected).toEqual([{ fieldKey: 'marketing-website:categoryPitch', reason: 'locked_after_submit' }])
+      const view = await loadProject(db, { userId: owner, projectId: id, now: at(2) })
+      expect(view.entryEditability.app.categoryPitch).toEqual({ editable: true, reason: 'open_request' })
+      expect(view.entryEditability['marketing-website'].categoryPitch.editable).toBe(false)
+      expect(view.editability.title).toEqual({ editable: true, reason: 'open_request' })
+    })
+
     it('refuses everything once intake has closed', async () => {
       const { id, owner } = await editing()
       const closed = new Date('2027-02-02T00:00:00Z')

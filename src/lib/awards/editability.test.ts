@@ -213,3 +213,54 @@ describe('open requests', () => {
     expect(hasOpenRequestFor('owners', undefined, c.now)).toBe(false)
   })
 })
+
+describe('requests are scoped to their entry for entry-scope fields', () => {
+  const entries: [string, EntryStatus][] = [
+    ['app', 'submitted'],
+    ['marketing-website', 'submitted'],
+  ]
+  const open = (entryCategory: string, fieldKeys: string[]) => ({
+    fieldKeys,
+    deadlineAt: '2027-02-10T00:00:00Z',
+    entryCategory,
+  })
+  const closed = { now: '2027-02-05T00:00:00Z' }
+
+  it('categoryPitch unlocked on one entry stays locked on the other', () => {
+    const c = mk(entries, { ...closed, requests: [open('app', ['categoryPitch'])] })
+    const pitch = getField('categoryPitch')
+    expect(fieldEditability(pitch, { ...c, entryCategory: 'app' })).toEqual({
+      editable: true,
+      reason: 'open_request',
+    })
+    expect(fieldEditability(pitch, { ...c, entryCategory: 'marketing-website' })).toEqual({
+      editable: false,
+      reason: 'intake_closed',
+    })
+  })
+
+  it('an entry-scope key on a request without a known entry unlocks nothing', () => {
+    const c = mk(entries, {
+      ...closed,
+      entryCategory: 'app',
+      requests: [{ fieldKeys: ['categoryPitch'], deadlineAt: '2027-02-10T00:00:00Z' }],
+    })
+    expect(isFieldEditable(getField('categoryPitch'), c)).toBe(false)
+  })
+
+  it('project-scope fields are unlocked for the whole project by a request on either entry', () => {
+    const c = mk(entries, { ...closed, requests: [open('app', ['title', 'image'])] })
+    for (const key of ['title', 'image']) {
+      expect(isFieldEditable(getField(key), c)).toBe(true)
+      expect(isFieldEditable(getField(key), { ...c, entryCategory: 'marketing-website' })).toBe(true)
+    }
+  })
+
+  it('the image upload asks the same question: unlocked by a request after close, locked again once it is resolved', () => {
+    const image = getField('image')
+    const c = mk(entries, { ...closed, requests: [open('marketing-website', ['image'])] })
+    expect(fieldEditability(image, c)).toEqual({ editable: true, reason: 'open_request' })
+    const done = { ...c, requests: [{ ...open('marketing-website', ['image']), resolvedAt: '2027-02-04T00:00:00Z' }] }
+    expect(fieldEditability(image, done)).toEqual({ editable: false, reason: 'intake_closed' })
+  })
+})

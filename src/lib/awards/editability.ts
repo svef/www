@@ -6,6 +6,12 @@ export type UnlockRequest = {
   /** Exclusive: the request unlocks while now < deadlineAt. */
   deadlineAt: DateInput
   resolvedAt?: DateInput | null
+  /**
+   * The category of the entry the request was opened on. A request unlocks project-scope fields
+   * for the whole project (they are the project's answers), but an entry-scope field only on the
+   * entry it was opened on: without this, such a request unlocks nothing for entry-scope fields.
+   */
+  entryCategory?: string
 }
 
 export type EditabilityContext = {
@@ -27,20 +33,30 @@ export type Editability =
     }
   | { editable: false; reason: 'intake_closed' | 'locked_after_submit' }
 
+/**
+ * Whether an open request unlocks `fieldKey`. For an entry-scope field pass `entryCategory`, the
+ * entry being edited: only requests opened on that entry count.
+ */
 export function hasOpenRequestFor(
   fieldKey: string,
   requests: readonly UnlockRequest[] | undefined,
   now: DateInput,
+  entryCategory?: { category: string | undefined },
 ): boolean {
   const t = toMs(now)
   return (requests ?? []).some(
-    (r) => r.fieldKeys.includes(fieldKey) && !r.resolvedAt && t < toMs(r.deadlineAt),
+    (r) =>
+      r.fieldKeys.includes(fieldKey) &&
+      !r.resolvedAt &&
+      t < toMs(r.deadlineAt) &&
+      (!entryCategory || r.entryCategory === entryCategory.category),
   )
 }
 
 /**
  * Whether a field can be edited now (spec §5, option "b"). Order:
- *  1. an open request that unlocks the key wins, even after close;
+ *  1. an open request that unlocks the key wins, even after close (for an entry-scope field,
+ *     only a request opened on that same entry);
  *  2. from `intakeClosesBefore` on (inclusive) everything else is read-only;
  *  3. `editableAfterSubmit` fields are editable;
  *  4. otherwise editable only while nothing it applies to is submitted: for an entry-scoped field
@@ -48,11 +64,22 @@ export function hasOpenRequestFor(
  *     those categories (so a newly added category's questions stay open until it is submitted);
  *     for other project fields, the whole project. Withdrawn entries count as not submitted.
  */
+//
+// Anything that writes a field must ask this, not re-derive it: the project-form save does, and
+// so must the image upload (#162) for `image` (project scope, so a request on any entry unlocks
+// it for the project, even after close).
 export function fieldEditability(
   field: FieldDefinition,
   ctx: EditabilityContext,
 ): Editability {
-  if (hasOpenRequestFor(field.key, ctx.requests, ctx.now))
+  if (
+    hasOpenRequestFor(
+      field.key,
+      ctx.requests,
+      ctx.now,
+      field.scope === 'entry' ? { category: ctx.entryCategory } : undefined,
+    )
+  )
     return { editable: true, reason: 'open_request' }
   if (toMs(ctx.now) >= toMs(ctx.intakeClosesBefore))
     return { editable: false, reason: 'intake_closed' }
