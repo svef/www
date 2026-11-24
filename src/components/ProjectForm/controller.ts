@@ -405,7 +405,7 @@ export class ProjectFormController {
   changeCategories(next: string[]): Promise<void> {
     if (!this.held) return Promise.resolve()
     this.queuedCategories++
-    this.set({ pendingCategories: next })
+    this.set({ pendingCategories: next, saveState: 'saving' })
     return this.enqueue(() => this.applyCategories(next))
   }
 
@@ -420,7 +420,10 @@ export class ProjectFormController {
     if (r.ok) {
       this.applyView(r.value)
       this.lastPing = this.clock()
-      this.set({ saveState: 'saved' })
+      this.set({
+        saveState:
+          this.hasUnsaved || this.queuedCategories + this.queuedBilling > 0 ? 'saving' : 'saved',
+      })
     } else if (r.error.code === 'lock_required') {
       this.set({ pendingCategories: null })
       await this.loseLock()
@@ -434,7 +437,7 @@ export class ProjectFormController {
   changeBilling(id: string | null): Promise<void> {
     if (!this.held) return Promise.resolve()
     this.queuedBilling++
-    this.set({ pendingBilling: { id } })
+    this.set({ pendingBilling: { id }, saveState: 'saving' })
     return this.enqueue(() => this.applyBilling(id))
   }
 
@@ -446,7 +449,10 @@ export class ProjectFormController {
     if (r.ok) {
       this.applyView(r.value)
       this.lastPing = this.clock()
-      this.set({ saveState: this.hasUnsaved ? 'saving' : 'saved' })
+      this.set({
+        saveState:
+          this.hasUnsaved || this.queuedCategories + this.queuedBilling > 0 ? 'saving' : 'saved',
+      })
     } else if (r.error.code === 'lock_required') {
       this.set({ pendingBilling: null })
       await this.loseLock()

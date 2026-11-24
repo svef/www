@@ -414,19 +414,20 @@ test.describe('billing', () => {
     await billing.getByRole('button', { name: 'Save profile' }).click()
     const acme = billing.locator('[data-profile]').filter({ hasText: 'Acme ehf.' })
     const spare = billing.locator('[data-profile]').filter({ hasText: 'Spare ehf.' })
+    // The profile just added is chosen once it is saved; only then pick the other one.
+    await expect(spare.getByRole('radio')).toBeChecked()
     await acme.getByRole('radio').check()
     await saved(page)
     // Wait until the choice is on the server: it is what makes the profile "in use".
-    await expect(async () => {
-      await page.reload()
-      await expect(page.locator('[data-lock="held"]')).toBeVisible()
-      await expect(
-        page
-          .locator('#section-billing [data-profile]')
-          .filter({ hasText: 'Acme ehf.' })
-          .getByRole('radio'),
-      ).toBeChecked({ timeout: 1500 })
-    }).toPass({ timeout: 15_000 })
+    await expect(page.locator('[data-save="saved"]')).toBeVisible()
+    await page.reload()
+    await expect(page.locator('[data-lock="held"]')).toBeVisible()
+    await expect(
+      page
+        .locator('#section-billing [data-profile]')
+        .filter({ hasText: 'Acme ehf.' })
+        .getByRole('radio'),
+    ).toBeChecked()
 
     await acme.getByRole('button', { name: 'Edit: Acme ehf.' }).click()
     const editor = billing.getByRole('group', { name: 'Edit' })
