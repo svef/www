@@ -57,7 +57,7 @@ async function staffLogin(page: Page, label: string) {
   })
   expect(res.ok(), await res.text()).toBe(true)
   const [u] = await db.select().from(schema.user).where(eq(schema.user.email, email))
-  await db.insert(schema.userRole).values({ userId: u.id, role: 'staff' })
+  await db.insert(schema.userRole).values({ userId: u.id, role: 'admin' })
   return u.id
 }
 
@@ -74,9 +74,9 @@ async function makeEntry(title: string, status: schema.EntryStatus = 'submitted'
   return { owner, ownerEmail: await emailOf(owner), projectId, entryId }
 }
 
-const staffEntryUrl = (entryId: string) => urlFor('is', `/innsendingar/starfsfolk/${entryId}`)
-const staffListUrl = () => urlFor('is', '/innsendingar/starfsfolk')
-const projectUrl = (projectId: string) => urlFor('en', `/innsendingar/${projectId}`)
+const staffEntryUrl = (entryId: string) => urlFor('is', `/stjornbord/verkefni/${entryId}`)
+const staffListUrl = () => urlFor('is', '/stjornbord/beidnir')
+const projectUrl = (projectId: string) => urlFor('en', `/minar-sidur/verkefni/${projectId}`)
 
 async function mails(to: string, subject: RegExp) {
   const files = (await readdir(OUTBOX).catch(() => [] as string[]))
@@ -143,7 +143,7 @@ test('staff open a request on a submitted entry after close: the entry waits, th
   const mail = await waitForMail(flow.ownerEmail, /^Beiðni frá SVEF/)
   expect(mail.text).toContain('Titillinn má ekki innihalda nafn fyrirtækisins.')
   expect(mail.text).toContain('8. mars 2027')
-  expect(mail.text).toContain(`/is/innsendingar/${flow.projectId}#requests`)
+  expect(mail.text).toContain(`/is/minar-sidur/verkefni/${flow.projectId}#requests`)
 
   const axe = await new AxeBuilder({ page }).analyze()
   expect(axe.violations.map((v) => v.id)).toEqual([])
@@ -292,7 +292,7 @@ test('the staff-wide list shows open and overdue requests, overdue first, with f
 
   // The row leads to the entry's requests.
   await page.getByRole('link', { name: `Listi ${RUN}` }).first().click()
-  await expect(page).toHaveURL(new RegExp(`/starfsfolk/${e.entryId}#requests$`))
+  await expect(page).toHaveURL(new RegExp(`/stjornbord/verkefni/${e.entryId}#requests$`))
   const axe = await new AxeBuilder({ page }).analyze()
   expect(axe.violations.map((v) => v.id)).toEqual([])
 })

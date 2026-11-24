@@ -21,6 +21,7 @@ describe('parseListSearch (pure)', () => {
     expect(parseListSearch({})).toEqual({
       categoryId: undefined,
       status: 'submitted',
+      billing: 'any',
       q: '',
       sort: 'submitted',
       dir: 'asc',
@@ -31,9 +32,11 @@ describe('parseListSearch (pure)', () => {
   it('reads what it understands and ignores the rest', () => {
     expect(
       parseListSearch({ status: 'eligible', q: '  vefur ', sort: 'title', dir: 'desc', page: '3', category: 'c1' }),
-    ).toEqual({ categoryId: 'c1', status: 'eligible', q: 'vefur', sort: 'title', dir: 'desc', page: 3 })
-    const bad = parseListSearch({ status: 'bogus', sort: 'password', dir: 'sideways', page: '-2' })
-    expect(bad).toMatchObject({ status: 'submitted', sort: 'submitted', dir: 'asc', page: 1 })
+    ).toEqual({ categoryId: 'c1', status: 'eligible', billing: 'any', q: 'vefur', sort: 'title', dir: 'desc', page: 3 })
+    const bad = parseListSearch({ status: 'bogus', sort: 'password', dir: 'sideways', page: '-2', billing: 'free' })
+    expect(bad).toMatchObject({ status: 'submitted', billing: 'any', sort: 'submitted', dir: 'asc', page: 1 })
+    expect(parseListSearch({ billing: 'missing' }).billing).toBe('missing')
+    expect(parseListSearch({ billing: ['exported', 'missing'] }).billing).toBe('exported')
     expect(parseListSearch({ page: '1.5' }).page).toBe(1)
     expect(parseListSearch({ q: 'x'.repeat(500) }).q).toHaveLength(100)
   })
@@ -147,6 +150,30 @@ describe.skipIf(!url)('listStaffEntries', () => {
 
       const none = await listStaffEntries(tx, { editionId: ed.editionId, search: `${t}-nothing` })
       expect(none).toMatchObject({ total: 0, page: 1, pageCount: 1, rows: [] })
+    })
+  })
+
+  it('filters on billing and invoicing, and searches the payer and the creator', async () => {
+    await withRollback(db, async (tx) => {
+      const t = tag()
+      const u = await createUser(tx, `${t}creator`)
+      const paid = await make(tx, u, `${t} Með greiðanda`, 'submitted', { company: `${t} Vefstofa ehf.` })
+      const unpaid = await make(tx, u, `${t} Án greiðanda`, 'submitted')
+      const [row] = await tx.select({ projectId: schema.entry.projectId }).from(schema.entry).where(eq(schema.entry.id, paid))
+      await tx.insert(schema.entryEvent).values({ projectId: row.projectId, entryId: paid, type: 'invoicing_exported', data: { format: 'csv' } })
+      const ids = async (p: Partial<Parameters<typeof listStaffEntries>[1]>) =>
+        (await listStaffEntries(tx, { editionId: ed.editionId, search: t, sort: 'title', ...p })).rows.map((r) => r.entryId)
+
+      expect(await ids({ billing: 'missing' })).toEqual([unpaid])
+      expect(await ids({ billing: 'present' })).toEqual([paid])
+      expect(await ids({ billing: 'exported' })).toEqual([paid])
+      expect(await ids({ billing: 'not_exported' })).toEqual([unpaid])
+      expect(await ids({ search: `${t} vefstofa` })).toEqual([paid])
+      const [creator] = await tx.select({ email: schema.user.email }).from(schema.user).where(eq(schema.user.id, u))
+      expect((await ids({ search: creator.email })).sort()).toEqual([paid, unpaid].sort())
+      const rows = (await listStaffEntries(tx, { editionId: ed.editionId, search: t, sort: 'title' })).rows
+      expect(rows.find((r) => r.entryId === paid)).toMatchObject({ exported: true, creatorEmail: creator.email })
+      expect(rows.find((r) => r.entryId === unpaid)).toMatchObject({ exported: false, company: null })
     })
   })
 

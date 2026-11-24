@@ -53,7 +53,7 @@ async function signUp(page: Page, label: string): Promise<string> {
 
 async function makeStaff(email: string) {
   const [u] = await db.select().from(schema.user).where(eq(schema.user.email, email))
-  await db.insert(schema.userRole).values({ userId: u.id, role: 'staff' })
+  await db.insert(schema.userRole).values({ userId: u.id, role: 'admin' })
   return u.id
 }
 
@@ -101,7 +101,7 @@ test.afterAll(async () => {
   await close()
 })
 
-test('the export and the page are closed to anonymous visitors and to non-staff', async ({
+test('the export and the admin are closed to anonymous visitors and to non-admins', async ({
   page,
   browser,
 }) => {
@@ -115,12 +115,14 @@ test('the export and the page are closed to anonymous visitors and to non-staff'
 
   await signUp(page, 'plain') // signed in, but no role
   expect((await page.request.get(`/api/awards/staff/export?format=csv`)).status()).toBe(404)
-  expect((await page.goto(`/is/innsendingar/starfsfolk`))?.status()).toBe(404)
+  for (const path of ['/is/stjornbord', '/is/stjornbord/verkefni', '/en/admin/users', '/is/stjornbord/verkfaeri']) {
+    expect((await page.goto(path))?.status(), path).toBe(404)
+  }
 })
 
 test('staff download the invoicing export as CSV and XLSX, and it is logged', async ({ page }) => {
   const staffId = await makeStaff(await signUp(page, 'staff'))
-  await page.goto(`/is/innsendingar/starfsfolk`)
+  await page.goto(`/is/stjornbord/verkfaeri`)
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 
   // CSV through the real button.
@@ -179,10 +181,10 @@ test('staff download the invoicing export as CSV and XLSX, and it is logged', as
 
 test('staff set eligibility after close, one by one and in bulk', async ({ page }) => {
   await makeStaff(await signUp(page, 'staff-eligibility'))
-  await page.goto(`/is/innsendingar/starfsfolk`)
+  await page.goto(`/is/stjornbord/verkefni`)
 
   // The list is paginated and the edition holds other specs' rows: narrow it to this run's.
-  await page.getByLabel('Leita í heiti verkefnis').fill(RUN)
+  await page.getByLabel('Leita', { exact: true }).fill(RUN)
   await page.getByRole('button', { name: 'Sía' }).click()
   const row = (id: string) => page.locator(`tr[data-entry="${id}"]`)
   await expect(row(entries.a1).locator('[data-status]')).toHaveText('Innsent')
@@ -232,9 +234,20 @@ test('staff set eligibility after close, one by one and in bulk', async ({ page 
   ])
 })
 
-test('the staff page has no axe violations, in both languages', async ({ page }) => {
+test('the admin pages have no axe violations, in both languages', async ({ page }) => {
   await makeStaff(await signUp(page, 'staff-axe'))
-  for (const path of [`/is/innsendingar/starfsfolk`, `/en/submissions/staff`]) {
+  for (const path of [
+    `/is/stjornbord`,
+    `/en/admin`,
+    `/is/stjornbord/verkefni`,
+    `/en/admin/projects`,
+    `/is/stjornbord/beidnir`,
+    `/en/admin/requests`,
+    `/is/stjornbord/notendur`,
+    `/en/admin/users`,
+    `/is/stjornbord/verkfaeri`,
+    `/en/admin/tools`,
+  ]) {
     await page.goto(`${path}`)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     const results = await new AxeBuilder({ page })

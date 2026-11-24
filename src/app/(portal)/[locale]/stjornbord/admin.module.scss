@@ -1,0 +1,887 @@
+// The admin (Stjórnborð): simple, not purely functional. Compact sections divided by hairlines under
+// the app head, dense hairline tables with status tags, FormParts' underlined controls, and
+// the shared buttons and notice from `_awards-ui.scss`.
+@use '../../../../styles/breakpoints' as bp;
+@use '../../../../styles/awards-ui' as ui;
+
+// The page body under `AppHead`: the gutter and the space before the footer, without the
+// band-sized gap `PageSection` puts above its content.
+.page {
+  display: grid;
+  gap: clamp(36px, 4vw, 56px);
+  min-width: 0;
+  padding: clamp(28px, 3.5vw, 48px) max(24px, env(safe-area-inset-right, 0px)) var(--page-pad-bottom)
+    max(24px, env(safe-area-inset-left, 0px));
+}
+
+// The export and the reminders side by side on wide screens.
+.tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(36px, 4vw, 56px) clamp(28px, 4vw, 64px);
+
+  @include bp.below(bp.$md) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.part {
+  min-width: 0;
+  padding-top: clamp(20px, 2.4vw, 28px);
+  border-top: 1px solid var(--line);
+}
+
+.heading {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
+  font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+  line-height: 1.15;
+}
+
+.subheading {
+  margin: 28px 0 10px;
+  @include ui.mono-label;
+}
+
+.text,
+.note {
+  max-width: 62ch;
+  margin: 0 0 16px;
+  overflow-wrap: anywhere;
+}
+
+.text {
+  color: var(--color-lavender);
+  font-stretch: var(--stretch-body);
+  letter-spacing: var(--tracking-body);
+}
+
+.note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.summary {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.wrap {
+  overflow-wrap: anywhere;
+}
+
+.pre {
+  white-space: pre-wrap;
+}
+
+.error {
+  margin: 0 0 12px;
+  color: var(--accent-yellow);
+}
+
+.srOnly {
+  @include ui.sr-only;
+}
+
+// ── Notices ──
+
+.result {
+  @include ui.notice(var(--accent-yellow));
+  max-width: 980px;
+  margin: 0;
+
+  p {
+    margin: 0 0 6px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  ul {
+    margin: 6px 0 0;
+    padding-left: 20px;
+    color: var(--color-lavender);
+  }
+}
+
+// The reminders' answer sits under its button.
+.part > .result {
+  margin-top: 16px;
+}
+
+.resultTitle {
+  @include ui.notice-title;
+}
+
+// ── Buttons ──
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.primary {
+  @include ui.button-primary;
+}
+
+.secondary {
+  @include ui.button-secondary;
+}
+
+.secondarySmall,
+.small {
+  @include ui.button-secondary;
+  @include ui.button-small;
+}
+
+.small {
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+// The requests filter: three links read as one segmented control.
+.segments {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+}
+
+.segment {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  text-decoration: none;
+
+  & + & {
+    border-left: 0;
+  }
+
+  &:hover {
+    background: var(--ink-2);
+  }
+
+  &[aria-current='true'] {
+    border-color: var(--color-violet);
+    background: var(--color-violet);
+  }
+
+  &:focus-visible {
+    position: relative;
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+// ── Controls (FormParts' underlined inputs) ──
+
+.filter,
+.bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px 28px;
+  margin: 0 0 20px;
+}
+
+.bulk {
+  margin: 20px 0 0;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+  min-width: min(12rem, 100%);
+
+  > span,
+  > label {
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+  }
+
+  select {
+    @include ui.select;
+    cursor: pointer;
+  }
+
+  // Selects and text inputs share one height, so labels and underlines line up in a row.
+  > select,
+  > input {
+    height: 50px;
+  }
+}
+
+.searchField {
+  flex: 1 1 16rem;
+  max-width: 28rem;
+}
+
+.dateInput {
+  width: auto;
+  max-width: 100%;
+  color-scheme: dark;
+}
+
+// ── Tables ──
+
+// Scrolls sideways where the table is wider than its column (the sidebar takes some of the
+// width, so this can happen on a laptop too); a named, focusable region so a keyboard can
+// scroll it. The page itself never scrolls sideways.
+.tableWrap {
+  // Positioned, so visually hidden text in the table (absolutely placed) is clipped by the
+  // region rather than widening the page.
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+
+  // Narrow screens scroll the region sideways rather than crushing the columns.
+  @include bp.below(bp.$md) {
+    min-width: 44rem;
+  }
+
+  th,
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th:first-child,
+  td:first-child {
+    padding-left: 0;
+  }
+
+  thead th {
+    @include ui.mono-label;
+    padding-block: 8px;
+    border-bottom-color: var(--muted);
+    white-space: nowrap;
+  }
+
+  tbody th {
+    font-weight: var(--weight-semibold);
+  }
+
+  tbody tr:hover {
+    background: var(--ink-2);
+  }
+
+  a {
+    color: inherit;
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: var(--color-violet-light);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+
+  input[type='checkbox'] {
+    @include ui.checkbox;
+    vertical-align: middle;
+  }
+}
+
+.stickyHead thead th {
+  @include bp.above(bp.$lg) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--color-black);
+  }
+}
+
+.checkCol {
+  width: 1%;
+}
+
+.sortLink {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 4px;
+
+  th[aria-sort] & {
+    color: var(--color-white);
+    text-decoration-color: currentcolor;
+  }
+}
+
+.tag {
+  @include ui.status-tag;
+  @include ui.status-tones;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0 0;
+}
+
+// ── Entry view ──
+
+// Label and value in hairline rows.
+.facts {
+  display: grid;
+  grid-template-columns: minmax(8rem, 16rem) minmax(0, 1fr);
+  margin: 0 0 16px;
+  border-bottom: 1px solid var(--line);
+
+  dt,
+  dd {
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  dt {
+    padding-right: 16px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  // A field is a dt/dd pair in a wrapper (valid in a dl); the wrapper takes the grid's place.
+  > .fact {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+  }
+
+  @include bp.below(bp.$sm) {
+    grid-template-columns: minmax(0, 1fr);
+
+    > .fact {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    dd {
+      padding-top: 0;
+      border-top: 0;
+    }
+  }
+}
+
+.fact {
+  min-width: 0;
+}
+
+.plainList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.imageLink {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  margin-top: 8px;
+  color: inherit;
+
+  img {
+    display: block;
+    width: 160px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: contain;
+    border: 1px solid var(--line);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.credentials {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    @include ui.notice(var(--color-violet));
+  }
+
+  .facts {
+    margin: 0;
+    border-bottom: 0;
+
+    > dt:first-of-type,
+    > dt:first-of-type + dd {
+      border-top: 0;
+    }
+  }
+}
+
+// ── Requests (entry view) ──
+
+.requestList {
+  display: grid;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.request {
+  padding: 16px 0 20px 16px;
+  border-top: 1px solid var(--line);
+  border-left: 4px solid var(--color-violet-light);
+
+  &[data-status='overdue'] {
+    border-left-color: var(--accent-yellow);
+  }
+
+  &[data-status='resolved'] {
+    border-left-color: var(--line);
+  }
+}
+
+.requestHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: var(--weight-semibold);
+}
+
+.threadHeading {
+  margin: 12px 0 6px;
+  @include ui.mono-label;
+}
+
+.thread {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding-left: 12px;
+    border-left: 3px solid var(--line);
+    overflow-wrap: anywhere;
+
+    &[data-side='staff'] {
+      border-left-color: var(--color-violet);
+    }
+  }
+
+  .pre {
+    display: block;
+    color: var(--color-lavender);
+  }
+}
+
+.requestActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px 24px;
+  margin-top: 12px;
+}
+
+.replyForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  flex: 1 1 24rem;
+  min-width: 0;
+
+  .field {
+    flex: 1 1 18rem;
+  }
+}
+
+.shortTextarea {
+  min-height: 72px;
+}
+
+.requestForm {
+  display: grid;
+  gap: 8px;
+  max-width: 44rem;
+
+  .note {
+    margin: -4px 0 4px;
+  }
+
+  input[type='checkbox'] {
+    @include ui.checkbox;
+  }
+}
+
+// A field's label above its control.
+.block {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+}
+
+.fieldset {
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+
+  legend {
+    padding: 0;
+    margin-bottom: 6px;
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+  }
+}
+
+.checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+}
+
+// ── The portal admin's additions (lists, overview, users) ──
+
+// A list page's one section: no hairline above it, the page head already has one.
+.listSection {
+  min-width: 0;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.filter {
+  // A field with a hint under it is taller; the controls line up along their tops.
+  align-items: flex-start;
+  padding-top: 0;
+}
+
+.filterActions {
+  align-self: flex-start;
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  min-height: 50px;
+}
+
+.quiet {
+  @include ui.button-quiet;
+  text-decoration: none;
+}
+
+.destructive {
+  @include ui.button-destructive;
+}
+
+// A second, quieter line in a table cell (the creator's email, "in an invoice file").
+.cellNote {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  .table & {
+    text-align: right;
+  }
+}
+
+.roleTag {
+  @include ui.tag;
+  border-color: var(--color-violet);
+}
+
+.entryList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+  }
+}
+
+// Pager: previous, the page numbers, next.
+.pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pageLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  color: var(--color-white);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--muted);
+  }
+
+  &[aria-current='page'] {
+    border-color: var(--color-violet);
+    background: var(--color-violet);
+    font-weight: 700;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.gap {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 4px;
+  color: var(--muted);
+}
+
+// ── Overview ──
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stat {
+  display: grid;
+  gap: 6px;
+  height: 100%;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-top: 6px solid var(--line);
+  background: var(--ink-2);
+  color: var(--color-white);
+  text-decoration: none;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: var(--muted);
+    border-top-color: var(--color-violet);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  &[data-attention] {
+    border-top-color: var(--accent-yellow);
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}
+
+.statLabel {
+  @include ui.mono-label;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  font-stretch: var(--stretch-count);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.statNote {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 56px);
+
+  @include bp.below(bp.$lg) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.deadlineList {
+  display: grid;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cellNote {
+    flex-basis: 100%;
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+    font-weight: 600;
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: var(--color-violet-light);
+    }
+  }
+}
+
+.moreLink {
+  margin: 12px 0 0;
+
+  a {
+    color: var(--color-white);
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-underline-offset: 4px;
+
+    &:hover {
+      color: var(--color-violet-light);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 3px;
+    }
+  }
+}
+
+.counts {
+  tfoot th,
+  tfoot td {
+    border-bottom: 0;
+    border-top: 1px solid var(--muted);
+    font-weight: 700;
+  }
+}
+
+.activity {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: 4px 20px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    overflow-wrap: anywhere;
+
+    @include bp.below(bp.$sm) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  a {
+    color: inherit;
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: var(--color-violet-light);
+    }
+  }
+}
+
+.activityWhen {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}

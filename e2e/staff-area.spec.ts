@@ -53,7 +53,7 @@ async function signUp(page: Page, label: string): Promise<string> {
 
 async function makeStaff(email: string) {
   const [u] = await db.select().from(schema.user).where(eq(schema.user.email, email))
-  await db.insert(schema.userRole).values({ userId: u.id, role: 'staff' })
+  await db.insert(schema.userRole).values({ userId: u.id, role: 'admin' })
   return u.id
 }
 
@@ -136,8 +136,8 @@ test.afterAll(async () => {
   await close()
 })
 
-const listUrl = (l: 'is' | 'en' = 'is') => urlFor(l, '/innsendingar/starfsfolk')
-const entryUrl = (id: string, l: 'is' | 'en' = 'is') => urlFor(l, `/innsendingar/starfsfolk/${id}`)
+const listUrl = (l: 'is' | 'en' = 'is') => urlFor(l, '/stjornbord/verkefni')
+const entryUrl = (id: string, l: 'is' | 'en' = 'is') => urlFor(l, `/stjornbord/verkefni/${id}`)
 
 async function staffPage(page: Page, label: string) {
   const staffId = await makeStaff(await signUp(page, label))
@@ -167,7 +167,7 @@ test('the entries list filters by category, status and title, sorts, and links t
 
   // Narrow to this run's rows with the title search; drafts are hidden by default.
   await page.goto(listUrl())
-  await page.getByLabel('Leita í heiti verkefnis').fill(RUN)
+  await page.getByLabel('Leita', { exact: true }).fill(RUN)
   await page.getByRole('button', { name: 'Sía' }).click()
   await expect(row(ids.student)).toBeVisible()
   await expect(row(ids.other)).toBeVisible()
@@ -206,7 +206,7 @@ test('the entries list filters by category, status and title, sorts, and links t
 
   // The title opens the entry.
   await page.getByRole('link', { name: T('Nemendavefur') }).click()
-  await expect(page).toHaveURL(new RegExp(`/innsendingar/starfsfolk/${ids.student}$`))
+  await expect(page).toHaveURL(new RegExp(`/stjornbord/verkefni/${ids.student}$`))
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Færsla')
   await expect(page.getByTestId('jury-section')).toContainText(T('Nemendavefur'))
 })
@@ -321,7 +321,7 @@ test('transferring a project moves it to the new creator, is logged, and refuses
     const context = await browser.newContext({ baseURL: baseURL() })
     await actAs(context, baseURL(), userId)
     const p = await context.newPage()
-    await p.goto(urlFor('is', '/innsendingar/minar'))
+    await p.goto(urlFor('is', '/minar-sidur/verkefni'))
     const text = await p.locator('main').innerText()
     await context.close()
     return text
@@ -352,7 +352,7 @@ test('transferring a project moves it to the new creator, is logged, and refuses
 
 test('"send reminders now" runs the reminder sweeps and reports what went out', async ({ page }) => {
   await staffPage(page, 'staff-reminders')
-  await page.goto(listUrl())
+  await page.goto(urlFor('is', '/stjornbord/verkfaeri'))
   const section = page.locator('section[aria-labelledby="staff-reminders"]')
   await expect(section.getByRole('heading', { level: 2 })).toHaveText('Áminningar')
   await section.getByRole('button', { name: 'Senda áminningar núna' }).click()

@@ -1,12 +1,13 @@
-import { and, asc, count, desc, eq, ilike, inArray, isNull, sql, type SQL } from 'drizzle-orm'
+import { and, asc, count, desc, eq, exists, ilike, inArray, isNull, not, or, sql, type SQL } from 'drizzle-orm'
 import type { AwardsDb } from '../db/client'
-import { billingProfile, category, entry, project, projectAnswer } from '../db/schema'
+import { billingProfile, category, entry, entryEvent, project, projectAnswer, user } from '../db/schema'
 import { ENTRY_STATUSES, SUBMITTED_LIKE_STATUSES, type EntryStatus } from '../types'
 
 /**
- * The staff area's entries list: filtered by category, status and a search on the
- * project title, sorted, and paginated in the database. Plain query; the page only
- * renders what comes back.
+ * The admin's entries list (Stjórnborð → Verkefni): filtered by category, status and
+ * billing, searched on the project title, the payer and the creator, sorted, and paginated
+ * in the database, so it holds up at hundreds of entries. Plain query; the page only renders
+ * what comes back, and every view is a URL (`parseListSearch`).
  */
 
 export const PAGE_SIZE = 25
@@ -22,11 +23,20 @@ export type SortDir = 'asc' | 'desc'
 export type StatusFilter = 'submitted' | 'all' | EntryStatus
 export const STATUS_FILTERS: readonly StatusFilter[] = ['submitted', 'all', ...ENTRY_STATUSES]
 
+/**
+ * Billing and invoicing, as far as the database knows it: whether the project has a billing
+ * profile, and whether the entry has been in an invoicing export (an `invoicing_exported`
+ * event). `any` is no filter.
+ */
+export const BILLING_FILTERS = ['any', 'missing', 'present', 'exported', 'not_exported'] as const
+export type BillingFilter = (typeof BILLING_FILTERS)[number]
+
 export type ListParams = {
   editionId: string
   categoryId?: string
   status?: StatusFilter
-  /** Matched anywhere in the project title, case-insensitively. */
+  billing?: BillingFilter
+  /** Matched anywhere in the project title, the payer's name or the creator's name or email, case-insensitively. */
   search?: string
   sort?: SortKey
   dir?: SortDir
@@ -43,6 +53,10 @@ export type StaffEntryRow = {
   categoryName: string
   submittedAt: Date | null
   company: string | null
+  creatorName: string
+  creatorEmail: string
+  /** Has been in at least one invoicing export. */
+  exported: boolean
 }
 
 export type StaffEntryPage = {
@@ -64,12 +78,14 @@ const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v
 export function parseListSearch(search: Record<string, string | string[] | undefined>): {
   categoryId?: string
   status: StatusFilter
+  billing: BillingFilter
   q: string
   sort: SortKey
   dir: SortDir
   page: number
 } {
   const status = first(search.status) ?? ''
+  const billing = first(search.billing) ?? ''
   const sort = first(search.sort) ?? ''
   const page = Number(first(search.page))
   return {
@@ -77,6 +93,9 @@ export function parseListSearch(search: Record<string, string | string[] | undef
     status: (STATUS_FILTERS as readonly string[]).includes(status)
       ? (status as StatusFilter)
       : 'submitted',
+    billing: (BILLING_FILTERS as readonly string[]).includes(billing)
+      ? (billing as BillingFilter)
+      : 'any',
     q: (first(search.q) ?? '').trim().slice(0, 100),
     sort: (SORT_KEYS as readonly string[]).includes(sort) ? (sort as SortKey) : 'submitted',
     dir: first(search.dir) === 'desc' ? 'desc' : 'asc',
@@ -90,6 +109,36 @@ function statusCondition(status: StatusFilter): SQL | undefined {
   if (status === 'all') return undefined
   if (status === 'submitted') return inArray(entry.status, [...SUBMITTED_LIKE_STATUSES])
   return eq(entry.status, status)
+}
+
+// Qualified in full: it is used inside correlated subqueries.
+const exportedEntry = sql`"entry_event"."entry_id" = "entry"."id" and "entry_event"."type" = 'invoicing_exported'`
+
+function billingCondition(db: AwardsDb, billing: BillingFilter): SQL | undefined {
+  const wasExported = exists(db.select({ one: sql`1` }).from(entryEvent).where(exportedEntry))
+  switch (billing) {
+    case 'missing':
+      return isNull(project.billingProfileId)
+    case 'present':
+      return sql`${project.billingProfileId} is not null`
+    case 'exported':
+      return wasExported
+    case 'not_exported':
+      return not(wasExported)
+    default:
+      return undefined
+  }
+}
+
+function searchCondition(search: string | undefined): SQL | undefined {
+  if (!search) return undefined
+  const like = `%${escapeLike(search)}%`
+  return or(
+    ilike(titleText, like),
+    ilike(billingProfile.companyName, like),
+    ilike(user.name, like),
+    ilike(user.email, like),
+  )
 }
 
 function orderBy(sort: SortKey, dir: SortDir): SQL[] {
@@ -111,19 +160,21 @@ function orderBy(sort: SortKey, dir: SortDir): SQL[] {
 
 export async function listStaffEntries(db: AwardsDb, params: ListParams): Promise<StaffEntryPage> {
   const pageSize = Math.max(1, params.pageSize ?? PAGE_SIZE)
-  const search = params.search?.trim()
   const where = and(
     eq(project.editionId, params.editionId),
     isNull(project.deletedAt),
     isNull(entry.deletedAt),
     params.categoryId ? eq(entry.categoryId, params.categoryId) : undefined,
     statusCondition(params.status ?? 'submitted'),
-    search ? ilike(titleText, `%${escapeLike(search)}%`) : undefined,
+    billingCondition(db, params.billing ?? 'any'),
+    searchCondition(params.search?.trim()),
   )
   const [{ total }] = await db
     .select({ total: count() })
     .from(entry)
     .innerJoin(project, eq(project.id, entry.projectId))
+    .innerJoin(user, eq(user.id, project.createdBy))
+    .leftJoin(billingProfile, eq(billingProfile.id, project.billingProfileId))
     .leftJoin(
       projectAnswer,
       and(
@@ -147,9 +198,13 @@ export async function listStaffEntries(db: AwardsDb, params: ListParams): Promis
       title: titleText,
       categoryName: category.name,
       company: billingProfile.companyName,
+      creatorName: user.name,
+      creatorEmail: user.email,
+      exported: sql<boolean>`exists (select 1 from "entry_event" where ${exportedEntry})`,
     })
     .from(entry)
     .innerJoin(project, eq(project.id, entry.projectId))
+    .innerJoin(user, eq(user.id, project.createdBy))
     .innerJoin(category, eq(category.id, entry.categoryId))
     .leftJoin(billingProfile, eq(billingProfile.id, project.billingProfileId))
     .leftJoin(
@@ -174,6 +229,9 @@ export async function listStaffEntries(db: AwardsDb, params: ListParams): Promis
       categoryName: r.categoryName.is,
       submittedAt: r.submittedAt,
       company: r.company ?? null,
+      creatorName: r.creatorName,
+      creatorEmail: r.creatorEmail,
+      exported: r.exported === true,
     })),
     total,
     page,
