@@ -43,6 +43,7 @@ export function SubmitPanel({
   const [target, setTarget] = useState<Target | null>(null)
   const [pressedBlocked, setPressedBlocked] = useState(false)
   const summaryRef = useRef<HTMLDivElement>(null)
+  const focusSummary = useRef(false)
   const blockersRef = useRef<HTMLDivElement>(null)
 
   const nameOf = (slug: string) => getCategory(slug)?.name[locale] ?? slug
@@ -138,13 +139,23 @@ export function SubmitPanel({
       acceptTerms: checked || view.terms.accepted,
     })
     if (!ok) return
+    focusSummary.current = true
     setTarget(null)
-    requestAnimationFrame(() => summaryRef.current?.focus())
   }
 
   const entryTargets = (t: Target) =>
     t.entryId ? drafts.filter((e) => e.id === t.entryId) : drafts
   const result = submitOutcome && 'result' in submitOutcome ? submitOutcome.result : null
+
+  // Move focus to the summary once it is rendered and the dialog is gone. Doing it in an
+  // effect (not a timer after `setTarget`) matters: closing a native dialog hands focus back
+  // to the button that opened it, and React runs the dialog's cleanup before this effect,
+  // so the summary reliably ends up focused instead of racing the dialog.
+  useEffect(() => {
+    if (!focusSummary.current || target || !result) return
+    focusSummary.current = false
+    summaryRef.current?.focus()
+  }, [target, result])
 
   return (
     <div className={styles.panel} data-submit-panel data-slot="submit">
