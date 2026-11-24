@@ -239,15 +239,15 @@ test.describe('with projects', () => {
     expect(filtered).toBeGreaterThan(0)
     expect(filtered).toBeLessThan(5)
 
-    // Selection: checkboxes by keyboard, the bulk slot counts them (the actions are #166).
+    // Selection: checkboxes by keyboard, the bulk bar counts them.
     await page.getByRole('button', { name: 'Clear filters' }).click()
     const first = page.getByRole('checkbox', { name: /^Select (?!all)/ }).first()
     await first.focus()
     await page.keyboard.press('Space')
     await expect(first).toBeChecked()
-    await expect(page.locator('[data-slot="bulk-actions"]')).toHaveText('1 selected')
+    await expect(page.locator('[data-selected-count]')).toHaveText('1 selected')
     await page.getByRole('checkbox', { name: 'Select all shown' }).check()
-    await expect(page.locator('[data-slot="bulk-actions"]')).toHaveText('5 selected')
+    await expect(page.locator('[data-selected-count]')).toHaveText('5 selected')
 
     // Back to cards.
     await toggle.getByRole('button', { name: 'Cards' }).click()

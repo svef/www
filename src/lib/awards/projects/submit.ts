@@ -4,6 +4,7 @@ import { billingProfile, category, entry, termsAcceptance, user } from '../db/sc
 import { receiptEmail, sendEmail, type OutgoingEmail } from '../email'
 import { getCategory } from '../categories'
 import { priceFor } from '../pricing'
+import { selectionViolations } from '../selection'
 import { transition } from '../status'
 import type { EntryStatus } from '../types'
 import { validateEntryAnswers, validateProjectAnswers } from '../validation'
@@ -32,7 +33,7 @@ import {
  * sending a second receipt.
  */
 
-export type SkipReason = 'project_incomplete' | 'entry_incomplete'
+export type SkipReason = 'project_incomplete' | 'entry_incomplete' | 'category_conflict'
 
 export type SubmittedEntry = {
   entryId: string
@@ -58,8 +59,13 @@ export async function submitEntries(
   args: {
     userId: string
     projectId: string
-    /** Submit only this entry; omit to submit every draft entry. */
+    /**
+     * Submit only this entry (a draft, or a withdrawn one: that re-prices it now); omit to
+     * submit every draft entry. A withdrawn entry is never picked up by the all-at-once call.
+     */
     entryId?: string
+    /** Submit exactly these entries (drafts or withdrawn ones). Used by the dashboard's bulk submit. */
+    entryIds?: string[]
     /** The terms checkbox. Not needed again when this project already accepted the version in force. */
     acceptTerms: boolean
   } & Clock,
@@ -100,6 +106,12 @@ export async function submitEntries(
         candidates = []
         already.push(one.category)
       }
+    } else if (args.entryIds) {
+      const wanted = new Set(args.entryIds)
+      const picked = ctx.entries.filter((e) => wanted.has(e.id))
+      if (picked.length !== wanted.size) throw new AwardsError('not_found', 'Entry not found.')
+      candidates = picked.filter((e) => e.status === 'draft' || e.status === 'withdrawn')
+      already.push(...picked.filter((e) => !candidates.includes(e)).map((e) => e.category))
     } else {
       already.push(
         ...ctx.entries.filter((e) => e.status === 'submitted').map((e) => e.category),
@@ -136,7 +148,18 @@ export async function submitEntries(
       throw new AwardsError('terms_required', 'Accept the terms to submit.')
 
     // Validation sees the whole live project: its categories decide which fields apply.
-    const categories = ctx.entries.filter((e) => e.status !== 'withdrawn').map((e) => e.category)
+    // A withdrawn entry being submitted again counts as part of the project from now on.
+    const categories = [
+      ...new Set([
+        ...ctx.entries.filter((e) => e.status !== 'withdrawn').map((e) => e.category),
+        ...candidates.map((e) => e.category),
+      ]),
+    ]
+    const conflicts = new Set(
+      selectionViolations(categories).flatMap((v) =>
+        'categories' in v ? v.categories : [],
+      ),
+    )
     const projectCheck = validateProjectAnswers(
       categories,
       { ...ctx.answers, termsAccepted: true },
@@ -155,6 +178,15 @@ export async function submitEntries(
 
     const actor = role === 'creator' ? 'creator' : 'editor'
     for (const e of candidates) {
+      if (e.status === 'withdrawn' && conflicts.has(e.category)) {
+        result.skipped.push({
+          entryId: e.id,
+          category: e.category,
+          reason: 'category_conflict',
+          fieldKeys: [],
+        })
+        continue
+      }
       if (!projectCheck.ok) {
         result.skipped.push({
           entryId: e.id,

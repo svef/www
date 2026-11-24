@@ -9,6 +9,7 @@ import { deadlineLine } from '@/lib/awards/dashboard/deadline'
 import { invoiceNotes, entriesWithoutBilling } from '@/lib/awards/dashboard/invoice'
 import { loadDashboard } from '@/lib/awards/dashboard/queries'
 import { needsAction } from '@/lib/awards/dashboard/rank'
+import { listBillingProfiles } from '@/lib/awards/billing/service'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import { getCurrentUserId, getRequestNow, NotSignedInError } from '@/lib/awards/session'
 import { isLocale, localePath } from '@/lib/i18n'
@@ -43,8 +44,14 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   }
 
   const now = await getRequestNow()
-  const data = await loadDashboard(getAwardsDb(), { userId, now })
+  const db = getAwardsDb()
+  const data = await loadDashboard(db, { userId, now })
   if (!data) notFound()
+  const billingProfiles = (await listBillingProfiles(db, { userId })).map((b) => ({
+    id: b.id,
+    companyName: b.companyName,
+    kennitala: b.kennitala,
+  }))
   const c = dashboardCopy[locale]
   const ctx = { now, ...data.edition }
 
@@ -59,6 +66,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           notes={invoiceNotes(data.projects)}
           withoutBilling={entriesWithoutBilling(data.projects)}
           needsActionIds={data.projects.filter((p) => needsAction(p, ctx)).map((p) => p.id)}
+          billingProfiles={billingProfiles}
           signOutTo={localePath('/innskraning', locale)}
         />
       </PageSection>

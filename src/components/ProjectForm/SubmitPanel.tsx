@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { getCategory } from '@/lib/awards/categories'
+import { earlyBirdPrice } from '@/lib/awards/pricing'
+import type { EntryView } from '@/lib/awards/projects/types'
 import { authClient } from '@/lib/awards/auth/client'
 import { FIELD_DEFINITIONS, PROJECT_FIELDS, type FieldDefinition } from '@/lib/awards/fields'
 import { isSubmittedLike, toMs } from '@/lib/awards/types'
@@ -12,7 +14,7 @@ import { goToField } from './focus'
 import { formatMoney, lastDayBefore } from './format'
 import styles from './Submit.module.scss'
 import { SUBMIT_STEP_FIELDS } from './sections'
-import type { MissingItem, PriceBreakdown } from './summary'
+import { missingItems, type MissingItem, type PriceBreakdown } from './summary'
 import type { ProjectFormApi } from './useProjectForm'
 
 /**
@@ -42,6 +44,15 @@ export function SubmitPanel({
   const [checked, setChecked] = useState(false)
   const [target, setTarget] = useState<Target | null>(null)
   const [pressedBlocked, setPressedBlocked] = useState(false)
+  const [withdrawing, setWithdrawing] = useState<EntryView | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+  const noticeRef = useRef<HTMLParagraphElement>(null)
+  // The message takes focus once the dialog has closed and handed focus back.
+  useEffect(() => {
+    if (!notice) return
+    const t = setTimeout(() => noticeRef.current?.focus(), 50)
+    return () => clearTimeout(t)
+  }, [notice])
   const summaryRef = useRef<HTMLDivElement>(null)
   const focusSummary = useRef(false)
   const blockersRef = useRef<HTMLDivElement>(null)
@@ -49,6 +60,8 @@ export function SubmitPanel({
   const nameOf = (slug: string) => getCategory(slug)?.name[locale] ?? slug
   const drafts = view.entries.filter((e) => e.status === 'draft')
   const live = view.entries.filter((e) => e.status !== 'withdrawn')
+  const withdrawn = view.entries.filter((e) => e.status === 'withdrawn')
+  const isCreator = view.role === 'creator'
   const hasSubmitted = live.some((e) => isSubmittedLike(e.status))
   const termsOk = view.terms.accepted || checked
 
@@ -63,13 +76,27 @@ export function SubmitPanel({
       timeZone: 'UTC',
     }).format(new Date(iso))
 
+  // With nothing but withdrawn entries left, what stops a re-submit is judged with their
+  // categories counted in (the review's list only counts live entries).
+  const effectiveMissing = useMemo(
+    () =>
+      drafts.length > 0 || withdrawn.length === 0
+        ? missing
+        : missingItems(
+            [...new Set([...form.categories, ...withdrawn.map((e) => e.category)])],
+            form.answers,
+            form.billingProfileId,
+          ),
+    [drafts.length, withdrawn, missing, form.categories, form.answers, form.billingProfileId],
+  )
+
   const verified = view.viewer.emailVerified
   const blockers: { key: string; node: React.ReactNode }[] = []
   if (!opened)
     blockers.push({ key: 'not-open', node: copy.submitBlockNotOpen(dateLong(view.intakeOpensAt)) })
   if (closed) blockers.push({ key: 'closed', node: copy.submitBlockClosed })
   if (form.readOnly) blockers.push({ key: 'lock', node: copy.submitBlockLock })
-  for (const m of missing)
+  for (const m of effectiveMissing)
     blockers.push({
       key: m.key,
       node: (
@@ -108,6 +135,9 @@ export function SubmitPanel({
 
   const unverified = !verified
   const blocked = blockers.length > 0 || unverified || submitting
+  // Submitting a withdrawn entry again is not stopped by "nothing left to submit".
+  const resubmitBlocked =
+    blockers.some((b) => b.key !== 'nothing') || unverified || submitting
 
   // Fields still editable after submitting, and those that lock (visible ones only).
   const { editable, locked } = useMemo(() => {
@@ -124,7 +154,8 @@ export function SubmitPanel({
   }, [form.categories, form.answers, locale])
 
   function open(next: Target) {
-    if (blocked) {
+    const stopped = next.entryId && withdrawn.some((e) => e.id === next.entryId) ? resubmitBlocked : blocked
+    if (stopped) {
       setPressedBlocked(true)
       blockersRef.current?.focus()
       return
@@ -144,7 +175,7 @@ export function SubmitPanel({
   }
 
   const entryTargets = (t: Target) =>
-    t.entryId ? drafts.filter((e) => e.id === t.entryId) : drafts
+    t.entryId ? [...drafts, ...withdrawn].filter((e) => e.id === t.entryId) : drafts
   const result = submitOutcome && 'result' in submitOutcome ? submitOutcome.result : null
 
   // Move focus to the summary once it is rendered and the dialog is gone. Doing it in an
@@ -206,6 +237,16 @@ export function SubmitPanel({
         </div>
       )}
 
+      <p
+        ref={noticeRef}
+        tabIndex={-1}
+        role="status"
+        className={notice ? styles.done : styles.srOnly}
+        data-withdraw-done
+      >
+        {notice}
+      </p>
+
       {live.length > 0 && hasSubmitted && (
         <div className={styles.block}>
           <h3 className={styles.title}>{copy.entriesTitle}</h3>
@@ -221,6 +262,21 @@ export function SubmitPanel({
                       e.price.discountPercent > 0 ? copy.tierEarly : copy.tierRegular,
                     )}
                   </span>
+                )}
+                {e.status === 'submitted' && isCreator && (
+                  <button
+                    type="button"
+                    className={styles.secondary}
+                    aria-disabled={closed || form.readOnly || submitting}
+                    data-withdraw-entry={e.category}
+                    onClick={() => {
+                      if (closed || form.readOnly || submitting) return
+                      setNotice(null)
+                      setWithdrawing(e)
+                    }}
+                  >
+                    {copy.withdrawButton(nameOf(e.category))}
+                  </button>
                 )}
                 {e.status === 'draft' && (
                   <button
@@ -240,8 +296,43 @@ export function SubmitPanel({
         </div>
       )}
 
-      {drafts.length > 0 && (
+      {withdrawn.length > 0 && (
+        <div className={styles.block}>
+          <h3 className={styles.title}>{copy.withdrawnTitle}</h3>
+          <ul className={styles.entries} data-withdrawn-entries>
+            {withdrawn.map((e) => {
+              const regular = getCategory(e.category)?.price ?? 0
+              const early = prices.earlyAvailable
+              const price = early
+                ? earlyBirdPrice(regular, view.earlyBird.discountPercent, view.earlyBird.rounding)
+                : regular
+              return (
+                <li key={e.id} data-entry-row={e.category} data-status="withdrawn">
+                  <span className={styles.entryName}>{nameOf(e.category)}</span>
+                  <span className={styles.status}>{copy.status.withdrawn}</span>
+                  <span className={styles.entryPrice}>
+                    {copy.withdrawnNow(money(price), early ? copy.tierEarly : copy.tierRegular)}
+                  </span>
+                  <button
+                    type="button"
+                    className={styles.secondary}
+                    aria-disabled={resubmitBlocked || closed}
+                    data-resubmit-entry={e.category}
+                    onClick={() => open({ entryId: e.id, categories: [e.category] })}
+                  >
+                    {copy.resubmit(nameOf(e.category))}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+          <p className={styles.muted}>{copy.resubmitNote}</p>
+        </div>
+      )}
+
+      {(drafts.length > 0 || (withdrawn.length > 0 && !closed)) && (
         <>
+          {(drafts.length > 0 || !view.terms.accepted) && (
           <div className={styles.block}>
             <h3 className={styles.title} id={`${termsId}-title`}>
               {copy.termsTitle}
@@ -277,6 +368,7 @@ export function SubmitPanel({
               </label>
             )}
           </div>
+          )}
 
           {unverified && (
             <VerifyNotice email={view.viewer.email} locale={locale} />
@@ -300,6 +392,7 @@ export function SubmitPanel({
             </div>
           )}
 
+          {drafts.length > 0 && (
           <div className={styles.actions}>
             <button
               type="button"
@@ -321,7 +414,25 @@ export function SubmitPanel({
                 : copy.submitEarlyOver}
             </p>
           </div>
+          )}
         </>
+      )}
+
+      {withdrawing && (
+        <WithdrawDialog
+          locale={locale}
+          entry={withdrawing}
+          earlyBird={view.earlyBird}
+          earlyOpen={prices.earlyAvailable}
+          onClose={() => setWithdrawing(null)}
+          onConfirm={async () => {
+            const r = await form.withdraw(withdrawing.id)
+            if (!r.ok) return copy.withdrawErrors[r.error.code] ?? copy.withdrawErrors.unexpected
+            setWithdrawing(null)
+            setNotice(copy.withdrawDone(nameOf(withdrawing.category)))
+            return null
+          }}
+        />
       )}
 
       {target && (
@@ -338,9 +449,18 @@ export function SubmitPanel({
           lines={entryTargets(target).map((e) => {
             const line = prices.lines.find((l) => l.slug === e.category)
             const early = prices.earlyAvailable
+            // A withdrawn entry is not in the running totals; price it from the catalogue.
+            const regular = getCategory(e.category)?.price ?? 0
+            const amount = line
+              ? early
+                ? line.early
+                : line.regular
+              : early
+                ? earlyBirdPrice(regular, view.earlyBird.discountPercent, view.earlyBird.rounding)
+                : regular
             return {
               slug: e.category,
-              amount: line ? (early ? line.early : line.regular) : 0,
+              amount,
               tier: early ? copy.tierEarly : copy.tierRegular,
             }
           })}
@@ -512,6 +632,100 @@ function ConfirmDialog({
             data-confirm-submit
           >
             {submitting ? copy.submitWorking : copy.dialogConfirm}
+          </button>
+        </div>
+      </div>
+    </dialog>
+  )
+}
+
+function WithdrawDialog({
+  locale,
+  entry,
+  earlyBird,
+  earlyOpen,
+  onClose,
+  onConfirm,
+}: {
+  locale: Locale
+  entry: EntryView
+  earlyBird: { endsBefore: string }
+  earlyOpen: boolean
+  onClose: () => void
+  /** Resolves to an error message, or null when it worked (the caller closes the dialog). */
+  onConfirm: () => Promise<string | null>
+}) {
+  const copy = getProjectFormCopy(locale)
+  const ref = useRef<HTMLDialogElement>(null)
+  const titleId = useId()
+  const [working, setWorking] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const money = (n: number) => formatMoney(n, locale, copy.currency)
+
+  useEffect(() => {
+    const d = ref.current
+    if (d && !d.open) d.showModal()
+    return () => d?.close()
+  }, [])
+
+  // The cost is read from the entry's own locked price: what it would cost at the regular price
+  // is what a late re-submit pays, so that is the number the dialog states.
+  const hadEarly = (entry.price?.discountPercent ?? 0) > 0
+  const regular = money(entry.price?.regular ?? getCategory(entry.category)?.price ?? 0)
+  const cost = hadEarly
+    ? earlyOpen
+      ? copy.withdrawEarlyBeforeEnd(lastDayBefore(earlyBird.endsBefore, locale), regular)
+      : copy.withdrawEarlyAfterEnd(regular)
+    : copy.withdrawRegular(regular)
+  const name = getCategory(entry.category)?.name[locale] ?? entry.category
+
+  async function go() {
+    if (working) return
+    setWorking(true)
+    setError(null)
+    const message = await onConfirm()
+    // On success the dialog is unmounted by the caller.
+    setWorking(false)
+    if (message) setError(message)
+  }
+
+  return (
+    <dialog
+      ref={ref}
+      className={styles.dialog}
+      aria-labelledby={titleId}
+      onClose={onClose}
+      onCancel={(e) => {
+        if (working) e.preventDefault()
+      }}
+      onKeyDown={trapTab}
+      data-withdraw-dialog
+    >
+      <div className={styles.dialogBody}>
+        <h2 id={titleId} className={styles.dialogTitle}>
+          {copy.withdrawTitle}
+        </h2>
+        <p>{copy.withdrawIntro(name)}</p>
+        <p className={styles.warn} data-withdraw-cost>
+          {cost}
+        </p>
+        {error && (
+          <p role="alert" className={styles.error} data-withdraw-error>
+            {error}
+          </p>
+        )}
+        <div className={styles.dialogActions}>
+          <button type="button" className={styles.secondary} onClick={onClose} disabled={working}>
+            {copy.dialogCancel}
+          </button>
+          <button
+            type="button"
+            className={styles.primary}
+            onClick={() => void go()}
+            aria-disabled={working}
+            data-confirm-withdraw
+          >
+            {working ? copy.withdrawWorking : copy.withdrawConfirm}
           </button>
         </div>
       </div>

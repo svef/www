@@ -162,9 +162,24 @@ type Strings = {
   doneReceiptFailed: string
   doneAlready: string
   doneSkipped: string
-  skipReason: Record<'project_incomplete' | 'entry_incomplete', string>
+  skipReason: Record<'project_incomplete' | 'entry_incomplete' | 'category_conflict', string>
   submitErrors: Record<string, string>
   submittedNote: string
+  // withdrawing and submitting again (svef/www#166)
+  withdrawButton: (category: string) => string
+  withdrawTitle: string
+  withdrawIntro: (category: string) => string
+  withdrawEarlyBeforeEnd: (lastDay: string, amount: string) => string
+  withdrawEarlyAfterEnd: (amount: string) => string
+  withdrawRegular: (amount: string) => string
+  withdrawConfirm: string
+  withdrawWorking: string
+  withdrawDone: (category: string) => string
+  withdrawErrors: Record<string, string>
+  withdrawnTitle: string
+  withdrawnNow: (price: string, tier: string) => string
+  resubmit: (category: string) => string
+  resubmitNote: string
 }
 
 export type SectionId =
@@ -359,6 +374,7 @@ const en: Strings = {
   skipReason: {
     project_incomplete: 'the project still has something missing',
     entry_incomplete: 'this entry still has something missing',
+    category_conflict: 'another category in the project cannot be combined with this one',
   },
   submitErrors: {
     email_unverified: 'Verify your email address to submit.',
@@ -374,6 +390,30 @@ const en: Strings = {
   },
   submittedNote:
     'Some answers are now locked, and the rest keep saving as you type. Changes to those are logged.',
+  withdrawButton: (c) => `Withdraw ${c}`,
+  withdrawTitle: 'Withdraw this entry?',
+  withdrawIntro: (c) =>
+    `${c} goes back to withdrawn. Its price is no longer locked, and it is not invoiced unless you submit it again.`,
+  withdrawEarlyBeforeEnd: (d, a) =>
+    `This entry has the early-bird price. If you submit it again after ${d} it will cost ${a}${a.endsWith('.') ? '' : '.'}`,
+  withdrawEarlyAfterEnd: (a) =>
+    `This entry has the early-bird price, which is no longer available. If you submit it again it will cost ${a}${a.endsWith('.') ? '' : '.'}`,
+  withdrawRegular: (a) => `This entry has the regular price. If you submit it again it will cost ${a}${a.endsWith('.') ? '' : '.'}`,
+  withdrawConfirm: 'Withdraw entry',
+  withdrawWorking: 'Withdrawing…',
+  withdrawDone: (c) => `${c} was withdrawn. Its price is no longer locked.`,
+  withdrawErrors: {
+    forbidden: 'Only the person who created the project can withdraw an entry.',
+    lock_required: 'Someone else is editing the project, so the entry could not be withdrawn.',
+    intake_closed: 'Submissions have closed, so entries can no longer be withdrawn.',
+    not_withdrawable: 'This entry cannot be withdrawn.',
+    not_found: 'The entry could not be found.',
+    unexpected: 'Something went wrong and nothing was withdrawn. Try again.',
+  },
+  withdrawnTitle: 'Withdrawn entries',
+  withdrawnNow: (p, t) => `${p} if submitted now (${t})`,
+  resubmit: (c) => `Submit ${c} again`,
+  resubmitNote: 'Submitting again prices the entry by the day you do it.',
   status: {
     draft: 'Draft',
     submitted: 'Submitted',
@@ -581,6 +621,7 @@ const is: Strings = {
   skipReason: {
     project_incomplete: 'enn vantar eitthvað í verkefnið',
     entry_incomplete: 'enn vantar eitthvað í þessa innsendingu',
+    category_conflict: 'annar flokkur í verkefninu getur ekki verið með þessum',
   },
   submitErrors: {
     email_unverified: 'Staðfestu netfangið þitt til að senda inn.',
@@ -596,6 +637,30 @@ const is: Strings = {
   },
   submittedNote:
     'Sum svör eru nú læst en hin vistast áfram um leið og þú skrifar. Breytingar á þeim eru skráðar.',
+  withdrawButton: (c) => `Draga ${c} til baka`,
+  withdrawTitle: 'Draga innsendingu til baka?',
+  withdrawIntro: (c) =>
+    `${c} verður dregin til baka. Verðið er þá ekki lengur fest og innsendingin er ekki rukkuð nema þú sendir hana aftur inn.`,
+  withdrawEarlyBeforeEnd: (d, a) =>
+    `Þessi innsending er á snemmskráningarverði. Ef hún er send aftur inn eftir ${d} kostar hún ${a}${a.endsWith('.') ? '' : '.'}`,
+  withdrawEarlyAfterEnd: (a) =>
+    `Þessi innsending er á snemmskráningarverði sem er ekki lengur í boði. Ef hún er send aftur inn kostar hún ${a}${a.endsWith('.') ? '' : '.'}`,
+  withdrawRegular: (a) => `Þessi innsending er á almennu verði. Ef hún er send aftur inn kostar hún ${a}${a.endsWith('.') ? '' : '.'}`,
+  withdrawConfirm: 'Draga til baka',
+  withdrawWorking: 'Dreg til baka…',
+  withdrawDone: (c) => `${c} var dregin til baka. Verðið er ekki lengur fest.`,
+  withdrawErrors: {
+    forbidden: 'Aðeins sá sem stofnaði verkefnið getur dregið innsendingu til baka.',
+    lock_required: 'Einhver annar er að breyta verkefninu og því var ekki hægt að draga innsendinguna til baka.',
+    intake_closed: 'Innsendingum er lokið og ekki er lengur hægt að draga innsendingar til baka.',
+    not_withdrawable: 'Ekki er hægt að draga þessa innsendingu til baka.',
+    not_found: 'Innsendingin fannst ekki.',
+    unexpected: 'Eitthvað fór úrskeiðis og ekkert var dregið til baka. Reyndu aftur.',
+  },
+  withdrawnTitle: 'Innsendingar sem hafa verið dregnar til baka',
+  withdrawnNow: (p, t) => `${p} ef send inn núna (${t})`,
+  resubmit: (c) => `Senda ${c} aftur inn`,
+  resubmitNote: 'Ný innsending er verðlögð eftir þeim degi sem hún er send.',
   status: {
     draft: 'Drög',
     submitted: 'Innsent',

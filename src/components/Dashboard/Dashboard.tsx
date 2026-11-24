@@ -1,8 +1,9 @@
 'use client'
 
-import { useId, useMemo, useState, type ReactNode } from 'react'
+import { useId, useMemo, useState } from 'react'
 import clsx from 'clsx'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ButtonLink } from '@/components/ButtonLink/ButtonLink'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { authClient } from '@/lib/awards/auth/client'
@@ -12,6 +13,9 @@ import type { InvoiceNote } from '@/lib/awards/dashboard/invoice'
 import type { DashboardData, DashboardEntry, DashboardProject } from '@/lib/awards/dashboard/types'
 import { ENTRY_STATUSES, type EntryStatus } from '@/lib/awards/types'
 import { localePath, type Locale } from '@/lib/i18n'
+import { BulkDialog, type BillingChoice, type BulkRequest } from './BulkDialog'
+import { bulkCopy } from './bulk-copy'
+import { lastDayBefore } from '@/components/ProjectForm/format'
 import { dashboardCopy, formatClock, formatDayMonth, formatMoney, type DashboardCopy } from './copy'
 import styles from './Dashboard.module.scss'
 
@@ -32,8 +36,8 @@ export type DashboardProps = {
   needsActionIds: string[]
   /** Where the sign-in/out round trip ends. */
   signOutTo: string
-  /** The bulk-action bar (svef/www#166) renders here, next to the selection count. */
-  bulkActions?: ReactNode
+  /** The person's own billing profiles, for "change billing profile". */
+  billingProfiles: BillingChoice[]
 }
 
 type View = 'cards' | 'list'
@@ -103,7 +107,8 @@ export function Dashboard(props: DashboardProps) {
               locale={locale}
               c={c}
               projects={data.projects}
-              bulkActions={props.bulkActions}
+              billingProfiles={props.billingProfiles}
+              edition={data.edition}
               now={data.now}
             />
           )}
@@ -281,15 +286,20 @@ function List({
   locale,
   c,
   projects,
-  bulkActions,
+  billingProfiles,
+  edition,
   now,
 }: {
   locale: Locale
   c: DashboardCopy
   projects: DashboardProject[]
-  bulkActions?: ReactNode
+  billingProfiles: BillingChoice[]
+  edition: DashboardData['edition']
   now: string
 }) {
+  const router = useRouter()
+  const b = bulkCopy[locale]
+  const [dialog, setDialog] = useState<BulkRequest | null>(null)
   const [filter, setFilter] = useState<ListFilter>(NO_FILTER)
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
   const ids = useId()
@@ -402,11 +412,45 @@ function List({
         {c.list.results(shownEntries, totalEntries)}
       </p>
 
-      {/* The bulk-action bar (svef/www#166) goes in this slot; for now it only counts the selection. */}
-      <div className={styles.bulk} data-slot="bulk-actions" aria-live="polite">
-        {selected.size > 0 && <span data-selected-count>{c.list.selected(selected.size)}</span>}
-        {selected.size > 0 && bulkActions}
+      <div className={styles.bulk} data-slot="bulk-actions">
+        <span aria-live="polite" data-selected-count>
+          {selected.size > 0 ? c.list.selected(selected.size) : ''}
+        </span>
+        {selected.size > 0 && (
+          <ul className={styles.bulkActions} aria-label={b.barLabel}>
+            {(['submit', 'withdraw', 'billing'] as const).map((kind) => (
+              <li key={kind}>
+                <button
+                  type="button"
+                  className={styles.bulkButton}
+                  data-bulk={kind}
+                  onClick={() => setDialog({ kind, entryIds: [...selected] })}
+                >
+                  {b.actions[kind]}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
+
+      {dialog && (
+        <BulkDialog
+          // A fresh dialog (and plan) for every opening.
+          key={`${dialog.kind}-${dialog.entryIds.join(',')}`}
+          locale={locale}
+          request={dialog}
+          billingProfiles={billingProfiles}
+          lastEarlyDay={lastDayBefore(edition.earlyBirdEndsBefore, locale)}
+          earlyOpen={Date.parse(now) < Date.parse(edition.earlyBirdEndsBefore)}
+          onClose={() => {
+            setDialog(null)
+            // What was done is gone from the selection; start clean.
+            setSelected(new Set())
+          }}
+          onChanged={() => router.refresh()}
+        />
+      )}
 
       {rows.length === 0 ? (
         <p className={styles.none}>{c.list.none}</p>
@@ -429,6 +473,9 @@ function List({
               <th scope="col">{c.list.colStatus}</th>
               <th scope="col">{c.list.colPrice}</th>
               <th scope="col">{c.list.colNotes}</th>
+              <th scope="col" className={styles.actionsCol}>
+                <span className={styles.srOnly}>{b.barLabel}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -457,6 +504,19 @@ function List({
                       {c.locked(p.lock.holderName, formatClock(p.lock.since, locale), p.lock.heldByViewer)}
                     </span>
                   ) : null}
+                </td>
+                <td className={styles.actionsCol}>
+                  {e && e.status === 'submitted' && p.role === 'creator' && (
+                    <button
+                      type="button"
+                      className={styles.rowButton}
+                      aria-label={b.rowWithdrawLabel(titleOf(p, c), e.categoryName[locale])}
+                      data-withdraw-row={e.id}
+                      onClick={() => setDialog({ kind: 'withdraw', entryIds: [e.id] })}
+                    >
+                      {b.rowWithdraw}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
