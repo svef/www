@@ -198,13 +198,13 @@ async function underLock<T>(
   args: { projectId: string; userId: string; now: Date; ttlMs?: number },
   work: () => Promise<T>,
 ): Promise<{ locked: true; holder: string } | { locked: false; value: T }> {
-  const got = await acquireLock(db, args)
+  const got = await acquireLock(db, { ...args, rotateToken: false })
   if (!got.ok) return { locked: true, holder: got.lock.holderName }
   try {
     return { locked: false, value: await work() }
   } finally {
     if (got.outcome !== 'renewed')
-      await releaseLock(db, args).catch((e) => console.error('[awards] bulk lock release failed', e))
+      await releaseLock(db, { ...args, token: got.token }).catch((e) => console.error('[awards] bulk lock release failed', e))
   }
 }
 

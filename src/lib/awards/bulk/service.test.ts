@@ -5,11 +5,12 @@ import { Pool } from 'pg'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { createTestDatabase, type TestDatabase } from '../db/test-database'
 import * as schema from '../db/schema'
-import { acquireEditLock, releaseEditLock } from '../projects/service'
+import { acquireEditLock } from '../projects/service'
 import {
   acceptTerms,
   EARLY,
   entriesOf,
+  releaseHeldLock,
   eventsOf,
   makeProfile,
   makeProject,
@@ -47,7 +48,7 @@ describe.skipIf(!url)('bulk actions', () => {
   async function ready(owner: { id: string }, title: string, categories = ['app'], opts: { fill?: boolean } = {}) {
     const p = await makeProject(db, owner, categories, { title, fill: opts.fill })
     await acceptTerms(db, owner.id, p.id)
-    await releaseEditLock(db, { userId: owner.id, projectId: p.id, now: EARLY })
+    await releaseHeldLock(db, owner.id, p.id, EARLY)
     const rows = await entriesOf(db, p.id)
     return { ...p, rows, ids: rows.map((r) => r.id) }
   }
@@ -115,8 +116,8 @@ describe.skipIf(!url)('bulk actions', () => {
     const owner = await makeUser(db, 'Anna')
     const noBilling = await makeProject(db, owner, ['app'], { billing: false })
     const noTerms = await makeProject(db, owner, ['app'])
-    await releaseEditLock(db, { userId: owner.id, projectId: noBilling.id, now: EARLY })
-    await releaseEditLock(db, { userId: owner.id, projectId: noTerms.id, now: EARLY })
+    await releaseHeldLock(db, owner.id, noBilling.id, EARLY)
+    await releaseHeldLock(db, owner.id, noTerms.id, EARLY)
     const ids = async (id: string) => (await entriesOf(db, id)).map((e) => e.id)
     const r1 = await runBulk(db, { userId: unverified.id, kind: 'submit', entryIds: a.ids, now: EARLY }, { send: mail() })
     expect(r1.skipped.map((s) => s.reason)).toEqual(['email_unverified'])

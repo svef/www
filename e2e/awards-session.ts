@@ -46,6 +46,12 @@ export async function makeEditor(projectId: string, userId: string): Promise<voi
   )
 }
 
+/** The release token of the project's edit lock, or null when nobody holds it. */
+export async function lockTokenOf(projectId: string): Promise<string | null> {
+  const { rows } = await awardsPool().query(`select token from project_edit_lock where project_id = $1`, [projectId])
+  return (rows[0]?.token as string | undefined) ?? null
+}
+
 export async function markSubmitted(projectId: string): Promise<void> {
   await awardsPool().query(
     `update entry set status = 'submitted', submitted_at = now() where project_id = $1`,

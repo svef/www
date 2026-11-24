@@ -173,14 +173,28 @@ describe.skipIf(!url)('project service', () => {
       expect(late.toPayload().lock).toBeNull()
     })
 
+    it('a release only ends the acquisition it was issued: a stale token leaves a re-acquired lock alone', async () => {
+      const { id, owner } = await makeProject()
+      const first = await acquireEditLock(db, { userId: owner, projectId: id, now: T0 })
+      // The page is reloaded: the new page takes (renews) the lock before the old one's beacon lands.
+      const second = await acquireEditLock(db, { userId: owner, projectId: id, now: at(1000) })
+      expect(second.token).toBeTruthy()
+      expect(second.token).not.toBe(first.token)
+      expect(await releaseEditLock(db, { userId: owner, projectId: id, token: first.token!, now: at(2000) })).toBe(false)
+      expect((await loadProject(db, { userId: owner, projectId: id, now: at(2000) })).lock).not.toBeNull()
+      expect(await releaseEditLock(db, { userId: owner, projectId: id, token: 'not-a-uuid', now: at(2000) })).toBe(false)
+      expect(await releaseEditLock(db, { userId: owner, projectId: id, token: second.token!, now: at(2000) })).toBe(true)
+    })
+
     it('is released by the holder only, and logged', async () => {
       const { id, owner } = await makeProject()
-      await acquireEditLock(db, { userId: owner, projectId: id, now: T0 })
+      const got = await acquireEditLock(db, { userId: owner, projectId: id, now: T0 })
+      const token = got.token!
       const stranger = await makeUser('S')
-      expect(await releaseEditLock(db, { userId: stranger, projectId: id, now: T0 })).toBe(false)
+      expect(await releaseEditLock(db, { userId: stranger, projectId: id, token, now: T0 })).toBe(false)
       expect((await loadProject(db, { userId: owner, projectId: id, now: T0 })).lock).not.toBeNull()
-      expect(await releaseEditLock(db, { userId: owner, projectId: id, now: T0 })).toBe(true)
-      expect(await releaseEditLock(db, { userId: owner, projectId: id, now: T0 })).toBe(false)
+      expect(await releaseEditLock(db, { userId: owner, projectId: id, token, now: T0 })).toBe(true)
+      expect(await releaseEditLock(db, { userId: owner, projectId: id, token, now: T0 })).toBe(false)
       expect((await loadProject(db, { userId: owner, projectId: id, now: T0 })).lock).toBeNull()
       expect((await events(id, 'lock_released')).length).toBe(1)
     })

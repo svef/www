@@ -59,7 +59,7 @@ const saved = (keys: string[], l = lock('Me', 'me')): SaveResult => ({
 function setup(over: Partial<ProjectFormActions> = {}) {
   const actions: ProjectFormActions = {
     load: vi.fn(async () => ok(view())),
-    acquire: vi.fn(async () => ok({ held: true, lock: lock('Me', 'me') })),
+    acquire: vi.fn(async () => ok({ held: true, lock: lock('Me', 'me'), token: 'tok-1' })),
     heartbeat: vi.fn(async () => ok(lock('Me', 'me'))),
     save: vi.fn(async (p) => ok(saved(Object.keys(p.answers ?? {})))),
     setCategories: vi.fn(async () => ok(view())),
@@ -195,6 +195,7 @@ describe('ProjectFormController', () => {
     await settle()
     window.dispatchEvent(new Event('pagehide'))
     expect(actions.release).toHaveBeenCalledTimes(1)
+    expect(actions.release).toHaveBeenCalledWith('tok-1')
     stop()
     expect(actions.release).toHaveBeenCalledTimes(2)
   })
@@ -208,9 +209,9 @@ describe('ProjectFormController', () => {
     })
     const stop = c.start()
     stop()
-    grant(ok({ held: true, lock: lock('Me', 'me') }))
+    grant(ok({ held: true, lock: lock('Me', 'me'), token: 'late-tok' }))
     await settle()
-    expect(actions.release).toHaveBeenCalled()
+    expect(actions.release).toHaveBeenCalledWith('late-tok')
     expect(c.getSnapshot().lockState.kind).toBe('acquiring')
   })
 

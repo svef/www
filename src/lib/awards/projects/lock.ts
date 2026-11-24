@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { and, eq, gt, sql } from 'drizzle-orm'
 import { appendEntryEvent } from '../db/entry-event'
 import { projectEditLock, user } from '../db/schema'
@@ -53,7 +54,13 @@ export async function getLiveLock(
 }
 
 export type AcquireResult =
-  | { ok: true; lock: LockInfo; outcome: 'acquired' | 'renewed' | 'expired_taken' }
+  | {
+      ok: true
+      lock: LockInfo
+      /** The release token for this acquisition. Never part of `LockInfo`: only the holder gets it. */
+      token: string
+      outcome: 'acquired' | 'renewed' | 'expired_taken'
+    }
   | { ok: false; lock: LockInfo }
 
 /**
@@ -63,9 +70,17 @@ export type AcquireResult =
  */
 export async function acquireLock(
   db: AwardsDb,
-  args: { projectId: string; userId: string; now: Date; ttlMs?: number },
+  args: {
+    projectId: string
+    userId: string
+    now: Date
+    ttlMs?: number
+    /** Renewing my own live lock normally issues a new token; a background caller that must not invalidate an open page's passes false. */
+    rotateToken?: boolean
+  },
 ): Promise<AcquireResult> {
-  const { projectId, userId, now, ttlMs = LOCK_TTL_MS } = args
+  const { projectId, userId, now, ttlMs = LOCK_TTL_MS, rotateToken = true } = args
+  const freshToken = randomUUID()
   const cutoff = new Date(now.getTime() - ttlMs)
   return db.transaction(async (tx) => {
     // Locks the row (when there is one) so the outcome below describes what the
@@ -78,7 +93,13 @@ export async function acquireLock(
 
     const [row] = await tx
       .insert(projectEditLock)
-      .values({ projectId, holderUserId: userId, acquiredAt: now, lastActivityAt: now })
+      .values({
+        projectId,
+        holderUserId: userId,
+        acquiredAt: now,
+        lastActivityAt: now,
+        token: freshToken,
+      })
       .onConflictDoUpdate({
         target: projectEditLock.projectId,
         set: {
@@ -86,6 +107,10 @@ export async function acquireLock(
           // Renewing my own live lock keeps its start time ("editing since").
           acquiredAt: sql`case when ${projectEditLock.holderUserId} = ${userId} and ${projectEditLock.lastActivityAt} > ${cutoff.toISOString()}::timestamptz then ${projectEditLock.acquiredAt} else ${now.toISOString()}::timestamptz end`,
           lastActivityAt: now,
+          // A takeover always gets a new token; a renewal does too unless told to keep it.
+          token: rotateToken
+            ? freshToken
+            : sql`case when ${projectEditLock.holderUserId} = ${userId} and ${projectEditLock.lastActivityAt} > ${cutoff.toISOString()}::timestamptz then ${projectEditLock.token} else ${freshToken}::uuid end`,
         },
         // The whole rule, in the database: mine, or expired. Never a live lock of another.
         setWhere: sql`${projectEditLock.holderUserId} = ${userId} or ${projectEditLock.lastActivityAt} <= ${cutoff.toISOString()}::timestamptz`,
@@ -118,6 +143,7 @@ export async function acquireLock(
     return {
       ok: true as const,
       outcome: outcome === 'denied' ? 'acquired' : outcome,
+      token: row.token,
       lock: { ...(await toInfo(tx, row)), expiresAt: lockExpiry(row.lastActivityAt, ttlMs).toISOString() },
     }
   })
@@ -168,21 +194,33 @@ export async function heartbeatLock(
 }
 
 /**
- * Releases my lock. Best effort and idempotent: releasing a lock I no longer hold
- * does nothing. Never touches someone else's.
+ * Releases the lock I was issued. Best effort and idempotent: a lock I no longer hold, or
+ * that has since been re-acquired (a new token), is left alone. Never touches someone
+ * else's, and never a newer acquisition of my own: the token is what ties a release to the
+ * acquisition it ends.
  */
 export async function releaseLock(
   db: AwardsDb,
-  args: { projectId: string; userId: string; now: Date },
+  args: { projectId: string; userId: string; token: string; now: Date },
 ): Promise<boolean> {
-  const { projectId, userId } = args
+  const { projectId, userId, token } = args
+  // Not a uuid: it can't match, and must not reach a uuid column as a cast error.
+  if (!UUID.test(token)) return false
   return db.transaction(async (tx) => {
     const released = await tx
       .delete(projectEditLock)
-      .where(and(eq(projectEditLock.projectId, projectId), eq(projectEditLock.holderUserId, userId)))
+      .where(
+        and(
+          eq(projectEditLock.projectId, projectId),
+          eq(projectEditLock.holderUserId, userId),
+          eq(projectEditLock.token, token),
+        ),
+      )
       .returning({ id: projectEditLock.id })
     if (released.length === 0) return false
     await appendEntryEvent(tx, { projectId, actorUserId: userId, type: 'lock_released' })
     return true
   })
 }
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i

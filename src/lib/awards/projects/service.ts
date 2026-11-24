@@ -392,7 +392,9 @@ export async function loadProject(
 export async function acquireEditLock(
   db: AwardsDb,
   args: { userId: string; projectId: string } & Clock,
-): Promise<{ held: true; lock: LockInfo } | { held: false; lock: LockInfo }> {
+): Promise<
+  { held: true; lock: LockInfo; token: string } | { held: false; lock: LockInfo; token?: undefined }
+> {
   await requireRole(db, args.userId, args.projectId)
   const r = await acquireLock(db, {
     projectId: args.projectId,
@@ -400,7 +402,7 @@ export async function acquireEditLock(
     now: args.now ?? new Date(),
     ttlMs: args.ttlMs,
   })
-  return { held: r.ok, lock: r.lock }
+  return r.ok ? { held: true, lock: r.lock, token: r.token } : { held: false, lock: r.lock }
 }
 
 /** The throttled activity ping; throws `lock_required` if the lock was lost. */
@@ -419,11 +421,12 @@ export async function heartbeatEditLock(
 
 export async function releaseEditLock(
   db: AwardsDb,
-  args: { userId: string; projectId: string } & Clock,
+  args: { userId: string; projectId: string; token: string } & Clock,
 ): Promise<boolean> {
   return releaseLock(db, {
     projectId: args.projectId,
     userId: args.userId,
+    token: args.token,
     now: args.now ?? new Date(),
   })
 }

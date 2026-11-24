@@ -30,7 +30,8 @@ export const RETRY_MS = 5000
 
 export type ProjectFormActions = {
   load(): Promise<ActionResult<ProjectView>>
-  acquire(): Promise<ActionResult<{ held: boolean; lock: LockInfo }>>
+  /** `token` (when held) is what `release` must present: it ties a release to this acquisition. */
+  acquire(): Promise<ActionResult<{ held: boolean; lock: LockInfo; token?: string }>>
   heartbeat(): Promise<ActionResult<LockInfo>>
   save(patch: SaveAnswersPatch): Promise<ActionResult<SaveResult>>
   setCategories(categories: string[]): Promise<ActionResult<ProjectView>>
@@ -45,8 +46,8 @@ export type ProjectFormActions = {
   withdraw(entryId: string): Promise<ActionResult<{ result: WithdrawResult; view: ProjectView }>>
   /** Send a collaborator a fresh invitation. Returns the invitation states and whether the mail went out. */
   resendInvite(personId: string): Promise<ActionResult<{ invites: InviteState[]; delivered: boolean }>>
-  /** Release on leave. Fire-and-forget (a beacon). */
-  release(): void
+  /** Release on leave, with the token `acquire` issued. Fire-and-forget (a beacon). */
+  release(token: string): void
 }
 
 export type LockState =
@@ -114,6 +115,8 @@ export class ProjectFormController {
   private acquiring = false
   private lost = false
   private stopped = false
+  /** The release token of the lock this page holds (see `ProjectFormActions.release`). */
+  private token: string | undefined
   private lastPing = 0
   private saveTimer: ReturnType<typeof setTimeout> | undefined
   private retryTimer: ReturnType<typeof setTimeout> | undefined
@@ -179,7 +182,7 @@ export class ProjectFormController {
     for (const e of events)
       document.addEventListener(e, onActivity, { capture: true, passive: true })
     const release = () => {
-      if (this.held) this.actions.release()
+      if (this.held && this.token) this.actions.release(this.token)
     }
     const onShow = (e: PageTransitionEvent) => {
       if (e.persisted) void this.acquire()
@@ -255,9 +258,10 @@ export class ProjectFormController {
       }
       if (this.stopped) {
         // Left the page while the request was in flight: don't sit on the lock.
-        this.actions.release()
+        if (r.value.token) this.actions.release(r.value.token)
         return
       }
+      this.token = r.value.token
       const wasLost = this.lost
       await this.reload()
       this.lastPing = this.clock()

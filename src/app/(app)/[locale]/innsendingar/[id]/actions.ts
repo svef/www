@@ -42,7 +42,7 @@ export async function loadProjectAction(projectId: string): Promise<ActionResult
 
 export async function acquireLockAction(
   projectId: string,
-): Promise<ActionResult<{ held: boolean; lock: LockInfo }>> {
+): Promise<ActionResult<{ held: boolean; lock: LockInfo; token?: string }>> {
   return run((userId, now) => acquireEditLock(getAwardsDb(), { userId, projectId, now }))
 }
 

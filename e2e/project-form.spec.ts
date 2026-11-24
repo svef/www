@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Browser, type Page } from '@playwright/test'
-import { actAs, closeAwardsPool, createUser, makeEditor, markSubmitted } from './awards-session'
+import { actAs, closeAwardsPool, createUser, lockTokenOf, makeEditor, markSubmitted } from './awards-session'
 import { settle, urlFor } from './pages'
 
 /**
@@ -123,6 +123,37 @@ test.describe('the project form', () => {
     await expect(bjarni.page.locator('[data-field="title"] input')).not.toHaveAttribute('readonly', '')
     await anna.context.close()
     await bjarni.context.close()
+  })
+
+  test('reloading the page keeps the lock: the old page\'s late release beacon cannot delete the new one\'s', async ({ browser }) => {
+    const { context, page } = await person(browser, 'Anna')
+    const id = await startProject(page)
+    const before = await lockTokenOf(id)
+    expect(before).toBeTruthy()
+
+    await page.reload()
+    await expect(page.locator('[data-lock="held"]')).toBeVisible()
+    // The reload took the lock again, with a token of its own.
+    await expect.poll(() => lockTokenOf(id)).not.toBe(before)
+    const after = await lockTokenOf(id)
+    expect(after).toBeTruthy()
+
+    // The old page's beacon, arriving after the new page took the lock: a no-op.
+    const stale = await context.request.post(`/api/awards/projects/${id}/lock`, {
+      data: before!,
+      headers: { 'content-type': 'text/plain' },
+    })
+    expect(stale.status()).toBe(204)
+    expect(await lockTokenOf(id)).toBe(after)
+    await expect(page.locator('[data-lock="held"]')).toBeVisible()
+
+    // Its own token still releases it.
+    await context.request.post(`/api/awards/projects/${id}/lock`, {
+      data: after!,
+      headers: { 'content-type': 'text/plain' },
+    })
+    expect(await lockTokenOf(id)).toBeNull()
+    await context.close()
   })
 
   test('refuses to take a live lock, however many times it is asked', async ({ browser }) => {

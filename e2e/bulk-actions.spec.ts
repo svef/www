@@ -149,9 +149,6 @@ test.describe('withdraw on the project page', () => {
 
     // Days later, after the early bird: submitting again costs the regular price.
     await actAs(context, baseURL(), id, AFTER_EARLY)
-    // Leave first so the old page's release beacon lands before the new page takes the lock.
-    await page.goto('about:blank')
-    await page.waitForTimeout(500)
     await page.goto(urlFor('en', `/innsendingar/${projectId}`))
     await expect(page.locator('[data-lock="held"]')).toBeVisible()
     await expect(page.locator('[data-withdrawn-entries] [data-entry-row="app"]')).toContainText(

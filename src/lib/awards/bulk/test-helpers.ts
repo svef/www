@@ -4,6 +4,7 @@ import * as schema from '../db/schema'
 import {
   acquireEditLock,
   createProject,
+  releaseEditLock,
   saveAnswers,
   setCategories,
   setProjectBillingProfile,
@@ -108,4 +109,13 @@ export async function acceptTerms(db: Db, userId: string, projectId: string) {
   await db
     .insert(schema.termsAcceptance)
     .values({ userId, projectId, termsVersion: 'draft', acceptedAt: EARLY })
+}
+
+/** Releases the lock `userId` holds on a project, with the token its acquisition was issued. */
+export async function releaseHeldLock(db: Db, userId: string, projectId: string, now: Date) {
+  const [row] = await db
+    .select({ token: schema.projectEditLock.token })
+    .from(schema.projectEditLock)
+    .where(eq(schema.projectEditLock.projectId, projectId))
+  return releaseEditLock(db, { userId, projectId, token: row?.token ?? '', now })
 }

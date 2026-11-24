@@ -460,6 +460,12 @@ export const projectEditLock = pgTable(
       .references(() => project.id),
     holderUserId: userRef('holder_user_id').notNull(),
     acquiredAt: timestamp('acquired_at', { withTimezone: true }).notNull().defaultNow(),
+    /**
+     * Opaque, rotated on every acquisition (a renewal included). A release must present the
+     * token it was issued, so a leaving page's late beacon can't delete the lock its
+     * successor (a reload, another tab) has since taken.
+     */
+    token: uuid('token').notNull().defaultRandom(),
     lastActivityAt: timestamp('last_activity_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

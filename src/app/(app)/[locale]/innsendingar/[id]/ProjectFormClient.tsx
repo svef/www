@@ -62,9 +62,9 @@ export function ProjectFormClient({
       submit: (args) => submitAction(initial.id, args),
       withdraw: (entryId) => withdrawAction(initial.id, entryId),
       resendInvite: (personId) => resendInvitationAction(initial.id, personId),
-      release: () => {
+      release: (token) => {
         // sendBeacon survives the page going away; a server action would not.
-        navigator.sendBeacon(`/api/awards/projects/${initial.id}/lock`)
+        navigator.sendBeacon(`/api/awards/projects/${initial.id}/lock`, token)
       },
     }),
     [initial.id],
