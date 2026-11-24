@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { PageHead } from '@/components/PageHead/PageHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { getProjectFormCopy } from '@/components/ProjectForm/copy'
+import { listBillingProfiles } from '@/lib/awards/billing/service'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import { AwardsError } from '@/lib/awards/projects/errors'
 import { loadProject } from '@/lib/awards/projects/service'
@@ -41,12 +42,15 @@ export default async function ProjectPage({
   }
 
   let view
+  let billingProfiles
   try {
-    view = await loadProject(getAwardsDb(), {
+    const db = getAwardsDb()
+    view = await loadProject(db, {
       userId,
       projectId: id,
       now: await getRequestNow(),
     })
+    billingProfiles = await listBillingProfiles(db, { userId })
   } catch (e) {
     // Missing and not-yours look the same: a project's existence is not for strangers.
     if (e instanceof AwardsError && (e.code === 'not_found' || e.code === 'forbidden')) notFound()
@@ -58,10 +62,13 @@ export default async function ProjectPage({
       <PageHead
         title={(view.answers.title as string | undefined) || copy.pageTitle}
         locale={locale}
-        crumb={{ href: localePath('/innsendingar', locale), label: getDictionary(locale).submissions.title }}
+        crumb={{
+          href: localePath('/innsendingar', locale),
+          label: getDictionary(locale).submissions.title,
+        }}
       />
       <PageSection last aria-label={copy.pageTitle}>
-        <ProjectFormClient initial={view} locale={locale} />
+        <ProjectFormClient initial={view} locale={locale} billingProfiles={billingProfiles} />
       </PageSection>
     </>
   )

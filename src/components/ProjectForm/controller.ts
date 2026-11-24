@@ -31,6 +31,8 @@ export type ProjectFormActions = {
   heartbeat(): Promise<ActionResult<LockInfo>>
   save(patch: SaveAnswersPatch): Promise<ActionResult<SaveResult>>
   setCategories(categories: string[]): Promise<ActionResult<ProjectView>>
+  /** Choose who is invoiced (null clears it). Returns the refreshed project. */
+  setBilling(billingProfileId: string | null): Promise<ActionResult<ProjectView>>
   /** Release on leave. Fire-and-forget (a beacon). */
   release(): void
 }
@@ -58,6 +60,9 @@ export type Snapshot = {
   categoryError: ErrorPayload | null
   /** The categories as just chosen, until the server confirms them (so the checkbox answers at once). */
   pendingCategories: string[] | null
+  /** The billing profile as just chosen, until the server confirms it. */
+  pendingBilling: { id: string | null } | null
+  billingError: ErrorPayload | null
   /** The lock was lost while editing (shown with the banner if someone else has it). */
   lostLock: boolean
   /** The lock came back after being lost. Cleared by the next edit. */
@@ -110,6 +115,8 @@ export class ProjectFormController {
       serverErrors: {},
       categoryError: null,
       pendingCategories: null,
+      pendingBilling: null,
+      billingError: null,
       lostLock: false,
       recovered: false,
     }
@@ -145,7 +152,8 @@ export class ProjectFormController {
     void this.acquire()
     const onActivity = () => this.activity()
     const events = ['keydown', 'pointerdown', 'input'] as const
-    for (const e of events) document.addEventListener(e, onActivity, { capture: true, passive: true })
+    for (const e of events)
+      document.addEventListener(e, onActivity, { capture: true, passive: true })
     const release = () => {
       if (this.held) this.actions.release()
     }
@@ -255,9 +263,18 @@ export class ProjectFormController {
     for (const id of this.dirtyEntry) {
       const [slug, key] = splitEntryId(id)
       if (entryAnswers[slug])
-        entryAnswers[slug] = { ...entryAnswers[slug], [key]: this.snap.entryAnswers[slug]?.[key] }
+        entryAnswers[slug] = {
+          ...entryAnswers[slug],
+          [key]: this.snap.entryAnswers[slug]?.[key],
+        }
     }
-    this.set({ view: fresh, answers, entryAnswers, pendingCategories: null })
+    this.set({
+      view: fresh,
+      answers,
+      entryAnswers,
+      pendingCategories: null,
+      pendingBilling: null,
+    })
   }
 
   private async reload() {
@@ -322,7 +339,8 @@ export class ProjectFormController {
         if (done.has(k) && Object.is(this.snap.answers[k], v)) this.dirty.delete(k)
       for (const [id, v] of sentEntry) {
         const [slug, key] = splitEntryId(id)
-        if (done.has(id) && Object.is(this.snap.entryAnswers[slug]?.[key], v)) this.dirtyEntry.delete(id)
+        if (done.has(id) && Object.is(this.snap.entryAnswers[slug]?.[key], v))
+          this.dirtyEntry.delete(id)
       }
       const serverErrors = { ...this.snap.serverErrors }
       for (const k of [...sent.keys(), ...sentEntry.keys()]) delete serverErrors[k]
@@ -374,8 +392,26 @@ export class ProjectFormController {
     this.schedule()
   }
 
-  async changeCategories(next: string[]) {
-    if (!this.held) return
+  /** Category and billing changes run one after another, so quick clicks land in the order made. */
+  private queue: Promise<unknown> = Promise.resolve()
+  private queuedCategories = 0
+  private queuedBilling = 0
+  private enqueue(run: () => Promise<void>): Promise<void> {
+    const result = this.queue.then(run, run)
+    this.queue = result.catch(() => undefined)
+    return result
+  }
+
+  changeCategories(next: string[]): Promise<void> {
+    if (!this.held) return Promise.resolve()
+    this.queuedCategories++
+    this.set({ pendingCategories: next })
+    return this.enqueue(() => this.applyCategories(next))
+  }
+
+  private async applyCategories(next: string[], retried = false) {
+    if (!retried) this.queuedCategories--
+    if (!this.held) return void this.set({ pendingCategories: null })
     this.set({ categoryError: null, pendingCategories: next, saveState: 'saving' })
     // What was typed goes first, so the server sees one consistent order.
     await this.flush()
@@ -388,8 +424,35 @@ export class ProjectFormController {
     } else if (r.error.code === 'lock_required') {
       this.set({ pendingCategories: null })
       await this.loseLock()
+      // The lock lapsed (or a leaving tab released it) between clicks: with it back, the choice still stands.
+      if (!retried && this.held) await this.applyCategories(next, true)
     } else {
       this.set({ categoryError: r.error, pendingCategories: null, saveState: 'error' })
+    }
+  }
+
+  changeBilling(id: string | null): Promise<void> {
+    if (!this.held) return Promise.resolve()
+    this.queuedBilling++
+    this.set({ pendingBilling: { id } })
+    return this.enqueue(() => this.applyBilling(id))
+  }
+
+  private async applyBilling(id: string | null, retried = false) {
+    if (!retried) this.queuedBilling--
+    if (!this.held) return void this.set({ pendingBilling: null })
+    this.set({ billingError: null, pendingBilling: { id }, saveState: 'saving' })
+    const r = await this.actions.setBilling(id).catch(networkError)
+    if (r.ok) {
+      this.applyView(r.value)
+      this.lastPing = this.clock()
+      this.set({ saveState: this.hasUnsaved ? 'saving' : 'saved' })
+    } else if (r.error.code === 'lock_required') {
+      this.set({ pendingBilling: null })
+      await this.loseLock()
+      if (!retried && this.held) await this.applyBilling(id, true)
+    } else {
+      this.set({ billingError: r.error, pendingBilling: null, saveState: 'error' })
     }
   }
 

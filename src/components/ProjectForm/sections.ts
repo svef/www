@@ -15,7 +15,7 @@ export type SectionDef = {
   fields: readonly string[]
   /** Entry-scope field keys, rendered once per chosen category. */
   entryFields?: readonly string[]
-  /** Built in a later step: no completeness check yet. */
+  /** Not built yet (the image upload): no completeness check, no check mark. */
   later?: boolean
 }
 
@@ -39,9 +39,17 @@ export const SECTIONS: readonly SectionDef[] = [
   },
   { id: 'people', fields: ['owners', 'collaborators', 'publicCredit'] },
   { id: 'image', fields: ['image'], later: true },
-  { id: 'billing', fields: [], later: true },
-  { id: 'review', fields: ['termsAccepted'], later: true },
+  { id: 'billing', fields: [] },
+  // The terms checkbox belongs to the submit step (#163); it is not a missing item here.
+  { id: 'review', fields: ['termsAccepted'] },
 ]
+
+/** The submit step's own field: never listed as missing, never counted against a section. */
+export const SUBMIT_STEP_FIELDS: ReadonlySet<string> = new Set(['termsAccepted'])
+
+export function sectionOfField(key: string): SectionId | undefined {
+  return SECTIONS.find((s) => s.fields.includes(key) || s.entryFields?.includes(key))?.id
+}
 
 // A field the table forgot would never render: fail loudly in tests instead.
 export const UNPLACED_FIELDS = FIELD_DEFINITIONS.filter(
@@ -53,26 +61,34 @@ export type SectionStatus = 'complete' | 'incomplete' | 'later'
 /**
  * The check mark per section: complete when the section's visible fields all pass the
  * submit-time rules (so "complete" means "would not block submitting"). Categories are
- * complete once one is chosen; a section with no visible fields is complete once a
- * category is. Sections built later show no check.
+ * complete once one is chosen, billing once a profile is. The review is complete when
+ * nothing else is missing. The image section has no check until its upload exists.
  */
 export function sectionStatuses(
   categories: readonly string[],
   answers: Readonly<Record<string, unknown>>,
+  billingProfileId: string | null = null,
 ): Record<SectionId, SectionStatus> {
   const result = validateProjectAnswers(categories, answers, 'submit')
   const failing = new Set(result.ok ? [] : result.errors.map((e) => e.fieldKey))
-  const visible = new Set(resolveAnswers(PROJECT_FIELDS, categories, answers).visible.map((f) => f.key))
+  const visible = new Set(
+    resolveAnswers(PROJECT_FIELDS, categories, answers).visible.map((f) => f.key),
+  )
   const out = {} as Record<SectionId, SectionStatus>
   for (const s of SECTIONS) {
     if (s.later) out[s.id] = 'later'
     else if (s.id === 'categories') out[s.id] = categories.length ? 'complete' : 'incomplete'
+    else if (s.id === 'billing') out[s.id] = billingProfileId ? 'complete' : 'incomplete'
+    else if (s.id === 'review') continue
     else {
-      const shown = s.fields.filter((k) => visible.has(k))
+      const shown = s.fields.filter((k) => visible.has(k) && !SUBMIT_STEP_FIELDS.has(k))
       out[s.id] =
         categories.length > 0 && shown.every((k) => !failing.has(k)) ? 'complete' : 'incomplete'
     }
   }
+  out.review = SECTIONS.every((s) => s.id === 'review' || s.later || out[s.id] === 'complete')
+    ? 'complete'
+    : 'incomplete'
   return out
 }
 
@@ -84,6 +100,7 @@ export function fieldErrorsByKey(
   const result = validateProjectAnswers(categories, answers, 'submit')
   const out: Record<string, { code: string; message: { is: string; en: string } }[]> = {}
   if (!result.ok)
-    for (const e of result.errors) (out[e.fieldKey] ??= []).push({ code: e.code, message: e.message })
+    for (const e of result.errors)
+      (out[e.fieldKey] ??= []).push({ code: e.code, message: e.message })
   return out
 }

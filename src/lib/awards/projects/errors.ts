@@ -23,6 +23,7 @@ export type AwardsErrorCode =
   | 'cannot_remove_entry'
   | 'category_withdrawn'
   | 'no_edition'
+  | 'billing_in_use'
   | 'intake_closed'
 
 /** The serialisable form of an `AwardsError`, returned by server actions. */

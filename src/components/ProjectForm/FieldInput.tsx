@@ -1,10 +1,14 @@
 'use client'
 
+import { Lock } from '@phosphor-icons/react'
 import { useId } from 'react'
 import type { Editability } from '@/lib/awards/editability'
 import type { FieldDefinition } from '@/lib/awards/fields'
 import type { Locale } from '@/lib/i18n'
 import type { ProjectFormCopy } from './copy'
+import { ImagePlaceholder } from './ImagePlaceholder'
+import { InfoTip } from './InfoTip'
+import { CredentialList, PersonList } from './lists'
 import styles from './ProjectForm.module.scss'
 
 /**
@@ -33,7 +37,6 @@ export type FieldInputProps = {
   forced?: boolean
 }
 
-type Person = Record<string, unknown>
 const str = (v: unknown) => (typeof v === 'string' ? v : '')
 
 export function FieldInput(props: FieldInputProps) {
@@ -41,10 +44,14 @@ export function FieldInput(props: FieldInputProps) {
   const seed = useId()
   const id = `f-${props.idSeed ?? field.key}-${seed.replace(/:/g, '')}`
   const hintId = `${id}-hint`
+  const tipId = `${id}-tip`
+  const forcedId = `${id}-forced`
   const errorId = `${id}-error`
   const disabled = props.readOnly || forced === true || locked !== undefined
   const described = [
-    field.description || field.tooltip ? hintId : null,
+    field.description ? hintId : null,
+    field.tooltip ? tipId : null,
+    forced ? forcedId : null,
     errors.length ? errorId : null,
   ]
     .filter(Boolean)
@@ -86,7 +93,9 @@ export function FieldInput(props: FieldInputProps) {
               onChange={(e) => props.onChange(e.target.value)}
             />
             {field.maxLength && (
-              <p className={styles.counter}>{copy.characters(str(props.value).length, field.maxLength)}</p>
+              <p className={styles.counter}>
+                {copy.characters(str(props.value).length, field.maxLength)}
+              </p>
             )}
           </>
         )
@@ -179,178 +188,96 @@ export function FieldInput(props: FieldInputProps) {
           </div>
         )
       }
-      case 'access_credentials': {
-        const list = Array.isArray(props.value) ? (props.value as Person[]) : []
-        const rows = list.length ? list : [{}]
-        const set = (i: number, patch: Person) => {
-          const next = rows.map((r) => ({ ...r }))
-          next[i] = { ...next[i], ...patch }
-          props.onChange(next)
-        }
+      case 'access_credentials':
         return (
-          <ul className={styles.rows} aria-describedby={described || undefined}>
-            {rows.map((r, i) => (
-              <li key={i} className={styles.group}>
-                <label>
-                  <span>{copy.loginValue}</span>
-                  <textarea
-                    id={i === 0 ? id : undefined}
-                    className={styles.textarea}
-                    rows={2}
-                    value={str(r.value)}
-                    readOnly={disabled}
-                    onBlur={props.onBlur}
-                    onChange={(e) => set(i, { value: e.target.value })}
-                  />
-                </label>
-                <label>
-                  <span>{copy.loginLabel}</span>
-                  <input
-                    className={styles.input}
-                    type="text"
-                    value={str(r.label)}
-                    readOnly={disabled}
-                    onBlur={props.onBlur}
-                    onChange={(e) => set(i, { label: e.target.value })}
-                  />
-                </label>
-                <label>
-                  <span>{copy.loginNotes}</span>
-                  <input
-                    className={styles.input}
-                    type="text"
-                    value={str(r.notes)}
-                    readOnly={disabled}
-                    onBlur={props.onBlur}
-                    onChange={(e) => set(i, { notes: e.target.value })}
-                  />
-                </label>
-                {rows.length > 1 && (
-                  <button
-                    type="button"
-                    className={styles.small}
-                    disabled={disabled}
-                    onClick={() => props.onChange(rows.filter((_, j) => j !== i))}
-                  >
-                    {copy.remove}
-                  </button>
-                )}
-              </li>
-            ))}
-            <li>
-              <button
-                type="button"
-                className={styles.small}
-                disabled={disabled}
-                onClick={() => props.onChange([...rows, {}])}
-              >
-                {copy.addLogin}
-              </button>
-            </li>
-          </ul>
+          <CredentialList
+            field={field}
+            id={id}
+            describedBy={described || undefined}
+            value={props.value}
+            onChange={props.onChange}
+            onBlur={props.onBlur}
+            disabled={disabled}
+            copy={copy}
+            locale={locale}
+          />
         )
-      }
-      case 'person_list': {
-        const list = Array.isArray(props.value) ? (props.value as Person[]) : []
-        const rows = list.length ? list : [{}]
-        const items = Object.entries(field.item ?? {})
-        const set = (i: number, patch: Person) => {
-          const next = rows.map((r) => ({ ...r }))
-          next[i] = { ...next[i], ...patch }
-          props.onChange(next)
-        }
+      case 'person_list':
         return (
-          <ul className={styles.rows} aria-describedby={described || undefined}>
-            {rows.map((p, i) => (
-              <li key={i} className={styles.group}>
-                {items.map(([name, def]) => (
-                  <label key={name}>
-                    <span>{def.label[locale]}</span>
-                    <input
-                      id={i === 0 && name === items[0][0] ? id : undefined}
-                      className={styles.input}
-                      type={def.type === 'email' ? 'email' : 'text'}
-                      value={str(p[name])}
-                      maxLength={def.maxLength}
-                      readOnly={disabled}
-                      onBlur={props.onBlur}
-                      onChange={(e) => set(i, { [name]: e.target.value })}
-                    />
-                  </label>
-                ))}
-                {field.key === 'collaborators' && (
-                  <label className={styles.check}>
-                    <input
-                      type="checkbox"
-                      checked={p.canEdit === true}
-                      disabled={disabled}
-                      onChange={(e) => set(i, { canEdit: e.target.checked })}
-                    />
-                    <span>{copy.canEdit}</span>
-                  </label>
-                )}
-                {rows.length > 1 && (
-                  <button
-                    type="button"
-                    className={styles.small}
-                    disabled={disabled}
-                    onClick={() => props.onChange(rows.filter((_, j) => j !== i))}
-                  >
-                    {copy.remove}
-                  </button>
-                )}
-              </li>
-            ))}
-            <li>
-              <button
-                type="button"
-                className={styles.small}
-                disabled={disabled}
-                onClick={() => props.onChange([...rows, {}])}
-              >
-                {copy.addPerson}
-              </button>
-            </li>
-          </ul>
+          <PersonList
+            field={field as FieldDefinition & { key: 'owners' | 'collaborators' }}
+            id={id}
+            describedBy={described || undefined}
+            value={props.value}
+            onChange={props.onChange}
+            onBlur={props.onBlur}
+            disabled={disabled}
+            copy={copy}
+            locale={locale}
+          />
         )
-      }
       case 'image':
-        return <p className={styles.later}>{copy.laterNote}</p>
+        return (
+          <ImagePlaceholder
+            field={field}
+            idBase={id}
+            copy={copy}
+            describedBy={described || undefined}
+          />
+        )
     }
   })()
 
   const isToggle = field.type === 'boolean' || field.type === 'waiver'
   const multi = ['url_list', 'person_list', 'access_credentials', 'date_range'].includes(field.type)
   const whyLocked =
-    locked &&
-    (locked.reason === 'intake_closed' ? copy.whyLockedClosed : copy.whyLockedSubmitted)
+    locked && (locked.reason === 'intake_closed' ? copy.whyLockedClosed : copy.whyLockedSubmitted)
 
   const Wrapper = multi ? 'fieldset' : 'div'
+  const optional = !field.required && (
+    <span className={styles.optional}> ({locale === 'en' ? 'optional' : 'valfrjálst'})</span>
+  )
+  const tip = field.tooltip && (
+    <InfoTip id={tipId} label={copy.moreInfo}>
+      {field.tooltip[locale]}
+    </InfoTip>
+  )
   return (
-    <Wrapper className={styles.field} data-field={field.key} data-locked={locked ? '' : undefined}>
+    <Wrapper
+      id={`field-${field.key}`}
+      className={styles.field}
+      data-field={field.key}
+      data-locked={locked ? '' : undefined}
+    >
       {multi ? (
         <legend className={styles.label}>
           {label}
-          {!field.required && <span className={styles.optional}> ({locale === 'en' ? 'optional' : 'valfrjálst'})</span>}
+          {optional}
+          {tip}
         </legend>
       ) : (
         !isToggle && (
-          <label className={styles.label} htmlFor={id}>
-            {label}
-            {!field.required && (
-              <span className={styles.optional}> ({locale === 'en' ? 'optional' : 'valfrjálst'})</span>
-            )}
-          </label>
+          <span className={styles.labelRow}>
+            <label className={styles.label} htmlFor={id}>
+              {label}
+              {optional}
+            </label>
+            {tip}
+          </span>
         )
       )}
-      {(field.description || field.tooltip) && (
+      {field.description && (
         <p id={hintId} className={styles.hint}>
-          {field.description?.[locale]}
-          {field.tooltip && <> {field.tooltip[locale]}</>}
+          {field.description[locale]}
         </p>
       )}
+      {isToggle && tip}
       {control}
-      {forced && <p className={styles.hint}>{copy.forcedOn}</p>}
+      {forced && (
+        <p id={forcedId} className={styles.forced}>
+          <Lock aria-hidden="true" weight="bold" /> {copy.forcedOn}
+        </p>
+      )}
       {errors.length > 0 && (
         <p id={errorId} className={styles.error}>
           {errors.join(' ')}

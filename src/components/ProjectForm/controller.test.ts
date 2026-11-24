@@ -22,17 +22,23 @@ const view = (over: Partial<ProjectView> = {}): ProjectView => ({
   editionId: 'e1',
   role: 'creator',
   categories: ['app'],
-  entries: [{ id: 'en1', category: 'app', status: 'draft', answers: {} }],
+  entries: [{ id: 'en1', category: 'app', status: 'draft', answers: {}, price: null }],
   answers: {},
   editability: {},
   entryEditability: {},
   lock: null,
   intakeClosesBefore: '2027-02-02T00:00:00.000Z',
+  earlyBird: {
+    endsBefore: '2027-01-05T00:00:00.000Z',
+    discountPercent: 30,
+    rounding: 'nearest-900',
+  },
+  billing: null,
   serverNow: '2026-12-01T14:00:00.000Z',
   ...over,
 })
 
-const ok = <T,>(value: T): ActionResult<T> => ({ ok: true, value })
+const ok = <T>(value: T): ActionResult<T> => ({ ok: true, value })
 const fail = (error: Partial<ErrorPayload>): ActionResult<never> => ({
   ok: false,
   error: { code: 'unexpected', message: 'x', ...error },
@@ -52,6 +58,7 @@ function setup(over: Partial<ProjectFormActions> = {}) {
     heartbeat: vi.fn(async () => ok(lock('Me', 'me'))),
     save: vi.fn(async (p) => ok(saved(Object.keys(p.answers ?? {})))),
     setCategories: vi.fn(async () => ok(view())),
+    setBilling: vi.fn(async () => ok(view())),
     release: vi.fn(),
     ...over,
   }
@@ -269,7 +276,14 @@ describe('ProjectFormController', () => {
     const save = vi.fn(async () =>
       ok({
         ...saved([]),
-        errors: [{ fieldKey: 'links', path: ['links', 0], code: 'invalidUrl', message: { is: 'x', en: 'bad link' } }],
+        errors: [
+          {
+            fieldKey: 'links',
+            path: ['links', 0],
+            code: 'invalidUrl',
+            message: { is: 'x', en: 'bad link' },
+          },
+        ],
       }),
     )
     const { c } = setup({ save })
@@ -335,7 +349,9 @@ describe('ProjectFormController', () => {
 
   it('surfaces a refused category change without losing the lock', async () => {
     const { c } = setup({
-      setCategories: vi.fn(async () => fail({ code: 'selection_invalid', message: 'one tier only' })),
+      setCategories: vi.fn(async () =>
+        fail({ code: 'selection_invalid', message: 'one tier only' }),
+      ),
     })
     const stop = c.start()
     await settle()
@@ -343,6 +359,75 @@ describe('ProjectFormController', () => {
     expect(c.getSnapshot().categoryError?.message).toBe('one tier only')
     expect(c.getSnapshot().pendingCategories).toBeNull() // the choice is shown reverted
     expect(c.getSnapshot().lockState.kind).toBe('held')
+    stop()
+  })
+
+  it('shows a billing choice at once and settles on what the server returns', async () => {
+    let confirm!: (r: ActionResult<ProjectView>) => void
+    const { c, actions } = setup({
+      setBilling: vi.fn(() => new Promise<ActionResult<ProjectView>>((r) => (confirm = r))),
+    })
+    const stop = c.start()
+    await settle()
+    const pending = c.changeBilling('b1')
+    expect(c.getSnapshot().pendingBilling).toEqual({ id: 'b1' })
+    await settle()
+    confirm(ok(view({ billing: { id: 'b1', companyName: 'Acme', kennitala: '5902697199' } })))
+    await pending
+    expect(actions.setBilling).toHaveBeenCalledWith('b1')
+    expect(c.getSnapshot().pendingBilling).toBeNull()
+    expect(c.getSnapshot().view.billing?.id).toBe('b1')
+    stop()
+  })
+
+  it('reverts the billing choice and says why when the server refuses it', async () => {
+    const { c } = setup({
+      setBilling: vi.fn(async () =>
+        fail({ code: 'not_found', message: 'Billing profile not found.' }),
+      ),
+    })
+    const stop = c.start()
+    await settle()
+    await c.changeBilling('someone-elses')
+    expect(c.getSnapshot().billingError?.message).toBe('Billing profile not found.')
+    expect(c.getSnapshot().pendingBilling).toBeNull()
+    expect(c.getSnapshot().lockState.kind).toBe('held')
+    stop()
+  })
+
+  it('retries a category change once when the lock had lapsed between clicks', async () => {
+    const setCategories = vi
+      .fn()
+      .mockResolvedValueOnce(fail({ code: 'lock_required', message: 'lock' }))
+      .mockResolvedValueOnce(ok(view({ categories: ['app', 'ai-solution'] })))
+    const { c } = setup({ setCategories })
+    const stop = c.start()
+    await settle()
+    await c.changeCategories(['app', 'ai-solution'])
+    expect(setCategories).toHaveBeenCalledTimes(2)
+    expect(c.getSnapshot().view.categories).toEqual(['app', 'ai-solution'])
+    stop()
+  })
+
+  it('sends quick successive billing choices one after another, in order', async () => {
+    const calls: (string | null)[] = []
+    const { c } = setup({
+      setBilling: vi.fn(async (id) => {
+        calls.push(id)
+        await new Promise((r) => setTimeout(r, 50))
+        return ok(view({ billing: id ? { id, companyName: 'x', kennitala: '5902697199' } : null }))
+      }),
+    })
+    const stop = c.start()
+    await settle()
+    const a = c.changeBilling('b1')
+    const b = c.changeBilling('b2')
+    expect(c.getSnapshot().pendingBilling).toEqual({ id: 'b2' })
+    await vi.advanceTimersByTimeAsync(200)
+    await Promise.all([a, b])
+    expect(calls).toEqual(['b1', 'b2'])
+    expect(c.getSnapshot().view.billing?.id).toBe('b2')
+    expect(c.getSnapshot().pendingBilling).toBeNull()
     stop()
   })
 })

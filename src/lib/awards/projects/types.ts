@@ -10,6 +10,16 @@ export type EntryView = {
   status: EntryStatus
   /** Entry-scope answers (`categoryPitch`). */
   answers: Record<string, unknown>
+  /** The price locked at submit (whole ISK); null while the entry is a draft or withdrawn. */
+  price: { regular: number; discountPercent: number; amount: number } | null
+}
+
+/** The billing profile a project is invoiced to, as far as anyone on the project may see. */
+export type ProjectBilling = {
+  id: string
+  companyName: string
+  /** Ten digits. */
+  kennitala: string
 }
 
 export type ProjectView = {
@@ -28,6 +38,15 @@ export type ProjectView = {
   editability: Record<string, Editability>
   /** Editability of the entry-scope fields, per category slug. */
   entryEditability: Record<string, Record<string, Editability>>
+  /** The edition's early-bird settings, for the running total and the review. */
+  earlyBird: {
+    /** ISO. Early bird applies to entries submitted before this moment. */
+    endsBefore: string
+    discountPercent: number
+    rounding: 'nearest-900'
+  }
+  /** Who is invoiced, or null while none is chosen. */
+  billing: ProjectBilling | null
   /** The live lock, or null when the project is free to take. */
   lock: LockInfo | null
   intakeClosesBefore: string

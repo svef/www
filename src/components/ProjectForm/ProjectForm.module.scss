@@ -1,5 +1,6 @@
-// Scaffolding styles for the project form. Semantic and token-driven; a design pass
-// comes later (svef/www awards form), so nothing here is final.
+// Styles for the project form shell and its generic fields. Semantic and token-driven;
+// the category cards, billing and review have their own modules next to the components,
+// so a redesign can restyle each without touching the others.
 @use '../../styles/breakpoints' as bp;
 
 .layout {
@@ -281,55 +282,180 @@
   }
 }
 
-.categories {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
-  gap: 0.75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.card {
-  padding: 0.75rem;
-  border: 1px solid var(--line);
-  min-width: 0;
-
-  fieldset {
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-
-  legend {
-    font-weight: var(--weight-title);
-    padding: 0;
-  }
-}
-
-.blocked {
-  opacity: 0.6;
-}
-
-.tiers {
-  margin: 0.5rem 0;
-  padding: 0;
-  list-style: none;
-}
-
-.status {
-  color: var(--muted);
-}
-
 .pitch {
   summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-block: 6px;
     cursor: pointer;
+    list-style: none;
+    font-weight: 600;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
   }
+
+  &[open] > summary {
+    margin-bottom: 0.75rem;
+  }
+}
+
+.pitchPlus {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  background: var(--color-violet);
+  color: var(--color-white);
+}
+
+.categoryBlock {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+  padding: 1rem 1.25rem 1.25rem;
+  border: 1px solid var(--line);
+  background: var(--ink-2);
+}
+
+.categoryTitle {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+// ---- The "more information" tip ---------------------------------------------
+
+.tip {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 0.25rem;
+}
+
+.tipButton {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-violet-light);
+  cursor: pointer;
+
+  &[aria-expanded='true'] {
+    background: var(--surface-3);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.tipPanel {
+  position: absolute;
+  z-index: 3;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(22rem, calc(100vw - 2rem));
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-violet-light);
+  background: var(--surface-3);
+  color: var(--fg);
+  font-weight: 400;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.forced {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0;
+  color: var(--fg);
+
+  svg {
+    flex: none;
+    margin-top: 0.2em;
+    color: var(--color-violet-light);
+  }
+}
+
+.rowLegend {
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  &:empty {
+    display: none;
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+}
+
+// ---- The image section, until the upload exists ----------------------------
+
+.imagePlaceholder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  gap: 0.75rem;
+  max-width: 36rem;
+}
+
+.imageDrop {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+
+  input {
+    max-width: 100%;
+    min-width: 0;
+    color: var(--muted);
+  }
+}
+
+.badge {
+  padding: 0.15rem 0.6rem;
+  background: var(--color-violet);
+  color: var(--color-white);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }

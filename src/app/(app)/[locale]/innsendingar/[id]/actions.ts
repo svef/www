@@ -8,6 +8,7 @@ import {
   loadProject,
   saveAnswers,
   setCategories,
+  setProjectBillingProfile,
 } from '@/lib/awards/projects/service'
 import type { ProjectView, SaveAnswersPatch, SaveResult } from '@/lib/awards/projects/types'
 import type { LockInfo } from '@/lib/awards/projects/errors'
@@ -60,6 +61,18 @@ export async function setCategoriesAction(
   return run(async (userId, now) => {
     const db = getAwardsDb()
     await setCategories(db, { userId, projectId, categories, now })
+    return loadProject(db, { userId, projectId, now })
+  })
+}
+
+/** Chooses (or clears) who is invoiced, and returns the refreshed project. */
+export async function setBillingProfileAction(
+  projectId: string,
+  billingProfileId: string | null,
+): Promise<ActionResult<ProjectView>> {
+  return run(async (userId, now) => {
+    const db = getAwardsDb()
+    await setProjectBillingProfile(db, { userId, projectId, billingProfileId, now })
     return loadProject(db, { userId, projectId, now })
   })
 }

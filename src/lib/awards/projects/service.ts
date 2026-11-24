@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm'
 import { CATEGORIES } from '../categories'
 import { appendEntryEvent } from '../db/entry-event'
 import {
+  billingProfile,
   category,
   credential,
   edition,
@@ -25,6 +26,7 @@ import { AwardsError, type LockInfo } from './errors'
 import { acquireLock, getLiveLock, heartbeatLock, releaseLock, requireLock } from './lock'
 import type {
   EntryView,
+  ProjectBilling,
   ProjectView,
   RejectReason,
   SaveAnswersPatch,
@@ -138,10 +140,13 @@ type EntryRow = {
   category: string
   status: EntryStatus
   answers: Record<string, unknown>
+  price: EntryView['price']
 }
 
 type Context = {
   project: typeof project.$inferSelect
+  edition: typeof edition.$inferSelect
+  billing: ProjectBilling | null
   intakeClosesBefore: Date
   entries: EntryRow[]
   answers: Record<string, unknown>
@@ -203,7 +208,28 @@ async function loadContext(q: Queryable, projectId: string): Promise<Context> {
     answers: Object.fromEntries(
       entryAnswers.filter((a) => a.entryId === e.id).map((a) => [a.fieldKey, a.value]),
     ),
+    price:
+      e.priceLockedAt && e.priceRegular !== null && e.priceAmount !== null
+        ? {
+            regular: e.priceRegular,
+            discountPercent: e.discountPercent ?? 0,
+            amount: e.priceAmount,
+          }
+        : null,
   }))
+
+  // The chosen profile may belong to the creator while an editor is looking: only its
+  // company and kennitala are shown, so the invoice note can name who is invoiced.
+  const [profile] = p.billingProfileId
+    ? await q
+        .select({
+          id: billingProfile.id,
+          companyName: billingProfile.companyName,
+          kennitala: billingProfile.kennitala,
+        })
+        .from(billingProfile)
+        .where(and(eq(billingProfile.id, p.billingProfileId), isNull(billingProfile.deletedAt)))
+    : []
 
   const answers: Record<string, unknown> = {}
   const projectAnswers = await q
@@ -254,6 +280,8 @@ async function loadContext(q: Queryable, projectId: string): Promise<Context> {
 
   return {
     project: p,
+    edition: ed,
+    billing: profile ?? null,
     intakeClosesBefore: ed.intakeClosesBefore,
     entries,
     answers,
@@ -305,6 +333,7 @@ export async function loadProject(
     category: e.category,
     status: e.status,
     answers: e.answers,
+    price: e.price,
   }))
   return {
     id: ctx.project.id,
@@ -318,6 +347,12 @@ export async function loadProject(
     entryEditability,
     lock,
     intakeClosesBefore: ctx.intakeClosesBefore.toISOString(),
+    earlyBird: {
+      endsBefore: ctx.edition.earlyBirdEndsBefore.toISOString(),
+      discountPercent: ctx.edition.earlyBirdDiscountPercent,
+      rounding: ctx.edition.earlyBirdRounding as 'nearest-900',
+    },
+    billing: ctx.billing,
     serverNow: now.toISOString(),
   }
 }
@@ -441,11 +476,15 @@ async function writePeople(tx: Tx, projectId: string, key: string, items: unknow
       canEdit: kind === 'collaborator' && it.canEdit === true,
       sortOrder: i,
     }
-    if (existing[i]) await tx.update(projectPerson).set(values).where(eq(projectPerson.id, existing[i].id))
+    if (existing[i])
+      await tx.update(projectPerson).set(values).where(eq(projectPerson.id, existing[i].id))
     else await tx.insert(projectPerson).values({ projectId, kind, ...values })
   }
   for (const extra of existing.slice(list.length)) {
-    await tx.update(projectPerson).set({ deletedAt: new Date() }).where(eq(projectPerson.id, extra.id))
+    await tx
+      .update(projectPerson)
+      .set({ deletedAt: new Date() })
+      .where(eq(projectPerson.id, extra.id))
   }
 }
 
@@ -465,8 +504,7 @@ async function writeCredentials(tx: Tx, projectId: string, items: unknown) {
   }
 }
 
-const rejectionFor = (e: Editability): RejectReason | null =>
-  e.editable ? null : e.reason
+const rejectionFor = (e: Editability): RejectReason | null => (e.editable ? null : e.reason)
 
 /** Validates `candidate`, dropping fields that fail (so the rest can be written) until it passes. */
 function validateDroppingErrors(
@@ -543,15 +581,19 @@ export async function saveAnswers(
     const writes: { key: string; value: unknown }[] = []
 
     if (Object.keys(accepted).length) {
-      const { data, errors: found } = validateDroppingErrors(
-        { ...ctx.answers, ...accepted },
-        (c) => validateProjectAnswers(categories, c, 'draft'),
+      const { data, errors: found } = validateDroppingErrors({ ...ctx.answers, ...accepted }, (c) =>
+        validateProjectAnswers(categories, c, 'draft'),
       )
       const failed = new Set<string>()
       for (const e of found) {
         if (e.fieldKey in accepted) {
           failed.add(e.fieldKey)
-          errors.push({ fieldKey: e.fieldKey, path: e.path, code: e.code, message: e.message })
+          errors.push({
+            fieldKey: e.fieldKey,
+            path: e.path,
+            code: e.code,
+            message: e.message,
+          })
         }
       }
       const after = { ...ctx.answers }
@@ -566,7 +608,11 @@ export async function saveAnswers(
       const resolvedAfter = resolveAnswers(PROJECT_FIELDS, categories, after)
       for (const field of resolvedAfter.visible) {
         const f = forcedValue(field, { categories, answers: resolvedAfter.answers })
-        if (f.forced && !sameValue(after[field.key], f.value) && !(field.key in accepted && !failed.has(field.key))) {
+        if (
+          f.forced &&
+          !sameValue(after[field.key], f.value) &&
+          !(field.key in accepted && !failed.has(field.key))
+        ) {
           after[field.key] = f.value
           forced[field.key] = f.value
           writes.push({ key: field.key, value: f.value })
@@ -686,14 +732,18 @@ export async function setCategories(
     if (now.getTime() >= ctx.intakeClosesBefore.getTime())
       throw new AwardsError('intake_closed', 'Submissions have closed.')
 
-    const unknown = wanted.filter((s) => !ctx.categoryIds.has(s) || !CATEGORIES.some((c) => c.slug === s))
+    const unknown = wanted.filter(
+      (s) => !ctx.categoryIds.has(s) || !CATEGORIES.some((c) => c.slug === s),
+    )
     if (unknown.length)
       throw new AwardsError('unknown_category', `Unknown category: ${unknown.join(', ')}`)
     try {
       assertSelectionAllowed(wanted)
     } catch (e) {
       if (e instanceof SelectionError)
-        throw new AwardsError('selection_invalid', e.message, { violations: e.violations })
+        throw new AwardsError('selection_invalid', e.message, {
+          violations: e.violations,
+        })
       throw e
     }
 
@@ -759,5 +809,56 @@ export async function setCategories(
     }
     await tx.update(project).set({ updatedAt: now }).where(eq(project.id, projectId))
     return wanted
+  })
+}
+
+// ── Billing ─────────────────────────────────────────────────────────────────
+
+/**
+ * Chooses who is invoiced for the project (null clears it). The profile must be the
+ * caller's own: profiles belong to a user and are reusable across their projects, but
+ * nobody can attach someone else's. Needs the edit lock and an open intake, and logs
+ * a `billing_profile_changed` event with before and after.
+ */
+export async function setProjectBillingProfile(
+  db: AwardsDb,
+  args: { userId: string; projectId: string; billingProfileId: string | null } & Clock,
+): Promise<void> {
+  const { userId, projectId } = args
+  const now = args.now ?? new Date()
+  await requireRole(db, userId, projectId)
+
+  await db.transaction(async (tx) => {
+    await requireLock(tx, { projectId, userId, now, ttlMs: args.ttlMs })
+    const ctx = await loadContext(tx, projectId)
+    if (now.getTime() >= ctx.intakeClosesBefore.getTime())
+      throw new AwardsError('intake_closed', 'Submissions have closed.')
+    if (args.billingProfileId !== null) {
+      const [own] = await tx
+        .select({ id: billingProfile.id })
+        .from(billingProfile)
+        .where(
+          and(
+            eq(billingProfile.id, args.billingProfileId),
+            eq(billingProfile.ownerUserId, userId),
+            isNull(billingProfile.deletedAt),
+          ),
+        )
+      // Someone else's profile looks the same as a missing one.
+      if (!own) throw new AwardsError('not_found', 'Billing profile not found.')
+    }
+    const before = ctx.project.billingProfileId
+    if (before === args.billingProfileId) return
+    await tx
+      .update(project)
+      .set({ billingProfileId: args.billingProfileId, updatedAt: now })
+      .where(eq(project.id, projectId))
+    await appendEntryEvent(tx, {
+      projectId,
+      actorUserId: userId,
+      type: 'billing_profile_changed',
+      before: { billingProfileId: before },
+      after: { billingProfileId: args.billingProfileId },
+    })
   })
 }

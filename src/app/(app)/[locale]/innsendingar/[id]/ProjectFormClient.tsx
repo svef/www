@@ -3,6 +3,13 @@
 import { useMemo } from 'react'
 import { ProjectForm } from '@/components/ProjectForm/ProjectForm'
 import type { ProjectFormActions } from '@/components/ProjectForm/useProjectForm'
+import type { BillingActions } from '@/components/ProjectForm/BillingSection'
+import {
+  createBillingProfileAction,
+  deleteBillingProfileAction,
+  updateBillingProfileAction,
+} from '@/lib/awards/billing/actions'
+import type { BillingProfileView } from '@/lib/awards/billing/rules'
 import type { ProjectView } from '@/lib/awards/projects/types'
 import type { Locale } from '@/lib/i18n'
 import {
@@ -10,11 +17,26 @@ import {
   heartbeatAction,
   loadProjectAction,
   saveAnswersAction,
+  setBillingProfileAction,
   setCategoriesAction,
 } from './actions'
 
 /** Binds the project's server actions to the form, and the beacon that releases the lock on leave. */
-export function ProjectFormClient({ initial, locale }: { initial: ProjectView; locale: Locale }) {
+const billingActions: BillingActions = {
+  create: createBillingProfileAction,
+  update: updateBillingProfileAction,
+  remove: deleteBillingProfileAction,
+}
+
+export function ProjectFormClient({
+  initial,
+  locale,
+  billingProfiles,
+}: {
+  initial: ProjectView
+  locale: Locale
+  billingProfiles: BillingProfileView[]
+}) {
   const actions = useMemo<ProjectFormActions>(
     () => ({
       load: () => loadProjectAction(initial.id),
@@ -22,6 +44,7 @@ export function ProjectFormClient({ initial, locale }: { initial: ProjectView; l
       heartbeat: () => heartbeatAction(initial.id),
       save: (patch) => saveAnswersAction(initial.id, patch),
       setCategories: (categories) => setCategoriesAction(initial.id, categories),
+      setBilling: (billingProfileId) => setBillingProfileAction(initial.id, billingProfileId),
       release: () => {
         // sendBeacon survives the page going away; a server action would not.
         navigator.sendBeacon(`/api/awards/projects/${initial.id}/lock`)
@@ -29,5 +52,12 @@ export function ProjectFormClient({ initial, locale }: { initial: ProjectView; l
     }),
     [initial.id],
   )
-  return <ProjectForm initial={initial} locale={locale} actions={actions} />
+  return (
+    <ProjectForm
+      initial={initial}
+      locale={locale}
+      actions={actions}
+      billing={{ initialProfiles: billingProfiles, actions: billingActions }}
+    />
+  )
 }
