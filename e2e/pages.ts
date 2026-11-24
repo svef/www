@@ -80,6 +80,11 @@ export const PAGES = [
     name: 'photos',
     h1: { is: 'Myndir', en: 'Photos' },
   },
+  {
+    path: '/innsendingar',
+    name: 'submissions',
+    h1: { is: 'Innsendingar', en: 'Submissions' },
+  },
   // The two public forms, linked from the footer. They are not in
   // `ROUTE_SEGMENTS`, so their path is the same in both locales
   // (`/en/abendingar`), and they are the pages that stay reachable while

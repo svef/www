@@ -99,6 +99,8 @@ export const en = {
     // Where the export's 'Lesa meira' button sits. Not a link: the awards page is
     // hidden (#128), so the section teases the next date instead.
     awardsTeaser: 'Submissions open 1 December 2026',
+    // The teaser's link, once intake has opened (the edition row says when).
+    awardsOpenCta: 'Send in a submission',
     eventsTitle: 'Upcoming events',
     pastEventsTitle: 'Past events',
     eventsLead:
@@ -233,6 +235,44 @@ export const en = {
       },
     },
     icelandicOnly: 'Published in Icelandic only',
+  },
+  submissions: {
+    title: 'Submissions',
+    lead: (year: number) =>
+      `Enter a project in the Icelandic Web Awards ${year}. Here are the categories, the prices and the dates.`,
+    datesTitle: 'Key dates',
+    dates: {
+      opens: 'Submissions open',
+      earlyBird: 'Early-bird price applies until and including',
+      closes: 'Submissions close, until and including',
+      ceremony: 'The ceremony',
+    },
+    categoriesTitle: 'Categories and prices',
+    categoriesLead: (percent: number) =>
+      `A project can be entered in more than one category. The early-bird price is ${percent}% lower and applies when you submit before the early bird ends. Prices are in Icelandic krónur.`,
+    categoriesLabel: 'Categories',
+    earlyBird: 'Early bird',
+    regular: 'Regular price',
+    currency: 'kr.',
+    description: 'About this category',
+    tiersTitle: 'Pick one size',
+    tiersNote:
+      'A project can be in only one of these categories. The turnover thresholds are a guide.',
+    needTitle: 'What you will need',
+    need: [
+      'Links to the project, a website or an app.',
+      'Login details, if the project needs a login.',
+      'An image of the project, 1080 × 1080 pixels, PNG or JPG.',
+      'A kennitala for the invoice. The invoice is sent after submissions close.',
+    ],
+    ctaTitle: 'Start a submission',
+    ctaOpen:
+      'You create an account or sign in, then start on your submission. Drafts save automatically.',
+    ctaBefore: (date: string) => `Submissions open on ${date}.`,
+    ctaClosed: (date: string) => `Submissions closed on ${date}.`,
+    start: 'Start a submission',
+    hasAccount: 'Already have an account?',
+    signIn: 'Sign in',
   },
   awards: {
     title: 'The Icelandic Web Awards',

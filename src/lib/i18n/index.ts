@@ -1,5 +1,5 @@
 import { is } from './is'
-import { toPublicSegment } from './routes'
+import { toPublicSegments } from './routes'
 import { en } from './en'
 
 export const LOCALES = ['is', 'en'] as const
@@ -28,9 +28,10 @@ const LOCALE_PREFIX = /^\/(is|en)(?=\/|$)/
  * than appended, so this accepts an already-localised path and is idempotent.
  *
  * The page's own name is translated with it: `/is/vidburdir` becomes
- * `/en/events`, not `/en/vidburdir`. Anything after that first segment — a news
- * or event slug — is carried across unchanged, because those are not localized
- * yet (svef/www#98).
+ * `/en/events`, not `/en/vidburdir`. So is a known sub-page name
+ * (`/is/innsendingar/minar` becomes `/en/submissions/mine`). Anything else after
+ * the page name — a news or event slug, a project id — is carried across
+ * unchanged, because those are not localized yet (svef/www#98).
  *
  * A query string and/or hash on the input is carried over unchanged.
  *
@@ -55,8 +56,8 @@ export function localePath(path: string, target: Locale): string {
 
   // Translate the page's own name. The input may be in either language, since
   // this takes the path a reader is on as readily as one written in code.
-  const [, head = '', ...tail] = rest.split('/')
-  const translated = head ? `/${[toPublicSegment(head, target), ...tail].join('/')}` : rest
+  const segments = rest.split('/').slice(1)
+  const translated = segments[0] ? `/${toPublicSegments(segments, target).join('/')}` : rest
 
   return `/${target}${translated}${query}${hash}`
 }
@@ -69,5 +70,8 @@ export {
   withoutHiddenLinks,
   toInternalSegment,
   toPublicSegment,
+  toPublicSegments,
+  toInternalSegments,
+  NESTED_SEGMENTS,
   type RouteKey,
 } from './routes'

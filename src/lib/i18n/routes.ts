@@ -22,7 +22,22 @@ export const ROUTE_SEGMENTS = {
   myndir: { is: 'myndir', en: 'photos' },
   skraning: { is: 'skraning', en: 'membership' },
   'hafa-samband': { is: 'hafa-samband', en: 'contact' },
+  innsendingar: { is: 'innsendingar', en: 'submissions' },
 } as const
+
+/**
+ * Names *under* a page, per language, for the pages that have fixed sub-pages
+ * (`/is/innsendingar/minar` ↔ `/en/submissions/mine`). Keyed on the parent's
+ * directory name, then on the child's Icelandic name.
+ *
+ * Only the second segment of a path is looked up here. Anything else after the
+ * page name — a project id, a slug — is data, not a name, and travels untouched.
+ */
+export const NESTED_SEGMENTS: Readonly<
+  Partial<Record<RouteKey, Readonly<Record<string, { is: string; en: string }>>>>
+> = {
+  innsendingar: { minar: { is: 'minar', en: 'mine' } },
+}
 
 /**
  * Pages that are built but switched off: they answer 404, and every link,
@@ -93,4 +108,42 @@ export function toInternalSegment(segment: string): RouteKey | undefined {
 export function toPublicSegment(segment: string, locale: Locale): string {
   const key = toInternalSegment(segment)
   return key ? ROUTE_SEGMENTS[key][locale] : segment
+}
+
+/** The directory name of a nested child, in any language, under `parent`. */
+function toInternalChild(parent: RouteKey, segment: string): string {
+  const children = NESTED_SEGMENTS[parent]
+  if (!children) return segment
+  for (const [internal, names] of Object.entries(children)) {
+    if (Object.values(names).includes(segment)) return internal
+  }
+  return segment
+}
+
+/**
+ * The segments of a path (after the locale), with the page name and a known
+ * sub-page name written in `locale`. Segments that name nothing are returned
+ * as they came, so `['innsendingar', '<uuid>']` keeps its id.
+ */
+export function toPublicSegments(segments: readonly string[], locale: Locale): string[] {
+  const [head, second, ...rest] = segments
+  if (head === undefined) return []
+  const key = toInternalSegment(head)
+  if (!key) return [...segments]
+  const out: string[] = [ROUTE_SEGMENTS[key][locale]]
+  if (second === undefined) return out
+  const child = NESTED_SEGMENTS[key]?.[toInternalChild(key, second)]
+  out.push(child ? child[locale] : second)
+  return [...out, ...rest]
+}
+
+/** The same path as directory names on disk: what the proxy rewrites onto. */
+export function toInternalSegments(segments: readonly string[]): string[] {
+  const [head, second, ...rest] = segments
+  if (head === undefined) return []
+  const key = toInternalSegment(head)
+  if (!key) return [...segments]
+  const out: string[] = [key]
+  if (second === undefined) return out
+  return [...out, toInternalChild(key, second), ...rest]
 }

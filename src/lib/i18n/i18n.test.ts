@@ -8,6 +8,8 @@ import {
   isHiddenPage,
   isHiddenPath,
   withoutHiddenLinks,
+  toInternalSegments,
+  toPublicSegments,
 } from './index'
 
 describe('i18n', () => {
@@ -101,6 +103,41 @@ describe('localePath', () => {
     expect(localePath('/is//evil.com', 'en')).toBe('/en/evil.com')
     expect(localePath('///evil.com', 'is')).toBe('/is/evil.com')
     expect(localePath('//evil.com?a=1#b', 'is')).toBe('/is/evil.com?a=1#b')
+  })
+})
+
+describe('nested routes', () => {
+  it('translates the page name and a known sub-page name', () => {
+    expect(localePath('/innsendingar', 'en')).toBe('/en/submissions')
+    expect(localePath('/is/innsendingar/minar', 'en')).toBe('/en/submissions/mine')
+    expect(localePath('/en/submissions/mine', 'is')).toBe('/is/innsendingar/minar')
+    expect(localePath('/innsendingar/minar', 'is')).toBe('/is/innsendingar/minar')
+  })
+
+  it('carries a project id across untouched', () => {
+    const id = '0198c7a0-1111-7222-8333-444455556666'
+    expect(localePath(`/innsendingar/${id}`, 'en')).toBe(`/en/submissions/${id}`)
+    expect(localePath(`/en/submissions/${id}`, 'is')).toBe(`/is/innsendingar/${id}`)
+    expect(localePath(`/innsendingar/${id}/minar`, 'en')).toBe(`/en/submissions/${id}/minar`)
+  })
+
+  it('keeps the query and hash', () => {
+    expect(localePath('/is/innsendingar/minar?q=a#x', 'en')).toBe('/en/submissions/mine?q=a#x')
+  })
+
+  it('does not translate a sub-page name under a page that has none', () => {
+    expect(localePath('/vidburdir/minar', 'en')).toBe('/en/events/minar')
+    expect(localePath('/frettir/mine', 'is')).toBe('/is/frettir/mine')
+  })
+
+  it('maps public segments to directories and back', () => {
+    expect(toInternalSegments(['submissions', 'mine'])).toEqual(['innsendingar', 'minar'])
+    expect(toInternalSegments(['innsendingar', 'minar'])).toEqual(['innsendingar', 'minar'])
+    expect(toInternalSegments(['submissions', 'abc'])).toEqual(['innsendingar', 'abc'])
+    expect(toInternalSegments(['nonsense', 'mine'])).toEqual(['nonsense', 'mine'])
+    expect(toPublicSegments(['innsendingar', 'minar'], 'en')).toEqual(['submissions', 'mine'])
+    expect(toPublicSegments(['submissions', 'mine'], 'is')).toEqual(['innsendingar', 'minar'])
+    expect(toPublicSegments([], 'en')).toEqual([])
   })
 })
 

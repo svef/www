@@ -1,0 +1,46 @@
+@use '../../styles/breakpoints' as bp;
+
+.panel {
+  // The shape engine sets only the fill; the text colour that sits on it is ours to set.
+  color: var(--shape-on);
+  padding: clamp(40px, 5vw, 72px) clamp(24px, 4vw, 64px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-h2);
+  font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-h2);
+  overflow-wrap: anywhere;
+}
+
+.message {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 1.1rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+}
+
+.account {
+  margin: 0;
+
+  a {
+    color: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+
+    &:focus-visible {
+      outline: 3px solid var(--color-violet);
+      outline-offset: 3px;
+    }
+  }
+}
