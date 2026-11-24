@@ -99,6 +99,32 @@ export const PAGES = [
     name: 'talk proposal',
     h1: { is: 'Bjóða fram erindi', en: 'Propose a talk' },
   },
+  // Awards accounts (svef/www#158). Their own spec (account.spec.ts) drives the flows.
+  {
+    path: '/nyskraning',
+    name: 'sign up',
+    h1: { is: 'Nýskráning', en: 'Sign up' },
+  },
+  {
+    path: '/innskraning',
+    name: 'sign in',
+    h1: { is: 'Innskráning', en: 'Sign in' },
+  },
+  {
+    path: '/gleymt-lykilord',
+    name: 'forgot password',
+    h1: { is: 'Gleymt lykilorð', en: 'Forgot your password' },
+  },
+  {
+    path: '/endurstilla-lykilord',
+    name: 'reset password',
+    h1: { is: 'Nýtt lykilorð', en: 'Choose a new password' },
+  },
+  {
+    path: '/stadfesta-netfang',
+    name: 'verify email',
+    h1: { is: 'Staðfesting netfangs', en: 'Email confirmation' },
+  },
 ] as const
 
 export type PageSpec = (typeof PAGES)[number]

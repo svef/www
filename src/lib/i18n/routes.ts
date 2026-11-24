@@ -23,6 +23,12 @@ export const ROUTE_SEGMENTS = {
   skraning: { is: 'skraning', en: 'membership' },
   'hafa-samband': { is: 'hafa-samband', en: 'contact' },
   innsendingar: { is: 'innsendingar', en: 'submissions' },
+  // Awards accounts (svef/www#158).
+  nyskraning: { is: 'nyskraning', en: 'sign-up' },
+  innskraning: { is: 'innskraning', en: 'sign-in' },
+  'gleymt-lykilord': { is: 'gleymt-lykilord', en: 'forgot-password' },
+  'endurstilla-lykilord': { is: 'endurstilla-lykilord', en: 'reset-password' },
+  'stadfesta-netfang': { is: 'stadfesta-netfang', en: 'verify-email' },
 } as const
 
 /**
