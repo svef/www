@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from '@playwright/test'
-import { DYNAMIC_ROUTES, PAGES } from './pages'
+import { DYNAMIC_ROUTES, GATED_ROUTES, PAGES } from './pages'
 
 /**
  * The route table in `pages.ts` is what every other spec iterates, so a page
@@ -41,7 +41,7 @@ test.describe('route table', () => {
     const onDisk = routePathsOnDisk().sort()
     const isDynamic = (p: string) => p.includes('[')
 
-    const listed = new Set<string>(PAGES.map((p) => p.path))
+    const listed = new Set<string>([...PAGES.map((p) => p.path), ...GATED_ROUTES.map((r) => r.path)])
     const declaredDynamic = new Set(DYNAMIC_ROUTES.map((route) => route.pattern))
 
     const missing = onDisk.filter((p) =>

@@ -158,6 +158,18 @@ export interface DynamicRoute {
   matches: (path: string) => boolean
 }
 
+/**
+ * Pages that exist on disk but are not public: they answer an anonymous visitor with a
+ * redirect or a 404, so the sweeps (which visit as an anonymous reader and expect an `<h1>`)
+ * cannot cover them. Each has a spec of its own that signs in and checks it, axe included.
+ */
+export const GATED_ROUTES: readonly { path: string; spec: string }[] = [
+  // Staff only (svef/www#170): eligibility list and invoicing export.
+  { path: '/innsendingar/starfsfolk', spec: 'staff-export.spec.ts' },
+  // Signed-in only: starting a project. Signed out it redirects to sign-in (#158/#160).
+  { path: '/innsendingar/ny', spec: 'project-form.spec.ts' },
+]
+
 export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
   {
     pattern: '/frettir/[slug]',
@@ -169,19 +181,12 @@ export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
     name: 'event',
     matches: (path) => /^\/vidburdir\/[^/]+$/.test(path),
   },
-  // Starting a project: signed-in only. Signed out it redirects to sign-in, so the public
-  // sweeps can't visit it; `project-form.spec.ts` covers it signed in, and the redirect.
-  {
-    pattern: '/innsendingar/ny',
-    name: 'new submission',
-    matches: (path) => /^\/(innsendingar\/ny|submissions\/new)$/.test(path),
-  },
   // A signed-in person's project. Covered by `project-form.spec.ts`, which creates one.
   // `ny`/`new` and `minar`/`mine` are fixed sub-pages, not ids.
   {
     pattern: '/innsendingar/[id]',
     name: 'project form',
-    matches: (path) => /^\/innsendingar\/(?!(ny|new|minar|mine)$)[^/]+$/.test(path),
+    matches: (path) => /^\/innsendingar\/(?!(ny|new|minar|mine|starfsfolk|staff)$)[^/]+$/.test(path),
   },
 ]
 

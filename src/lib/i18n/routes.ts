@@ -45,6 +45,8 @@ export const NESTED_SEGMENTS: Readonly<
   innsendingar: {
     minar: { is: 'minar', en: 'mine' },
     ny: { is: 'ny', en: 'new' },
+    // The staff area (svef/www#168 builds it out; the invoicing export and eligibility list live here for now).
+    starfsfolk: { is: 'starfsfolk', en: 'staff' },
   },
 }
 
