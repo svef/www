@@ -3,7 +3,6 @@ import { desc, isNull } from 'drizzle-orm'
 import { notFound, redirect } from 'next/navigation'
 import { AppHead } from '@/components/AppHead/AppHead'
 import { dashboardCopy } from '@/components/Dashboard/copy'
-import { SubmitButton } from '@/components/FormParts/FormParts'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { getProjectFormCopy } from '@/components/ProjectForm/copy'
 import { SECTIONS } from '@/components/ProjectForm/sections'
@@ -14,6 +13,7 @@ import { isLocale, localePath } from '@/lib/i18n'
 import { signInPath } from '@/lib/awards/auth/roles'
 import styles from '../form-page.module.scss'
 import { createProjectAction } from './actions'
+import { CreateButton } from './CreateButton'
 
 /**
  * "New submission": creating a project. Creating is a POST (a button), never a GET, so a
@@ -82,7 +82,7 @@ export default async function NewSubmissionPage({
           </ol>
           <form action={createProjectAction} className={styles.newForm}>
             <input type="hidden" name="locale" value={locale} />
-            <SubmitButton label={copy.newButton} pending={false} />
+            <CreateButton label={copy.newButton} />
           </form>
         </div>
       </PageSection>
