@@ -63,8 +63,11 @@ npm run awards:seed          # upsert the 2026 edition, group, 18 categories, ex
 
 After changing `schema.ts`, run `npm run awards:generate -- --name <what_changed>`
 and commit the SQL it writes. `awards:migrate` runs in the Vercel build right after
-Payload's `migrate`, and in both CI jobs; production is **not** seeded by the build
-(prices may be edited there), so run `awards:seed` once by hand against it. The
+Payload's `migrate`, and `awards:seed` right after that, so every deploy upserts the
+edition and categories from `src/lib/awards/data/categories-2026.json`. **That file is the
+source of truth for names, prices and dates:** change a price there, not in the database, or
+the next deploy puts the file's value back. Prices already locked on submitted entries are
+stored on the entry and are not touched. `terms_version` is left alone. The
 smoke test `src/lib/awards/db/db.test.ts` migrates and seeds whatever
 `AWARDS_DATABASE_URL` points at, and skips when it is unset.
 

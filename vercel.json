@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run migrate && npm run awards:migrate && npm run build",
+  "buildCommand": "npm run migrate && npm run awards:migrate && npm run awards:seed && npm run build",
   "crons": [
     {
       "path": "/api/awards/cron/request-reminders",
