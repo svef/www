@@ -412,7 +412,7 @@ describe('ProjectFormController', () => {
     const pending = c.changeBilling('b1')
     expect(c.getSnapshot().pendingBilling).toEqual({ id: 'b1' })
     await settle()
-    confirm(ok(view({ billing: { id: 'b1', companyName: 'Acme', kennitala: '5902697199' } })))
+    confirm(ok(view({ billing: { id: 'b1', companyName: 'Acme', kennitala: '7106697169' } })))
     await pending
     expect(actions.setBilling).toHaveBeenCalledWith('b1')
     expect(c.getSnapshot().pendingBilling).toBeNull()
@@ -455,7 +455,7 @@ describe('ProjectFormController', () => {
       setBilling: vi.fn(async (id) => {
         calls.push(id)
         await new Promise((r) => setTimeout(r, 50))
-        return ok(view({ billing: id ? { id, companyName: 'x', kennitala: '5902697199' } : null }))
+        return ok(view({ billing: id ? { id, companyName: 'x', kennitala: '7106697169' } : null }))
       }),
     })
     const stop = c.start()

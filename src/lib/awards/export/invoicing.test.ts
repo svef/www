@@ -13,14 +13,14 @@ import {
 } from './invoicing'
 
 const acme: BillingDetails = {
-  kennitala: '5501692829',
+  kennitala: '7104692889',
   companyName: 'Þórsmörk ehf.',
   invoiceEmail: 'reikningar@thorsmork.is',
   address: 'Ægisgata 1, 101 Reykjavík',
   reference: 'PO-7',
 }
 const bolt: BillingDetails = {
-  kennitala: '0101302399',
+  kennitala: '3106302339',
   companyName: 'Bolti ehf.',
   invoiceEmail: 'b@bolti.is',
   address: 'Torg 2',
@@ -51,7 +51,7 @@ describe('buildInvoicingReport', () => {
       row({ billing: bolt, priceAmount: 9900, priceRegular: 9900, discountPercent: 0 }),
       row({ billing: acme, priceAmount: 6900 }),
     ])
-    expect(report.groups.map((g) => g.billing?.kennitala)).toEqual(['0101302399', '5501692829'])
+    expect(report.groups.map((g) => g.billing?.kennitala)).toEqual(['3106302339', '7104692889'])
     expect(report.groups.map((g) => g.total)).toEqual([9900, 25800])
     expect(report.groups[1].entries).toHaveLength(2)
     expect(report.total).toBe(35700)
@@ -184,7 +184,7 @@ describe('buildInvoicingXlsx', () => {
     // Written as text, never as a formula.
     expect(xml).not.toMatch(/<f>/)
     // The kennitala keeps its leading zero as text.
-    expect(xml).toContain('<t>0101302399</t>')
+    expect(xml).toContain('<t>3106302339</t>')
     expect(xml).toContain('<t>=1+1</t>')
   })
 })

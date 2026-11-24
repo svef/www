@@ -3,7 +3,7 @@ import { formatKennitala, validateBillingInput } from './rules'
 
 const valid = {
   companyName: 'Acme ehf.',
-  kennitala: '4710031239',
+  kennitala: '7102031219',
   invoiceEmail: 'invoices@acme.is',
   address: 'Laugavegur 1, 101 Reykjavík',
 }
@@ -29,12 +29,12 @@ describe('validateBillingInput', () => {
   })
 
   it('accepts a kennitala written with the hyphen and stores ten digits', () => {
-    const r = validateBillingInput({ ...valid, kennitala: '471003-1239' })
-    expect(r.ok && r.data.kennitala).toBe('4710031239')
+    const r = validateBillingInput({ ...valid, kennitala: '710203-1219' })
+    expect(r.ok && r.data.kennitala).toBe('7102031219')
   })
 
   it('accepts a personal kennitala as well as a company one (agencies bill the client, people bill themselves)', () => {
-    expect(validateBillingInput({ ...valid, kennitala: '1203921239' }).ok).toBe(true)
+    expect(validateBillingInput({ ...valid, kennitala: '3102921259' }).ok).toBe(true)
   })
 
   it('names every missing field', () => {
@@ -54,7 +54,7 @@ describe('validateBillingInput', () => {
       field: 'kennitala',
       code: 'kennitalaFormat',
     })
-    const bad = validateBillingInput({ ...valid, kennitala: '4110021299' })
+    const bad = validateBillingInput({ ...valid, kennitala: '7002021289' })
     expect(!bad.ok && bad.errors[0]).toMatchObject({
       field: 'kennitala',
       code: 'kennitalaInvalid',
@@ -80,7 +80,7 @@ describe('validateBillingInput', () => {
 
 describe('formatKennitala', () => {
   it('writes ten digits with the hyphen', () => {
-    expect(formatKennitala('4710031239')).toBe('471003-1239')
+    expect(formatKennitala('7102031219')).toBe('710203-1219')
   })
   it('leaves anything else alone', () => {
     expect(formatKennitala('123')).toBe('123')

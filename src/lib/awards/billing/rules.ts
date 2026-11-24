@@ -92,7 +92,7 @@ export function validateBillingInput(input: BillingInput): BillingResult {
   }
 }
 
-/** `0101302989` to `010130-2989`, the way a kennitala is written. */
+/** `3109302969` to `310930-2969`, the way a kennitala is written. */
 export function formatKennitala(digits: string): string {
   return /^\d{10}$/.test(digits) ? `${digits.slice(0, 6)}-${digits.slice(6)}` : digits
 }

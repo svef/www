@@ -84,7 +84,7 @@ describe.skipIf(!url)('submitting', () => {
         .insert(schema.billingProfile)
         .values({
           ownerUserId: owner.id,
-          kennitala: '5902697199',
+          kennitala: '7106697169',
           companyName: 'Fjall ehf.',
           invoiceEmail: 'invoice@fjall.is',
           address: 'Laugavegur 1',

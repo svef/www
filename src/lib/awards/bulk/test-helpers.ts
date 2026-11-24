@@ -49,7 +49,7 @@ export async function makeProfile(db: Db, ownerUserId: string, companyName = 'Fj
     .insert(schema.billingProfile)
     .values({
       ownerUserId,
-      kennitala: '5902697199',
+      kennitala: '7106697169',
       companyName,
       invoiceEmail: 'invoice@fjall.is',
       address: 'Laugavegur 1',

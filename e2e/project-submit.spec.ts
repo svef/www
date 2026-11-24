@@ -51,7 +51,7 @@ async function fillApp(page: Page, title = 'The app') {
   await billing.getByRole('button', { name: 'Add a billing profile' }).click()
   const editor = billing.getByRole('group', { name: 'Add a billing profile' })
   await editor.getByLabel('Company name').fill('Acme ehf.')
-  await editor.getByLabel('Kennitala').fill('4710031239')
+  await editor.getByLabel('Kennitala').fill('7102031219')
   await editor.getByLabel('Invoice email').fill('invoices@example.is')
   await editor.getByLabel('Address').fill('Laugavegur 1')
   await editor.getByRole('button', { name: 'Save profile' }).click()

@@ -32,7 +32,7 @@ const url = process.env.AWARDS_DATABASE_URL_UNPOOLED ?? process.env.AWARDS_DATAB
 
 const valid = {
   companyName: 'Acme ehf.',
-  kennitala: '471003-1239',
+  kennitala: '710203-1219',
   invoiceEmail: 'invoices@acme.is',
   address: 'Laugavegur 1, 101 Reykjavík',
 }
@@ -103,7 +103,7 @@ describe.skipIf(!url)('billing profiles', () => {
         })
         expect(p).toMatchObject({
           companyName: 'Acme ehf.',
-          kennitala: '4710031239',
+          kennitala: '7102031219',
           reference: 'PO-7',
           inUse: 0,
         })
@@ -121,7 +121,7 @@ describe.skipIf(!url)('billing profiles', () => {
         const e = await refusal(
           createBillingProfile(tx, {
             userId: anna,
-            input: { ...valid, kennitala: '4110021299' },
+            input: { ...valid, kennitala: '7002021289' },
           }),
         )
         expect(e.code).toBe('invalid_input')
@@ -226,7 +226,7 @@ describe.skipIf(!url)('billing profiles', () => {
         expect(view.billing).toEqual({
           id: p.id,
           companyName: 'Acme ehf.',
-          kennitala: '4710031239',
+          kennitala: '7102031219',
         })
 
         const events = await tx

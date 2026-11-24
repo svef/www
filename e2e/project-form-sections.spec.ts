@@ -337,7 +337,7 @@ test.describe('image', () => {
 })
 
 test.describe('billing', () => {
-  const kt = '4710031239'
+  const kt = '7102031219'
 
   async function addProfile(
     page: Page,
@@ -365,7 +365,7 @@ test.describe('billing', () => {
     await expect(billing).toContainText('The invoice is sent after submissions close')
     await expect(outline(page, 'Billing')).not.toContainText('(complete)')
 
-    const editor = await addProfile(page, 'Acme ehf.', '4110021299')
+    const editor = await addProfile(page, 'Acme ehf.', '7002021289')
     await editor.getByLabel('Kennitala').blur()
     await expect(editor).toContainText('This kennitala is not valid.')
     await editor.getByRole('button', { name: 'Save profile' }).click()
@@ -378,12 +378,12 @@ test.describe('billing', () => {
 
     // A profile you just added is chosen.
     const acme = billing.locator('[data-profile]').filter({ hasText: 'Acme ehf.' })
-    await expect(acme).toContainText('kt. 471003-1239')
+    await expect(acme).toContainText('kt. 710203-1219')
     await expect(acme.getByRole('radio')).toBeChecked()
     await saved(page)
     await expect(outline(page, 'Billing')).toContainText('(complete)')
 
-    await addProfile(page, 'Agency client hf.', '1203921239')
+    await addProfile(page, 'Agency client hf.', '3102921259')
     await billing.getByRole('button', { name: 'Save profile' }).click()
     const client = billing.locator('[data-profile]').filter({ hasText: 'Agency client hf.' })
     await expect(client.getByRole('radio')).toBeChecked()
@@ -410,7 +410,7 @@ test.describe('billing', () => {
     const billing = page.locator('#section-billing')
     await addProfile(page, 'Acme ehf.', kt)
     await billing.getByRole('button', { name: 'Save profile' }).click()
-    await addProfile(page, 'Spare ehf.', '1203921239')
+    await addProfile(page, 'Spare ehf.', '3102921259')
     await billing.getByRole('button', { name: 'Save profile' }).click()
     const acme = billing.locator('[data-profile]').filter({ hasText: 'Acme ehf.' })
     const spare = billing.locator('[data-profile]').filter({ hasText: 'Spare ehf.' })
@@ -529,7 +529,7 @@ test.describe('review', () => {
     await billing.getByRole('button', { name: 'Add a billing profile' }).click()
     const editor = billing.getByRole('group', { name: 'Add a billing profile' })
     await editor.getByLabel('Company name').fill('Acme ehf.')
-    await editor.getByLabel('Kennitala').fill('4710031239')
+    await editor.getByLabel('Kennitala').fill('7102031219')
     await editor.getByLabel('Invoice email').fill('invoices@example.is')
     await editor.getByLabel('Address').fill('Laugavegur 1')
     await editor.getByRole('button', { name: 'Save profile' }).click()
@@ -537,7 +537,7 @@ test.describe('review', () => {
     const review = page.locator('#section-review')
     await expect(review.locator('[data-missing-none]')).toHaveText('Nothing is missing.')
     await expect(review).toContainText(
-      'An invoice will be sent to Acme ehf., kt. 471003-1239, after submissions close.',
+      'An invoice will be sent to Acme ehf., kt. 710203-1219, after submissions close.',
     )
     for (const s of [
       'Categories',

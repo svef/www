@@ -82,7 +82,7 @@ describe('receipt', () => {
       { category: 'Marketing Website', amount: 10900, early: true },
       { category: 'App', amount: 6900, early: false },
     ],
-    billing: { companyName: 'Fjall ehf.', kennitala: '5902697199' },
+    billing: { companyName: 'Fjall ehf.', kennitala: '7106697169' },
     url: 'https://svef.is/en/submissions/abc',
   }
   it('lists the entries with their locked prices, the total, the billing profile and the invoice note', () => {
@@ -91,7 +91,7 @@ describe('receipt', () => {
     expect(mail.text).toContain('Marketing Website: 10,900 kr. (early-bird price)')
     expect(mail.text).toContain('App: 6,900 kr. (regular price)')
     expect(mail.text).toContain('Total: 17,800 kr.')
-    expect(mail.text).toContain('Fjall ehf., kt. 5902697199')
+    expect(mail.text).toContain('Fjall ehf., kt. 7106697169')
     expect(mail.text).toMatch(/invoice is sent after submissions close/)
     expect(mail.text).toContain(input.url)
     expect(mail.html).toContain('lang="en"')
