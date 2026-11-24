@@ -591,6 +591,7 @@ section.section {
   }
 }
 
+// The confirming button of the withdraw dialog: the shared solid red block.
 .destructiveButton {
-  @include ui.button-destructive;
+  @include ui.button-destructive-solid;
 }

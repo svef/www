@@ -1,8 +1,10 @@
 // The project form's shell and its generic fields, in the site's form vocabulary
 // (`FormParts`): display-face labels, underlined inputs, boxed textareas, hints in
 // `--muted`, errors in yellow, hairlines between groups. The category cards, billing and
-// review have their own modules next to their components.
+// review have their own modules next to their components. Buttons, tags, notices and labels
+// are the awards screens' shared patterns (`_awards-ui.scss`).
 @use '../../styles/breakpoints' as bp;
+@use '../../styles/awards-ui' as ui;
 
 .layout {
   display: grid;
@@ -11,12 +13,7 @@
 }
 
 .srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  @include ui.sr-only;
 }
 
 // ---- In the stepper bar: save state and lock ---------------------------------------
@@ -50,16 +47,8 @@
 }
 
 .lockBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  @include ui.tag;
   margin: 0 0 4px;
-  padding: 4px 8px;
-  border: 1px solid var(--line);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   overflow-wrap: anywhere;
 
   svg {
@@ -79,12 +68,10 @@
 
 // The lock notice: the shared notice box. Yellow when it needs the person to act.
 .banner {
+  @include ui.notice(var(--color-violet));
   display: grid;
   gap: 10px;
   justify-items: start;
-  padding: 16px 20px;
-  background: var(--ink-2);
-  border-left: 6px solid var(--color-violet);
 
   &:empty {
     display: none;
@@ -103,9 +90,7 @@
 }
 
 .bannerTitle {
-  font-family: var(--font-display);
-  font-weight: var(--weight-semibold);
-  font-size: 1.05rem;
+  @include ui.notice-title;
   color: var(--color-white) !important;
 }
 
@@ -148,18 +133,13 @@
 }
 
 .stepNo {
+  @include ui.mono-label;
   margin: 0;
 
   // Narrow screens already show the count in the stepper bar right above.
   @include bp.below(bp.$lg) {
     display: none;
   }
-
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
 }
 
 .intro {
@@ -204,16 +184,26 @@
   }
 }
 
+// The shared secondary and primary buttons, laid out for a label over the step's name.
+.prev {
+  @include ui.button-secondary;
+  padding: 13px 20px 13px 16px;
+  text-align: left;
+}
+
+// The primary: a violet block whose label widens on hover.
+.next {
+  @include ui.button-primary;
+  margin-left: auto;
+  padding: 13px 16px 13px 20px;
+  text-align: right;
+}
+
 .prev,
 .next {
-  display: inline-flex;
-  align-items: center;
+  justify-content: flex-start;
   gap: 12px;
   min-width: 0;
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  line-height: 1.1;
-  text-decoration: none;
 
   > span {
     display: grid;
@@ -223,35 +213,6 @@
 
   svg {
     flex: none;
-  }
-
-  &:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 4px;
-  }
-}
-
-.prev {
-  padding: 13px 20px 13px 16px;
-  border: 2px solid var(--line);
-  color: var(--color-white);
-  transition: border-color var(--dur-hover);
-
-  &:hover {
-    border-color: var(--muted);
-  }
-}
-
-// The primary button: FormParts' `.submit`, a violet block whose label widens on hover.
-.next {
-  margin-left: auto;
-  padding: 15px 18px 15px 22px;
-  background: var(--color-violet);
-  color: var(--color-white);
-  text-align: right;
-
-  &:active {
-    opacity: 0.85;
   }
 }
 
@@ -266,12 +227,6 @@
 
   .next & {
     color: var(--color-lavender);
-  }
-}
-
-@include bp.reduced-motion {
-  .prev {
-    transition: none;
   }
 }
 
@@ -303,9 +258,7 @@
   // alone (the banner above names the field, and the label carries the same text for
   // assistive tech).
   &[data-requested] {
-    padding: 16px 20px;
-    border-left: 6px solid var(--color-violet);
-    background: var(--ink-2);
+    @include ui.notice(var(--color-violet));
   }
 }
 
@@ -350,17 +303,10 @@
   cursor: pointer;
 
   input {
+    @include ui.checkbox;
     flex: none;
-    width: 1.25rem;
-    height: 1.25rem;
     margin: 0.15rem 0 0;
-    accent-color: var(--color-violet);
     cursor: inherit;
-
-    &:focus-visible {
-      outline: 3px solid var(--focus-ring);
-      outline-offset: 2px;
-    }
   }
 
   &:has(input:disabled) {
@@ -417,14 +363,10 @@
 }
 
 .rowLegend {
+  @include ui.mono-label;
   float: left; // keeps the legend inside the group's box, so the hairline stays above it
   width: 100%;
   padding: 0;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
 
   + * {
     clear: both;
@@ -511,48 +453,14 @@
 
 // The shared small secondary button.
 .small {
-  display: inline-flex;
-  align-items: center;
+  @include ui.button-secondary;
+  @include ui.button-small;
   gap: 6px;
-  padding: 8px 14px;
-  border: 2px solid var(--line);
-  border-radius: 0;
-  background: transparent;
-  color: var(--color-white);
-  font: inherit;
-  font-size: 0.95rem;
-  line-height: 1.2;
-  cursor: pointer;
-  transition: border-color var(--dur-hover);
-
-  &:hover:not(:disabled) {
-    border-color: var(--muted);
-  }
-
-  &:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-
-  @include bp.reduced-motion {
-    transition: none;
-  }
 }
 
-// Removing a row: the destructive variant (red on the canvas is 5:1, so AA).
+// Removing a row: the shared destructive colours, on a `.small`.
 .danger {
-  border-color: var(--accent-red);
-  color: var(--accent-red);
-
-  &:hover:not(:disabled) {
-    border-color: var(--accent-red);
-    color: var(--color-white);
-  }
+  @include ui.button-destructive-tone;
 }
 
 .link {

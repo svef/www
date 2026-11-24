@@ -1,6 +1,6 @@
 // The request banners on the project page (svef/www#169): the shared notice box, yellow
 // because a request needs the entrant to act.
-@use '../../styles/breakpoints' as bp;
+@use '../../styles/awards-ui' as ui;
 
 .requests {
   display: grid;
@@ -9,12 +9,9 @@
 }
 
 .banner {
+  @include ui.notice(var(--accent-yellow));
   display: grid;
   gap: 12px;
-  min-width: 0;
-  padding: 16px 20px 20px;
-  background: var(--ink-2);
-  border-left: 6px solid var(--accent-yellow);
 
   p,
   h2,
@@ -33,36 +30,19 @@
 }
 
 .title {
-  font-family: var(--font-display);
-  font-weight: var(--weight-semibold);
-  font-size: 1.05rem;
+  @include ui.notice-title;
   line-height: 1.3;
   overflow-wrap: anywhere;
 }
 
-// The shared status tag.
+// The shared status tag. The tones are the entrant's view of a request, not the staff
+// area's: an open one waits on the entrant (yellow), an overdue one has lapsed (grey).
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border: 1px solid var(--line);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-white);
+  @include ui.status-tag;
+  --tone: var(--accent-yellow);
 
-  &::before {
-    content: '';
-    flex: none;
-    width: 8px;
-    height: 8px;
-    background: var(--accent-yellow);
-  }
-
-  &[data-status='overdue']::before {
-    background: var(--muted);
+  &[data-status='overdue'] {
+    --tone: var(--muted);
   }
 }
 
@@ -81,12 +61,7 @@
 }
 
 .sub {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
+  @include ui.mono-label;
 }
 
 .fields {
@@ -151,49 +126,14 @@
   gap: 12px;
 }
 
-.primary,
-.secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 14px;
-  border-radius: 0;
-  font: inherit;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  line-height: 1.2;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-}
-
 .primary {
-  border: 2px solid var(--color-violet);
-  background: var(--color-violet);
-  color: var(--color-white);
+  @include ui.button-primary;
+  @include ui.button-small;
 }
 
 .secondary {
-  border: 2px solid var(--line);
-  background: transparent;
-  color: var(--color-white);
-  transition: border-color var(--dur-hover);
-
-  &:hover:not(:disabled) {
-    border-color: var(--muted);
-  }
-
-  @include bp.reduced-motion {
-    transition: none;
-  }
+  @include ui.button-secondary;
+  @include ui.button-small;
 }
 
 .status {

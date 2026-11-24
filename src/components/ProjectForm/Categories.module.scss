@@ -1,4 +1,5 @@
 @use '../../styles/breakpoints' as bp;
+@use '../../styles/awards-ui' as ui;
 
 // The category choice cards and the running total. Calm: a card is a raised panel with a
 // hairline border; a chosen one gets a violet border and a check (not the stepped fill, so
@@ -15,12 +16,7 @@
 }
 
 .srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  @include ui.sr-only;
 }
 
 .cards {
@@ -186,26 +182,12 @@
   letter-spacing: var(--tracking-body);
 }
 
-// The shared status tag (a submitted entry can't be unticked here).
+// The shared status tag, in the submitted tone (a submitted entry can't be unticked here).
 .status {
+  @include ui.status-tag;
+  --tone: var(--color-violet-light);
   align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   margin: 0;
-  padding: 4px 8px;
-  border: 1px solid var(--line);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-
-  &::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background: var(--color-violet-light);
-  }
 }
 
 .note {
@@ -252,12 +234,8 @@
 // ---- Group tiers: a single choice within the group ---------------------------------
 
 .sizeTitle {
+  @include ui.mono-label;
   margin: 0;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
 }
 
 .tiers {
@@ -362,26 +340,11 @@
 }
 
 .clear {
+  @include ui.button-secondary;
+  @include ui.button-small;
   position: relative;
   z-index: 2;
   justify-self: start;
-  padding: 8px 14px;
-  border: 2px solid var(--line);
-  border-radius: 0;
-  background: transparent;
-  color: var(--color-white);
-  font: inherit;
-  font-size: 0.95rem;
-  cursor: pointer;
-
-  &:hover {
-    border-color: var(--muted);
-  }
-
-  &:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
 }
 
 // ---- Prices ------------------------------------------------------------------------
@@ -398,11 +361,8 @@
   }
 
   dt {
-    font-family: var(--font-mono);
+    @include ui.mono-label;
     font-size: 0.7rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--muted);
   }
 
   dd {

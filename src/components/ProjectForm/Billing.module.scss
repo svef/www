@@ -1,6 +1,7 @@
 // Billing profiles: the saved list (hairline rows, one chosen) and the add/edit panel.
 // Presentation only.
 @use '../../styles/breakpoints' as bp;
+@use '../../styles/awards-ui' as ui;
 
 .billing {
   display: grid;
@@ -168,27 +169,12 @@
   min-width: 0;
 }
 
+// The shared small primary button; while the profile saves it shows progress.
 .primary {
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 18px;
-  border: 0;
-  border-radius: 0;
-  background: var(--color-violet);
-  color: var(--color-white);
-  font: inherit;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  line-height: 1.2;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 3px;
-  }
+  @include ui.button-primary;
+  @include ui.button-small;
 
   &:disabled {
     cursor: progress;
-    opacity: 0.7;
   }
 }

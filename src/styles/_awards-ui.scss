@@ -1,4 +1,5 @@
-// The signed-in awards screens' shared patterns (dashboard, invitation, staff area): buttons,
+// The signed-in awards screens' shared patterns (project form, dashboard, invitation, staff
+// area): buttons,
 // the status tag, the notice box and the dialog. Built from the FormParts vocabulary and the
 // tokens, so the working screens read as one calm system. `@use '…/styles/awards-ui' as ui;`
 @use './breakpoints' as bp;
@@ -7,17 +8,23 @@
 // Primary is FormParts' `.submit`: a violet block, white label. Pair it with the global
 // `btn-grow` class and a `GrowText` label so the label widens on hover.
 
+// The regular size; `button-small` is the other. Exposed so a small button can be set back to
+// the regular size where the context asks for it (a dialog's actions).
+@mixin button-regular {
+  padding: 13px 20px;
+  font-size: 1.05rem;
+}
+
 @mixin button-base {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   max-width: 100%;
   // Every variant carries a 2px border (transparent or not), so they line up side by side.
-  padding: 13px 20px;
+  @include button-regular;
   border: 2px solid transparent;
   border-radius: 0;
   font-family: var(--font-display);
-  font-size: 1.05rem;
   line-height: 1.1;
   text-align: center;
   text-decoration: none;
@@ -65,9 +72,8 @@
   }
 }
 
-// Red on the canvas is 5.0:1 (AA for text), so the destructive button keeps red text.
-@mixin button-destructive {
-  @include button-secondary;
+// Only the destructive colours, for a modifier class added to a secondary button.
+@mixin button-destructive-tone {
   border-color: var(--accent-red);
   color: var(--accent-red);
 
@@ -78,9 +84,25 @@
   }
 }
 
+// Destructive, for an action in a row or a list (withdraw, remove): the secondary shape in
+// red. Red on the canvas is 5.0:1 (AA for text), so the label stays red.
+@mixin button-destructive {
+  @include button-secondary;
+  @include button-destructive-tone;
+}
+
+// Destructive, for the confirming button inside a dialog: a solid red block with black
+// text (the brand's pair, --on-red), so the last step reads as the serious one.
+@mixin button-destructive-solid {
+  @include button-base;
+  border-color: var(--accent-red);
+  background: var(--accent-red);
+  color: var(--on-red);
+  font-weight: var(--weight-semibold);
+}
+
 @mixin button-small {
-  // 8px 14px outside the border, as the shared pattern says.
-  padding: 6px 12px;
+  padding: 8px 14px;
   font-size: 0.95rem;
 }
 
@@ -113,8 +135,8 @@
 // ---- Status tag -----------------------------------------------------------
 // A mono uppercase label with a small square in the status colour. Set `--tone`.
 
-@mixin status-tag {
-  --tone: var(--muted);
+// The tag's box and type, without the square (a badge with an icon of its own).
+@mixin tag {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -127,6 +149,11 @@
   letter-spacing: 0.06em;
   line-height: 1.3;
   text-transform: uppercase;
+}
+
+@mixin status-tag {
+  @include tag;
+  --tone: var(--muted);
   white-space: nowrap;
 
   &::before {
@@ -138,25 +165,26 @@
   }
 }
 
-// Tones by entry status, for an element carrying `data-status`.
-@mixin status-tones {
-  &[data-status='submitted'],
-  &[data-status='eligibility_pending'],
-  &[data-status='open'] {
+// Tones by entry status, for an element carrying `data-status` (or `data-<$attr>`).
+// Eligible's green is 10:1 on the canvas, so it is used rather than white.
+@mixin status-tones($attr: 'status') {
+  &[data-#{$attr}='submitted'],
+  &[data-#{$attr}='eligibility_pending'],
+  &[data-#{$attr}='open'] {
     --tone: var(--color-violet-light);
   }
 
-  &[data-status='needs_clarification'],
-  &[data-status='overdue'] {
+  &[data-#{$attr}='needs_clarification'],
+  &[data-#{$attr}='overdue'] {
     --tone: var(--accent-yellow);
   }
 
-  &[data-status='eligible'],
-  &[data-status='resolved'] {
+  &[data-#{$attr}='eligible'],
+  &[data-#{$attr}='resolved'] {
     --tone: #3ddc84;
   }
 
-  &[data-status='withdrawn'] {
+  &[data-#{$attr}='withdrawn'] {
     text-decoration: line-through;
   }
 }

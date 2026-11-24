@@ -1,4 +1,5 @@
 @use '../../styles/breakpoints' as bp;
+@use '../../styles/awards-ui' as ui;
 
 // The review step: what is missing, the prices, a summary of the answers per step, and the
 // submit panel. Hairline lists, tabular numbers. Presentation only.
@@ -110,13 +111,11 @@
   }
 
   thead th {
+    @include ui.mono-label;
     border-top: 0;
     padding-top: 0;
-    font-family: var(--font-mono);
     font-size: 0.7rem;
     letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--muted);
   }
 
   tbody th {
@@ -174,13 +173,8 @@
 }
 
 .groupTitle {
+  @include ui.mono-label;
   margin: 0;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
 }
 
 .change {
