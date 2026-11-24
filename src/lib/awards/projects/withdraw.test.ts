@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { eq } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
@@ -123,6 +124,61 @@ describe.skipIf(!url)('withdrawing', () => {
     await acquireEditLock(db, { userId: owner.id, projectId: id, now: justBefore })
     await withdrawEntry(db, { userId: owner.id, projectId: id, entryId: rows[0].id, now: justBefore })
     expect((await entriesOf(db, id))[0].status).toBe('withdrawn')
+  })
+
+  const openRequestOn = async (entryId: string, authorUserId: string, deadlineAt: Date) =>
+    (
+      await db
+        .insert(schema.entryRequest)
+        .values({ entryId, authorUserId, message: 'Skýrið betur', fieldKeys: ['title'], deadlineAt })
+        .returning({ id: schema.entryRequest.id })
+    )[0].id
+
+  it('closes the entry\'s unresolved requests when it is withdrawn, as the creator, with an event', async () => {
+    const { owner, id, rows } = await submitted()
+    const staff = await makeUser(db, 'Starfsmaður')
+    const pending = await openRequestOn(rows[0].id, staff.id, new Date(EARLY.getTime() + 86_400_000))
+    const overdue = await openRequestOn(rows[0].id, staff.id, new Date(EARLY.getTime() - 1))
+    await withdrawEntry(db, { userId: owner.id, projectId: id, entryId: rows[0].id, now: EARLY })
+    const reqs = await db.select().from(schema.entryRequest).where(eq(schema.entryRequest.entryId, rows[0].id))
+    expect(reqs).toHaveLength(2)
+    for (const r of reqs) {
+      expect(r.resolvedAt?.toISOString()).toBe(EARLY.toISOString())
+      expect(r.resolvedBy).toBe(owner.id)
+    }
+    const events = await eventsOf(db, id, 'request_resolved')
+    expect(events.map((e) => e.data)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ requestId: pending, by: 'entrant', overdue: false, withdrawn: true }),
+        expect.objectContaining({ requestId: overdue, by: 'entrant', overdue: true, withdrawn: true }),
+      ]),
+    )
+  })
+
+  it('leaves other entries\' requests and already resolved ones alone', async () => {
+    const { owner, id, rows } = await submitted(['app', 'marketing-website'])
+    const staff = await makeUser(db, 'Starfsmaður')
+    const [a, b] = rows
+    const done = await openRequestOn(a.id, staff.id, EARLY)
+    await db.update(schema.entryRequest).set({ resolvedAt: new Date(0), resolvedBy: staff.id }).where(eq(schema.entryRequest.id, done))
+    const other = await openRequestOn(b.id, staff.id, new Date(EARLY.getTime() + 86_400_000))
+    await withdrawEntry(db, { userId: owner.id, projectId: id, entryId: a.id, now: EARLY })
+    const byId = async (rid: string) =>
+      (await db.select().from(schema.entryRequest).where(eq(schema.entryRequest.id, rid)))[0]
+    expect((await byId(done)).resolvedAt?.getTime()).toBe(0)
+    expect((await byId(other)).resolvedAt).toBeNull()
+  })
+
+  it('an entry waiting on a request (needs_clarification) cannot be withdrawn, and its request stays open', async () => {
+    const { owner, id, rows } = await submitted()
+    const staff = await makeUser(db, 'Starfsmaður')
+    const req = await openRequestOn(rows[0].id, staff.id, new Date(EARLY.getTime() + 86_400_000))
+    await db.update(schema.entry).set({ status: 'needs_clarification', statusBeforeClarification: 'submitted' }).where(eq(schema.entry.id, rows[0].id))
+    const e = await refusal(withdrawEntry(db, { userId: owner.id, projectId: id, entryId: rows[0].id, now: EARLY }))
+    expect(e.code).toBe('not_withdrawable')
+    const [r] = await db.select().from(schema.entryRequest).where(eq(schema.entryRequest.id, req))
+    expect(r.resolvedAt).toBeNull()
+    expect((await entriesOf(db, id))[0].status).toBe('needs_clarification')
   })
 
   it('re-prices on submitting again: a December early price becomes the regular price in January', async () => {

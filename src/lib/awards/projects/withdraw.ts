@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 import { appendEntryEvent } from '../db/entry-event'
-import { entry } from '../db/schema'
+import { entry, entryRequest } from '../db/schema'
 import { transition, can } from '../status'
 import type { EntryStatus } from '../types'
 import type { AwardsDb } from './db-types'
@@ -13,6 +13,14 @@ import { loadContext, requireRole, type Clock } from './service'
  * only before intake closes. It needs the edit lock like every other write, and it clears
  * the price lock: submitting the entry again prices it by the date it happens, which is
  * deliberate (the early bird rewards submitting early, not parking placeholders).
+ *
+ * Withdrawing also closes the entry's unresolved requests, so none is left dangling on an
+ * entry that is no longer in the running: each is resolved by the withdrawing creator and
+ * logged as `request_resolved` (`withdrawn: true`). Only `submitted` entries can be withdrawn,
+ * and a request holds its entry in `needs_clarification` until it is resolved (spec §5), so
+ * in normal flow there is nothing to close; this keeps that true if the two ever disagree.
+ * An entry in `needs_clarification` is not withdrawable: the entrant answers or marks the
+ * request done first, which returns the entry to `submitted`, and may then withdraw.
  *
  * The status rules (`transition()`) decide whether it is allowed and that the price is
  * cleared; this function applies the outcome and logs `entry_withdrawn` with the price that
@@ -64,6 +72,30 @@ export async function withdrawEntry(
         updatedAt: now,
       })
       .where(eq(entry.id, entryId))
+    const open = await tx
+      .update(entryRequest)
+      .set({ resolvedAt: now, resolvedBy: userId })
+      .where(
+        and(
+          eq(entryRequest.entryId, entryId),
+          isNull(entryRequest.resolvedAt),
+          isNull(entryRequest.deletedAt),
+        ),
+      )
+      .returning({ id: entryRequest.id, deadlineAt: entryRequest.deadlineAt })
+    for (const r of open)
+      await appendEntryEvent(tx, {
+        projectId,
+        entryId,
+        actorUserId: userId,
+        type: 'request_resolved',
+        data: {
+          requestId: r.id,
+          by: 'entrant',
+          overdue: now.getTime() >= r.deadlineAt.getTime(),
+          withdrawn: true,
+        },
+      })
     await appendEntryEvent(tx, {
       projectId,
       entryId,
