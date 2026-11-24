@@ -168,6 +168,12 @@
   font-weight: var(--weight-title);
   font-size: 1.15rem;
   line-height: 1.2;
+
+  // Long Icelandic compounds ("Gervigreindarlausn") must fit a phone's card unbroken.
+  @include bp.below(bp.$xs) {
+    font-stretch: var(--stretch-normal);
+    font-size: 1.08rem;
+  }
 }
 
 .blurb {
@@ -478,7 +484,20 @@ details[open] > .summary .plus svg {
 
   @include bp.below(bp.$sm) {
     grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
+    gap: 4px;
+    padding: 10px 16px 12px;
+
+    .totalTitle {
+      font-size: 1rem;
+    }
+
+    .totalPrices dd {
+      font-size: 1.05rem;
+    }
+
+    .totalNote {
+      font-size: 0.85rem;
+    }
   }
 
   @media (max-height: 500px) {

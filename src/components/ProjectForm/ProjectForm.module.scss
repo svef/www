@@ -29,6 +29,11 @@
   line-height: 1.4;
   overflow-wrap: anywhere;
 
+  // Rendered empty (a live region must be there before its text), without taking a line.
+  &:empty {
+    min-height: 0;
+  }
+
   &[data-state='saved'] {
     color: var(--color-white);
   }
@@ -145,6 +150,12 @@
 
 .stepNo {
   margin: 0;
+
+  // Narrow screens already show the count in the stepper bar right above.
+  @include bp.below(bp.$lg) {
+    display: none;
+  }
+
   font-family: var(--font-mono);
   font-size: 0.75rem;
   letter-spacing: 0.06em;
@@ -182,6 +193,16 @@
   gap: 12px;
   padding-top: 28px;
   border-top: 1px solid var(--line);
+
+  // Phones: the two side by side, sharing the width.
+  @include bp.below(bp.$xs) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .next {
+      grid-column: 2;
+    }
+  }
 }
 
 .prev,

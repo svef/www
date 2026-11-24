@@ -1,3 +1,5 @@
+@use '../../styles/breakpoints' as bp;
+
 // The review step: what is missing, the prices, a summary of the answers per step, and the
 // submit panel. Hairline lists, tabular numbers. Presentation only.
 
@@ -100,7 +102,7 @@
     text-align: left;
     font-weight: 400;
     vertical-align: top;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 
     &:last-child {
       padding-right: 0;
@@ -112,13 +114,28 @@
     padding-top: 0;
     font-family: var(--font-mono);
     font-size: 0.7rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--muted);
   }
 
   tbody th {
     font-weight: var(--weight-semibold);
+  }
+
+  // The category column gives way first, so the two prices always fit beside it.
+  tbody th,
+  tfoot th {
+    overflow-wrap: anywhere;
+  }
+
+  @include bp.below(bp.$xs) {
+    font-size: 0.92rem;
+
+    th,
+    td {
+      padding-right: 10px;
+    }
   }
 
   tfoot th,
