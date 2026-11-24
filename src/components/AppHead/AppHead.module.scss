@@ -1,0 +1,90 @@
+// The calm page head for signed-in screens: no band, no stickers, the block motif as a small mark.
+@use '../../styles/breakpoints' as bp;
+
+.head {
+  padding-block: clamp(120px, 11vw, 160px) clamp(24px, 3vw, 40px);
+  border-bottom: 1px solid var(--line);
+}
+
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px 40px;
+  width: 100%;
+  margin: 0 auto;
+  padding-inline: max(24px, env(safe-area-inset-left, 0px)) max(24px, env(safe-area-inset-right, 0px));
+}
+
+.text {
+  min-width: 0;
+  max-width: 980px;
+
+  h1 {
+    margin: 0;
+    font-size: clamp(2.2rem, 4.6vw, 3.8rem);
+    font-weight: var(--weight-heading);
+    letter-spacing: var(--tracking-hero);
+    line-height: 1;
+    overflow-wrap: anywhere;
+  }
+}
+
+.crumb {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-white);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+// The violet block before the eyebrow: the brand's motif at its smallest.
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+
+  &::before {
+    content: '';
+    flex: none;
+    width: 14px;
+    height: 14px;
+    background: var(--color-violet);
+  }
+}
+
+.lede {
+  margin: 16px 0 0;
+  max-width: 56ch;
+  color: var(--muted);
+  font-size: 1.05rem;
+  font-stretch: var(--stretch-body);
+  letter-spacing: var(--tracking-body);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+
+  @include bp.below(bp.$sm) {
+    width: 100%;
+  }
+}

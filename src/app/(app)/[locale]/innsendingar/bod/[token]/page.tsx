@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { Button } from '@/components/Button/Button'
 import { ButtonLink } from '@/components/ButtonLink/ButtonLink'
-import { PageHead } from '@/components/PageHead/PageHead'
+import { AppHead } from '@/components/AppHead/AppHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { signInPath } from '@/lib/awards/auth/roles'
 import { getAwardsDb } from '@/lib/awards/db/client'
@@ -49,7 +49,7 @@ export default async function InvitePage({
     if (!(e instanceof NotSignedInError)) throw e
   }
 
-  const head = <PageHead title={c.title} lede={c.lede} locale={locale} />
+  const head = <AppHead title={c.title} lede={c.lede} />
 
   if (preview.status !== 'valid') {
     const p = c.problems[preview.status]

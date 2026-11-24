@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
-import { PageHead } from '@/components/PageHead/PageHead'
+import { AppHead } from '@/components/AppHead/AppHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { getProjectFormCopy } from '@/components/ProjectForm/copy'
 import { listBillingProfiles } from '@/lib/awards/billing/service'
@@ -62,9 +62,8 @@ export default async function ProjectPage({
 
   return (
     <>
-      <PageHead
+      <AppHead
         title={(view.answers.title as string | undefined) || copy.pageTitle}
-        locale={locale}
         crumb={{
           href: localePath('/innsendingar', locale),
           label: getDictionary(locale).submissions.title,

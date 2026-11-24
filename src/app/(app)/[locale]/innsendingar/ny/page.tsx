@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { Button } from '@/components/Button/Button'
-import { PageHead } from '@/components/PageHead/PageHead'
+import { AppHead } from '@/components/AppHead/AppHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { getProjectFormCopy } from '@/components/ProjectForm/copy'
 import { getCurrentUserId, NotSignedInError } from '@/lib/awards/session'
@@ -35,7 +35,7 @@ export default async function NewSubmissionPage({
 
   return (
     <>
-      <PageHead title={copy.newTitle} locale={locale} lede={copy.newLead} />
+      <AppHead title={copy.newTitle} lede={copy.newLead} />
       <PageSection last aria-label={copy.newTitle}>
         <form action={createProjectAction}>
           <input type="hidden" name="locale" value={locale} />

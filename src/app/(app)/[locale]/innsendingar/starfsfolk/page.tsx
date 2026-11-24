@@ -17,7 +17,7 @@ import { lastDayBefore } from '@/lib/awards/public-catalog'
 import { allowedTransitions } from '@/lib/awards/status'
 import { formatLongDate } from '@/lib/dates'
 import { isLocale, localePath } from '@/lib/i18n'
-import { PageHead } from '@/components/PageHead/PageHead'
+import { AppHead } from '@/components/AppHead/AppHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { RequestsOverview, type RequestFilter } from './RequestsOverview'
 import { sendRemindersNowAction, setEligibilityAction } from './actions'
@@ -169,7 +169,7 @@ export default async function StaffPage({
 
   return (
     <>
-      <PageHead title={c.title} lede={c.lede(edition.year)} locale={locale} />
+      <AppHead title={c.title} lede={c.lede(edition.year)} />
 
       {(search.changed !== undefined || search.result === 'none') && (
         <PageSection aria-label="Niðurstaða">

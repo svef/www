@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { Dashboard } from '@/components/Dashboard/Dashboard'
 import { dashboardCopy } from '@/components/Dashboard/copy'
-import { PageHead } from '@/components/PageHead/PageHead'
+import { AppHead } from '@/components/AppHead/AppHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { signInPath } from '@/lib/awards/auth/roles'
 import { deadlineLine } from '@/lib/awards/dashboard/deadline'
@@ -57,7 +57,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
 
   return (
     <>
-      <PageHead title={c.title} locale={locale} lede={c.lede} />
+      <AppHead title={c.title} lede={c.lede} />
       <PageSection last aria-label={c.title}>
         <Dashboard
           locale={locale}

@@ -10,7 +10,7 @@ import { listRequestsForEntry } from '@/lib/awards/requests/service'
 import { serverNow } from '@/lib/awards/staff/clock'
 import { getStaffEntryView, type StaffEntryEvent } from '@/lib/awards/staff/entry-view'
 import { isLocale, localePath, type Locale } from '@/lib/i18n'
-import { PageHead } from '@/components/PageHead/PageHead'
+import { AppHead } from '@/components/AppHead/AppHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { entryCopy } from '../entry-copy'
 import styles from '../staff.module.scss'
@@ -191,10 +191,9 @@ export default async function StaffEntryPage({
 
   return (
     <>
-      <PageHead
+      <AppHead
         title={c.title}
         lede={`${view.categoryName[locale]} · ${view.editionYear}`}
-        locale={locale}
         crumb={{ href: listHref, label: c.back }}
       />
 
