@@ -219,6 +219,12 @@
     @include ui.select;
     cursor: pointer;
   }
+
+  // Selects and text inputs share one height, so labels and underlines line up in a row.
+  > select,
+  > input {
+    height: 50px;
+  }
 }
 
 .searchField {
@@ -254,6 +260,11 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
+
+  // Narrow screens scroll the region sideways rather than crushing the columns.
+  @include bp.below(bp.$md) {
+    min-width: 44rem;
+  }
 
   th,
   td {

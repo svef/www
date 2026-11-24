@@ -113,7 +113,7 @@ section.section {
 .filters {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
-  align-items: end;
+  align-items: start;
   gap: 20px 28px;
 
   @include bp.below(bp.$md) {
@@ -124,9 +124,14 @@ section.section {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  // Level with the inputs (label height plus the input's padding).
   > .quiet {
     justify-self: start;
-    margin-bottom: 12px;
+    margin-top: calc(1.6rem + 10px);
+
+    @include bp.below(bp.$md) {
+      margin-top: 0;
+    }
   }
 }
 
@@ -144,6 +149,12 @@ section.section {
   select {
     @include ui.select;
     cursor: pointer;
+  }
+
+  // Selects and text inputs share one height, so the underlines line up in a row.
+  > select,
+  > input {
+    height: 50px;
   }
 }
 

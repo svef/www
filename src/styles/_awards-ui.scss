@@ -12,8 +12,9 @@
   align-items: center;
   justify-content: center;
   max-width: 100%;
-  padding: 15px 22px;
-  border: 0;
+  // Every variant carries a 2px border (transparent or not), so they line up side by side.
+  padding: 13px 20px;
+  border: 2px solid transparent;
   border-radius: 0;
   font-family: var(--font-display);
   font-size: 1.05rem;
@@ -48,15 +49,14 @@
 
 @mixin button-primary {
   @include button-base;
+  border-color: var(--color-violet);
   background: var(--color-violet);
   color: var(--color-white);
 }
 
 @mixin button-secondary {
   @include button-base;
-  // 2px border inside the same outer size as the primary.
-  padding: 13px 20px;
-  border: 2px solid var(--line);
+  border-color: var(--line);
   background: transparent;
   color: var(--color-white);
 
@@ -79,7 +79,8 @@
 }
 
 @mixin button-small {
-  padding: 8px 14px;
+  // 8px 14px outside the border, as the shared pattern says.
+  padding: 6px 12px;
   font-size: 0.95rem;
 }
 
