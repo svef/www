@@ -1,0 +1,68 @@
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { PageHead } from '@/components/PageHead/PageHead'
+import { PageSection } from '@/components/PageSection/PageSection'
+import { getProjectFormCopy } from '@/components/ProjectForm/copy'
+import { getAwardsDb } from '@/lib/awards/db/client'
+import { AwardsError } from '@/lib/awards/projects/errors'
+import { loadProject } from '@/lib/awards/projects/service'
+import { getCurrentUserId, getRequestNow, NotSignedInError } from '@/lib/awards/session'
+import { getDictionary, isLocale, localePath } from '@/lib/i18n'
+import { ProjectFormClient } from './ProjectFormClient'
+import { SignedOut } from '../SignedOut'
+
+/**
+ * The project form (`/is/innsendingar/<id>` · `/en/submissions/<id>`). It is about one
+ * signed-in person's data, so it is rendered per request: it reads the session cookie,
+ * which opts the route out of prerendering without any `force-dynamic`. Not indexable.
+ * Opening it does not take the edit lock (a GET must not have side effects, and
+ * prefetching would take it): the client takes it once the page is on screen.
+ */
+export const metadata: Metadata = { robots: { index: false, follow: false } }
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export default async function ProjectPage({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>
+}) {
+  const { locale, id } = await params
+  if (!isLocale(locale) || !UUID.test(id)) notFound()
+  const copy = getProjectFormCopy(locale)
+
+  let userId: string
+  try {
+    userId = await getCurrentUserId()
+  } catch (e) {
+    if (e instanceof NotSignedInError)
+      return <SignedOut locale={locale} />
+    throw e
+  }
+
+  let view
+  try {
+    view = await loadProject(getAwardsDb(), {
+      userId,
+      projectId: id,
+      now: await getRequestNow(),
+    })
+  } catch (e) {
+    // Missing and not-yours look the same: a project's existence is not for strangers.
+    if (e instanceof AwardsError && (e.code === 'not_found' || e.code === 'forbidden')) notFound()
+    throw e
+  }
+
+  return (
+    <>
+      <PageHead
+        title={(view.answers.title as string | undefined) || copy.pageTitle}
+        locale={locale}
+        crumb={{ href: localePath('/innsendingar', locale), label: getDictionary(locale).submissions.title }}
+      />
+      <PageSection last aria-label={copy.pageTitle}>
+        <ProjectFormClient initial={view} locale={locale} />
+      </PageSection>
+    </>
+  )
+}

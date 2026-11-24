@@ -36,7 +36,10 @@ export const ROUTE_SEGMENTS = {
 export const NESTED_SEGMENTS: Readonly<
   Partial<Record<RouteKey, Readonly<Record<string, { is: string; en: string }>>>>
 > = {
-  innsendingar: { minar: { is: 'minar', en: 'mine' } },
+  innsendingar: {
+    minar: { is: 'minar', en: 'mine' },
+    ny: { is: 'ny', en: 'new' },
+  },
 }
 
 /**

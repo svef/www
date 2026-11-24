@@ -85,6 +85,13 @@ export const PAGES = [
     name: 'submissions',
     h1: { is: 'Innsendingar', en: 'Submissions' },
   },
+  // Starting a project. Signed out (as every sweep sees it) it shows the sign-in notice;
+  // the signed-in flow is covered by `project-form.spec.ts`.
+  {
+    path: '/innsendingar/ny',
+    name: 'new submission',
+    h1: { is: 'Skráðu þig inn til að halda áfram', en: 'Sign in to continue' },
+  },
   // The two public forms, linked from the footer. They are not in
   // `ROUTE_SEGMENTS`, so their path is the same in both locales
   // (`/en/abendingar`), and they are the pages that stay reachable while
@@ -142,6 +149,13 @@ export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
     pattern: '/vidburdir/[slug]',
     name: 'event',
     matches: (path) => /^\/vidburdir\/[^/]+$/.test(path),
+  },
+  // A signed-in person's project. Covered by `project-form.spec.ts`, which creates one.
+  // `ny`/`new` and `minar`/`mine` are fixed sub-pages, not ids.
+  {
+    pattern: '/innsendingar/[id]',
+    name: 'project form',
+    matches: (path) => /^\/innsendingar\/(?!(ny|new|minar|mine)$)[^/]+$/.test(path),
   },
 ]
 

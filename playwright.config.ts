@@ -38,6 +38,14 @@ export default defineConfig({
           // Opt in explicitly with PLAYWRIGHT_REUSE_SERVER=1.
           reuseExistingServer: !process.env.CI && !!process.env.PLAYWRIGHT_REUSE_SERVER,
           timeout: 300_000,
+          // The awards form has no real sign-in yet (#158), so the e2e acts as users
+          // through the test-session cookie. `AWARDS_TEST_SESSION` is honoured only
+          // off Vercel (see `src/lib/awards/session.ts`); the credential key is a
+          // throwaway so login details can be encrypted by a production build.
+          env: {
+            AWARDS_TEST_SESSION: '1',
+            AWARDS_CREDENTIAL_KEY: Buffer.alloc(32, 7).toString('base64'),
+          },
         },
       }
     : {}),
