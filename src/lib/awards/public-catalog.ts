@@ -109,7 +109,7 @@ export function buildChoices(
 
 export type IntakePhase = 'before' | 'open' | 'closed'
 
-/** Where intake stands at `now` (the server clock): opens inclusive, closes exclusive (spec §2). */
+/** Where intake stands at `now` (the server clock): opens inclusive, closes exclusive. */
 export function intakePhase(
   edition: Pick<PublicEdition, 'intakeOpensAt' | 'intakeClosesBefore'>,
   now: DateInput,
@@ -130,6 +130,6 @@ export function lastDayBefore(bound: DateInput): string {
 
 /**
  * The ceremony is not on the edition row (the database has no column for it), so it is held
- * here. 19 March 2027, the 2026 edition's ceremony (spec §2).
+ * here. 19 March 2027, the 2026 edition's ceremony.
  */
 export const CEREMONY_DATE_2026 = '2027-03-19T00:00:00Z'

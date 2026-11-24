@@ -10,7 +10,7 @@ export type TransferResult =
   | { ok: false; error: TransferError }
 
 /**
- * Moves a project to another creator, by the email of an existing account (spec §5: staff
+ * Moves a project to another creator, by the email of an existing account (staff
  * only; the caller has checked `requireStaff()`). The new creator becomes `created_by`, which
  * is what makes the project theirs: it shows on their dashboard and only they can withdraw.
  * The previous creator keeps access only if they are also an accepted editor

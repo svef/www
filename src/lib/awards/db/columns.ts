@@ -1,7 +1,7 @@
 import { customType, jsonb, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { uuidv7 } from 'uuidv7'
 
-/** Text in both languages, stored as `{ "is": …, "en": … }` (spec §3). */
+/** Text in both languages, stored as `{ "is": …, "en": … }`. */
 export type LocalizedText = { is: string; en: string }
 
 /** `jsonb` column holding a `{ is, en }` pair. */
@@ -10,7 +10,8 @@ export function localizedText(name: string) {
 }
 
 /**
- * UUIDv7 primary key, generated in the application (spec §3, kriton A1).
+ * UUIDv7 primary key, generated in the application: time-sortable, so inserts stay
+ * index-local, and not guessable from a neighbouring id.
  *
  * App-side rather than a database function: Postgres 17 (CI, local) has no
  * `uuidv7()` — it arrives in 18 — and Better Auth generates its own ids through

@@ -4,7 +4,7 @@ export type EarlyBirdRounding = 'nearest-900'
 
 /**
  * Early-bird price: the amount ending in 900 nearest to `regular * (100 - pct) / 100`, in whole
- * ISK and integer arithmetic only. A tie goes to the lower amount (the spec is silent; no
+ * ISK and integer arithmetic only. A tie goes to the lower amount (no
  * current price produces one). Never exceeds the regular price; `pct = 0` returns it unchanged.
  */
 export function earlyBirdPrice(

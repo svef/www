@@ -7,7 +7,7 @@ const DAY_MS = 24 * 60 * 60 * 1000
  *  - until the early-bird bound: "X days left to secure the early-bird price";
  *  - from then until intake closes: "Submissions close <last day>";
  *  - after: closed.
- * Both bounds are exclusive upper bounds (spec §2), so `now === earlyBirdEndsBefore` is already
+ * Both bounds are exclusive upper bounds, so `now === earlyBirdEndsBefore` is already
  * past the early bird and `now === intakeClosesBefore` is already closed.
  */
 export type DeadlineLine =

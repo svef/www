@@ -7,7 +7,7 @@ import { AwardsError, type LockInfo } from './errors'
 import { acquireOutcome, LOCK_TTL_MS, lockExpiry } from './lock-rules'
 
 /**
- * The project edit lock (spec §5). One row per project, keyed by `project_id`:
+ * The project edit lock. One row per project, keyed by `project_id`:
  * the unique constraint settles races, and every state change is one statement.
  * Time always comes from the caller (`now`), never from the database clock, so
  * tests and the e2e suite can move it.

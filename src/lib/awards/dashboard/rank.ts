@@ -2,7 +2,7 @@ import { toMs, type DateInput } from '../types'
 import type { DashboardEntry, DashboardProject } from './types'
 
 /**
- * Anything needing action comes first (spec §6):
+ * Anything needing action comes first:
  *  1. projects with an open request, soonest request deadline first (overdue ones lead);
  *  2. projects with a draft entry while a deadline is close, the nearest deadline being the
  *     early-bird bound before it passes and the close afterwards (nothing is urgent once

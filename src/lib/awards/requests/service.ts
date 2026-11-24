@@ -29,7 +29,7 @@ import {
 } from './rules'
 
 /**
- * Requests with deadlines (spec §5 "Requests", §8): staff open a request on an entry, which
+ * Requests with deadlines: staff open a request on an entry, which
  * moves it to `needs_clarification` remembering where it was; the entrant answers (a short
  * thread) and presses "Mark as done", and the entry returns to that status once no request on
  * it is left unresolved. The price is never touched and none of this is a resubmission.

@@ -366,7 +366,7 @@ ${paragraph(c.deadlineNote)}
   return { subject, text, html }
 }
 
-/** Email 4 (spec §7): a request was opened, with its message and deadline. */
+/** Email 4: a request was opened, with its message and deadline. */
 export function requestOpenedEmail(input: RequestEmailInput): EmailContent {
   const c = requestCopy[input.locale]
   return renderRequest(
@@ -376,7 +376,7 @@ export function requestOpenedEmail(input: RequestEmailInput): EmailContent {
   )
 }
 
-/** Email 5 (spec §7): the deadline is about 24 hours away. */
+/** Email 5: the deadline is about 24 hours away. */
 export function requestReminderEmail(input: RequestEmailInput): EmailContent {
   const c = requestCopy[input.locale]
   return renderRequest(
@@ -464,7 +464,7 @@ const draftCopy: Record<
 const isk = (amount: number, locale: Locale) =>
   `${new Intl.NumberFormat(locale === 'is' ? 'is-IS' : 'en-GB').format(amount)} kr.`
 
-/** Email 6 (spec §7): unsubmitted drafts, a few days before the early-bird deadline or the close. */
+/** Email 6: unsubmitted drafts, a few days before the early-bird deadline or the close. */
 export function draftReminderEmail(input: DraftReminderInput): EmailContent {
   const { locale, wave } = input
   const c = draftCopy[locale]

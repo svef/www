@@ -1,7 +1,7 @@
 import { toMs, type DateInput } from '../types'
 
 /**
- * Requests (spec §5 "Requests"). Pure rules, no database: the service applies them, the UI
+ * Requests. Pure rules, no database: the service applies them, the UI
  * and the tests read them.
  *
  * A request is `open` until it is resolved or its deadline passes, then `overdue` until staff

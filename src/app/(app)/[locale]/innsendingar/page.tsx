@@ -54,7 +54,7 @@ export default async function SubmissionsPage({
   if (!catalog) throw new Error('The awards database has no edition to show.')
   const { edition, choices } = catalog
 
-  // The server clock, read at render time (spec §2).
+  // The server clock, read at render time.
   const phase = intakePhase(edition, new Date())
   const date = (iso: string) => formatLongDate(iso, locale)
 
@@ -66,7 +66,7 @@ export default async function SubmissionsPage({
   ]
 
   // Sign-up and sign-in come back to the dashboard (`next`), which is the landing page
-  // after login (spec §6).
+  // after login.
   const next = encodeURIComponent(localePath('/innsendingar/minar', locale))
   const actions = {
     startLabel: s.start,

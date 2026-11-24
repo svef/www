@@ -54,7 +54,7 @@ export function hasOpenRequestFor(
 }
 
 /**
- * Whether a field can be edited now (spec §5, option "b"). Order:
+ * Whether a field can be edited now. Order:
  *  1. an open request that unlocks the key wins, even after close (for an entry-scope field,
  *     only a request opened on that same entry);
  *  2. from `intakeClosesBefore` on (inclusive) everything else is read-only;

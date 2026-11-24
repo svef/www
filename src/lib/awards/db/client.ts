@@ -5,7 +5,7 @@ import * as schema from './schema'
 
 /**
  * The awards database client. Server-only, and a separate database from
- * Payload's: Payload never imports this module (spec §3).
+ * Payload's: Payload never imports this module.
  *
  * One `pg` pool per server instance, created on first use so importing the
  * module never needs the environment (the build imports route modules).

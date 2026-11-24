@@ -15,7 +15,7 @@ import { currentImage, loadProjectImage, toImage } from './queries'
 import type { ObjectStore, ProjectImage } from './types'
 
 /**
- * The presentation image (spec §3, §5, §6): a presigned upload straight to the private bucket,
+ * The presentation image: a presigned upload straight to the private bucket,
  * then the server looks at the object itself before it counts. `entry_file` goes
  * `pending` → `available` (1080 × 1080, PNG or JPG, at most 10 MB, judged on the bytes) or
  * `rejected` (with the exact reason, and the object deleted). A project has at most one live

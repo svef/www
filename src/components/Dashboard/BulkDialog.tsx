@@ -12,7 +12,7 @@ import { bulkCopy, type BulkCopy } from './bulk-copy'
 import styles from './Dashboard.module.scss'
 
 /**
- * The confirmation and result for a bulk action (spec §6): a modal that asks the server what
+ * The confirmation and result for a bulk action: a modal that asks the server what
  * would happen, shows it (what will be done, with the totals, and what is skipped and why,
  * each with a link), runs it on confirmation, and then reports done / skipped in a live
  * region. The server decides everything; this is presentation and the two calls.

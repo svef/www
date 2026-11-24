@@ -19,7 +19,7 @@ import { CredentialsViewer } from './CredentialsViewer'
 import { Requests } from './Requests'
 
 /**
- * The staff entry view (svef/www#168, spec §8): the admin-only fields first, then what the
+ * The staff entry view (svef/www#168): the admin-only fields first, then what the
  * jury will see laid out like a read-only entry, the login details (decrypted on demand), the
  * history, and the transfer. Rendered per request: it reads the session. A non-staff visitor
  * gets a 404 (`requireStaff`), and so does an id that matches no entry.

@@ -28,7 +28,7 @@ function createAuth() {
       // Always Secure in production; localhost is exempt in browsers, so the
       // e2e server (a production build on http://localhost) still works.
       useSecureCookies: process.env.NODE_ENV === 'production',
-      // UUIDv7 primary keys, generated in the app (spec §3).
+      // UUIDv7 primary keys, generated in the app.
       database: { generateId: () => uuidv7() },
     },
     rateLimit: {
@@ -53,7 +53,7 @@ function createAuth() {
     },
     emailAndPassword: {
       enabled: true,
-      // Verification gates *submitting*, not signing in or drafting (spec §3),
+      // Verification gates *submitting*, not signing in or drafting,
       // so sign-in is never blocked on it; `emailVerified` is on the user.
       requireEmailVerification: false,
       minPasswordLength: 10,

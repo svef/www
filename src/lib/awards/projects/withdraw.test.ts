@@ -21,7 +21,7 @@ import { submitEntries } from './submit'
 import { withdrawEntry } from './withdraw'
 
 /**
- * Withdrawing (spec §5): creator only, from submitted only, before close; it clears the price
+ * Withdrawing: creator only, from submitted only, before close; it clears the price
  * lock, and submitting the entry again re-prices it by the day it happens.
  */
 const url = process.env.AWARDS_DATABASE_URL_UNPOOLED ?? process.env.AWARDS_DATABASE_URL

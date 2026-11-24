@@ -6,9 +6,9 @@ import { can, transition, type Role, type TransitionDenied } from '../status'
 import type { DateInput, EntryStatus } from '../types'
 
 /**
- * Setting an entry's eligibility (spec §5: "Eligibility statuses are set by staff
- * after close"). The state machine and the clock window are `transition()`'s; this
- * adds the permission check, the database write and the `entry_event`.
+ * Setting an entry's eligibility, which staff do after close. The state machine and the
+ * clock window are `transition()`'s; this adds the permission check, the database write
+ * and the `entry_event`.
  */
 
 /** The statuses staff can move an entry to from the eligibility list. */

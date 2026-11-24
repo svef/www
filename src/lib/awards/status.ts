@@ -231,7 +231,10 @@ const PERMISSIONS: Record<Action, readonly Role[]> = {
   transfer_project: ['staff'],
 }
 
-/** The spec §5 permission table. A person's roles are checked together. */
+/**
+ * The permission table: who may do what to a project or entry. A person's roles are checked
+ * together.
+ */
 export function can(action: Action, roles: readonly Role[]): boolean {
   return roles.some((r) => PERMISSIONS[action].includes(r))
 }

@@ -22,7 +22,7 @@ export type DraftReminderSweep = {
 const asLocale = (v: string | null | undefined): Locale | null => (v === 'is' || v === 'en' ? v : null)
 
 /**
- * Sends the draft reminders (spec §7, email 6) that are due at `now`: to everyone who created
+ * Sends the draft reminders that are due at `now`: to everyone who created
  * or may edit a project in the latest edition that still has draft entries, one email per
  * person covering all their projects. Nothing is sent outside the two waves (`dueWave`), and
  * people with no drafts are skipped.

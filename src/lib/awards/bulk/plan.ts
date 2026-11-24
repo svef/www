@@ -6,7 +6,7 @@ import { validateEntryAnswers, validateProjectAnswers } from '../validation'
 import type { EntryStatus } from '../types'
 
 /**
- * Bulk actions on the dashboard (spec §6), as pure planners: given what was selected and the
+ * Bulk actions on the dashboard, as pure planners: given what was selected and the
  * state of each project, say what would happen and what would be skipped and why. Nothing
  * here reads the database or the clock; `loadPlanInput` (service.ts) gathers the state and
  * the server passes its own `now`. The same plan is shown in the confirmation and used to

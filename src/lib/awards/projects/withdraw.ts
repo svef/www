@@ -9,7 +9,7 @@ import { requireLock } from './lock'
 import { loadContext, requireRole, type Clock } from './service'
 
 /**
- * Withdrawing an entry (spec §5): by the project's creator only, from `submitted` only, and
+ * Withdrawing an entry: by the project's creator only, from `submitted` only, and
  * only before intake closes. It needs the edit lock like every other write, and it clears
  * the price lock: submitting the entry again prices it by the date it happens, which is
  * deliberate (the early bird rewards submitting early, not parking placeholders).
@@ -17,7 +17,7 @@ import { loadContext, requireRole, type Clock } from './service'
  * Withdrawing also closes the entry's unresolved requests, so none is left dangling on an
  * entry that is no longer in the running: each is resolved by the withdrawing creator and
  * logged as `request_resolved` (`withdrawn: true`). Only `submitted` entries can be withdrawn,
- * and a request holds its entry in `needs_clarification` until it is resolved (spec §5), so
+ * and a request holds its entry in `needs_clarification` until it is resolved, so
  * in normal flow there is nothing to close; this keeps that true if the two ever disagree.
  * An entry in `needs_clarification` is not withdrawable: the entrant answers or marks the
  * request done first, which returns the entry to `submitted`, and may then withdraw.

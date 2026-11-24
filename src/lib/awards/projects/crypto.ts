@@ -1,7 +1,7 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto'
 
 /**
- * AES-256-GCM for login details (spec §3). Layout: version byte, 12-byte IV,
+ * AES-256-GCM for login details. Layout: version byte, 12-byte IV,
  * 16-byte tag, ciphertext. The key is `AWARDS_CREDENTIAL_KEY` (base64, 32 bytes).
  * Outside production a fixed development key is derived when it is unset, so
  * local work and tests need no setup; production refuses to run without one.

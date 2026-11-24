@@ -2,7 +2,7 @@ import writeExcelFile from 'write-excel-file/node'
 import { isSubmittedLike, type EntryStatus } from '../types'
 
 /**
- * The invoicing export (spec §9). This module is pure: rows in, file content
+ * The invoicing export. This module is pure: rows in, file content
  * out. Reading the rows is `staff/queries.ts`; the route only streams the result.
  *
  * The system creates no invoices. After close staff export the submitted,

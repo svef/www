@@ -18,7 +18,7 @@ const labelOf = (key: string, locale: Locale) => {
 }
 
 /**
- * The entry view's "Requests" section (svef/www#169, spec §8): the requests on this entry with
+ * The entry view's "Requests" section (svef/www#169): the requests on this entry with
  * their status and thread, and the form to open one. Times are the staff clock's `now`.
  */
 export function Requests({

@@ -21,7 +21,7 @@ import {
 } from './service'
 
 /**
- * Submitting (spec §5, §6 "Review and submit"). One call submits every complete draft
+ * Submitting. One call submits every complete draft
  * entry of the project, or the single `entryId` (a category added after the first
  * submit). In one transaction it moves each entry to `submitted` through the status
  * rules, locks its price snapshot by the server clock, records the terms acceptance and

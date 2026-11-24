@@ -9,7 +9,7 @@ describe('earlyBirdPrice', () => {
     [14900, 10900],
     [26900, 18900],
     [38900, 26900],
-  ])("matches the spec's table: %i -> %i", (regular, early) => {
+  ])("matches the published price table: %i -> %i", (regular, early) => {
     expect(earlyBirdPrice(regular, 30, 'nearest-900')).toBe(early)
   })
 

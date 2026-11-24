@@ -30,7 +30,7 @@ import type {
 } from './types'
 
 /**
- * The dashboard's data (spec §6): every project the user created or may edit (an accepted
+ * The dashboard's data: every project the user created or may edit (an accepted
  * editor), in the latest edition, each with its entries, and ranked so what needs action
  * comes first. Reads only, in a handful of batched queries (never one per project), and takes
  * `now` so the price a draft would get and the lock's liveness follow the caller's clock.

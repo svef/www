@@ -4,7 +4,7 @@ import { buildInvoicingCsv, buildInvoicingXlsx } from '@/lib/awards/export/invoi
 import { getExportRows, getStaffEdition, recordExport } from '@/lib/awards/staff/queries'
 
 /**
- * The invoicing export (spec §9). Staff only: an anonymous request is sent to sign-in and a
+ * The invoicing export. Staff only: an anonymous request is sent to sign-in and a
  * signed-in non-staff one gets a 404 (`requireStaff`). It reads the session cookie, so Next
  * never caches it, which is right: it reads billing details as they are now and writes the
  * audit rows.

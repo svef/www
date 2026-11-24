@@ -37,7 +37,7 @@ const when = (iso: string, locale: Locale) =>
   }).format(new Date(iso))} UTC`
 
 /**
- * One banner per unresolved request on the project page (spec §5/§6): its message and deadline,
+ * One banner per unresolved request on the project page: its message and deadline,
  * the fields it unlocks (linked, and highlighted in the form), a short thread, a reply box and
  * "Mark as done". Resolved requests are kept below as a quiet history. `onChanged` runs after
  * either action so the page and the form's own view (which fields are editable) refresh.

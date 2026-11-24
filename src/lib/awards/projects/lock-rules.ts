@@ -1,5 +1,5 @@
 /**
- * The edit-lock rules (spec §5, "Editing lock"), kept pure so the boundaries are
+ * The edit-lock rules, kept pure so the boundaries are
  * unit-testable without a database.
  */
 

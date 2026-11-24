@@ -1,9 +1,9 @@
 import type { ReminderWave } from '../db/tables'
 
 /**
- * Draft reminders (spec §7, email 6). Pure timing rules, no database.
+ * Draft reminders. Pure timing rules, no database.
  *
- * Two waves, each opening `DRAFT_REMINDER_LEAD_DAYS` before an exclusive bound (spec §2) and
+ * Two waves, each opening `DRAFT_REMINDER_LEAD_DAYS` before an exclusive bound and
  * ending at it: the early-bird bound (2 January for 5 January 00:00) and the close (30 January
  * for 2 February 00:00). The window is half-open, `[bound - lead, bound)`, so the moment the
  * bound is reached the wave is over. The cron runs daily and the log makes each wave send once

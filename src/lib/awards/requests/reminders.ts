@@ -11,7 +11,7 @@ export type ReminderSweep = {
 }
 
 /**
- * Sends the ~24 h deadline reminders that are due at `now` (spec §7, email 5). Idempotent: each
+ * Sends the ~24 h deadline reminders that are due at `now`. Idempotent: each
  * request is *claimed* first by setting `reminder_sent_at` in a guarded UPDATE, so two
  * overlapping runs, or a retried cron, never mail the same request twice. If nobody could be
  * reached (the mail server failed for every recipient) the claim is released so the next run

@@ -18,7 +18,7 @@ import { user } from './auth-tables'
 import { auditTimestamps, bytea, id, localizedText, timestamps } from './columns'
 
 /*
- * The awards submission schema (spec §4). Conventions (spec §3): UUIDv7 keys,
+ * The awards submission schema. Conventions: UUIDv7 keys,
  * snake_case, created_at/updated_at/deleted_at, `{is,en}` JSON for bilingual
  * text, enums as text + CHECK. Foreign keys restrict by default — rows are
  * soft-deleted, never cascaded away — except where a child is meaningless
@@ -100,7 +100,7 @@ export const edition = pgTable(
   {
     id: id(),
     year: integer('year').notNull(),
-    // Exclusive upper bounds / inclusive opening, UTC (spec §2).
+    // Exclusive upper bounds / inclusive opening, UTC.
     intakeOpensAt: timestamp('intake_opens_at', { withTimezone: true }).notNull(),
     earlyBirdEndsBefore: timestamp('early_bird_ends_before', {
       withTimezone: true,
@@ -231,7 +231,7 @@ export const project = pgTable(
 /**
  * Project-scope answers (fields with `scope: project`), one row per field key.
  * `value` is the typed JSON the form produces, so a row copies straight into
- * kriton's `entry_field_value (field_key, value)` (spec §10). The field set
+ * kriton's `entry_field_value (field_key, value)`. The field set
  * lives in code; changing it needs no migration.
  */
 export const projectAnswer = pgTable(
@@ -559,7 +559,7 @@ export const REMINDER_WAVES = ['early_bird', 'closing'] as const
 export type ReminderWave = (typeof REMINDER_WAVES)[number]
 
 /**
- * Which draft reminders went out (spec §7, email 6): one row per (user, edition, wave). The row
+ * Which draft reminders went out: one row per (user, edition, wave). The row
  * is inserted *before* sending, which is what makes the cron idempotent: the unique key lets
  * exactly one of any number of overlapping runs claim it. It is deleted again only if the send
  * fails, so the next run retries.

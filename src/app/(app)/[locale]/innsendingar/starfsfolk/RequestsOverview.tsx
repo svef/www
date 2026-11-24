@@ -7,7 +7,7 @@ const stamp = (d: Date) => d.toISOString().slice(0, 16).replace('T', ' ') + ' UT
 
 export type RequestFilter = 'all' | 'open' | 'overdue'
 
-/** The staff-wide list of unresolved requests (spec §8: "see open and overdue requests"), overdue first. */
+/** The staff-wide list of unresolved requests, overdue first. */
 export function RequestsOverview({
   locale,
   rows,

@@ -23,7 +23,7 @@ import { localePath, type Locale } from '@/lib/i18n'
 import { getSiteUrl } from '@/lib/site-url'
 
 /**
- * Emails 4 and 5 (spec §7): "a request was opened" and the ~24 h reminder. Both go to the
+ * Emails 4 and 5: "a request was opened" and the ~24 h reminder. Both go to the
  * project's creator and its accepted editors, each in their own language (their account's
  * preferred locale, else the language the project was created in).
  */

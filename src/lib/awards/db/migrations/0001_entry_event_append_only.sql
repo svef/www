@@ -1,4 +1,4 @@
--- entry_event is an append-only log (spec §3): refuse every way of changing or
+-- entry_event is an append-only log: refuse every way of changing or
 -- removing a row, whatever the role. Row-level triggers also fire for cascades.
 CREATE FUNCTION "entry_event_reject_change"() RETURNS trigger AS $$
 BEGIN

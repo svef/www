@@ -280,7 +280,7 @@ describe('transition table', () => {
   })
 })
 
-describe('permission table (spec §5)', () => {
+describe('permission table', () => {
   const table: Record<Action, Role[]> = {
     view_project: ['creator', 'editor', 'staff'],
     edit_project: ['creator', 'editor'],
