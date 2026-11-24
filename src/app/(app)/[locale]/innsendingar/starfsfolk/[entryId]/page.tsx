@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation'
 import { requireStaff } from '@/lib/awards/auth/session'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import type { FieldDefinition } from '@/lib/awards/fields'
+import { requestableFields } from '@/lib/awards/requests/fields'
+import { listRequestsForEntry } from '@/lib/awards/requests/service'
+import { serverNow } from '@/lib/awards/staff/clock'
 import { getStaffEntryView, type StaffEntryEvent } from '@/lib/awards/staff/entry-view'
 import { isLocale, localePath, type Locale } from '@/lib/i18n'
 import { PageHead } from '@/components/PageHead/PageHead'
@@ -11,6 +14,7 @@ import { entryCopy } from '../entry-copy'
 import styles from '../staff.module.scss'
 import { transferProjectAction } from './actions'
 import { CredentialsViewer } from './CredentialsViewer'
+import { Requests } from './Requests'
 
 /**
  * The staff entry view (svef/www#168, spec §8): the admin-only fields first, then what the
@@ -20,7 +24,13 @@ import { CredentialsViewer } from './CredentialsViewer'
  */
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 
-type Search = { transferred?: string; transfer_error?: string }
+type Search = {
+  transferred?: string
+  transfer_error?: string
+  request?: string
+  mail?: string
+  request_error?: string
+}
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -35,7 +45,13 @@ function describe(e: StaffEntryEvent, c: (typeof entryCopy)[Locale]): string {
   if (e.type === 'invoicing_exported') return typeof data.format === 'string' ? data.format.toUpperCase() : ''
   const before = (e.before ?? null) as Record<string, unknown> | null
   const after = (e.after ?? null) as Record<string, unknown> | null
-  if (e.type === 'eligibility_changed' && after && typeof after.status === 'string') {
+  if (e.type.startsWith('request_') && typeof data.requestId === 'string') {
+    if (e.type === 'request_opened' && typeof data.deadlineAt === 'string')
+      return `${c.requestDeadline} ${data.deadlineAt.slice(0, 16).replace('T', ' ')} UTC`
+    if (e.type === 'request_resolved') return data.by === 'staff' ? c.resolvedByStaff : c.resolvedByEntrant
+    return ''
+  }
+  if ((e.type === 'eligibility_changed' || e.type === 'status_changed') && after && typeof after.status === 'string') {
     const to = c.status_[after.status as keyof typeof c.status_] ?? after.status
     const from =
       before && typeof before.status === 'string'
@@ -106,6 +122,10 @@ export default async function StaffEntryPage({
   if (!view) notFound()
   const c = entryCopy[locale]
   const search = await searchParams
+  // Requests are judged on the staff clock, like the rest of the staff area.
+  const staffNow = serverNow()
+  const requests = await listRequestsForEntry(getAwardsDb(), entryId, staffNow)
+  const fields = await requestableFields(getAwardsDb(), entryId)
   const people = (kind: 'owner' | 'collaborator') => view.people.filter((p) => p.kind === kind)
   const label = (f: FieldDefinition) => f.label[locale]
   const adminAnswerFields = view.adminFields.filter(
@@ -297,12 +317,19 @@ export default async function StaffEntryPage({
         />
       </PageSection>
 
-      {/* svef/www#169: "Open request" and the open/overdue requests of this entry go here. */}
-      <PageSection aria-labelledby="requests" data-testid="requests-placeholder">
+      <PageSection aria-labelledby="requests" data-testid="requests-section">
         <h2 id="requests" className={styles.heading}>
           {c.requestsTitle}
         </h2>
-        <p className={styles.text}>{c.requestsSoon}</p>
+        <Requests
+          locale={locale}
+          entryId={view.entryId}
+          requests={requests}
+          fields={fields}
+          canOpen={view.status !== 'draft' && view.status !== 'withdrawn'}
+          now={staffNow}
+          outcome={search}
+        />
       </PageSection>
 
       <PageSection aria-labelledby="transfer">

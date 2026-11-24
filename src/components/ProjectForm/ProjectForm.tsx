@@ -13,6 +13,7 @@ import { getProjectFormCopy, type SectionId } from './copy'
 import { FieldInput } from './FieldInput'
 import styles from './ProjectForm.module.scss'
 import { QuestionsSection } from './QuestionsSection'
+import { RequestBanners, type RequestActions, type RequestBannerData } from './RequestBanners'
 import { ReviewSection } from './ReviewSection'
 import { SECTIONS } from './sections'
 import { useProjectForm, type ProjectFormActions, type ProjectFormApi } from './useProjectForm'
@@ -40,11 +41,14 @@ export function ProjectForm({
   locale,
   actions,
   billing,
+  requests,
 }: {
   initial: ProjectView
   locale: Locale
   actions: ProjectFormActions
   billing: BillingProps
+  /** Staff requests on this project's entries (svef/www#169), with the actions to answer them. */
+  requests?: { items: RequestBannerData[]; actions: RequestActions; onChanged: () => void }
 }) {
   const copy = getProjectFormCopy(locale)
   const form = useProjectForm(initial, actions)
@@ -56,6 +60,17 @@ export function ProjectForm({
     [form.categories, form.answers],
   )
   const visible = useMemo(() => new Set(resolved.visible.map((f) => f.key)), [resolved])
+
+  // Fields an open (not overdue, not resolved) request asks for: highlighted in the form.
+  const requestedKeys = useMemo(
+    () =>
+      new Set(
+        (requests?.items ?? [])
+          .filter((r) => r.status === 'open')
+          .flatMap((r) => r.fields.map((f) => f.key)),
+      ),
+    [requests?.items],
+  )
 
   const messagesFor = (key: string): string[] => {
     const touched = form.touched.has(key)
@@ -102,6 +117,7 @@ export function ProjectForm({
         locked={e && !e.editable ? e : undefined}
         errors={messagesFor(key)}
         forced={forced}
+        requested={requestedKeys.has(key)}
       />
     )
   }
@@ -177,6 +193,19 @@ export function ProjectForm({
           {lockState.kind === 'held' && form.recovered && <p>{copy.lockRecovered}</p>}
         </div>
 
+        {requests && (
+          <RequestBanners
+            requests={requests.items}
+            locale={locale}
+            actions={requests.actions}
+            onChanged={async () => {
+              // The form's own view first (which fields are editable now), then the page's data.
+              await form.refresh()
+              requests.onChanged()
+            }}
+          />
+        )}
+
         <form onSubmit={(e) => e.preventDefault()} noValidate className={styles.sections}>
           {SECTIONS.map((s) => (
             <section
@@ -194,6 +223,7 @@ export function ProjectForm({
                 form={form}
                 locale={locale}
                 renderProjectField={renderProjectField}
+                requestedKeys={requestedKeys}
                 billing={{ ...billing, profiles, onProfiles: setProfiles }}
               />
             </section>
@@ -209,12 +239,14 @@ function SectionBody({
   form,
   locale,
   renderProjectField,
+  requestedKeys,
   billing,
 }: {
   id: SectionId
   form: ProjectFormApi
   locale: Locale
   renderProjectField: (key: string) => React.ReactNode
+  requestedKeys: ReadonlySet<string>
   billing: BillingProps & {
     profiles: BillingProfileView[]
     onProfiles: (p: BillingProfileView[]) => void
@@ -225,7 +257,12 @@ function SectionBody({
     case 'categories':
       return <CategoriesSection form={form} locale={locale} />
     case 'questions':
-      return <QuestionsSection form={form} locale={locale} renderField={renderProjectField} />
+      return <QuestionsSection
+          form={form}
+          locale={locale}
+          renderField={renderProjectField}
+          requestedKeys={requestedKeys}
+        />
     case 'billing':
       return (
         <BillingSection

@@ -308,6 +308,16 @@
   border-left: 4px solid var(--accent-yellow);
   padding-left: var(--space-3);
   overflow-wrap: anywhere;
+
+  a {
+    color: inherit;
+    text-underline-offset: 3px;
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
 }
 
 .requestMessage {

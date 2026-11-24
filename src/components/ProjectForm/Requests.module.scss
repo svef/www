@@ -1,0 +1,201 @@
+// The request banners on the project page (svef/www#169). Semantic and token-driven.
+.requests {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  margin: 0 0 2rem;
+}
+
+.banner {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-violet-light);
+  border-left-width: 6px;
+  background: var(--surface-3);
+
+  &[data-status='overdue'] {
+    border-color: var(--accent-yellow);
+  }
+
+  p,
+  h2,
+  h3,
+  ul,
+  ol {
+    margin: 0;
+  }
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.title {
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.chip {
+  padding: 0.1rem 0.6rem;
+  border: 1px solid currentcolor;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  &[data-status='overdue'] {
+    color: var(--accent-yellow);
+  }
+}
+
+.message {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.note,
+.who {
+  color: var(--muted);
+}
+
+.sub {
+  font-size: 1rem;
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  padding: 0;
+  list-style: none;
+
+  a {
+    color: var(--fg);
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: var(--color-violet-light);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.thread {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    gap: 0.15rem;
+    padding-left: 0.75rem;
+    border-left: 3px solid var(--line);
+    min-width: 0;
+
+    &[data-side='staff'] {
+      border-left-color: var(--color-violet-light);
+    }
+  }
+}
+
+.reply {
+  display: grid;
+  gap: 0.5rem;
+
+  label {
+    font-weight: var(--weight-title);
+  }
+
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--surface-2);
+    color: var(--fg);
+    font: inherit;
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.primary,
+.secondary {
+  padding: 0.6rem 1.25rem;
+  border-radius: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.primary {
+  border: 1px solid var(--color-violet);
+  background: var(--color-violet);
+  color: var(--color-white);
+
+  &:hover:not(:disabled) {
+    background: var(--color-violet-bright);
+  }
+}
+
+.secondary {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--fg);
+}
+
+.status {
+  min-height: 1.5em;
+
+  &:focus {
+    outline: none;
+  }
+
+  &[data-kind='error'] {
+    color: var(--accent-pink);
+  }
+}
+
+.history {
+  color: var(--muted);
+
+  summary {
+    cursor: pointer;
+  }
+
+  ul {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+}

@@ -292,6 +292,16 @@ export class ProjectFormController {
     })
   }
 
+  /**
+   * Saves what was typed, then re-reads the project: which fields are editable changes when a
+   * staff request is resolved (the unlocked fields lock again) or opened while the page is open.
+   */
+  async refresh(): Promise<void> {
+    await this.queue
+    await this.flush()
+    await this.reload()
+  }
+
   private async reload() {
     const r = await this.actions.load().catch(networkError)
     if (r.ok) this.applyView(r.value)

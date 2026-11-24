@@ -195,7 +195,8 @@ test('the entries list filters by category, status and title, sorts, and links t
   await page.locator('select[name="category"]').selectOption('')
   await page.locator('select[name="status"]').selectOption('submitted')
   await page.getByRole('button', { name: 'Sía' }).click()
-  const titles = () => page.locator('tbody tr th a').allTextContents()
+  // The entries table, not the requests table above it.
+  const titles = () => page.getByRole('table', { name: 'Færslur' }).locator('tbody tr th a').allTextContents()
   await page.getByRole('link', { name: 'Raða eftir: Verkefni' }).click()
   await expect(page.locator('th[aria-sort="ascending"]')).toContainText('Verkefni')
   expect(await titles()).toEqual([T('Annað verkefni'), T('Nemendavefur')])
@@ -242,9 +243,9 @@ test('the entry view shows the admin-only fields above what the jury sees', asyn
     await expect(jury).not.toContainText(hidden)
   }
 
-  // Login details are never in the page until asked for, and a place for requests is reserved.
+  // Login details are never in the page until asked for, and the requests section is there.
   expect(await page.content()).not.toContain(LOGIN_SECRET)
-  await expect(page.getByTestId('requests-placeholder')).toBeVisible()
+  await expect(page.getByTestId('requests-section')).toBeVisible()
 
   // The English route reaches the same view.
   expect((await page.goto(entryUrl(ids.student, 'en')))?.status()).toBe(200)
