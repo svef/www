@@ -166,6 +166,8 @@ export interface DynamicRoute {
 export const GATED_ROUTES: readonly { path: string; spec: string }[] = [
   // Staff only (svef/www#170): eligibility list and invoicing export.
   { path: '/innsendingar/starfsfolk', spec: 'staff-export.spec.ts' },
+  // Signed-in only: the entrant's dashboard (svef/www#164).
+  { path: '/innsendingar/minar', spec: 'dashboard.spec.ts' },
   // Signed-in only: starting a project. Signed out it redirects to sign-in (#158/#160).
   { path: '/innsendingar/ny', spec: 'project-form.spec.ts' },
 ]

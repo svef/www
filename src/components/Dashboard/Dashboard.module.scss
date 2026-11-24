@@ -1,0 +1,484 @@
+// Scaffolding for "Mínar innsendingar": semantic and token-driven. A dashboard design is
+// coming and will restyle this file; the markup carries data-* hooks the tests use.
+@use '../../styles/breakpoints' as bp;
+
+.dashboard {
+  display: grid;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-8);
+}
+
+.deadline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-heading);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.topActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.linkButton {
+  padding: var(--space-2) 0;
+  border: 0;
+  background: none;
+  color: var(--color-violet-light);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--color-white);
+  }
+
+  &:disabled {
+    color: var(--muted);
+    cursor: default;
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+.sectionTitle {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.invoices {
+  border-left: 8px solid var(--color-violet);
+  background: var(--surface-1);
+  padding: var(--space-4) var(--space-6);
+
+  ul {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    overflow-wrap: anywhere;
+  }
+}
+
+.empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-6);
+}
+
+.viewBar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.toggle {
+  display: inline-flex;
+  border: 1px solid var(--line);
+}
+
+.toggleButton {
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--color-white);
+  font: inherit;
+  cursor: pointer;
+
+  &[aria-pressed='true'] {
+    background: var(--color-violet);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: -3px;
+  }
+}
+
+// ── Cards ──
+
+.cards {
+  display: grid;
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  gap: var(--space-4);
+  border: 1px solid var(--line);
+  background: var(--surface-1);
+  padding: var(--space-6);
+  min-width: 0;
+}
+
+.cardUrgent {
+  border-color: var(--accent-yellow);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: var(--text-h3);
+  overflow-wrap: anywhere;
+  min-width: 0;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 3px;
+    }
+  }
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.tag,
+.attention {
+  padding: 2px var(--space-2);
+  border: 1px solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.attention {
+  border-color: var(--accent-yellow);
+  color: var(--accent-yellow);
+}
+
+.lock,
+.noEntries {
+  margin: 0;
+  color: var(--muted);
+}
+
+.entries {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    'name status price'
+    'notes notes notes';
+  align-items: start;
+  gap: var(--space-2) var(--space-6);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+
+  @include bp.below(bp.$sm) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'name'
+      'status'
+      'price'
+      'notes';
+    justify-items: start;
+  }
+}
+
+.entryName {
+  grid-area: name;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.entry > :nth-child(2) {
+  grid-area: status;
+}
+
+.entry > :nth-child(3) {
+  grid-area: price;
+}
+
+.entryNotes {
+  grid-area: notes;
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+
+  &:empty {
+    display: none;
+  }
+}
+
+// ── Shared bits ──
+
+.badge {
+  display: inline-block;
+  padding: 2px var(--space-3);
+  border: 1px solid currentcolor;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.status_draft,
+.status_withdrawn {
+  color: var(--muted);
+}
+
+.status_submitted,
+.status_eligibility_pending {
+  color: var(--color-violet-light);
+}
+
+.status_eligible {
+  color: var(--color-white);
+}
+
+.status_ineligible {
+  color: var(--accent-pink);
+}
+
+.status_needs_clarification {
+  color: var(--accent-yellow);
+}
+
+.price {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.amount {
+  font-weight: 700;
+}
+
+.priceNote {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.secured {
+  justify-self: start;
+  width: fit-content;
+  padding: 0 var(--space-2);
+  background: var(--accent-yellow);
+  color: var(--on-yellow);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.request {
+  display: grid;
+  gap: 2px;
+  border-left: 4px solid var(--accent-yellow);
+  padding-left: var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+.requestMessage {
+  color: var(--muted);
+}
+
+.missing {
+  display: block;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.missingLabel {
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+// ── List ──
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+
+  input,
+  select {
+    min-width: min(14rem, 100%);
+    max-width: 100%;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--line);
+    background: var(--ink-2);
+    color: var(--color-white);
+    font: inherit;
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.hint {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.results {
+  margin: 0 0 var(--space-3);
+  color: var(--muted);
+}
+
+.bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 2.5rem;
+  margin-bottom: var(--space-3);
+
+  &:empty {
+    display: none;
+  }
+}
+
+.none {
+  margin: 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  thead th {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  tbody th {
+    font-weight: 600;
+  }
+
+  a {
+    color: inherit;
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 3px;
+    }
+  }
+
+  input[type='checkbox'] {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--color-violet);
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+
+  @include bp.below(bp.$sm) {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    &,
+    tbody,
+    tr,
+    td,
+    th {
+      display: block;
+    }
+
+    tr {
+      display: grid;
+      gap: var(--space-2);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th,
+    td {
+      padding: 0;
+      border: 0;
+    }
+
+    td[data-label]::before {
+      content: attr(data-label) ': ';
+      color: var(--muted);
+      font-size: var(--text-sm);
+    }
+
+    td[data-label]:empty {
+      display: none;
+    }
+  }
+}
+
+.checkCol {
+  width: 2.5rem;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
