@@ -2,6 +2,9 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import Link from 'next/link'
+import clsx from 'clsx'
+import { inputClass } from '@/components/FormParts/FormParts'
+import { GrowText } from '@/components/GrowText/GrowText'
 import { getCategory } from '@/lib/awards/categories'
 import type { BulkPlan, Skipped } from '@/lib/awards/bulk/plan'
 import type { BulkResult } from '@/lib/awards/bulk/service'
@@ -134,13 +137,14 @@ export function BulkDialog({
         </h2>
 
         {isBilling && phase.kind !== 'done' && (
-          <div className={styles.field}>
+          <div className={styles.dialogField}>
             <label htmlFor={profileId}>{c.billingLabel}</label>
             {billingProfiles.length === 0 ? (
               <p>{c.billingNone}</p>
             ) : (
               <select
                 id={profileId}
+                className={inputClass}
                 value={profile}
                 disabled={busy}
                 onChange={(e) => {
@@ -180,7 +184,7 @@ export function BulkDialog({
                         {i.projectTitle || c.untitled}: {name(i.category)}
                         {i.resubmit && <span className={styles.muted}> ({c.resubmitTag})</span>}
                       </span>
-                      <span>
+                      <span className={styles.planAmount}>
                         {money(i.amount)}{' '}
                         <span className={styles.muted}>({i.early ? c.tierEarly : c.tierRegular})</span>
                       </span>
@@ -188,7 +192,9 @@ export function BulkDialog({
                   ))}
                   <li className={styles.totalRow}>
                     <span>{c.total}</span>
-                    <span data-bulk-total={plan.total}>{money(plan.total)}</span>
+                    <span className={styles.planAmount} data-bulk-total={plan.total}>
+                      {money(plan.total)}
+                    </span>
                   </li>
                 </ul>
               </>
@@ -258,8 +264,12 @@ export function BulkDialog({
 
         <div className={styles.dialogActions}>
           {phase.kind === 'done' ? (
-            <button type="button" className={styles.primaryButton} onClick={() => ref.current?.close()}>
-              {c.close}
+            <button
+              type="button"
+              className={clsx('btn-grow', styles.primaryButton)}
+              onClick={() => ref.current?.close()}
+            >
+              <GrowText>{c.close}</GrowText>
             </button>
           ) : (
             <>
@@ -274,14 +284,15 @@ export function BulkDialog({
               {phase.kind !== 'error' && (
                 <button
                   type="button"
-                  className={styles.primaryButton}
+                  className={clsx(
+                    'btn-grow',
+                    request.kind === 'withdraw' ? styles.destructiveButton : styles.primaryButton,
+                  )}
                   onClick={() => void confirm()}
                   aria-disabled={busy || phase.kind !== 'ready' || count === 0}
                   data-bulk-confirm
                 >
-                  {busy
-                    ? c.working
-                    : c.confirm[request.kind](count)}
+                  <GrowText>{busy ? c.working : c.confirm[request.kind](count)}</GrowText>
                 </button>
               )}
             </>

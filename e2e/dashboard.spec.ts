@@ -121,7 +121,7 @@ test('the Icelandic page uses the Icelandic names', async ({ browser }) => {
 test.describe('with projects', () => {
   test.describe.configure({ mode: 'serial' })
 
-  test('cards: needs-action first, one row per entry with status, price and what is missing or asked', async ({ browser }) => {
+  test('needs-action first, one row per entry with status, price and what is missing or asked', async ({ browser }) => {
     const { context, id, page } = await signedIn(browser, 'Anna')
     const s = await seedAnna(id)
     await page.goto(DASH('en'))
@@ -142,8 +142,9 @@ test.describe('with projects', () => {
     const draft = alpha.locator(`[data-entry="${s.alphaDraft}"]`)
     await expect(draft).toContainText('Draft')
     await expect(draft).toContainText('Early-bird price if submitted now')
-    await expect(draft.locator('[data-missing]')).toContainText('Missing:')
-    await expect(draft.locator('[data-missing]')).toContainText('Project description')
+    // What is missing, in one line: the count and the first item, linking to the form's review step.
+    await expect(draft.locator('[data-missing]')).toHaveText(/^Missing \((\d+)\): \S.* and \d+ more$/)
+    await expect(draft.locator('[data-missing] a')).toHaveAttribute('href', `/en/submissions/${s.alpha}#section-review`)
     await expect(draft.locator('[data-early-bird="secured"]')).toHaveCount(0)
     const sub = alpha.locator(`[data-entry="${s.alphaSub}"]`)
     await expect(sub).toContainText('Submitted')
@@ -204,54 +205,50 @@ test.describe('with projects', () => {
     await context.close()
   })
 
-  test('the list view: toggled from the cards, searchable, filterable, keyboard accessible', async ({ browser }) => {
+  test('one list: searchable, filterable, selectable by keyboard (no view toggle)', async ({ browser }) => {
     const { context, id, page } = await signedIn(browser, 'Anna')
     const s = await seedAnna(id)
     await page.goto(DASH('en'))
     await settle(page)
 
-    const toggle = page.getByRole('group', { name: 'View' })
-    await expect(toggle.getByRole('button', { name: 'Cards' })).toHaveAttribute('aria-pressed', 'true')
-    await toggle.getByRole('button', { name: 'List' }).focus()
-    await page.keyboard.press('Enter')
-    await expect(toggle.getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'true')
-    await expect(page.getByRole('table', { name: 'Your entries' })).toBeVisible()
-    await expect(page.locator('tbody tr')).toHaveCount(5) // alpha x2, beta, gamma, delta
+    const rows = page.getByRole('list', { name: 'Your entries' }).locator('[data-entry]')
+    await expect(page.getByRole('group', { name: 'View' })).toHaveCount(0)
+    await expect(rows).toHaveCount(5) // alpha x2, beta, gamma, delta
 
     // Search by project title.
     await page.getByRole('searchbox', { name: 'Search projects' }).fill(`beta ${s.run}`)
-    await expect(page.locator('tbody tr')).toHaveCount(1)
+    await expect(rows).toHaveCount(1)
     await expect(page.locator('[data-results]')).toHaveText('Showing 1 of 5 entries')
     await page.getByRole('searchbox', { name: 'Search projects' }).fill('zzz-nothing')
     await expect(page.getByText('No entries match these filters.')).toBeVisible()
     await page.getByRole('button', { name: 'Clear filters' }).click()
-    await expect(page.locator('tbody tr')).toHaveCount(5)
+    await expect(rows).toHaveCount(5)
 
     // Filter by status, then by category (names come from the seeded catalogue).
     await page.getByLabel('Status').selectOption('draft')
-    await expect(page.locator('tbody tr')).toHaveCount(1)
-    await expect(page.locator(`tbody tr[data-entry="${s.alphaDraft}"]`)).toBeVisible()
+    await expect(rows).toHaveCount(1)
+    await expect(page.locator(`[data-entry="${s.alphaDraft}"]`)).toBeVisible()
     await page.getByLabel('Status').selectOption('')
     const category = page.getByLabel('Category')
     const firstOption = await category.locator('option').nth(1).getAttribute('value')
     await category.selectOption(firstOption!)
-    const filtered = await page.locator('tbody tr').count()
+    const filtered = await rows.count()
     expect(filtered).toBeGreaterThan(0)
     expect(filtered).toBeLessThan(5)
 
-    // Selection: checkboxes by keyboard, the bulk bar counts them.
+    // Selection: checkboxes by keyboard; the bulk bar counts them and sticks to the bottom.
     await page.getByRole('button', { name: 'Clear filters' }).click()
+    const bar = page.locator('[data-slot="bulk-actions"]')
+    await expect(bar.getByRole('button')).toHaveCount(0)
     const first = page.getByRole('checkbox', { name: /^Select (?!all)/ }).first()
     await first.focus()
     await page.keyboard.press('Space')
     await expect(first).toBeChecked()
     await expect(page.locator('[data-selected-count]')).toHaveText('1 selected')
+    await expect(bar.getByRole('button', { name: 'Submit', exact: true })).toBeVisible()
+    expect(await bar.evaluate((el) => getComputedStyle(el).position)).toBe('sticky')
     await page.getByRole('checkbox', { name: 'Select all shown' }).check()
     await expect(page.locator('[data-selected-count]')).toHaveText('5 selected')
-
-    // Back to cards.
-    await toggle.getByRole('button', { name: 'Cards' }).click()
-    await expect(page.locator('[data-view-content="cards"]')).toBeVisible()
     await context.close()
   })
 
@@ -301,15 +298,15 @@ for (const [label, width, height] of [
   ['desktop', 1440, 900],
   ['mobile', 390, 844],
 ] as const) {
-  test(`accessible and inside the viewport at ${width}px (cards and list)`, async ({ browser }) => {
+  test(`accessible and inside the viewport at ${width}px (with and without a selection)`, async ({ browser }) => {
     const { context, id, page } = await signedIn(browser, 'Axe', EARLY, { width, height })
     await seedAnna(id)
     await page.goto(DASH('en'))
     await settle(page)
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
     await noOverflow(page, width)
-    await page.getByRole('button', { name: 'List' }).click()
-    await expect(page.getByRole('table')).toBeVisible()
+    await page.getByRole('checkbox', { name: 'Select all shown' }).check()
+    await expect(page.locator('[data-slot="bulk-actions"]').getByRole('button').first()).toBeVisible()
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
     await noOverflow(page, width)
     void label

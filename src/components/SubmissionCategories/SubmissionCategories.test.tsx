@@ -14,7 +14,6 @@ const copy = {
   earlyBird: 'Snemmskráning',
   regular: 'Almennt verð',
   currency: 'kr.',
-  description: 'Lýsing á flokknum',
   tiersTitle: 'Veldu eina stærð',
   tiersNote: 'Aðeins einn.',
 }
@@ -36,12 +35,14 @@ describe('SubmissionCategories', () => {
     expect(card.textContent).toContain('26,900 kr.')
   })
 
-  it('puts the full description in a disclosure, closed until opened', () => {
+  it('shows the blurb and the full description without a disclosure', () => {
     render(<SubmissionCategories choices={choices} locale="is" copy={copy} label="Flokkar" />)
     const card = document.querySelector('[data-choice="marketing-website"]') as HTMLElement
-    const details = card.querySelector('details') as HTMLDetailsElement
-    expect(details.open).toBe(false)
-    expect(within(details).getByText('Lýsing á flokknum')).toBeInTheDocument()
-    expect(details.textContent).toContain('Vefir sem eru gerðir fyrir tiltekna markaðsherferð')
+    expect(card.querySelector('details')).toBeNull()
+    const blurb = CATEGORIES.find((c) => c.slug === 'marketing-website')!.blurb!.is
+    expect(within(card).getByText(blurb)).toBeInTheDocument()
+    expect(card.querySelector('[data-description]')!.textContent).toContain(
+      'Vefir sem eru gerðir fyrir tiltekna markaðsherferð',
+    )
   })
 })

@@ -112,7 +112,6 @@ export default async function SubmissionsPage({
             earlyBird: s.earlyBird,
             regular: s.regular,
             currency: s.currency,
-            description: s.description,
             tiersTitle: s.tiersTitle,
             tiersNote: s.tiersNote,
           }}

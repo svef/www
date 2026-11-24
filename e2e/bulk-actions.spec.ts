@@ -111,8 +111,7 @@ async function editing(projectId: string, userId: string, clock = EARLY) {
 async function listView(page: Page) {
   await page.goto(DASH)
   await settle(page)
-  await page.getByRole('button', { name: 'List' }).click()
-  await expect(page.locator('[data-view-content="list"]')).toBeVisible()
+  await expect(page.locator('[data-project]').first()).toBeVisible()
 }
 const selectAll = (page: Page) => page.getByRole('checkbox', { name: 'Select all shown' }).check()
 const statusOf = async (projectId: string) =>
@@ -235,8 +234,8 @@ test.describe('dashboard bulk actions', () => {
     await expect(d).toHaveCount(0)
     // The dashboard reflects the new states, and the selection starts clean.
     await expect(page.locator('[data-selected-count]')).toHaveText('')
-    await expect(page.locator(`tr[data-project="${one}"]`)).toHaveAttribute('data-status', 'submitted')
-    await expect(page.locator(`tr[data-project="${busy}"]`)).toHaveAttribute('data-status', 'draft')
+    await expect(page.locator(`[data-project="${one}"] [data-entry]`)).toHaveAttribute('data-status', 'submitted')
+    await expect(page.locator(`[data-project="${busy}"] [data-entry]`)).toHaveAttribute('data-status', 'draft')
     await anna.context.close()
   })
 
@@ -252,8 +251,8 @@ test.describe('dashboard bulk actions', () => {
     const { page } = anna
     await listView(page)
     // A creator gets a per-row withdraw; an editor does not.
-    await expect(page.locator(`tr[data-project="${mine}"] [data-withdraw-row]`)).toBeVisible()
-    await expect(page.locator(`tr[data-project="${theirs}"] [data-withdraw-row]`)).toHaveCount(0)
+    await expect(page.locator(`[data-project="${mine}"] [data-withdraw-row]`)).toBeVisible()
+    await expect(page.locator(`[data-project="${theirs}"] [data-withdraw-row]`)).toHaveCount(0)
 
     await selectAll(page)
     await page.getByRole('button', { name: 'Withdraw', exact: true }).click()
@@ -272,7 +271,7 @@ test.describe('dashboard bulk actions', () => {
     expect(await statusOf(mine)).toBe('withdrawn')
     expect(await statusOf(theirs)).toBe('submitted')
     await d.getByRole('button', { name: 'Close' }).click()
-    await expect(page.locator(`tr[data-project="${mine}"]`)).toHaveAttribute('data-status', 'withdrawn')
+    await expect(page.locator(`[data-project="${mine}"] [data-entry]`)).toHaveAttribute('data-status', 'withdrawn')
     await anna.context.close()
   })
 
@@ -333,7 +332,7 @@ test.describe('dashboard bulk actions', () => {
     await anna.context.close()
   })
 
-  test('"select all shown" works on a phone, where the table header is hidden', async ({ browser }) => {
+  test('"select all shown" works on a phone', async ({ browser }) => {
     const anna = await person(browser, 'Anna')
     await project(anna.id, 'Fyrsta', { submitted: true })
     await project(anna.id, 'Önnur', { submitted: true })
@@ -362,7 +361,7 @@ test.describe('dashboard bulk actions', () => {
     await actAs(context, baseURL(), anna.id, EARLY)
     const page = await context.newPage()
     await listView(page)
-    // On a phone the table is stacked and its header is hidden: pick the row.
+    // Pick the row's own checkbox.
     await page.getByRole('checkbox', { name: /^Select (?!all)/ }).first().check()
     await page.getByRole('button', { name: 'Withdraw', exact: true }).click()
     const d = page.getByRole('dialog', { name: 'Withdraw the selected entries' })

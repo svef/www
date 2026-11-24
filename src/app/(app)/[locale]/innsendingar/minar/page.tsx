@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
-import { Dashboard } from '@/components/Dashboard/Dashboard'
+import { Dashboard, DashboardActions } from '@/components/Dashboard/Dashboard'
 import { dashboardCopy } from '@/components/Dashboard/copy'
 import { AppHead } from '@/components/AppHead/AppHead'
 import { PageSection } from '@/components/PageSection/PageSection'
@@ -13,6 +13,7 @@ import { listBillingProfiles } from '@/lib/awards/billing/service'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import { getCurrentUserId, getRequestNow, NotSignedInError } from '@/lib/awards/session'
 import { isLocale, localePath } from '@/lib/i18n'
+import styles from '@/components/Dashboard/Dashboard.module.scss'
 
 /**
  * "Mínar innsendingar" (`/is/innsendingar/minar` · `/en/submissions/mine`): the landing page
@@ -57,8 +58,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
 
   return (
     <>
-      <AppHead title={c.title} lede={c.lede} />
-      <PageSection last aria-label={c.title}>
+      <AppHead
+        title={c.title}
+        eyebrow={c.eyebrow(data.edition.year)}
+        lede={c.lede}
+        actions={<DashboardActions locale={locale} signOutTo={localePath('/innskraning', locale)} />}
+      />
+      <PageSection last aria-label={c.title} className={styles.section}>
         <Dashboard
           locale={locale}
           data={data}
@@ -67,7 +73,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           withoutBilling={entriesWithoutBilling(data.projects)}
           needsActionIds={data.projects.filter((p) => needsAction(p, ctx)).map((p) => p.id)}
           billingProfiles={billingProfiles}
-          signOutTo={localePath('/innskraning', locale)}
         />
       </PageSection>
     </>

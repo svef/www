@@ -55,17 +55,13 @@ for (const locale of LOCALES) {
       await expect(dates.nth(3)).toHaveAttribute('datetime', '2027-03-19')
     })
 
-    test('a description opens and closes from the keyboard', async ({ page }) => {
+    test('each description is shown in full, without a disclosure', async ({ page }) => {
       await page.goto(url)
-      const details = page.locator('[data-choice="marketing-website"] details')
-      const summary = details.locator('summary')
-      await expect(details).not.toHaveAttribute('open', '')
-      await summary.focus()
-      await page.keyboard.press('Enter')
-      await expect(details).toHaveAttribute('open', '')
-      await expect(details.locator('p').first()).toBeVisible()
-      await page.keyboard.press('Enter')
-      await expect(details).not.toHaveAttribute('open', '')
+      await expect(page.locator('main details')).toHaveCount(0)
+      const marketing = page.locator('[data-choice="marketing-website"]')
+      await expect(marketing.locator('[data-description] p').first()).toBeVisible()
+      // Every choice with a longer text shows it.
+      expect(await page.locator('[data-choice] > div > [data-description]').count()).toBeGreaterThanOrEqual(10)
     })
 
     test('the call to action follows the clock', async ({ page }) => {

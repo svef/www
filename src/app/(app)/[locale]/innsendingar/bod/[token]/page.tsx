@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { Button } from '@/components/Button/Button'
-import { ButtonLink } from '@/components/ButtonLink/ButtonLink'
+import { GrowText } from '@/components/GrowText/GrowText'
 import { AppHead } from '@/components/AppHead/AppHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { signInPath } from '@/lib/awards/auth/roles'
@@ -49,21 +49,30 @@ export default async function InvitePage({
     if (!(e instanceof NotSignedInError)) throw e
   }
 
-  const head = <AppHead title={c.title} lede={c.lede} />
+  const head = <AppHead title={c.title} eyebrow={c.lede} />
 
   if (preview.status !== 'valid') {
     const p = c.problems[preview.status]
     return (
       <>
         {head}
-        <PageSection last aria-label={c.title}>
-          <div className={styles.panel} role="status">
-            <h2>{p.title}</h2>
-            <p>{p.body}</p>
+        <PageSection last aria-label={c.title} className={styles.section}>
+          <div className={styles.invite}>
+            <div className={`${styles.notice} ${styles.attention}`} role="status">
+              <h2>{p.title}</h2>
+              <p>{p.body}</p>
+            </div>
             <div className={styles.actions}>
-              <ButtonLink href={userId ? localePath('/innsendingar/minar', locale) : signInPath(locale, here)}>
-                {userId ? c.mine : c.signIn}
-              </ButtonLink>
+              <Link
+                href={
+                  userId
+                    ? localePath('/innsendingar/minar', locale)
+                    : signInPath(locale, here)
+                }
+                className={`btn-grow ${styles.primary}`}
+              >
+                <GrowText>{userId ? c.mine : c.signIn}</GrowText>
+              </Link>
             </div>
           </div>
         </PageSection>
@@ -77,12 +86,15 @@ export default async function InvitePage({
 
   const title = preview.projectTitle.trim() || c.untitled
   const intro = (
-    <>
-      <p>
-        <span className={styles.title}>{c.invitedBy(preview.inviterName, title)}</span>
-      </p>
-      <p>{c.meaning}</p>
-    </>
+    <div className={styles.intro}>
+      <p className={styles.invitedBy}>{c.invitedBy(preview.inviterName, title)}</p>
+      <p className={styles.meaning}>{c.meaning}</p>
+    </div>
+  )
+  const submit = (label: string) => (
+    <button type="submit" className={`btn-grow ${styles.primary}`}>
+      <GrowText>{label}</GrowText>
+    </button>
   )
 
   if (!userId) {
@@ -90,15 +102,22 @@ export default async function InvitePage({
     return (
       <>
         {head}
-        <PageSection last aria-label={c.title}>
-          <div className={styles.panel}>
+        <PageSection last aria-label={c.title} className={styles.section}>
+          <div className={styles.invite}>
             {intro}
-            <p>{c.needAccount(preview.email)}</p>
-            <div className={styles.actions}>
-              <ButtonLink href={signUp}>{c.signUp}</ButtonLink>
-              <ButtonLink href={signInPath(locale, here)} variant="text">
-                {c.signIn}
-              </ButtonLink>
+            <div className={styles.step}>
+              <p>{c.needAccount(preview.email)}</p>
+              <div className={styles.actions}>
+                <Link href={signUp} className={`btn-grow ${styles.primary}`}>
+                  <GrowText>{c.signUp}</GrowText>
+                </Link>
+                <Link
+                  href={signInPath(locale, here)}
+                  className={`btn-grow ${styles.secondary}`}
+                >
+                  <GrowText>{c.signIn}</GrowText>
+                </Link>
+              </div>
             </div>
           </div>
         </PageSection>
@@ -116,41 +135,49 @@ export default async function InvitePage({
   return (
     <>
       {head}
-      <PageSection last aria-label={c.title}>
-        <div className={styles.panel}>
+      <PageSection last aria-label={c.title} className={styles.section}>
+        <div className={styles.invite}>
           {intro}
           {mismatch ? (
-            <>
-              <h2>{c.mismatchTitle}</h2>
-              <p>{c.mismatch(preview.email, email)}</p>
+            <div className={styles.step}>
+              <div className={`${styles.notice} ${styles.attention}`}>
+                <h2>{c.mismatchTitle}</h2>
+                <p>{c.mismatch(preview.email, email)}</p>
+                {!account?.emailVerified && <p>{c.unverified(email)}</p>}
+              </div>
               {account?.emailVerified ? (
                 <form action={acceptInvitationAction} className={styles.actions}>
                   <input type="hidden" name="locale" value={locale} />
                   <input type="hidden" name="token" value={token} />
                   <input type="hidden" name="confirm" value="1" />
-                  <Button type="submit">{c.acceptHere}</Button>
-                  <ButtonLink href={signInPath(locale, here)} variant="text">
-                    {c.otherAccount}
-                  </ButtonLink>
+                  {submit(c.acceptHere)}
+                  <Link
+                    href={signInPath(locale, here)}
+                    className={`btn-grow ${styles.secondary}`}
+                  >
+                    <GrowText>{c.otherAccount}</GrowText>
+                  </Link>
                 </form>
               ) : (
-                <>
-                  <p className={styles.notice}>{c.unverified(email)}</p>
-                  <div className={styles.actions}>
-                    <ButtonLink href={signInPath(locale, here)}>{c.otherAccount}</ButtonLink>
-                  </div>
-                </>
+                <div className={styles.actions}>
+                  <Link
+                    href={signInPath(locale, here)}
+                    className={`btn-grow ${styles.primary}`}
+                  >
+                    <GrowText>{c.otherAccount}</GrowText>
+                  </Link>
+                </div>
               )}
-            </>
+            </div>
           ) : (
-            <>
+            <div className={styles.step}>
               <p>{c.acceptHint(email)}</p>
               <form action={acceptInvitationAction} className={styles.actions}>
                 <input type="hidden" name="locale" value={locale} />
                 <input type="hidden" name="token" value={token} />
-                <Button type="submit">{c.accept}</Button>
+                {submit(c.accept)}
               </form>
-            </>
+            </div>
           )}
         </div>
       </PageSection>

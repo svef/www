@@ -254,7 +254,6 @@ export const en = {
     earlyBird: 'Early bird',
     regular: 'Regular price',
     currency: 'kr.',
-    description: 'About this category',
     tiersTitle: 'Pick one size',
     tiersNote:
       'A project can be in only one of these categories. The turnover thresholds are a guide.',

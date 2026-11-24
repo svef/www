@@ -6,6 +6,8 @@ export const entryCopy = {
   is: {
     // A fixed heading: a project title is entrant text of any length and shape, and is shown in the fields below.
     title: 'Færsla',
+    eyebrow: 'Starfsfólk',
+    tableRegion: (name: string) => `${name}, hægt að fletta til hliðar`,
     back: 'Allar færslur',
     adminTitle: 'Aðeins fyrir starfsfólk',
     adminLead: 'Þetta sér dómnefnd aldrei: hver á verkefnið og hver greiðir.',
@@ -119,6 +121,8 @@ export const entryCopy = {
   },
   en: {
     title: 'Entry',
+    eyebrow: 'Staff',
+    tableRegion: (name: string) => `${name}, scrolls sideways`,
     back: 'All entries',
     adminTitle: 'Staff only',
     adminLead: 'The jury never sees these: who owns the project and who pays.',
