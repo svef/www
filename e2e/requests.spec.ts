@@ -315,14 +315,14 @@ test('the reminder cron route is guarded and sends each reminder once', async ({
   const ok = await request.get(path_, { headers: { authorization: `Bearer ${CRON_SECRET}` } })
   expect(ok.status()).toBe(200)
   expect((await ok.json()).reminded).toBeGreaterThanOrEqual(1)
-  const mail = await waitForMail(e.ownerEmail, /^Áminning: beiðni/)
+  const mail = await waitForMail(e.ownerEmail, /^Áminning: frestur/)
   expect(mail.text).toContain(`Áminning ${RUN}`)
   expect(mail.text).toContain('1. mars 2027')
 
   // Again: nothing more is sent to this owner.
   const again = await request.get(path_, { headers: { authorization: `Bearer ${CRON_SECRET}` } })
   expect(again.status()).toBe(200)
-  expect(await mails(e.ownerEmail, /^Áminning: beiðni/)).toHaveLength(1)
+  expect(await mails(e.ownerEmail, /^Áminning: frestur/)).toHaveLength(1)
   const [row] = await db.select().from(schema.entryRequest).where(eq(schema.entryRequest.entryId, e.entryId))
   expect(row.reminderSentAt).not.toBeNull()
 })

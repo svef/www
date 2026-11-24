@@ -149,15 +149,21 @@ test.describe('the project', () => {
     // Turned on, it reveals the login details, which stay on across a reload.
     const login = page.locator('[data-field="loginInformation"]')
     await expect(login).toBeVisible()
-    await login.getByLabel('Account or instructions').fill('demo@example.com / correct horse')
+    await login.getByLabel('Account or instructions', { exact: true }).fill('demo@example.com / correct horse')
     await login.getByLabel('Label').fill('Demo account')
     await saved(page)
     await page.reload()
     await expect(page.locator('[data-lock="held"]')).toBeVisible()
     await expect(toggle).toBeChecked()
     await expect(toggle).toBeDisabled()
+    // Saved login details come back masked, and "Show" reveals them for editing.
+    const savedLogin = page.locator('[data-field="loginInformation"]')
+    await expect(savedLogin.locator('input[data-masked]')).toHaveValue(
+      'demo@example.com / correct horse',
+    )
+    await savedLogin.getByRole('button', { name: /^Show the account or instructions/ }).click()
     await expect(
-      page.locator('[data-field="loginInformation"]').getByLabel('Account or instructions'),
+      savedLogin.getByLabel('Account or instructions', { exact: true }),
     ).toHaveValue('demo@example.com / correct horse')
 
     // Without the category the toggle is free again.

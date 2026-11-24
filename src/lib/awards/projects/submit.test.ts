@@ -14,6 +14,7 @@ import {
   saveAnswers,
   setCategories,
   setProjectBillingProfile,
+  TERMS_VERSION,
 } from './service'
 import { submitEntries } from './submit'
 
@@ -136,7 +137,7 @@ describe.skipIf(!url)('submitting', () => {
     expect((await events(id, 'entry_submitted')).length).toBe(2)
     const [terms] = await db.select().from(schema.termsAcceptance).where(eq(schema.termsAcceptance.projectId, id))
     expect(terms.userId).toBe(owner.id)
-    expect(terms.termsVersion).toBe('draft')
+    expect(terms.termsVersion).toBe(TERMS_VERSION)
     expect((await events(id, 'terms_accepted')).length).toBe(1)
 
     expect(send).toHaveBeenCalledTimes(1)
