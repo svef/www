@@ -62,6 +62,10 @@ jobs:
     env:
       DATABASE_URL: postgresql://svef:svef@localhost:5432/svef
       DATABASE_URL_UNPOOLED: postgresql://svef:svef@localhost:5432/svef
+      # The awards submission database: a second database on the same server,
+      # created by the awards database step below.
+      AWARDS_DATABASE_URL: postgresql://svef:svef@localhost:5432/svef_awards
+      AWARDS_DATABASE_URL_UNPOOLED: postgresql://svef:svef@localhost:5432/svef_awards
 
     steps:
       - uses: actions/checkout@v5
@@ -73,6 +77,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Create and migrate the awards database
+        run: |
+          PGPASSWORD=svef psql -h localhost -U svef -d svef -c 'create database svef_awards'
+          npm run awards:migrate
+          npm run awards:seed
 
       - name: Typecheck
         run: npm run typecheck
@@ -141,6 +151,10 @@ jobs:
     env:
       DATABASE_URL: postgresql://svef:svef@localhost:5432/svef
       DATABASE_URL_UNPOOLED: postgresql://svef:svef@localhost:5432/svef
+      # The awards submission database: a second database on the same server,
+      # created by the awards database step below.
+      AWARDS_DATABASE_URL: postgresql://svef:svef@localhost:5432/svef_awards
+      AWARDS_DATABASE_URL_UNPOOLED: postgresql://svef:svef@localhost:5432/svef_awards
       PLAYWRIGHT_PORT: 3100
       NEXT_PUBLIC_SITE_URL: http://localhost:3100
 
@@ -157,6 +171,12 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
+
+      - name: Create, migrate and seed the awards database
+        run: |
+          PGPASSWORD=svef psql -h localhost -U svef -d svef -c 'create database svef_awards'
+          npm run awards:migrate
+          npm run awards:seed
 
       - name: Seed development fixtures
         run: npm run seed:dev

@@ -40,6 +40,32 @@ changing a collection or a global.
 | `e2e` / `e2e:a11y` | Playwright (+ axe sweeps) |
 | `generate:types` / `generate:importmap` | Payload codegen |
 | `seed:dev` | Fill a **local** database with development fixtures (see below) |
+| `awards:generate` / `awards:migrate` / `awards:seed` | Awards submission database: generate SQL from the schema / apply it / upsert the 2026 edition and categories (see below) |
+
+## Awards database
+
+The awards submission system keeps its data in a **separate Postgres database**
+(Drizzle + `drizzle-kit`, not Payload; Payload never imports it). Code lives in
+`src/lib/awards/db/`: `schema.ts` (all tables), `migrations/` (generated SQL plus
+the hand-written append-only trigger for `entry_event`), `seed.ts`, `client.ts`
+(server-only `getAwardsDb()`).
+
+```bash
+# once: create the database next to Payload's, in the local Postgres container
+docker exec svef-pg psql -U svef -d postgres -c 'create database svef_awards'
+# .env.local (see .env.example): AWARDS_DATABASE_URL and AWARDS_DATABASE_URL_UNPOOLED,
+# e.g. postgresql://svef:svef@localhost:5433/svef_awards
+
+npm run awards:migrate       # apply pending migrations (safe to re-run)
+npm run awards:seed          # upsert the 2026 edition, group, 18 categories, exclusion
+```
+
+After changing `schema.ts`, run `npm run awards:generate -- --name <what_changed>`
+and commit the SQL it writes. `awards:migrate` runs in the Vercel build right after
+Payload's `migrate`, and in both CI jobs; production is **not** seeded by the build
+(prices may be edited there), so run `awards:seed` once by hand against it. The
+smoke test `src/lib/awards/db/db.test.ts` migrates and seeds whatever
+`AWARDS_DATABASE_URL` points at, and skips when it is unset.
 
 ## Development fixtures
 
