@@ -39,7 +39,7 @@ test('updates name, phone and email language, and the avatar menu follows', asyn
   // A bad phone number is refused and named in the summary.
   await page.getByLabel('Símanúmer').fill('hringdu í mig')
   await page.getByRole('button', { name: 'Vista' }).click()
-  const alert = page.getByRole('alert')
+  const alert = page.locator('main [role="alert"]')
   await expect(alert).toContainText('Símanúmer: Sláðu inn símanúmer')
   await expect(page.getByLabel('Símanúmer')).toHaveAttribute('aria-invalid', 'true')
 
@@ -70,7 +70,7 @@ test('changes the password, then signs out from the avatar menu and back in with
   await page.getByLabel('Current password').fill('not my password')
   await page.getByLabel('New password', { exact: true }).fill(NEW_PASSWORD)
   await page.getByRole('button', { name: 'Change password' }).click()
-  await expect(page.getByRole('alert')).toContainText('The current password is not right.')
+  await expect(page.locator('main [role="alert"]')).toContainText('The current password is not right.')
 
   await page.getByLabel('Current password').fill(PASSWORD)
   await page.getByLabel('New password', { exact: true }).fill(NEW_PASSWORD)
@@ -82,7 +82,7 @@ test('changes the password, then signs out from the avatar menu and back in with
   await expect(page.getByTestId('account-email')).toContainText(email)
 
   await page.locator('[data-user-menu]').click()
-  await page.getByRole('button', { name: 'Sign out' }).click()
+  await page.getByRole('complementary').getByRole('button', { name: 'Sign out', exact: true }).click()
   await expect(page).toHaveURL(/\/en\/sign-in$/)
 
   await page.getByLabel('Email').fill(email)

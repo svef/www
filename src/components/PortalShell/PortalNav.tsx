@@ -4,7 +4,6 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FocusTrap } from '@mantine/core'
 import { Logo } from '@/components/Logo/Logo'
 import { localePath, type Locale } from '@/lib/i18n'
 import type { PortalCopy } from '@/lib/portal/copy'
@@ -40,11 +39,16 @@ export function PortalNav({
   const accountCurrent = localePath(pathname, locale) === links.account
   const [open, setOpen] = useState(false)
   const menuButton = useRef<HTMLButtonElement>(null)
+  const panel = useRef<HTMLElement>(null)
+  const closeButton = useRef<HTMLButtonElement>(null)
   const panelId = useId()
 
-  const close = useCallback((returnFocus: boolean) => {
+  // Focus goes back to the menu button once the page behind is no longer inert (the effect's
+  // cleanup below), not before: an inert button cannot take focus.
+  const returnFocus = useRef(false)
+  const close = useCallback((back: boolean) => {
+    returnFocus.current = back
     setOpen(false)
-    if (returnFocus) menuButton.current?.focus()
   }, [])
 
   // A followed link closes the drawer: the page it opens is what the reader asked for.
@@ -58,8 +62,35 @@ export function PortalNav({
     if (!open) return
     const root = document.documentElement
     root.dataset.portalDrawer = 'open'
+    // Everything behind the drawer is inert while it is open: out of the tab order and of the
+    // accessibility tree, so the dialog really is the only thing there.
+    const button = menuButton.current
+    const behind = [...document.querySelectorAll<HTMLElement>('[data-portal-behind]')]
+    for (const el of behind) el.inert = true
+    closeButton.current?.focus()
+    const tabbables = () =>
+      [
+        ...(panel.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ) ?? []),
+      ].filter((el) => el.offsetParent !== null || el === document.activeElement)
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') close(true)
+      if (event.key !== 'Tab') return
+      // Keep focus inside: past the last control it goes back to the first, and the other way.
+      const list = tabbables()
+      if (list.length === 0) return
+      const first = list[0]
+      const last = list[list.length - 1]
+      const at = document.activeElement
+      const inside = !!at && !!panel.current?.contains(at)
+      if (event.shiftKey && (at === first || !inside)) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && (at === last || !inside)) {
+        event.preventDefault()
+        first.focus()
+      }
     }
     // Grown past the drawer's width (a rotated tablet): the sidebar is simply there.
     const wide = window.matchMedia(WIDE)
@@ -67,6 +98,9 @@ export function PortalNav({
     document.addEventListener('keydown', onKey)
     wide.addEventListener('change', onWide)
     return () => {
+      for (const el of behind) el.inert = false
+      if (returnFocus.current) button?.focus()
+      returnFocus.current = false
       delete root.dataset.portalDrawer
       document.removeEventListener('keydown', onKey)
       wide.removeEventListener('change', onWide)
@@ -77,7 +111,8 @@ export function PortalNav({
 
   return (
     <>
-      <div className={styles.topbar}>
+      {/* A banner landmark on phones, where the sidebar is folded away behind the button. */}
+      <header className={styles.topbar} data-portal-behind>
         <Link href={links.home} className={styles.topMark} aria-label={c.home}>
           <Logo size="48px" cycle={false} />
         </Link>
@@ -97,86 +132,94 @@ export function PortalNav({
           </span>
           <span>{c.menu}</span>
         </button>
-      </div>
+      </header>
 
-      {open && <div className={styles.backdrop} aria-hidden="true" onClick={() => close(true)} />}
+      {open && (
+        <div className={styles.backdrop} aria-hidden="true" onClick={() => close(true)} />
+      )}
 
-      <FocusTrap active={open}>
-        <aside
-          id={panelId}
-          className={clsx(styles.sidebar, open && styles.open)}
-          {...(open ? { role: 'dialog', 'aria-modal': true, 'aria-label': c.menu } : {})}
-          data-portal-sidebar
-        >
-          <div className={styles.sideHead}>
-            <Link href={links.home} className={styles.sideMark} aria-label={c.home}>
-              <Logo size="64px" cycle={false} hoverColours />
-            </Link>
-            {open && (
-              <button
-                type="button"
-                className={styles.closeButton}
-                onClick={() => close(true)}
-                data-portal-close
-              >
-                {c.closeMenu}
-              </button>
-            )}
-          </div>
-
-          {groups.length > 0 && (
-            <nav aria-label={c.navLabel} className={styles.nav}>
-              {groups.map((g) => (
-                <div key={g.id} className={styles.group} data-nav-group={g.id}>
-                  <p id={`${panelId}-${g.id}`} className={styles.groupLabel}>
-                    {g.label}
-                  </p>
-                  <ul aria-labelledby={`${panelId}-${g.id}`} className={styles.links}>
-                    {g.items.map((item) => {
-                      const mark = current?.href === item.href ? current.kind : null
-                      return (
-                        <li key={item.href}>
-                          <Link
-                            href={item.href}
-                            className={styles.link}
-                            aria-current={mark === 'page' ? 'page' : mark === 'section' ? 'true' : undefined}
-                          >
-                            {item.label}
-                          </Link>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </nav>
-          )}
-
-          <div className={styles.sideFoot}>
-            <Link
-              href={languageHref}
-              hrefLang={locale === 'is' ? 'en' : 'is'}
-              lang={locale === 'is' ? 'en' : 'is'}
-              className={styles.language}
+      <aside
+        ref={panel}
+        id={panelId}
+        className={clsx(styles.sidebar, open && styles.open)}
+        {...(open ? { role: 'dialog', 'aria-modal': true, 'aria-label': c.menu } : {})}
+        data-portal-sidebar
+      >
+        <div className={styles.sideHead}>
+          <Link href={links.home} className={styles.sideMark} aria-label={c.home}>
+            <Logo size="64px" cycle={false} hoverColours />
+          </Link>
+          {open && (
+            <button
+              ref={closeButton}
+              type="button"
+              className={styles.closeButton}
+              onClick={() => close(true)}
+              data-portal-close
             >
-              {c.language}
+              {c.closeMenu}
+            </button>
+          )}
+        </div>
+
+        {groups.length > 0 && (
+          <nav aria-label={c.navLabel} className={styles.nav}>
+            {groups.map((g) => (
+              <div key={g.id} className={styles.group} data-nav-group={g.id}>
+                <p id={`${panelId}-${g.id}`} className={styles.groupLabel}>
+                  {g.label}
+                </p>
+                <ul aria-labelledby={`${panelId}-${g.id}`} className={styles.links}>
+                  {g.items.map((item) => {
+                    const mark = current?.href === item.href ? current.kind : null
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className={styles.link}
+                          aria-current={
+                            mark === 'page'
+                              ? 'page'
+                              : mark === 'section'
+                                ? 'true'
+                                : undefined
+                          }
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        )}
+
+        <div className={styles.sideFoot}>
+          <Link
+            href={languageHref}
+            hrefLang={locale === 'is' ? 'en' : 'is'}
+            lang={locale === 'is' ? 'en' : 'is'}
+            className={styles.language}
+          >
+            {c.language}
+          </Link>
+          {user ? (
+            <UserMenu
+              user={user}
+              accountHref={links.account}
+              accountCurrent={accountCurrent}
+              signOutTo={links.signIn}
+              copy={c}
+            />
+          ) : (
+            <Link href={links.signIn} className={styles.signIn}>
+              {c.signIn}
             </Link>
-            {user ? (
-              <UserMenu
-                user={user}
-                accountHref={links.account}
-                accountCurrent={accountCurrent}
-                signOutTo={links.signIn}
-                copy={c}
-              />
-            ) : (
-              <Link href={links.signIn} className={styles.signIn}>
-                {c.signIn}
-              </Link>
-            )}
-          </div>
-        </aside>
-      </FocusTrap>
+          )}
+        </div>
+      </aside>
     </>
   )
 }

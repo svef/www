@@ -32,7 +32,7 @@ export function PortalShell({
   const t = getDictionary(locale)
   return (
     <div className={styles.shell} data-portal-shell>
-      <a href="#main" className="skip-link">
+      <a href="#main" className="skip-link" data-portal-behind>
         {t.skipToContent}
       </a>
       <PortalNav
@@ -54,7 +54,7 @@ export function PortalShell({
         }}
         copy={c}
       />
-      <main id="main" tabIndex={-1} className={styles.main}>
+      <main id="main" tabIndex={-1} className={styles.main} data-portal-behind>
         {children}
       </main>
     </div>
