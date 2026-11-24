@@ -1,0 +1,265 @@
+// The signed-in awards screens' shared patterns (dashboard, invitation, staff area): buttons,
+// the status tag, the notice box and the dialog. Built from the FormParts vocabulary and the
+// tokens, so the working screens read as one calm system. `@use '…/styles/awards-ui' as ui;`
+@use './breakpoints' as bp;
+
+// ---- Buttons --------------------------------------------------------------
+// Primary is FormParts' `.submit`: a violet block, white label. Pair it with the global
+// `btn-grow` class and a `GrowText` label so the label widens on hover.
+
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 15px 22px;
+  border: 0;
+  border-radius: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    color 0.2s;
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 4px;
+  }
+
+  &:active {
+    opacity: 0.85;
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}
+
+@mixin button-primary {
+  @include button-base;
+  background: var(--color-violet);
+  color: var(--color-white);
+}
+
+@mixin button-secondary {
+  @include button-base;
+  // 2px border inside the same outer size as the primary.
+  padding: 13px 20px;
+  border: 2px solid var(--line);
+  background: transparent;
+  color: var(--color-white);
+
+  &:hover:not(:disabled):not([aria-disabled='true']) {
+    border-color: var(--muted);
+  }
+}
+
+// Red on the canvas is 5.0:1 (AA for text), so the destructive button keeps red text.
+@mixin button-destructive {
+  @include button-secondary;
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+
+  &:hover:not(:disabled):not([aria-disabled='true']) {
+    border-color: var(--accent-red);
+    background: var(--accent-red);
+    color: var(--on-red);
+  }
+}
+
+@mixin button-small {
+  padding: 8px 14px;
+  font-size: 0.95rem;
+}
+
+// A secondary-sized button that is only text (sign out, clear filters).
+@mixin button-quiet {
+  padding: 4px 0;
+  border: 0;
+  border-bottom: 1px solid currentcolor;
+  background: none;
+  color: var(--color-white);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--color-violet-light);
+  }
+
+  &:disabled {
+    color: var(--muted);
+    border-bottom-color: transparent;
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+// ---- Status tag -----------------------------------------------------------
+// A mono uppercase label with a small square in the status colour. Set `--tone`.
+
+@mixin status-tag {
+  --tone: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  color: var(--color-white);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    flex: none;
+    width: 8px;
+    height: 8px;
+    background: var(--tone);
+  }
+}
+
+// Tones by entry status, for an element carrying `data-status`.
+@mixin status-tones {
+  &[data-status='submitted'],
+  &[data-status='eligibility_pending'],
+  &[data-status='open'] {
+    --tone: var(--color-violet-light);
+  }
+
+  &[data-status='needs_clarification'],
+  &[data-status='overdue'] {
+    --tone: var(--accent-yellow);
+  }
+
+  &[data-status='eligible'],
+  &[data-status='resolved'] {
+    --tone: #3ddc84;
+  }
+
+  &[data-status='withdrawn'] {
+    text-decoration: line-through;
+  }
+}
+
+// ---- Notice box -----------------------------------------------------------
+
+@mixin notice($tone: var(--color-violet)) {
+  min-width: 0;
+  padding: 16px 20px;
+  border-left: 6px solid $tone;
+  background: var(--ink-2);
+  color: var(--color-white);
+  overflow-wrap: anywhere;
+}
+
+@mixin notice-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: 1.05rem;
+}
+
+// ---- Dialog ---------------------------------------------------------------
+
+@mixin dialog {
+  width: min(640px, calc(100vw - 32px));
+  max-width: min(640px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: clamp(20px, 3vw, 32px);
+  border: 2px solid var(--line);
+  border-top: 8px solid var(--color-violet);
+  border-radius: 0;
+  background: var(--ink-2);
+  color: var(--color-white);
+  overflow: auto;
+
+  &::backdrop {
+    background: rgb(9 6 12 / 0.8);
+  }
+}
+
+@mixin dialog-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  font-weight: var(--weight-heading);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+// Right-aligned on wide screens; stacked full width on phones with the primary first
+// (the primary comes last in the markup, so the column is reversed).
+@mixin dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+
+  @include bp.below(bp.$xs) {
+    flex-direction: column-reverse;
+
+    > * {
+      width: 100%;
+    }
+  }
+}
+
+// ---- Bits -------------------------------------------------------------------
+
+@mixin sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// A small mono label (column headers, dt).
+@mixin mono-label {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@mixin checkbox {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--color-violet);
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+// FormParts' underlined input, for a select (the arrow stays the browser's).
+@mixin select {
+  option {
+    background: var(--ink-2);
+    color: var(--color-white);
+  }
+}

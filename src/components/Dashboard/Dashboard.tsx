@@ -5,7 +5,8 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ButtonLink } from '@/components/ButtonLink/ButtonLink'
-import { EmptyState } from '@/components/EmptyState/EmptyState'
+import { inputClass } from '@/components/FormParts/FormParts'
+import { GrowText } from '@/components/GrowText/GrowText'
 import { authClient } from '@/lib/awards/auth/client'
 import type { DeadlineLine } from '@/lib/awards/dashboard/deadline'
 import { filterProjects, NO_FILTER, type ListFilter } from '@/lib/awards/dashboard/filter'
@@ -21,9 +22,10 @@ import styles from './Dashboard.module.scss'
 
 /**
  * "Mínar innsendingar". The server page loads, ranks and passes plain data; this component only
- * presents it (cards or a compact list) and holds the view, search and filter state. Everything
- * visual lives in `Dashboard.module.scss`, so a redesign touches that file and the markup here,
- * not the data or the rules.
+ * presents it and holds the search, filter and selection state. One view: the projects as a
+ * hairline list (needs-action first), one row per entry, each selectable for the bulk actions.
+ * Everything visual lives in `Dashboard.module.scss`; the markup carries the `data-*` hooks the
+ * tests use.
  */
 export type DashboardProps = {
   locale: Locale
@@ -34,87 +36,70 @@ export type DashboardProps = {
   withoutBilling: number
   /** Ids of the projects that need the entrant's attention (an open request, or an urgent draft). */
   needsActionIds: string[]
-  /** Where the sign-in/out round trip ends. */
-  signOutTo: string
   /** The person's own billing profiles, for "change billing profile". */
   billingProfiles: BillingChoice[]
 }
 
-type View = 'cards' | 'list'
-
 export function Dashboard(props: DashboardProps) {
-  const { locale, data, deadline, notes, withoutBilling, needsActionIds, signOutTo } = props
+  const { locale, data, deadline, notes, withoutBilling, needsActionIds } = props
   const c = dashboardCopy[locale]
-  const [view, setView] = useState<View>('cards')
   const urgent = useMemo(() => new Set(needsActionIds), [needsActionIds])
   const hrefNew = localePath('/innsendingar/ny', locale)
+  const invoices = notes.length > 0 || withoutBilling > 0
 
   return (
     <div className={styles.dashboard} data-dashboard>
-      <div className={styles.top}>
-        <p className={styles.deadline} data-deadline={deadline.kind}>
+      <section
+        className={clsx(styles.notice, withoutBilling > 0 && styles.noticeAttention)}
+        aria-label={c.statusLabel}
+      >
+        <p className={styles.noticeTitle} data-deadline={deadline.kind}>
           {c.deadline(deadline, locale)}
         </p>
-        <div className={styles.topActions}>
-          <ButtonLink href={hrefNew}>{c.newSubmission}</ButtonLink>
-          <SignOut label={c.signOut} to={signOutTo} />
-        </div>
-      </div>
-
-      {notes.length > 0 || withoutBilling > 0 ? (
-        <section aria-labelledby="dash-invoices" className={styles.invoices} data-invoices>
-          <h2 id="dash-invoices" className={styles.sectionTitle}>
-            {c.invoiceHeading}
-          </h2>
-          <ul>
-            {notes.map((n) => (
-              <li key={n.billing.id} data-invoice={n.billing.id}>
-                {c.invoiceNote(n.total, n.billing.companyName, n.billing.kennitala, locale)}
-              </li>
-            ))}
-            {withoutBilling > 0 && <li>{c.invoiceNoBilling(withoutBilling)}</li>}
-          </ul>
-        </section>
-      ) : null}
+        {invoices && (
+          <div className={styles.invoices} data-invoices>
+            <h2 className={styles.monoLabel}>{c.invoiceHeading}</h2>
+            <ul>
+              {notes.map((n) => (
+                <li key={n.billing.id} data-invoice={n.billing.id}>
+                  {c.invoiceNote(n.total, n.billing.companyName, n.billing.kennitala, locale)}
+                </li>
+              ))}
+              {withoutBilling > 0 && <li>{c.invoiceNoBilling(withoutBilling)}</li>}
+            </ul>
+          </div>
+        )}
+      </section>
 
       {data.projects.length === 0 ? (
         <div className={styles.empty} data-empty>
-          <EmptyState title={c.emptyTitle} body={c.emptyBody} />
+          <h2>{c.emptyTitle}</h2>
+          <p>{c.emptyBody}</p>
           <ButtonLink href={hrefNew}>{c.newSubmission}</ButtonLink>
         </div>
       ) : (
-        <>
-          <div className={styles.viewBar}>
-            <div role="group" aria-label={c.viewLabel} className={styles.toggle}>
-              {(['cards', 'list'] as const).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  className={styles.toggleButton}
-                  aria-pressed={view === v}
-                  onClick={() => setView(v)}
-                  data-view={v}
-                >
-                  {v === 'cards' ? c.viewCards : c.viewList}
-                </button>
-              ))}
-            </div>
-          </div>
-          {view === 'cards' ? (
-            <Cards locale={locale} c={c} projects={data.projects} urgent={urgent} now={data.now} />
-          ) : (
-            <List
-              locale={locale}
-              c={c}
-              projects={data.projects}
-              billingProfiles={props.billingProfiles}
-              edition={data.edition}
-              now={data.now}
-            />
-          )}
-        </>
+        <Projects
+          locale={locale}
+          c={c}
+          projects={data.projects}
+          urgent={urgent}
+          billingProfiles={props.billingProfiles}
+          edition={data.edition}
+          now={data.now}
+        />
       )}
     </div>
+  )
+}
+
+/** The head's actions: start a new submission, or sign out. */
+export function DashboardActions({ locale, signOutTo }: { locale: Locale; signOutTo: string }) {
+  const c = dashboardCopy[locale]
+  return (
+    <>
+      <ButtonLink href={localePath('/innsendingar/ny', locale)}>{c.newSubmission}</ButtonLink>
+      <SignOut label={c.signOut} to={signOutTo} />
+    </>
   )
 }
 
@@ -123,7 +108,7 @@ function SignOut({ label, to }: { label: string; to: string }) {
   return (
     <button
       type="button"
-      className={styles.linkButton}
+      className={styles.quiet}
       aria-disabled={pending}
       onClick={async () => {
         if (pending) return
@@ -137,30 +122,33 @@ function SignOut({ label, to }: { label: string; to: string }) {
   )
 }
 
-// ── Pieces shared by both views ─────────────────────────────────────────────
+// ── Pieces ──────────────────────────────────────────────────────────────────
 
-function StatusBadge({ status, c }: { status: EntryStatus; c: DashboardCopy }) {
+function StatusTag({ status, c }: { status: EntryStatus; c: DashboardCopy }) {
   return (
-    <span className={clsx(styles.badge, styles[`status_${status}`])} data-status={status}>
+    <span className={styles.tag} data-status={status}>
       {c.status[status]}
     </span>
   )
 }
 
-function PriceCell({ entry, c, locale }: { entry: DashboardEntry; c: DashboardCopy; locale: Locale }) {
-  const locked = entry.priceKind === 'locked'
+function Price({ entry, c, locale }: { entry: DashboardEntry; c: DashboardCopy; locale: Locale }) {
+  const note = entry.earlyBirdSecured
+    ? null
+    : entry.priceKind === 'locked'
+      ? c.priceLocked
+      : c.priceIfNow(entry.earlyBird)
   return (
     <span className={styles.price}>
       <span className={styles.amount} data-price={entry.price}>
         {formatMoney(entry.price, locale)}
       </span>
-      <span className={styles.priceNote}>
-        {locked ? c.priceLocked : c.priceIfNow(entry.earlyBird)}
-      </span>
-      {entry.earlyBirdSecured && (
-        <span className={styles.secured} data-early-bird="secured">
+      {entry.earlyBirdSecured ? (
+        <span className={styles.priceNote} data-early-bird="secured">
           {c.earlyBirdSecured}
         </span>
+      ) : (
+        <span className={styles.priceNote}>{note}</span>
       )}
     </span>
   )
@@ -171,126 +159,47 @@ function Notes({
   c,
   locale,
   now,
-  requestHref,
+  projectHref,
 }: {
   entry: DashboardEntry
   c: DashboardCopy
   locale: Locale
   now: string
-  /** The project page's requests section, where a request is answered. */
-  requestHref: string
+  projectHref: string
 }) {
   const missing = entry.missing
+  if (entry.requests.length === 0 && missing.length === 0) return null
   return (
-    <>
+    <div className={styles.notes}>
       {entry.requests.map((r) => {
         const overdue = Date.parse(r.deadlineAt) <= Date.parse(now)
         return (
-          <span key={r.id} className={styles.request} data-request={r.id}>
-            <Link href={requestHref}>
+          <p key={r.id} className={styles.request} data-request={r.id}>
+            <Link href={`${projectHref}#requests`}>
               {overdue ? c.requestOverdue : c.requestAsked(formatDayMonth(r.deadlineAt, locale))}
             </Link>
             <span className={styles.requestMessage}>{r.message}</span>
-          </span>
+          </p>
         )
       })}
       {missing.length > 0 && (
-        <span className={styles.missing} data-missing>
-          <span className={styles.missingLabel}>{c.missing}:</span>{' '}
-          {missing.map((m) => m.label[locale]).join(', ')}
-        </span>
+        <p className={styles.missing} data-missing>
+          <Link href={`${projectHref}#section-review`}>{c.missing(missing.length, missing[0].label[locale])}</Link>
+        </p>
       )}
-    </>
-  )
-}
-
-function LockLine({
-  project,
-  c,
-  locale,
-}: {
-  project: DashboardProject
-  c: DashboardCopy
-  locale: Locale
-}) {
-  if (!project.lock) return null
-  return (
-    <p className={styles.lock} data-lock>
-      {c.locked(project.lock.holderName, formatClock(project.lock.since, locale), project.lock.heldByViewer)}
-    </p>
+    </div>
   )
 }
 
 const titleOf = (p: DashboardProject, c: DashboardCopy) => p.title || c.list.untitled
 
-// ── Cards ───────────────────────────────────────────────────────────────────
+// ── The list ────────────────────────────────────────────────────────────────
 
-function Cards({
+function Projects({
   locale,
   c,
   projects,
   urgent,
-  now,
-}: {
-  locale: Locale
-  c: DashboardCopy
-  projects: DashboardProject[]
-  urgent: Set<string>
-  now: string
-}) {
-  const base = useId()
-  return (
-    <ul className={styles.cards} data-view-content="cards">
-      {projects.map((p) => {
-        const headingId = `${base}-${p.id}`
-        return (
-          <li key={p.id}>
-            <article
-              className={clsx(styles.card, urgent.has(p.id) && styles.cardUrgent)}
-              aria-labelledby={headingId}
-              data-project={p.id}
-              data-needs-action={urgent.has(p.id) ? '' : undefined}
-            >
-              <header className={styles.cardHead}>
-                <h2 id={headingId} className={styles.cardTitle}>
-                  <Link href={localePath(`/innsendingar/${p.id}`, locale)}>{titleOf(p, c)}</Link>
-                </h2>
-                <p className={styles.tags}>
-                  {urgent.has(p.id) && <span className={styles.attention}>{c.needsAction}</span>}
-                  {p.role === 'editor' && <span className={styles.tag}>{c.roleEditor}</span>}
-                </p>
-              </header>
-              <LockLine project={p} c={c} locale={locale} />
-              {p.entries.length === 0 ? (
-                <p className={styles.noEntries}>{c.noEntries}</p>
-              ) : (
-                <ul className={styles.entries}>
-                  {p.entries.map((e) => (
-                    <li key={e.id} className={styles.entry} data-entry={e.id} data-status={e.status}>
-                      <span className={styles.entryName}>{e.categoryName[locale]}</span>
-                      <StatusBadge status={e.status} c={c} />
-                      <PriceCell entry={e} c={c} locale={locale} />
-                      <span className={styles.entryNotes}>
-                        <Notes entry={e} c={c} locale={locale} now={now} requestHref={`${localePath(`/innsendingar/${p.id}`, locale)}#requests`} />
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </article>
-          </li>
-        )
-      })}
-    </ul>
-  )
-}
-
-// ── Compact list ────────────────────────────────────────────────────────────
-
-function List({
-  locale,
-  c,
-  projects,
   billingProfiles,
   edition,
   now,
@@ -298,6 +207,7 @@ function List({
   locale: Locale
   c: DashboardCopy
   projects: DashboardProject[]
+  urgent: Set<string>
   billingProfiles: BillingChoice[]
   edition: DashboardData['edition']
   now: string
@@ -317,19 +227,8 @@ function List({
   }, [projects, locale])
 
   const shown = useMemo(() => filterProjects(projects, filter), [projects, filter])
-  const rows = useMemo(
-    () =>
-      shown.flatMap((p) =>
-        p.entries.length
-          ? p.entries.map((e) => ({ p, e }))
-          : // A project with no entries still shows (unless a status/category filter is on, which drops it).
-            [{ p, e: null as DashboardEntry | null }],
-      ),
-    [shown],
-  )
   const totalEntries = projects.reduce((n, p) => n + p.entries.length, 0)
-  const shownEntries = rows.filter((r) => r.e).length
-  const shownIds = rows.flatMap((r) => (r.e ? [r.e.id] : []))
+  const shownIds = shown.flatMap((p) => p.entries.map((e) => e.id))
   const allSelected = shownIds.length > 0 && shownIds.every((id) => selected.has(id))
   const filtered = filter.query !== '' || filter.status !== '' || filter.category !== ''
 
@@ -351,17 +250,18 @@ function List({
     })
 
   return (
-    <div data-view-content="list">
+    <>
       <form
         className={styles.filters}
         role="search"
         aria-label={c.list.filterLabel}
         onSubmit={(ev) => ev.preventDefault()}
       >
-        <div className={styles.field}>
+        <div className={clsx(styles.field, styles.searchField)}>
           <label htmlFor={`${ids}-q`}>{c.list.search}</label>
           <input
             id={`${ids}-q`}
+            className={inputClass}
             type="search"
             name="q"
             value={filter.query}
@@ -373,9 +273,11 @@ function List({
             {c.list.searchHint}
           </span>
         </div>
-        <label className={styles.field}>
-          <span>{c.list.status}</span>
+        <div className={styles.field}>
+          <label htmlFor={`${ids}-status`}>{c.list.status}</label>
           <select
+            id={`${ids}-status`}
+            className={inputClass}
             name="status"
             value={filter.status}
             onChange={(ev) => setFilter({ ...filter, status: ev.target.value as EntryStatus | '' })}
@@ -387,10 +289,12 @@ function List({
               </option>
             ))}
           </select>
-        </label>
-        <label className={styles.field}>
-          <span>{c.list.category}</span>
+        </div>
+        <div className={styles.field}>
+          <label htmlFor={`${ids}-category`}>{c.list.category}</label>
           <select
+            id={`${ids}-category`}
+            className={inputClass}
             name="category"
             value={filter.category}
             onChange={(ev) => setFilter({ ...filter, category: ev.target.value })}
@@ -402,48 +306,64 @@ function List({
               </option>
             ))}
           </select>
-        </label>
-        <button
-          type="button"
-          className={styles.linkButton}
-          onClick={() => setFilter(NO_FILTER)}
-          disabled={!filtered}
-        >
+        </div>
+        <button type="button" className={styles.quiet} onClick={() => setFilter(NO_FILTER)} disabled={!filtered}>
           {c.list.reset}
         </button>
       </form>
 
-      <p className={styles.results} role="status" data-results>
-        {c.list.results(shownEntries, totalEntries)}
-      </p>
-
-      <div className={styles.bulk} data-slot="bulk-actions">
-        {/* Not in the table header: on a phone the header is hidden, and this must work at every width. */}
-        {rows.length > 0 && (
+      <div className={styles.listBar}>
+        {/* Above the list, not in a header row: it must work at every width. */}
+        {shownIds.length > 0 && (
           <label className={styles.selectAll}>
-            <input
-              type="checkbox"
-              checked={allSelected}
-              onChange={toggleAll}
-              disabled={shownIds.length === 0}
-            />
+            <input type="checkbox" checked={allSelected} onChange={toggleAll} />
             <span>{c.list.selectAll}</span>
           </label>
         )}
-        <span aria-live="polite" data-selected-count>
+        <p className={styles.results} role="status" data-results>
+          {c.list.results(shownIds.length, totalEntries)}
+        </p>
+      </div>
+
+      {shown.length === 0 ? (
+        <p className={styles.none}>{c.list.none}</p>
+      ) : (
+        <ul className={styles.projects} aria-label={c.list.caption}>
+          {shown.map((p) => (
+            <ProjectRow
+              key={p.id}
+              p={p}
+              c={c}
+              locale={locale}
+              now={now}
+              urgent={urgent.has(p.id)}
+              selected={selected}
+              toggle={toggle}
+              withdraw={(entryId) => setDialog({ kind: 'withdraw', entryIds: [entryId] })}
+            />
+          ))}
+        </ul>
+      )}
+
+      {/* Always mounted, so the count is announced; it only shows itself once something is chosen. */}
+      <div className={clsx(styles.bulkBar, selected.size > 0 && styles.bulkBarOpen)} data-slot="bulk-actions">
+        <p className={styles.bulkCount} aria-live="polite" data-selected-count>
           {selected.size > 0 ? c.list.selected(selected.size) : ''}
-        </span>
+        </p>
         {selected.size > 0 && (
           <ul className={styles.bulkActions} aria-label={b.barLabel}>
             {(['submit', 'withdraw', 'billing'] as const).map((kind) => (
               <li key={kind}>
                 <button
                   type="button"
-                  className={styles.bulkButton}
+                  className={clsx(
+                    'btn-grow',
+                    kind === 'submit' ? styles.primarySmall : kind === 'withdraw' ? styles.destructiveSmall : styles.secondarySmall,
+                  )}
                   data-bulk={kind}
                   onClick={() => setDialog({ kind, entryIds: [...selected] })}
                 >
-                  {b.actions[kind]}
+                  <GrowText>{b.actions[kind]}</GrowText>
                 </button>
               </li>
             ))}
@@ -468,72 +388,94 @@ function List({
           onChanged={() => router.refresh()}
         />
       )}
+    </>
+  )
+}
 
-      {rows.length === 0 ? (
-        <p className={styles.none}>{c.list.none}</p>
-      ) : (
-        <table className={styles.table}>
-          <caption className={styles.srOnly}>{c.list.caption}</caption>
-          <thead>
-            <tr>
-              <th scope="col" className={styles.checkCol}>
-                <span className={styles.srOnly}>{c.list.colSelect}</span>
-              </th>
-              <th scope="col">{c.list.colProject}</th>
-              <th scope="col">{c.list.colCategory}</th>
-              <th scope="col">{c.list.colStatus}</th>
-              <th scope="col">{c.list.colPrice}</th>
-              <th scope="col">{c.list.colNotes}</th>
-              <th scope="col" className={styles.actionsCol}>
-                <span className={styles.srOnly}>{b.barLabel}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(({ p, e }) => (
-              <tr key={e?.id ?? p.id} data-project={p.id} data-entry={e?.id} data-status={e?.status}>
-                <td className={styles.checkCol}>
-                  {e && (
-                    <input
-                      type="checkbox"
-                      checked={selected.has(e.id)}
-                      onChange={() => toggle(e.id)}
-                      aria-label={c.list.selectRow(titleOf(p, c), e.categoryName[locale])}
-                    />
-                  )}
-                </td>
-                <th scope="row" className={styles.projectCell}>
-                  <Link href={localePath(`/innsendingar/${p.id}`, locale)}>{titleOf(p, c)}</Link>
-                </th>
-                <td data-label={c.list.colCategory}>{e ? e.categoryName[locale] : c.noEntries}</td>
-                <td data-label={c.list.colStatus}>{e && <StatusBadge status={e.status} c={c} />}</td>
-                <td data-label={c.list.colPrice}>{e && <PriceCell entry={e} c={c} locale={locale} />}</td>
-                <td data-label={c.list.colNotes}>
-                  {e && <Notes entry={e} c={c} locale={locale} now={now} requestHref={`${localePath(`/innsendingar/${p.id}`, locale)}#requests`} />}
-                  {p.lock && !e?.requests.length && !e?.missing.length ? (
-                    <span className={styles.missing}>
-                      {c.locked(p.lock.holderName, formatClock(p.lock.since, locale), p.lock.heldByViewer)}
-                    </span>
-                  ) : null}
-                </td>
-                <td className={styles.actionsCol}>
-                  {e && e.status === 'submitted' && p.role === 'creator' && (
+function ProjectRow({
+  p,
+  c,
+  locale,
+  now,
+  urgent,
+  selected,
+  toggle,
+  withdraw,
+}: {
+  p: DashboardProject
+  c: DashboardCopy
+  locale: Locale
+  now: string
+  urgent: boolean
+  selected: ReadonlySet<string>
+  toggle: (id: string) => void
+  withdraw: (entryId: string) => void
+}) {
+  const headingId = useId()
+  const b = bulkCopy[locale]
+  const href = localePath(`/innsendingar/${p.id}`, locale)
+  return (
+    <li>
+      <article
+        className={styles.project}
+        aria-labelledby={headingId}
+        data-project={p.id}
+        data-needs-action={urgent ? '' : undefined}
+      >
+        <header className={styles.projectHead}>
+          <h2 id={headingId} className={styles.projectTitle}>
+            <Link href={href}>{titleOf(p, c)}</Link>
+          </h2>
+          {(urgent || p.role === 'editor') && (
+            <p className={styles.flags}>
+              {urgent && <span className={clsx(styles.tag, styles.attention)}>{c.needsAction}</span>}
+              {p.role === 'editor' && <span className={styles.tag}>{c.roleEditor}</span>}
+            </p>
+          )}
+          {p.lock && (
+            <p className={styles.lock} data-lock>
+              {c.locked(p.lock.holderName, formatClock(p.lock.since, locale), p.lock.heldByViewer)}
+            </p>
+          )}
+        </header>
+        {p.entries.length === 0 ? (
+          <p className={styles.noEntries}>{c.noEntries}</p>
+        ) : (
+          <ul className={styles.entries}>
+            {p.entries.map((e) => (
+              <li key={e.id} className={styles.entry} data-entry={e.id} data-status={e.status}>
+                <span className={styles.check}>
+                  <input
+                    type="checkbox"
+                    checked={selected.has(e.id)}
+                    onChange={() => toggle(e.id)}
+                    aria-label={c.list.selectRow(titleOf(p, c), e.categoryName[locale])}
+                  />
+                </span>
+                <span className={styles.category}>{e.categoryName[locale]}</span>
+                <span className={styles.status}>
+                  <StatusTag status={e.status} c={c} />
+                </span>
+                <Price entry={e} c={c} locale={locale} />
+                <span className={styles.rowAction}>
+                  {e.status === 'submitted' && p.role === 'creator' && (
                     <button
                       type="button"
-                      className={styles.rowButton}
+                      className={styles.destructiveSmall}
                       aria-label={b.rowWithdrawLabel(titleOf(p, c), e.categoryName[locale])}
                       data-withdraw-row={e.id}
-                      onClick={() => setDialog({ kind: 'withdraw', entryIds: [e.id] })}
+                      onClick={() => withdraw(e.id)}
                     >
                       {b.rowWithdraw}
                     </button>
                   )}
-                </td>
-              </tr>
+                </span>
+                <Notes entry={e} c={c} locale={locale} now={now} projectHref={href} />
+              </li>
             ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+          </ul>
+        )}
+      </article>
+    </li>
   )
 }

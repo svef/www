@@ -46,16 +46,15 @@ export type DashboardCopy = {
   emptyBody: string
   noEntries: string
   needsAction: string
-  viewLabel: string
-  viewCards: string
-  viewList: string
-  open: string
+  eyebrow: (year: number) => string
+  statusLabel: string
   roleEditor: string
   status: Record<EntryStatus, string>
   priceLocked: string
   priceIfNow: (earlyBird: boolean) => string
   earlyBirdSecured: string
-  missing: string
+  /** "Missing (5): Project description and 4 more": the count, the first item, and a link to the review. */
+  missing: (count: number, first: string) => string
   requestAsked: (deadline: string) => string
   requestOverdue: string
   locked: (name: string, since: string, mine: boolean) => string
@@ -105,10 +104,8 @@ const en: DashboardCopy = {
   emptyBody: 'Start a project, choose the categories it goes in and it will appear here.',
   noEntries: 'No categories chosen yet.',
   needsAction: 'Needs your attention',
-  viewLabel: 'View',
-  viewCards: 'Cards',
-  viewList: 'List',
-  open: 'Open',
+  eyebrow: (year) => `Icelandic Web Awards ${year}`,
+  statusLabel: 'Deadlines and invoices',
   roleEditor: 'You can edit',
   status: {
     draft: 'Draft',
@@ -122,7 +119,7 @@ const en: DashboardCopy = {
   priceLocked: 'Locked price',
   priceIfNow: (early) => (early ? 'Early-bird price if submitted now' : 'Price if submitted now'),
   earlyBirdSecured: 'Early bird secured',
-  missing: 'Missing',
+  missing: (n, first) => `Missing (${n}): ${first}${n > 1 ? ` and ${n - 1} more` : ''}`,
   requestAsked: (d) => `SVEF has asked for changes by ${d}`,
   requestOverdue: 'The deadline for SVEF’s request has passed',
   locked: (name, since, mine) => (mine ? `You are editing (since ${since})` : `${name} is editing (since ${since})`),
@@ -170,10 +167,8 @@ const is: DashboardCopy = {
   emptyBody: 'Stofnaðu verkefni og veldu flokkana sem það fer í. Það birtist þá hér.',
   noEntries: 'Enginn flokkur valinn enn.',
   needsAction: 'Þarfnast athygli þinnar',
-  viewLabel: 'Sýn',
-  viewCards: 'Spjöld',
-  viewList: 'Listi',
-  open: 'Opna',
+  eyebrow: (year) => `Vefverðlaunin ${year}`,
+  statusLabel: 'Frestir og reikningar',
   roleEditor: 'Þú getur breytt',
   status: {
     draft: 'Drög',
@@ -187,7 +182,7 @@ const is: DashboardCopy = {
   priceLocked: 'Fast verð',
   priceIfNow: (early) => (early ? 'Snemmskráningarverð ef sent núna' : 'Verð ef sent núna'),
   earlyBirdSecured: 'Snemmskráning tryggð',
-  missing: 'Vantar',
+  missing: (n, first) => `Vantar (${n}): ${first}${n > 1 ? ` og ${n - 1} til viðbótar` : ''}`,
   requestAsked: (d) => `SVEF biður um breytingar fyrir ${d}`,
   requestOverdue: 'Frestur við beiðni SVEF er liðinn',
   locked: (name, since, mine) => (mine ? `Þú ert að breyta (síðan ${since})` : `${name} er að breyta (síðan ${since})`),
