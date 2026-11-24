@@ -1,12 +1,12 @@
 import 'server-only'
 import { headers } from 'next/headers'
-import { notFound, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import { and, eq, isNull } from 'drizzle-orm'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import { userRole } from '@/lib/awards/db/tables'
 import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n'
 import { getAuth } from './auth'
-import { hasStaffRole, signInPath } from './roles'
+import { signInPath } from './roles'
 
 /** The signed-in user as the rest of the awards code sees them. */
 export interface SessionUser {
@@ -54,18 +54,5 @@ export async function requireUser(
 ): Promise<SessionUser> {
   const user = await getUser()
   if (!user) redirect(signInPath(options.locale ?? DEFAULT_LOCALE, options.next))
-  return user
-}
-
-/**
- * Like `requireUser`, and the user must hold the `staff` role. A signed-in
- * non-staff user gets a 404, not a 403: the staff area's existence is not
- * advertised.
- */
-export async function requireStaff(
-  options: { locale?: Locale; next?: string } = {},
-): Promise<SessionUser> {
-  const user = await requireUser(options)
-  if (!hasStaffRole(await getRoles(user.id))) notFound()
   return user
 }

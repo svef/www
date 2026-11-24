@@ -1,5 +1,5 @@
 import type { AwardsDb } from './client'
-import { entryEvent } from './schema'
+import { entryEvent, userEvent } from './schema'
 
 export type NewEntryEvent = typeof entryEvent.$inferInsert
 
@@ -13,4 +13,14 @@ export async function appendEntryEvent(
   event: NewEntryEvent,
 ): Promise<void> {
   await db.insert(entryEvent).values(event)
+}
+
+export type NewUserEvent = typeof userEvent.$inferInsert
+
+/** The only write path to `user_event`, on the same terms as `appendEntryEvent`. */
+export async function appendUserEvent(
+  db: Pick<AwardsDb, 'insert'>,
+  event: NewUserEvent,
+): Promise<void> {
+  await db.insert(userEvent).values(event)
 }

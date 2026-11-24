@@ -50,6 +50,13 @@
       "when": 1795499448197,
       "tag": "0006_sharp_goblin_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795554500556,
+      "tag": "0007_admin_role_user_event",
+      "breakpoints": true
     }
   ]
 }

@@ -59,7 +59,7 @@ describe.skipIf(!url)('requests', () => {
     )[0].id
   const staffActor = async () => {
     const userId = await makeUser('Staff')
-    await db.insert(schema.userRole).values({ userId, role: 'staff' })
+    await db.insert(schema.userRole).values({ userId, role: 'admin' })
     return { userId, roles: ['staff'] as const }
   }
 

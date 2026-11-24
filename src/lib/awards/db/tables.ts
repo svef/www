@@ -25,8 +25,15 @@ import { auditTimestamps, bytea, id, localizedText, timestamps } from './columns
  * without its parent and is itself never audited.
  */
 
-/** Allowed values, shared by the CHECK constraints and the application. */
-export const ROLES = ['staff'] as const
+/**
+ * Allowed values, shared by the CHECK constraints and the application.
+ *
+ * `admin` is the only role the application grants or reads. `staff` is its old name: a data
+ * migration (0007) renamed the rows, and the CHECK still accepts it so that code from before
+ * the rename, running against the same database, does not fail on a write. Drop it at the
+ * cutover, with the other held-back removals (#35).
+ */
+export const ROLES = ['admin', 'staff'] as const
 export const LOCALES = ['is', 'en'] as const
 export const PERSON_KINDS = ['owner', 'collaborator'] as const
 export const ENTRY_STATUSES = [
@@ -56,7 +63,7 @@ const userRef = (name: string) => uuid(name).references(() => user.id)
 
 // ── Accounts ────────────────────────────────────────────────────────────────
 
-/** Gates the staff area. One row per (user, role); room for more roles. */
+/** Gates the admin (Stjórnborð). One row per (user, role); room for more roles. */
 export const userRole = pgTable(
   'user_role',
   {
@@ -552,6 +559,32 @@ export const entryEvent = pgTable(
     check('entry_event_type_check', sql`length(${t.type}) > 0`),
     index('entry_event_project_idx').on(t.projectId, t.createdAt),
     index('entry_event_entry_idx').on(t.entryId, t.createdAt),
+    // The admin overview's recent activity, newest first across every project.
+    index('entry_event_created_idx').on(t.createdAt),
+  ],
+)
+
+/**
+ * Append-only log of changes to an account itself, which have no project to hang off in
+ * `entry_event`: an admin granting or removing a role, for now. Same rules as `entry_event`:
+ * the database refuses UPDATE, DELETE and TRUNCATE (trigger in migration 0007), and the
+ * code only inserts (`appendUserEvent`). `user_id` is the account the change is about,
+ * `actor_user_id` who made it.
+ */
+export const userEvent = pgTable(
+  'user_event',
+  {
+    id: id(),
+    userId: userRef('user_id').notNull(),
+    actorUserId: userRef('actor_user_id'),
+    type: text('type').notNull(),
+    data: jsonb('data'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check('user_event_type_check', sql`length(${t.type}) > 0`),
+    index('user_event_user_idx').on(t.userId, t.createdAt),
+    index('user_event_created_idx').on(t.createdAt),
   ],
 )
 
