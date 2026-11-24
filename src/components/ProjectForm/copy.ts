@@ -10,9 +10,24 @@ type Strings = {
   newTitle: string
   newLead: string
   newButton: string
+  /** "New submission": the heading over the list of the form's steps. */
+  newSteps: string
   signedOutTitle: string
   signedOutBody: string
   outline: string
+  /** Small label above a step's heading, and the phone stepper's count. */
+  stepOf: (n: number, total: number) => string
+  /** Announced when the step changes. */
+  stepAnnounce: (n: number, total: number, title: string) => string
+  prevStep: string
+  nextStep: string
+  /** The image step: optional, so neither complete nor missing until there is one. */
+  optionalStep: string
+  /** The lock, in short, for the stepper bar (the full notice is under it). */
+  lockBadgeOther: (name: string) => string
+  lockBadgeReadOnly: string
+  /** The page head's eyebrow. */
+  eyebrow: (year: number) => string
   sections: Record<SectionId, { title: string; intro?: string }>
   complete: string
   incomplete: string
@@ -214,9 +229,18 @@ const en: Strings = {
   newLead:
     'Start a project. You can enter it in one or more categories, and your answers save as you type.',
   newButton: 'Create project',
+  newSteps: 'The steps',
   signedOutTitle: 'Sign in to continue',
   signedOutBody: 'You need an account to work on a submission.',
   outline: 'Sections',
+  stepOf: (n, total) => `Step ${n} of ${total}`,
+  stepAnnounce: (n, total, title) => `Step ${n} of ${total}: ${title}`,
+  prevStep: 'Previous',
+  nextStep: 'Next',
+  optionalStep: 'optional',
+  lockBadgeOther: (name) => `${name} is editing`,
+  lockBadgeReadOnly: 'Read-only',
+  eyebrow: (year) => `Web Awards ${year}`,
   sections: {
     categories: { title: 'Categories', intro: 'Choose where to enter the project.' },
     project: { title: 'The project' },
@@ -478,9 +502,18 @@ const is: Strings = {
   newLead:
     'Byrjaðu á verkefni. Þú getur skráð það í einn eða fleiri flokka og svörin vistast um leið og þú skrifar.',
   newButton: 'Stofna verkefni',
+  newSteps: 'Skrefin',
   signedOutTitle: 'Skráðu þig inn til að halda áfram',
   signedOutBody: 'Þú þarft aðgang til að vinna að innsendingu.',
   outline: 'Hlutar',
+  stepOf: (n, total) => `Skref ${n} af ${total}`,
+  stepAnnounce: (n, total, title) => `Skref ${n} af ${total}: ${title}`,
+  prevStep: 'Fyrri',
+  nextStep: 'Næsta',
+  optionalStep: 'valfrjálst',
+  lockBadgeOther: (name) => `${name} er að breyta`,
+  lockBadgeReadOnly: 'Aðeins til lestrar',
+  eyebrow: (year) => `Vefverðlaunin ${year}`,
   sections: {
     categories: { title: 'Flokkar', intro: 'Veldu í hvaða flokka verkefnið er sent.' },
     project: { title: 'Verkefnið' },

@@ -11,7 +11,11 @@ import { AwardsError } from '@/lib/awards/projects/errors'
 import { listRequestsForProject } from '@/lib/awards/requests/queries'
 import { loadProject } from '@/lib/awards/projects/service'
 import { getCurrentUserId, getRequestNow, NotSignedInError } from '@/lib/awards/session'
-import { getDictionary, isLocale, localePath } from '@/lib/i18n'
+import { eq } from 'drizzle-orm'
+import { dashboardCopy } from '@/components/Dashboard/copy'
+import { edition } from '@/lib/awards/db/schema'
+import { isLocale, localePath } from '@/lib/i18n'
+import styles from '../form-page.module.scss'
 import { ProjectFormClient } from './ProjectFormClient'
 import { signInPath } from '@/lib/awards/auth/roles'
 
@@ -47,6 +51,7 @@ export default async function ProjectPage({
   let view
   let billingProfiles
   let requests
+  let year: number | undefined
   try {
     const db = getAwardsDb()
     const now = await getRequestNow()
@@ -54,6 +59,11 @@ export default async function ProjectPage({
     billingProfiles = await listBillingProfiles(db, { userId })
     // `loadProject` has proved the viewer is the creator or an accepted editor.
     requests = await listRequestsForProject(db, id, now)
+    const [ed] = await db
+      .select({ year: edition.year })
+      .from(edition)
+      .where(eq(edition.id, view.editionId))
+    year = ed?.year
   } catch (e) {
     // Missing and not-yours look the same: a project's existence is not for strangers.
     if (e instanceof AwardsError && (e.code === 'not_found' || e.code === 'forbidden')) notFound()
@@ -64,12 +74,13 @@ export default async function ProjectPage({
     <>
       <AppHead
         title={(view.answers.title as string | undefined) || copy.pageTitle}
+        eyebrow={year ? copy.eyebrow(year) : undefined}
         crumb={{
-          href: localePath('/innsendingar', locale),
-          label: getDictionary(locale).submissions.title,
+          href: localePath('/innsendingar/minar', locale),
+          label: dashboardCopy[locale].title,
         }}
       />
-      <PageSection last aria-label={copy.pageTitle}>
+      <PageSection last className={styles.formSection} aria-label={copy.pageTitle}>
         <ProjectFormClient
           initial={view}
           locale={locale}

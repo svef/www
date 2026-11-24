@@ -1,0 +1,214 @@
+// The form's stepper bar: sticky across the top, full bleed so nothing scrolls past in the
+// gutters, a hairline under it. Wide: numbered steps with their names. Narrow: the current
+// step's name and count over a row of numbered squares.
+@use '../../styles/breakpoints' as bp;
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin-inline: calc(-1 * var(--gutter));
+  padding-inline: var(--gutter);
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+
+  // A short screen (a phone on its side, or with the keyboard up) needs every line it has.
+  @media (max-height: 500px) {
+    position: static;
+  }
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 8px 32px;
+
+  @include bp.below(bp.$lg) {
+    flex-wrap: wrap;
+    padding-block: 12px 14px;
+  }
+}
+
+// ---- Narrow: the current step, in words -------------------------------------
+
+.compact {
+  display: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  align-items: baseline;
+  gap: 12px;
+
+  @include bp.below(bp.$lg) {
+    display: flex;
+  }
+}
+
+.count {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.currentName {
+  min-width: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-title);
+  font-stretch: var(--stretch-title);
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+// ---- The steps ----------------------------------------------------------------
+
+.nav {
+  flex: 1 1 0;
+  min-width: 0;
+
+  @include bp.below(bp.$lg) {
+    order: 3;
+    flex-basis: 100%;
+  }
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include bp.below(bp.$lg) {
+    gap: 4px;
+  }
+}
+
+.item {
+  min-width: 0;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 100%;
+  padding: 16px 0 13px;
+  border-bottom: 3px solid transparent;
+  color: var(--muted);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  line-height: 1.15;
+
+  &:hover {
+    color: var(--color-white);
+
+    .box {
+      border-color: var(--muted);
+    }
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: -3px;
+  }
+
+  &[aria-current='step'] {
+    color: var(--color-white);
+    border-bottom-color: var(--color-violet);
+    font-weight: var(--weight-semibold);
+  }
+
+  @include bp.below(bp.$lg) {
+    justify-content: center;
+    padding: 0;
+    border-bottom: 0;
+
+    &:focus-visible {
+      outline-offset: 2px;
+    }
+  }
+}
+
+.box {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  transition: border-color var(--dur-hover);
+
+  .link[data-status='complete'] & {
+    border-color: var(--color-violet-light);
+    color: var(--color-violet-light);
+  }
+
+  .link[aria-current='step'] & {
+    border-color: var(--color-violet);
+    background: var(--color-violet);
+    color: var(--color-white);
+  }
+
+  @include bp.below(bp.$lg) {
+    width: 100%;
+    max-width: 44px;
+    height: 36px;
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}
+
+.label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+
+  @include bp.below(bp.$lg) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+// ---- Save state and lock --------------------------------------------------------
+
+.status {
+  flex: 0 1 auto;
+  max-width: 18rem;
+  min-width: 0;
+  text-align: right;
+
+  @include bp.below(bp.$lg) {
+    order: 2;
+    max-width: 100%;
+  }
+
+  @include bp.below(bp.$xs) {
+    flex-basis: 100%;
+    text-align: left;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

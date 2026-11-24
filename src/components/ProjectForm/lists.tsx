@@ -6,6 +6,7 @@ import type { FieldDefinition } from '@/lib/awards/fields'
 import type { InviteState } from '@/lib/awards/invitations/types'
 import type { Locale } from '@/lib/i18n'
 import type { ProjectFormCopy } from './copy'
+import { areaClass, controlClass } from './FieldInput'
 import styles from './ProjectForm.module.scss'
 
 type Row = Record<string, unknown>
@@ -138,39 +139,50 @@ export function PersonList({
             <li key={i} data-row={i}>
               <fieldset className={styles.group}>
                 <legend className={styles.rowLegend}>{label}</legend>
-                {items.map(([name, def], k) => (
-                  <label key={name}>
-                    <span>{def.label[locale]}</span>
-                    <input
-                      id={i === 0 && k === 0 ? p.id : undefined}
-                      data-control={k === 0 ? 'first' : undefined}
-                      className={styles.input}
-                      type={def.type === 'email' ? 'email' : 'text'}
-                      value={name === 'email' ? (emailDrafts[i] ?? str(person[name])) : str(person[name])}
-                      maxLength={def.maxLength}
-                      readOnly={disabled}
-                      autoComplete="off"
-                      aria-describedby={name === 'email' && needsEmail ? emailHint : undefined}
-                      onBlur={() => {
-                        if (name === 'email') {
-                          setEmailLeft((s) => new Set(s).add(i))
-                          const draft = emailDrafts[i]
-                          if (draft !== undefined) {
-                            setEmailDrafts(({ [i]: _, ...rest }) => rest)
-                            set(i, { email: draft })
-                          }
+                <div className={styles.rowFields}>
+                  {items.map(([name, def], k) => (
+                    <label key={name} className={styles.rowField}>
+                      <span>{def.label[locale]}</span>
+                      <input
+                        id={i === 0 && k === 0 ? p.id : undefined}
+                        data-control={k === 0 ? 'first' : undefined}
+                        className={controlClass}
+                        type={def.type === 'email' ? 'email' : 'text'}
+                        value={
+                          name === 'email'
+                            ? (emailDrafts[i] ?? str(person[name]))
+                            : str(person[name])
                         }
-                        p.onBlur()
-                      }}
-                      onChange={(e) => {
-                        const holdBack =
-                          name === 'email' && field.key === 'collaborators' && person.canEdit === true
-                        if (holdBack) setEmailDrafts((d) => ({ ...d, [i]: e.target.value }))
-                        else set(i, { [name]: e.target.value })
-                      }}
-                    />
-                  </label>
-                ))}
+                        maxLength={def.maxLength}
+                        readOnly={disabled}
+                        autoComplete="off"
+                        aria-describedby={
+                          name === 'email' && needsEmail ? emailHint : undefined
+                        }
+                        onBlur={() => {
+                          if (name === 'email') {
+                            setEmailLeft((s) => new Set(s).add(i))
+                            const draft = emailDrafts[i]
+                            if (draft !== undefined) {
+                              setEmailDrafts(({ [i]: _, ...rest }) => rest)
+                              set(i, { email: draft })
+                            }
+                          }
+                          p.onBlur()
+                        }}
+                        onChange={(e) => {
+                          const holdBack =
+                            name === 'email' &&
+                            field.key === 'collaborators' &&
+                            person.canEdit === true
+                          if (holdBack)
+                            setEmailDrafts((d) => ({ ...d, [i]: e.target.value }))
+                          else set(i, { [name]: e.target.value })
+                        }}
+                      />
+                    </label>
+                  ))}
+                </div>
                 {field.key === 'collaborators' && (
                   <>
                     <label className={styles.check}>
@@ -250,7 +262,7 @@ export function PersonList({
                   {rows.length > minRows && (
                     <button
                       type="button"
-                      className={styles.small}
+                      className={`${styles.small} ${styles.danger}`}
                       data-control="remove"
                       disabled={disabled}
                       aria-label={copy.removeRow(label)}
@@ -265,7 +277,7 @@ export function PersonList({
           )
         })}
       </ul>
-      <div>
+      <div className={styles.addRow}>
         <button type="button" className={styles.small} disabled={disabled} onClick={add}>
           {copy.addRow[field.key]}
         </button>
@@ -335,81 +347,87 @@ export function CredentialList({ field, ...p }: ListProps & { field: FieldDefini
             <li key={i}>
               <fieldset className={styles.group}>
                 <legend className={styles.rowLegend}>{label}</legend>
-                <label>
-                  <span>{copy.loginLabel}</span>
-                  <input
-                    data-control="first"
-                    className={styles.input}
-                    type="text"
-                    autoComplete="off"
-                    value={str(r.label)}
-                    readOnly={disabled}
-                    onBlur={p.onBlur}
-                    onChange={(e) => set(i, { label: e.target.value })}
-                  />
-                </label>
-                {(() => {
-                  const valueId = i === 0 && p.id ? p.id : `${baseId}-value-${i}`
-                  const isMasked = Boolean(masked[i]) && str(r.value) !== ''
-                  return (
-                    <div className={styles.secret}>
-                      <div className={styles.labelRow}>
-                        <label htmlFor={valueId}>{copy.loginValue}</label>
-                        {str(r.value) !== '' && (
-                          <button
-                            type="button"
-                            className={styles.small}
-                            aria-controls={valueId}
-                            aria-label={isMasked ? copy.loginShowLabel(label) : copy.loginHideLabel(label)}
-                            onClick={() => setRowMasked(i, !isMasked)}
-                          >
-                            {isMasked ? copy.loginShow : copy.loginHide}
-                          </button>
+                <div className={styles.rowFields}>
+                  <label className={styles.rowField}>
+                    <span>{copy.loginLabel}</span>
+                    <input
+                      data-control="first"
+                      className={controlClass}
+                      type="text"
+                      autoComplete="off"
+                      value={str(r.label)}
+                      readOnly={disabled}
+                      onBlur={p.onBlur}
+                      onChange={(e) => set(i, { label: e.target.value })}
+                    />
+                  </label>
+                  {(() => {
+                    const valueId = i === 0 && p.id ? p.id : `${baseId}-value-${i}`
+                    const isMasked = Boolean(masked[i]) && str(r.value) !== ''
+                    return (
+                      <div className={`${styles.rowField} ${styles.wide}`}>
+                        <div className={styles.labelRow}>
+                          <label htmlFor={valueId}>{copy.loginValue}</label>
+                          {str(r.value) !== '' && (
+                            <button
+                              type="button"
+                              className={styles.small}
+                              aria-controls={valueId}
+                              aria-label={
+                                isMasked
+                                  ? copy.loginShowLabel(label)
+                                  : copy.loginHideLabel(label)
+                              }
+                              onClick={() => setRowMasked(i, !isMasked)}
+                            >
+                              {isMasked ? copy.loginShow : copy.loginHide}
+                            </button>
+                          )}
+                        </div>
+                        {isMasked ? (
+                          <input
+                            id={valueId}
+                            className={controlClass}
+                            type="password"
+                            autoComplete="off"
+                            value={str(r.value)}
+                            readOnly
+                            data-masked
+                          />
+                        ) : (
+                          <textarea
+                            id={valueId}
+                            className={areaClass}
+                            rows={3}
+                            autoComplete="off"
+                            spellCheck={false}
+                            value={str(r.value)}
+                            readOnly={disabled}
+                            onBlur={p.onBlur}
+                            onChange={(e) => set(i, { value: e.target.value })}
+                          />
                         )}
                       </div>
-                      {isMasked ? (
-                        <input
-                          id={valueId}
-                          className={styles.input}
-                          type="password"
-                          autoComplete="off"
-                          value={str(r.value)}
-                          readOnly
-                          data-masked
-                        />
-                      ) : (
-                        <textarea
-                          id={valueId}
-                          className={styles.textarea}
-                          rows={3}
-                          autoComplete="off"
-                          spellCheck={false}
-                          value={str(r.value)}
-                          readOnly={disabled}
-                          onBlur={p.onBlur}
-                          onChange={(e) => set(i, { value: e.target.value })}
-                        />
-                      )}
-                    </div>
-                  )
-                })()}
-                <label>
-                  <span>{copy.loginNotes}</span>
-                  <input
-                    className={styles.input}
-                    type="text"
-                    autoComplete="off"
-                    value={str(r.notes)}
-                    readOnly={disabled}
-                    onBlur={p.onBlur}
-                    onChange={(e) => set(i, { notes: e.target.value })}
-                  />
-                </label>
+                    )
+                  })()}
+                  <label className={styles.rowField}>
+                    <span>{copy.loginNotes}</span>
+                    <input
+                      className={controlClass}
+                      type="text"
+                      autoComplete="off"
+                      value={str(r.notes)}
+                      readOnly={disabled}
+                      onBlur={p.onBlur}
+                      onChange={(e) => set(i, { notes: e.target.value })}
+                    />
+                  </label>
+                </div>
                 {rows.length > 1 && (
                   <div className={styles.rowActions}>
                     <button
                       type="button"
-                      className={styles.small}
+                      className={`${styles.small} ${styles.danger}`}
                       disabled={disabled}
                       aria-label={copy.removeRow(label)}
                       onClick={() => {
@@ -426,7 +444,7 @@ export function CredentialList({ field, ...p }: ListProps & { field: FieldDefini
           )
         })}
       </ul>
-      <div>
+      <div className={styles.addRow}>
         <button
           type="button"
           className={styles.small}
