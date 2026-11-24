@@ -1,6 +1,7 @@
 import { getField } from '@/lib/awards/fields'
 import { formatError } from '@/lib/awards/messages'
 import { validateImageMeta } from '@/lib/awards/validation'
+import { formatNumber } from '@/lib/locale-format'
 
 export type ImageProblem = { code: string; message: { is: string; en: string } }
 
@@ -31,10 +32,9 @@ export function checkImageFile(
 
 /** `2.4 MB`, `640 KB`. */
 export function formatBytes(bytes: number, locale: 'is' | 'en'): string {
-  const nf = new Intl.NumberFormat(locale === 'is' ? 'is-IS' : 'en-GB', { maximumFractionDigits: 1 })
   return bytes >= 1_048_576
-    ? `${nf.format(bytes / 1_048_576)} MB`
-    : `${nf.format(Math.max(1, bytes / 1024))} KB`
+    ? `${formatNumber(bytes / 1_048_576, locale, 1)} MB`
+    : `${formatNumber(Math.max(1, bytes / 1024), locale, 1)} KB`
 }
 
 /** The image's dimensions as the browser shows it (EXIF rotation applied), or null if it cannot be decoded. */

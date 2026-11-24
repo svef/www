@@ -8,6 +8,7 @@ import type { Locale } from '@/lib/i18n'
 import type { ProjectFormCopy } from './copy'
 import { areaClass, controlClass } from './FieldInput'
 import styles from './ProjectForm.module.scss'
+import { formatDate } from '@/lib/locale-format'
 
 type Row = Record<string, unknown>
 const str = (v: unknown) => (typeof v === 'string' ? v : '')
@@ -37,12 +38,7 @@ export type InviteProps = {
 
 const dateOf = (iso: string | null, locale: Locale) =>
   iso
-    ? new Intl.DateTimeFormat(locale === 'is' ? 'is-IS' : 'en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'Atlantic/Reykjavik',
-      }).format(new Date(iso))
+    ? formatDate(iso, locale)
     : ''
 
 const sameEmail = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()

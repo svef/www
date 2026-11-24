@@ -1,13 +1,12 @@
 import type { DeadlineLine } from '@/lib/awards/dashboard/deadline'
 import type { Locale } from '@/lib/i18n'
 import type { EntryStatus } from '@/lib/awards/types'
+import { formatDate, formatKr, formatTime } from '@/lib/locale-format'
 
 /** Interface copy for "Mínar innsendingar". Presentation is separate (`Dashboard.module.scss`). */
 
-const INTL: Record<Locale, string> = { is: 'is-IS', en: 'en-GB' }
-
 export const formatMoney = (n: number, locale: Locale) =>
-  `${new Intl.NumberFormat(INTL[locale]).format(n)} kr.`
+  formatKr(n, locale)
 
 /** 4501012340 -> 450101-2340. Anything that is not ten digits is returned as it came. */
 export const formatKennitala = (kt: string) =>
@@ -15,23 +14,12 @@ export const formatKennitala = (kt: string) =>
 
 /** "1 February" / "1. febrúar": a day in UTC (Iceland keeps UTC all year), no year. */
 export const formatDayMonth = (iso: string, locale: Locale) =>
-  new Intl.DateTimeFormat(INTL[locale], { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(iso))
+  formatDate(iso, locale, { year: false })
 
 export const formatDayMonthTime = (iso: string, locale: Locale) =>
-  `${formatDayMonth(iso, locale)} ${new Intl.DateTimeFormat(INTL[locale], {
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-    timeZone: 'UTC',
-  }).format(new Date(iso))}`
+  `${formatDayMonth(iso, locale)} ${formatTime(iso)}`
 
-export const formatClock = (iso: string, locale: Locale) =>
-  new Intl.DateTimeFormat(INTL[locale], {
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-    timeZone: 'UTC',
-  }).format(new Date(iso))
+export const formatClock = (iso: string, locale: Locale) => formatTime(iso)
 
 export type DashboardCopy = {
   title: string

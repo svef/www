@@ -8,6 +8,7 @@ import { goToField } from './focus'
 import { requestsCopy } from './requests-copy'
 import { sectionOfField } from './sections'
 import styles from './Requests.module.scss'
+import { formatDate } from '@/lib/locale-format'
 
 /** Plain data for one request, built on the server in the entrant's language. */
 export type RequestBannerData = {
@@ -34,11 +35,7 @@ export type RequestActions = {
 
 /** Iceland is UTC all year, so the zone is stated instead of guessed from the browser. */
 const when = (iso: string, locale: Locale) =>
-  `${new Intl.DateTimeFormat(locale === 'is' ? 'is-IS' : 'en-GB', {
-    dateStyle: 'long',
-    timeStyle: 'short',
-    timeZone: 'UTC',
-  }).format(new Date(iso))} UTC`
+  `${formatDate(iso, locale, { time: true })} UTC`
 
 /**
  * One banner per unresolved request on the project page: its message and deadline,

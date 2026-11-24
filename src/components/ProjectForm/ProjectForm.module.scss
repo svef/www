@@ -137,13 +137,12 @@
     overflow-wrap: anywhere;
     scroll-margin-top: 120px;
 
-    &:focus {
-      outline: none;
-    }
-
+    // Focused by script when the step changes (tabIndex=-1, never in the tab order), so a
+    // screen reader starts reading at the new step. It is not a control, so no ring: the
+    // step change itself is the visible cue, and the next Tab lands on the step's first field.
+    &:focus,
     &:focus-visible {
-      outline: 3px solid var(--focus-ring);
-      outline-offset: 4px;
+      outline: none;
     }
   }
 }

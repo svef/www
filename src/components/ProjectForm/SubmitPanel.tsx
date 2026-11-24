@@ -17,6 +17,7 @@ import styles from './Submit.module.scss'
 import { SUBMIT_STEP_FIELDS } from './sections'
 import { missingItems, type MissingItem, type PriceBreakdown } from './summary'
 import type { ProjectFormApi } from './useProjectForm'
+import { formatDate } from '@/lib/locale-format'
 
 /**
  * The end of the review: the terms, what blocks submitting (or the early-bird note and
@@ -70,12 +71,7 @@ export function SubmitPanel({
   const opened = now >= toMs(view.intakeOpensAt)
   const closed = now >= toMs(view.intakeClosesBefore)
   const dateLong = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'is' ? 'is-IS' : 'en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC',
-    }).format(new Date(iso))
+    formatDate(iso, locale)
 
   // With nothing but withdrawn entries left, what stops a re-submit is judged with their
   // categories counted in (the review's list only counts live entries).

@@ -27,6 +27,7 @@ import {
   type ProjectFormActions,
   type ProjectFormApi,
 } from './useProjectForm'
+import { formatTime } from '@/lib/locale-format'
 
 export type BillingProps = {
   /** The signed-in user's saved billing profiles, as loaded with the page. */
@@ -34,13 +35,7 @@ export type BillingProps = {
   actions: BillingActions
 }
 
-const time = (iso: string, locale: Locale) =>
-  new Intl.DateTimeFormat(locale === 'is' ? 'is-IS' : 'en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: 'UTC', // Iceland is UTC all year
-  }).format(new Date(iso))
+const time = (iso: string, locale: Locale) => formatTime(iso)
 
 /** Where focus goes once a step is on screen: its heading, a field in it, or nowhere (a reload). */
 type FocusRequest = { kind: 'heading' } | { kind: 'target'; target: GoToTarget } | null

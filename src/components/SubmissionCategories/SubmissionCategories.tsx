@@ -2,6 +2,7 @@ import Markdown from 'react-markdown'
 import type { PublicCategory, PublicChoice } from '@/lib/awards/public-catalog'
 import type { Locale } from '@/lib/i18n'
 import styles from './SubmissionCategories.module.scss'
+import { formatKr } from '@/lib/locale-format'
 
 /** The copy the grid needs, so the component does not reach into the dictionary. */
 export interface SubmissionCategoriesCopy {
@@ -34,8 +35,7 @@ function Prices({
   locale: Locale
   copy: SubmissionCategoriesCopy
 }) {
-  const fmt = new Intl.NumberFormat(locale === 'is' ? 'is-IS' : 'en-GB')
-  const money = (n: number) => `${fmt.format(n)} ${copy.currency}`
+  const money = (n: number) => formatKr(n, locale, copy.currency)
   return (
     <dl className={styles.prices}>
       <div className={`${styles.price} ${styles.early}`}>

@@ -1,8 +1,9 @@
 import type { Locale } from '@/lib/i18n'
+import { formatDate, formatKr } from '@/lib/locale-format'
 
 /** Whole ISK as the locale writes it: `26,900 kr.` / `26.900 kr.` */
 export function formatMoney(amount: number, locale: Locale, currency: string): string {
-  return `${new Intl.NumberFormat(locale === 'is' ? 'is-IS' : 'en-GB').format(amount)} ${currency}`
+  return formatKr(amount, locale, currency)
 }
 
 /**
@@ -11,10 +12,5 @@ export function formatMoney(amount: number, locale: Locale, currency: string): s
  */
 export function lastDayBefore(isoExclusive: string, locale: Locale): string {
   const d = new Date(Date.parse(isoExclusive) - 1)
-  return new Intl.DateTimeFormat(locale === 'is' ? 'is-IS' : 'en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(d)
+  return formatDate(d, locale)
 }
