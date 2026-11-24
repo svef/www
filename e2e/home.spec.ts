@@ -20,6 +20,9 @@ test.describe('home', () => {
     test(`${locale}: no text leaves the screen, and the headline keeps its lines`, async ({
       page,
     }) => {
+      // Six page loads in one test: the default 30s was right at the limit and timed out
+      // under load.
+      test.setTimeout(90_000)
       for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         await page.setViewportSize({ width, height: 900 })
         await page.goto(urlFor(locale, ''))
