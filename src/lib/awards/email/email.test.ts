@@ -222,7 +222,7 @@ describe('request emails', () => {
     const reminder = requestReminderEmail({ ...input, locale: 'en' })
     expect(reminder.subject).not.toBe(opened.subject)
     expect(reminder.subject).toMatch(/^Reminder/)
-    expect(reminder.text).toContain('24 hours')
+    expect(reminder.text).toContain('is coming up')
     expect(requestReminderEmail({ ...input, locale: 'is' }).subject).toMatch(/^Áminning/)
   })
 })

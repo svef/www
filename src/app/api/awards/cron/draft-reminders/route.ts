@@ -4,8 +4,9 @@ import { sendDueDraftReminders } from '@/lib/awards/reminders/send'
 import { serverNow } from '@/lib/awards/staff/clock'
 
 /**
- * `GET /api/awards/cron/draft-reminders`: the daily sweep that sends the draft reminders (spec
- * §7, email 6), a few days before the early-bird deadline and again before intake closes.
+ * `GET /api/awards/cron/draft-reminders`: the daily sweep that sends the draft reminders, a few
+ * days before the early-bird deadline and again before intake closes. Staff can run the same
+ * sweep from the staff area.
  * Scheduled in `vercel.json` (`crons`); a daily schedule works on every Vercel plan.
  *
  * Guarded like the request-reminder cron: Vercel Cron sends `Authorization: Bearer

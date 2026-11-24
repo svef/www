@@ -14,6 +14,15 @@ export const staffCopy = {
     exportCsv: 'Sækja CSV',
     exportXlsx: 'Sækja XLSX',
     exportCsvNote: 'CSV er UTF-8 með BOM og semíkommu á milli dálka, fyrir íslenskan Excel.',
+    remindersTitle: 'Áminningar',
+    remindersLead:
+      'Áminningar um fresti beiðna og um ósend drög fara sjálfkrafa út einu sinni á dag, um kl. 9. Hér má senda strax þær sem eru tilbúnar. Engin áminning er send tvisvar.',
+    remindersSend: 'Senda áminningar núna',
+    remindersResult: (requests: number, drafts: number, failed: number) =>
+      requests + drafts + failed === 0
+        ? 'Engar áminningar voru tilbúnar til sendingar.'
+        : `Áminningar um fresti beiðna: ${requests}. Áminningar um ósend drög: ${drafts}.` +
+          (failed ? ` Ekki tókst að senda ${failed}; reynt verður aftur í næstu umferð.` : ''),
     eligibilityTitle: 'Færslur og hæfi',
     closedNote: (date: string) => `Hæfi er skráð eftir að skilafresti lýkur (${date}).`,
     notClosed: (date: string) => `Skilafrestur er ekki liðinn (hann rennur út ${date}). Ekki er hægt að skrá hæfi enn.`,
@@ -85,6 +94,15 @@ export const staffCopy = {
     exportCsv: 'Download CSV',
     exportXlsx: 'Download XLSX',
     exportCsvNote: 'The CSV is UTF-8 with a BOM and semicolons between columns, for Icelandic Excel.',
+    remindersTitle: 'Reminders',
+    remindersLead:
+      'Request deadline reminders and unsent-draft reminders go out automatically once a day, around 9:00. Here you can send the ones that are due right away. No reminder is sent twice.',
+    remindersSend: 'Send reminders now',
+    remindersResult: (requests: number, drafts: number, failed: number) =>
+      requests + drafts + failed === 0
+        ? 'No reminders were due.'
+        : `Request deadline reminders: ${requests}. Unsent-draft reminders: ${drafts}.` +
+          (failed ? ` ${failed} could not be sent; the next run will try again.` : ''),
     eligibilityTitle: 'Entries and eligibility',
     closedNote: (date: string) => `Eligibility is set after intake closes (${date}).`,
     notClosed: (date: string) => `Intake has not closed yet (it ends ${date}). Eligibility cannot be set yet.`,

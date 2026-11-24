@@ -344,16 +344,13 @@ export function SubmitPanel({
               tabIndex={0}
               data-terms
             >
-              <p className={styles.draftTag}>
-                {copy.termsVersion(view.terms.version)} · {copy.termsDraftNote}
-              </p>
               {copy.termsBody.map((p, i) => (
                 <p key={i}>{p}</p>
               ))}
             </div>
             {view.terms.accepted ? (
               <p className={styles.ok} data-terms-accepted>
-                {copy.termsAcceptedAlready(view.terms.version)}
+                {copy.termsAcceptedAlready}
               </p>
             ) : (
               <label className={styles.check}>
@@ -364,7 +361,7 @@ export function SubmitPanel({
                   disabled={form.readOnly}
                   onChange={(e) => setChecked(e.target.checked)}
                 />
-                <span>{copy.termsAccept(view.terms.version)}</span>
+                <span>{copy.termsAccept}</span>
               </label>
             )}
           </div>

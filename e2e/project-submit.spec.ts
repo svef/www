@@ -90,8 +90,6 @@ test.describe('submit', () => {
     await expect(panel.locator('[data-early-explain]')).toHaveText(
       'Submit by the end of 4 January 2027 to secure the early-bird price, 18,900 kr. instead of 26,900 kr.',
     )
-    await expect(panel.locator('[data-terms]')).toContainText('Version draft')
-    await expect(panel.locator('[data-terms]')).toContainText('Draft text')
     await expect(panel.locator('[data-terms]')).toContainText('not refunded')
 
     // Blocked: the button says why, with a link to what is left.

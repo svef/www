@@ -4,8 +4,9 @@ import { sendDueRequestReminders } from '@/lib/awards/requests/reminders'
 import { serverNow } from '@/lib/awards/staff/clock'
 
 /**
- * `GET /api/awards/cron/request-reminders`: the hourly sweep that sends the ~24 h request
- * deadline reminders. Scheduled in `vercel.json` (`crons`).
+ * `GET /api/awards/cron/request-reminders`: the daily sweep that sends the request deadline
+ * reminders. Scheduled in `vercel.json` (`crons`); staff can run the same sweep from the staff
+ * area.
  *
  * Vercel Cron calls this with `Authorization: Bearer <CRON_SECRET>` when the `CRON_SECRET`
  * environment variable is set, so the same variable guards the route. It fails closed: with no

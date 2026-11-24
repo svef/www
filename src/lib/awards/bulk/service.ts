@@ -4,7 +4,7 @@ import { AwardsError } from '../projects/errors'
 import { acquireLock, getLiveLock, releaseLock } from '../projects/lock'
 import type { AwardsDb } from '../projects/db-types'
 import {
-  DRAFT_TERMS_VERSION,
+  TERMS_VERSION,
   getRole,
   loadContext,
   setProjectBillingProfile,
@@ -66,7 +66,7 @@ async function load(db: AwardsDb, args: BulkRequest): Promise<Loaded> {
     if (!role) continue
     const c = await loadContext(db, projectId)
     const lock = await getLiveLock(db, projectId, now, args.ttlMs)
-    const termsVersion = c.edition.termsVersion ?? DRAFT_TERMS_VERSION
+    const termsVersion = c.edition.termsVersion ?? TERMS_VERSION
     const [accepted] = await db
       .select({ id: termsAcceptance.id })
       .from(termsAcceptance)

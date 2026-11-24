@@ -108,7 +108,7 @@ export async function refusal(p: Promise<unknown>) {
 export async function acceptTerms(db: Db, userId: string, projectId: string) {
   await db
     .insert(schema.termsAcceptance)
-    .values({ userId, projectId, termsVersion: 'draft', acceptedAt: EARLY })
+    .values({ userId, projectId, termsVersion: '2026-1', acceptedAt: EARLY })
 }
 
 /** Releases the lock `userId` holds on a project, with the token its acquisition was issued. */

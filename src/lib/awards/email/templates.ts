@@ -284,9 +284,9 @@ const requestCopy: Record<
     openedSubject: (t) => `Beiðni frá SVEF: ${t}`,
     openedIntro: (t, c) =>
       `Starfsfólk SVEF hefur sent beiðni vegna innsendingarinnar „${t}“ (${c}).`,
-    reminderSubject: (t) => `Áminning: beiðni vegna ${t} rennur út á morgun`,
+    reminderSubject: (t) => `Áminning: frestur vegna ${t} rennur brátt út`,
     reminderIntro: (t, c) =>
-      `Frestur til að svara beiðni SVEF vegna innsendingarinnar „${t}“ (${c}) rennur út eftir um sólarhring.`,
+      `Frestur til að svara beiðni SVEF vegna innsendingarinnar „${t}“ (${c}) rennur brátt út.`,
     message: 'Skilaboð frá SVEF',
     fields: 'Reitir sem þú getur breytt',
     deadline: 'Frestur',
@@ -299,9 +299,9 @@ const requestCopy: Record<
     openedSubject: (t) => `A request from SVEF: ${t}`,
     openedIntro: (t, c) =>
       `SVEF staff have sent a request about your submission “${t}” (${c}).`,
-    reminderSubject: (t) => `Reminder: the request about ${t} is due tomorrow`,
+    reminderSubject: (t) => `Reminder: the request about ${t} is due soon`,
     reminderIntro: (t, c) =>
-      `The deadline to answer SVEF's request about your submission “${t}” (${c}) is in about 24 hours.`,
+      `The deadline to answer SVEF's request about your submission “${t}” (${c}) is coming up.`,
     message: 'Message from SVEF',
     fields: 'Fields you can change',
     deadline: 'Deadline',
@@ -376,7 +376,7 @@ export function requestOpenedEmail(input: RequestEmailInput): EmailContent {
   )
 }
 
-/** Email 5: the deadline is about 24 hours away. */
+/** Email 5: the deadline is one to two days away; the email states it. */
 export function requestReminderEmail(input: RequestEmailInput): EmailContent {
   const c = requestCopy[input.locale]
   return renderRequest(

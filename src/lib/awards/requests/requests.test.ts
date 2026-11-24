@@ -360,11 +360,11 @@ describe.skipIf(!url)('requests', () => {
     const mine = (sent: OutgoingEmail[], to: string) => sent.filter((m) => m.to === to)
     const ownerEmail = async (id: string) => (await db.select().from(schema.user).where(eq(schema.user.id, id)))[0].email
 
-    it('sends once, ~24 h before the deadline, and never twice', async () => {
+    it('sends once, one to two days before the deadline, and never twice', async () => {
       const { owner, req } = await requestDueIn(72 * H)
       const { sent, deps } = sink()
       const to = await ownerEmail(owner)
-      // Two days out: not yet.
+      // Almost three days out: not yet.
       await sendDueRequestReminders(db, { now: at(H) }, deps)
       expect(mine(sent, to)).toEqual([])
       // 23 h left: due.
@@ -386,7 +386,7 @@ describe.skipIf(!url)('requests', () => {
       const resolved = await requestDueIn(72 * H)
       await markRequestDone(db, { requestId: resolved.req.id, actor: { userId: resolved.owner, roles: [] }, now: at(H) })
       const overdue = await requestDueIn(30 * H)
-      const short = await requestDueIn(10 * H) // opened with less than 24 h to run
+      const short = await requestDueIn(10 * H) // opened with less than the lead time to run
       const { sent, deps } = sink()
       await sendDueRequestReminders(db, { now: at(49 * H) }, deps) // resolved: 23 h left; overdue: deadline passed
       expect(mine(sent, await ownerEmail(resolved.owner))).toEqual([])

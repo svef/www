@@ -22,8 +22,12 @@ export function requestStatus(r: RequestTiming, now: DateInput): RequestStatus {
   return toMs(now) < toMs(r.deadlineAt) ? 'open' : 'overdue'
 }
 
-/** How long before the deadline the reminder goes out. */
-export const REMINDER_LEAD_MS = 24 * 60 * 60 * 1000
+/**
+ * How far ahead of the deadline a reminder becomes due. The sweep runs once a day, so with a
+ * two-day window the reminder goes out on the last run that is still at least a day before the
+ * deadline: between one and two days ahead. Staff can also run the sweep by hand.
+ */
+export const REMINDER_LEAD_MS = 48 * 60 * 60 * 1000
 
 /** The default deadline staff are offered: a week from now. */
 export const DEFAULT_DEADLINE_DAYS = 7
@@ -36,7 +40,7 @@ export const MAX_MESSAGE_LENGTH = 2000
 export const MAX_REPLY_LENGTH = 2000
 
 /**
- * Whether the ~24 h reminder is due now: the request is still open, no reminder was sent, and
+ * Whether the deadline reminder is due now: the request is still open, no reminder was sent, and
  * the deadline is within the lead time. A request opened with less than the lead time left
  * gets no reminder: the "request opened" email already carried that deadline.
  */

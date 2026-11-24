@@ -49,6 +49,10 @@ type Strings = {
   startDate: string
   endDate: string
   loginValue: string
+  loginShow: string
+  loginHide: string
+  loginShowLabel: (row: string) => string
+  loginHideLabel: (row: string) => string
   loginLabel: string
   loginNotes: string
   categoryError: string
@@ -141,11 +145,9 @@ type Strings = {
   reviewBillingTo: (company: string, kennitala: string) => string
   // submit
   termsTitle: string
-  termsDraftNote: string
-  termsVersion: (v: string) => string
   termsBody: string[]
-  termsAccept: (v: string) => string
-  termsAcceptedAlready: (v: string) => string
+  termsAccept: string
+  termsAcceptedAlready: string
   submitButton: string
   submitWorking: string
   submitEarlyExplain: (lastDay: string, early: string, regular: string) => string
@@ -269,6 +271,10 @@ const en: Strings = {
   startDate: 'From',
   endDate: 'To',
   loginValue: 'Account or instructions',
+  loginShow: 'Show',
+  loginHide: 'Hide',
+  loginShowLabel: (row) => `Show the account or instructions for ${row}`,
+  loginHideLabel: (row) => `Hide the account or instructions for ${row}`,
   loginLabel: 'Label',
   loginNotes: 'Notes',
   categoryError: 'The categories could not be changed.',
@@ -360,15 +366,14 @@ const en: Strings = {
   reviewGoTo: 'Go to',
   reviewBillingTo: (c, k) => `An invoice will be sent to ${c}, kt. ${k}, after submissions close.`,
   termsTitle: 'Competition terms',
-  termsDraftNote: 'Draft text. SVEF will replace it with the final terms before submissions open.',
-  termsVersion: (v) => `Version ${v}`,
   termsBody: [
     'By submitting you confirm that you are entitled to enter the project, that the answers are true, and that the people credited have agreed to be named.',
-    'Entry fees are invoiced after submissions close. Fees are not refunded, including when an entry is withdrawn or found ineligible.',
-    'The jury judges the project as submitted. After submitting, some answers are locked; changing them means withdrawing the entry.',
+    'Entry fees are invoiced after submissions close, for every entry that has not been withdrawn. Fees are not refunded, including when an entry is found ineligible.',
+    'The jury judges the project as submitted. After submitting, some answers are locked; changing them means withdrawing the entry, which gives up the early-bird price.',
+    'SVEF may publish the project\'s name, its presentation image and the names of the people credited in connection with the awards.',
   ],
-  termsAccept: (v) => `I accept the competition terms (version ${v})`,
-  termsAcceptedAlready: (v) => `You have accepted the competition terms (version ${v}) for this project.`,
+  termsAccept: 'I accept the competition terms',
+  termsAcceptedAlready: 'You have accepted the competition terms for this project.',
   submitButton: 'Submit',
   submitWorking: 'Submitting…',
   submitEarlyExplain: (d, e, r) =>
@@ -532,6 +537,10 @@ const is: Strings = {
   startDate: 'Frá',
   endDate: 'Til',
   loginValue: 'Aðgangur eða leiðbeiningar',
+  loginShow: 'Sýna',
+  loginHide: 'Fela',
+  loginShowLabel: (row) => `Sýna aðgang eða leiðbeiningar fyrir ${row}`,
+  loginHideLabel: (row) => `Fela aðgang eða leiðbeiningar fyrir ${row}`,
   loginLabel: 'Heiti',
   loginNotes: 'Athugasemdir',
   categoryError: 'Ekki var hægt að breyta flokkum.',
@@ -627,15 +636,14 @@ const is: Strings = {
   reviewBillingTo: (c, k) =>
     `Reikningur verður sendur á ${c}, kt. ${k}, eftir að innsendingum lýkur.`,
   termsTitle: 'Skilmálar keppninnar',
-  termsDraftNote: 'Drög að texta. SVEF skiptir honum út fyrir endanlega skilmála áður en innsendingar opna.',
-  termsVersion: (v) => `Útgáfa ${v}`,
   termsBody: [
     'Með innsendingu staðfestir þú að þú megir senda verkefnið inn, að svörin séu rétt og að þau sem nefnd eru hafi samþykkt að vera nafngreind.',
-    'Þátttökugjald er innheimt eftir að innsendingum lýkur. Gjöld eru ekki endurgreidd, líka þegar innsending er dregin til baka eða reynist ekki gjaldgeng.',
-    'Dómnefnd metur verkefnið eins og það var sent inn. Eftir innsendingu læsast sum svör og til að breyta þeim þarf að draga innsendinguna til baka.',
+    'Þátttökugjald er innheimt eftir að innsendingum lýkur, fyrir hverja innsendingu sem hefur ekki verið dregin til baka. Gjöld eru ekki endurgreidd, líka þegar innsending reynist ekki gjaldgeng.',
+    'Dómnefnd metur verkefnið eins og það var sent inn. Eftir innsendingu læsast sum svör og til að breyta þeim þarf að draga innsendinguna til baka, sem fyrirgerir snemmskráningarverðinu.',
+    'SVEF má birta heiti verkefnisins, kynningarmynd þess og nöfn þeirra sem nefnd eru í tengslum við verðlaunin.',
   ],
-  termsAccept: (v) => `Ég samþykki skilmála keppninnar (útgáfa ${v})`,
-  termsAcceptedAlready: (v) => `Þú hefur samþykkt skilmála keppninnar (útgáfa ${v}) fyrir þetta verkefni.`,
+  termsAccept: 'Ég samþykki skilmála keppninnar',
+  termsAcceptedAlready: 'Þú hefur samþykkt skilmála keppninnar fyrir þetta verkefni.',
   submitButton: 'Senda inn',
   submitWorking: 'Sendi inn…',
   submitEarlyExplain: (d, e, r) =>

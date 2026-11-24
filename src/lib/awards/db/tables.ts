@@ -493,7 +493,7 @@ export const entryRequest = pgTable(
     deadlineAt: timestamp('deadline_at', { withTimezone: true }).notNull(),
     resolvedAt: timestamp('resolved_at', { withTimezone: true }),
     resolvedBy: userRef('resolved_by'),
-    // Set when the ~24 h deadline reminder went out; the claim that makes the sweep idempotent.
+    // Set when the deadline reminder went out; the claim that makes the sweep idempotent.
     reminderSentAt: timestamp('reminder_sent_at', { withTimezone: true }),
     ...timestamps,
   },

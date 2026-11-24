@@ -14,7 +14,7 @@ import type { AwardsDb } from './db-types'
 import { AwardsError } from './errors'
 import { requireLock } from './lock'
 import {
-  DRAFT_TERMS_VERSION,
+  TERMS_VERSION,
   loadContext,
   requireRole,
   type Clock,
@@ -132,7 +132,7 @@ export async function submitEntries(
     if (!ctx.project.billingProfileId)
       throw new AwardsError('billing_required', 'Choose who is invoiced before submitting.')
 
-    const termsVersion = ed.termsVersion ?? DRAFT_TERMS_VERSION
+    const termsVersion = ed.termsVersion ?? TERMS_VERSION
     const [accepted] = await tx
       .select({ id: termsAcceptance.id })
       .from(termsAcceptance)

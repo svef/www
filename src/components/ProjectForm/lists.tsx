@@ -1,7 +1,7 @@
 'use client'
 
 import { ArrowDown, ArrowUp } from '@phosphor-icons/react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { FieldDefinition } from '@/lib/awards/fields'
 import type { InviteState } from '@/lib/awards/invitations/types'
 import type { Locale } from '@/lib/i18n'
@@ -297,7 +297,8 @@ export function PersonList({
 /**
  * Login details: any number of credentials, each a label, the account or instructions,
  * and notes. The values are encrypted when saved; the inputs ask the browser not to
- * remember them.
+ * remember them. A value that was already saved shows masked, as a read-only password
+ * field, until "Show" is pressed, so it is not on screen by default.
  */
 export function CredentialList({ field, ...p }: ListProps & { field: FieldDefinition }) {
   const { copy, disabled } = p
@@ -305,6 +306,15 @@ export function CredentialList({ field, ...p }: ListProps & { field: FieldDefini
   const rows: Row[] = list.length ? list : [{}]
   const root = useRef<HTMLUListElement>(null)
   const focusLast = useRef(false)
+  const baseId = useId()
+  // Masked per row; rows saved with a value start masked, new rows start shown.
+  const [masked, setMasked] = useState<boolean[]>(() => rows.map((r) => str(r.value) !== ''))
+  const setRowMasked = (i: number, m: boolean) =>
+    setMasked((all) => {
+      const next = [...all]
+      next[i] = m
+      return next
+    })
   useEffect(() => {
     if (!focusLast.current) return
     focusLast.current = false
@@ -338,20 +348,51 @@ export function CredentialList({ field, ...p }: ListProps & { field: FieldDefini
                     onChange={(e) => set(i, { label: e.target.value })}
                   />
                 </label>
-                <label>
-                  <span>{copy.loginValue}</span>
-                  <textarea
-                    id={i === 0 ? p.id : undefined}
-                    className={styles.textarea}
-                    rows={3}
-                    autoComplete="off"
-                    spellCheck={false}
-                    value={str(r.value)}
-                    readOnly={disabled}
-                    onBlur={p.onBlur}
-                    onChange={(e) => set(i, { value: e.target.value })}
-                  />
-                </label>
+                {(() => {
+                  const valueId = i === 0 && p.id ? p.id : `${baseId}-value-${i}`
+                  const isMasked = Boolean(masked[i]) && str(r.value) !== ''
+                  return (
+                    <div className={styles.secret}>
+                      <div className={styles.labelRow}>
+                        <label htmlFor={valueId}>{copy.loginValue}</label>
+                        {str(r.value) !== '' && (
+                          <button
+                            type="button"
+                            className={styles.small}
+                            aria-controls={valueId}
+                            aria-label={isMasked ? copy.loginShowLabel(label) : copy.loginHideLabel(label)}
+                            onClick={() => setRowMasked(i, !isMasked)}
+                          >
+                            {isMasked ? copy.loginShow : copy.loginHide}
+                          </button>
+                        )}
+                      </div>
+                      {isMasked ? (
+                        <input
+                          id={valueId}
+                          className={styles.input}
+                          type="password"
+                          autoComplete="off"
+                          value={str(r.value)}
+                          readOnly
+                          data-masked
+                        />
+                      ) : (
+                        <textarea
+                          id={valueId}
+                          className={styles.textarea}
+                          rows={3}
+                          autoComplete="off"
+                          spellCheck={false}
+                          value={str(r.value)}
+                          readOnly={disabled}
+                          onBlur={p.onBlur}
+                          onChange={(e) => set(i, { value: e.target.value })}
+                        />
+                      )}
+                    </div>
+                  )
+                })()}
                 <label>
                   <span>{copy.loginNotes}</span>
                   <input
@@ -371,7 +412,10 @@ export function CredentialList({ field, ...p }: ListProps & { field: FieldDefini
                       className={styles.small}
                       disabled={disabled}
                       aria-label={copy.removeRow(label)}
-                      onClick={() => p.onChange(rows.filter((_, j) => j !== i))}
+                      onClick={() => {
+                        setMasked((all) => all.filter((_, j) => j !== i))
+                        p.onChange(rows.filter((_, j) => j !== i))
+                      }}
                     >
                       {copy.remove}
                     </button>

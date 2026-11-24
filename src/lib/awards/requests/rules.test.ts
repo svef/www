@@ -38,7 +38,7 @@ describe('reminderDue', () => {
     deadlineAt: new Date(NOW.getTime() + deadlineMs),
     ...extra,
   })
-  it('is due inside the 24 h lead, not before and not after the deadline', () => {
+  it('is due inside the lead time, not before and not after the deadline', () => {
     expect(reminderDue(r(REMINDER_LEAD_MS + 1), NOW)).toBe(false)
     expect(reminderDue(r(REMINDER_LEAD_MS), NOW)).toBe(true)
     expect(reminderDue(r(H), NOW)).toBe(true)

@@ -47,8 +47,12 @@ import type {
  * (`field_changed`, `category_added`, …) to the append-only log before commit.
  */
 
-/** Recorded as the terms version while the edition has none (the terms text is still a draft). */
-export const DRAFT_TERMS_VERSION = 'draft'
+/**
+ * The version of the terms text in `ProjectForm/copy.ts`, recorded with each acceptance. Bump it
+ * whenever that text changes in substance, so an acceptance always names the text that was
+ * shown. An edition's `terms_version`, when set, takes precedence.
+ */
+export const TERMS_VERSION = '2026-1'
 
 export type Clock = { now?: Date; ttlMs?: number }
 type Locale = 'is' | 'en'
@@ -334,7 +338,7 @@ export async function loadProject(
     .from(user)
     .where(eq(user.id, args.userId))
   // Terms are accepted per project and version; a null edition version is the draft text's.
-  const termsVersion = ctx.edition.termsVersion ?? DRAFT_TERMS_VERSION
+  const termsVersion = ctx.edition.termsVersion ?? TERMS_VERSION
   const [accepted] = await db
     .select({ id: termsAcceptance.id })
     .from(termsAcceptance)

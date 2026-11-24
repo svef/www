@@ -5,7 +5,7 @@ import { getObjectStore, isStoreConfigured } from '@/lib/awards/files/store'
 import { serverNow } from '@/lib/awards/staff/clock'
 
 /**
- * `GET /api/awards/cron/file-cleanup`: the hourly sweep of uploads that never finished. A `pending`
+ * `GET /api/awards/cron/file-cleanup`: the daily sweep of uploads that never finished. A `pending`
  * `entry_file` older than an hour (the browser never PUT the file, or never asked for it to be
  * checked) is rejected and its object deleted. Idempotent. Scheduled in `vercel.json`.
  *

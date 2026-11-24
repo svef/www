@@ -339,6 +339,11 @@
   font-size: 1.15rem;
 }
 
+.secret {
+  display: grid;
+  gap: 0.25rem;
+}
+
 .labelRow {
   display: flex;
   align-items: center;

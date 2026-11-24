@@ -88,7 +88,7 @@ async function project(owner: string, title: string, opts: { fill?: boolean; sub
       .insert(schema.projectPerson)
       .values({ projectId: id, kind: 'owner', name: 'Anna', email: 'anna@example.is' })
   }
-  await db().insert(schema.termsAcceptance).values({ userId: owner, projectId: id, termsVersion: 'draft' })
+  await db().insert(schema.termsAcceptance).values({ userId: owner, projectId: id, termsVersion: '2026-1' })
   return id
 }
 

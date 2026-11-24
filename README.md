@@ -75,7 +75,7 @@ public media bucket. The browser uploads straight to it with a presigned `PUT` (
 proxied through Vercel); the server then reads the object, checks the real type from its magic
 bytes, the size (at most 10 MB) and the dimensions (exactly 1080 × 1080), and marks the
 `entry_file` row `available` or `rejected` (and deletes the object). Previews, for the entrant
-and for staff, are short-lived presigned `GET` URLs. Code: `src/lib/awards/files/`. An hourly
+and for staff, are short-lived presigned `GET` URLs. Code: `src/lib/awards/files/`. A daily
 cron (`/api/awards/cron/file-cleanup`, `CRON_SECRET` as for the other crons) rejects uploads
 that stayed `pending` for over an hour and deletes their objects.
 

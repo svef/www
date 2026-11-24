@@ -350,6 +350,19 @@ test('transferring a project moves it to the new creator, is logged, and refuses
   expect(await dash(ids.owner)).not.toContain(T('Nemendavefur'))
 })
 
+test('"send reminders now" runs the reminder sweeps and reports what went out', async ({ page }) => {
+  await staffPage(page, 'staff-reminders')
+  await page.goto(listUrl())
+  const section = page.locator('section[aria-labelledby="staff-reminders"]')
+  await expect(section.getByRole('heading', { level: 2 })).toHaveText('Áminningar')
+  await section.getByRole('button', { name: 'Senda áminningar núna' }).click()
+  await expect(page).toHaveURL(/reminders=\d+\.\d+\.\d+#staff-reminders$/)
+  await expect(section.getByRole('status')).toHaveText(/Engar áminningar|Áminningar um fresti beiðna/)
+  // Pressed again at once: whatever went out the first time is not sent again.
+  await section.getByRole('button', { name: 'Senda áminningar núna' }).click()
+  await expect(page).toHaveURL(/reminders=0\.0\.\d+#staff-reminders$/)
+})
+
 test('the staff list and the entry view have no axe violations, in both languages', async ({ page }) => {
   await staffPage(page, 'staff-axe-area')
   for (const url of [listUrl('is'), listUrl('en'), entryUrl(ids.student, 'is'), entryUrl(ids.student, 'en')]) {
