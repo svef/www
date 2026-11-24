@@ -27,34 +27,63 @@ describe('proxy: full site', () => {
     expect(r.rewrite).toBe('http://localhost/en/innsendingar')
   })
 
-  it('rewrites a nested English name, keeping an id as it is', async () => {
-    expect((await run('/en/submissions/mine', false)).rewrite).toBe(
-      'http://localhost/en/innsendingar/minar',
-    )
-    expect((await run('/en/submissions/abc-123', false)).rewrite).toBe(
-      'http://localhost/en/innsendingar/abc-123',
-    )
-  })
-
-  it('rewrites a third level: the staff entry view keeps its id', async () => {
+  it('rewrites nested English names, keeping an id as it is', async () => {
     const id = '0198c7a0-1111-7222-8333-444455556666'
-    expect((await run(`/en/submissions/staff/${id}`, false)).rewrite).toBe(
-      `http://localhost/en/innsendingar/starfsfolk/${id}`,
+    expect((await run('/en/my-pages', false)).rewrite).toBe('http://localhost/en/minar-sidur')
+    expect((await run('/en/my-pages/projects/new', false)).rewrite).toBe(
+      'http://localhost/en/minar-sidur/verkefni/nytt',
     )
-    const back = await run(`/en/innsendingar/starfsfolk/${id}`, false)
-    expect(new URL(back.location!).pathname).toBe(`/en/submissions/staff/${id}`)
+    expect((await run(`/en/admin/projects/${id}`, false)).rewrite).toBe(
+      `http://localhost/en/stjornbord/verkefni/${id}`,
+    )
+    const back = await run(`/en/stjornbord/verkefni/${id}`, false)
+    expect(new URL(back.location!).pathname).toBe(`/en/admin/projects/${id}`)
   })
 
   it('redirects the other language’s names to the right ones', async () => {
-    const r = await run('/en/innsendingar/minar', false)
+    const r = await run('/en/minar-sidur/adgangur', false)
     expect(r.status).toBe(307)
-    expect(new URL(r.location!).pathname).toBe('/en/submissions/mine')
-    const back = await run('/is/submissions/mine', false)
-    expect(new URL(back.location!).pathname).toBe('/is/innsendingar/minar')
+    expect(new URL(r.location!).pathname).toBe('/en/my-pages/account')
+    const back = await run('/is/my-pages/account', false)
+    expect(new URL(back.location!).pathname).toBe('/is/minar-sidur/adgangur')
   })
 
   it('serves the Icelandic form directly', async () => {
-    expect((await run('/is/innsendingar/minar', false)).next).toBe(true)
+    expect((await run('/is/minar-sidur', false)).next).toBe(true)
+    expect((await run('/is/stjornbord/notendur', false)).next).toBe(true)
+  })
+
+  it('sends the old signed-in addresses to the portal and the admin, permanently', async () => {
+    const id = '0198c7a0-1111-7222-8333-444455556666'
+    const cases: [string, string][] = [
+      ['/is/innsendingar/minar', '/is/minar-sidur'],
+      ['/en/submissions/mine', '/en/my-pages'],
+      ['/en/innsendingar/minar', '/en/my-pages'],
+      ['/is/innsendingar/ny', '/is/minar-sidur/verkefni/nytt'],
+      ['/en/submissions/new', '/en/my-pages/projects/new'],
+      [`/is/innsendingar/${id}`, `/is/minar-sidur/verkefni/${id}`],
+      [`/en/submissions/${id}`, `/en/my-pages/projects/${id}`],
+      ['/is/innsendingar/bod/tok_1', '/is/minar-sidur/bod/tok_1'],
+      ['/en/submissions/invite/tok_1', '/en/my-pages/invite/tok_1'],
+      ['/is/innsendingar/starfsfolk', '/is/stjornbord/verkefni'],
+      ['/en/submissions/staff', '/en/admin/projects'],
+      [`/is/innsendingar/starfsfolk/${id}`, `/is/stjornbord/verkefni/${id}`],
+      [`/en/submissions/staff/${id}`, `/en/admin/projects/${id}`],
+    ]
+    for (const [from, to] of cases) {
+      const r = await run(from, false)
+      expect(r.status, from).toBe(308)
+      expect(new URL(r.location!).pathname, from).toBe(to)
+    }
+  })
+
+  it('keeps the query string and leaves the public page alone', async () => {
+    const r = await run('/is/innsendingar/starfsfolk?status=all&page=2', false)
+    expect(r.status).toBe(308)
+    const url = new URL(r.location!)
+    expect(url.pathname + url.search).toBe('/is/stjornbord/verkefni?status=all&page=2')
+    expect((await run('/is/innsendingar', false)).next).toBe(true)
+    expect((await run('/en/submissions', false)).rewrite).toBe('http://localhost/en/innsendingar')
   })
 })
 

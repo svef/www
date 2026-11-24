@@ -147,7 +147,7 @@ for (const locale of LOCALES) {
       await page.getByLabel(c.email).fill(email)
       await page.getByLabel(c.password, { exact: true }).fill(PASSWORD)
       await page.getByRole('button', { name: c.signIn }).click()
-      await page.waitForURL(`**${localePath('/innsendingar/minar', locale)}`)
+      await page.waitForURL(`**${localePath('/minar-sidur', locale)}`)
     })
 
     test('a hostile next is ignored', async ({ page, request }) => {
@@ -159,7 +159,7 @@ for (const locale of LOCALES) {
       await page.getByLabel(c.email).fill(email)
       await page.getByLabel(c.password, { exact: true }).fill(PASSWORD)
       await page.getByRole('button', { name: c.signIn }).click()
-      await page.waitForURL(`**${localePath('/innsendingar/minar', locale)}`)
+      await page.waitForURL(`**${localePath('/minar-sidur', locale)}`)
     })
 
     test('password reset by email', async ({ page, request }) => {

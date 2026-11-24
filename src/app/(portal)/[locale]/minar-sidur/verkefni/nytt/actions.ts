@@ -5,6 +5,7 @@ import { getAwardsDb } from '@/lib/awards/db/client'
 import { createProject } from '@/lib/awards/projects/service'
 import { getCurrentUserId } from '@/lib/awards/session'
 import { isLocale, localePath } from '@/lib/i18n'
+import { PORTAL } from '@/lib/portal/paths'
 
 /** Creates an empty project for the signed-in user, in the language they are reading, and opens it. */
 export async function createProjectAction(formData: FormData): Promise<void> {
@@ -14,5 +15,5 @@ export async function createProjectAction(formData: FormData): Promise<void> {
     userId: await getCurrentUserId(),
     locale,
   })
-  redirect(localePath(`/innsendingar/${id}`, locale))
+  redirect(localePath(PORTAL.project(id), locale))
 }

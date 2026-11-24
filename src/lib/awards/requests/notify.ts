@@ -21,6 +21,7 @@ import { getField } from '../fields'
 import type { Queryable } from '../projects/db-types'
 import { localePath, type Locale } from '@/lib/i18n'
 import { getSiteUrl } from '@/lib/site-url'
+import { PORTAL } from '@/lib/portal/paths'
 
 /**
  * Emails 4 and 5: "a request was opened" and the deadline reminder. Both go to the
@@ -137,7 +138,7 @@ async function notify(
             }
           }),
           deadlineAt: ctx.deadlineAt,
-          url: `${base}${localePath(`/innsendingar/${ctx.projectId}`, r.locale)}#requests`,
+          url: `${base}${localePath(PORTAL.project(ctx.projectId), r.locale)}#requests`,
         })
         await send({ to: r.email, ...content })
         ok++

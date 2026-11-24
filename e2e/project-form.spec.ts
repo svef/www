@@ -25,9 +25,9 @@ async function person(browser: Browser, name: string, clock?: number) {
 
 /** Creates a project as the page's user and returns its id, with the form open and the lock held. */
 async function startProject(page: Page, locale: 'is' | 'en' = 'en') {
-  await page.goto(urlFor(locale, '/innsendingar/ny'))
+  await page.goto(urlFor(locale, '/minar-sidur/verkefni/nytt'))
   await page.getByRole('button', { name: locale === 'en' ? 'Create project' : 'Stofna verkefni' }).click()
-  await page.waitForURL(/\/innsendingar\/[0-9a-f-]{36}$|\/submissions\/[0-9a-f-]{36}$/)
+  await page.waitForURL(/\/(projects|verkefni)\/[0-9a-f-]{36}$/)
   const id = page.url().split('/').pop()!
   await expect(page.locator('[data-lock="held"]')).toBeVisible()
   return id
@@ -81,7 +81,7 @@ test.describe('the project form', () => {
     await expect(currentStep(page).locator('h2')).toHaveText('Review and submit')
 
     // A link straight to a field opens its step and focuses it.
-    await page.goto(urlFor('en', `/innsendingar/${id}#field-publicCredit`))
+    await page.goto(urlFor('en', `/minar-sidur/verkefni/${id}#field-publicCredit`))
     await expect(currentStep(page).locator('h2')).toHaveText('People and credit')
     await expect(page.locator('[data-field="publicCredit"] input')).toBeFocused()
     await context.close()
@@ -196,7 +196,7 @@ test.describe('the project form', () => {
 
     const bjarni = await person(browser, 'Bjarni')
     await makeEditor(id, bjarni.id)
-    await bjarni.page.goto(urlFor('en', `/innsendingar/${id}`))
+    await bjarni.page.goto(urlFor('en', `/minar-sidur/verkefni/${id}`))
     const banner = bjarni.page.locator('[data-lock="other"]')
     await expect(banner).toBeVisible()
     await expect(banner).toContainText(/Anna is editing this project \(since \d\d:\d\d\)/)
@@ -252,7 +252,7 @@ test.describe('the project form', () => {
     const id = await startProject(anna.page)
     const bjarni = await person(browser, 'Bjarni')
     await makeEditor(id, bjarni.id)
-    await bjarni.page.goto(urlFor('en', `/innsendingar/${id}`))
+    await bjarni.page.goto(urlFor('en', `/minar-sidur/verkefni/${id}`))
     await expect(bjarni.page.locator('[data-lock="other"]')).toBeVisible()
     for (let i = 0; i < 3; i++) {
       await bjarni.page.getByRole('button', { name: 'Check again' }).click()
@@ -271,7 +271,7 @@ test.describe('the project form', () => {
     // Bjarni's requests run 21 minutes ahead: to the server, Anna's lock has lapsed.
     const bjarni = await person(browser, 'Bjarni', 21 * 60 * 1000)
     await makeEditor(id, bjarni.id)
-    await bjarni.page.goto(urlFor('en', `/innsendingar/${id}`))
+    await bjarni.page.goto(urlFor('en', `/minar-sidur/verkefni/${id}`))
     await expect(bjarni.page.locator('[data-lock="held"]')).toBeVisible()
 
     // Anna types on, unaware. Her save is refused, her text stays, and she sees who has it.
@@ -330,7 +330,7 @@ test.describe('the project form', () => {
   test('works in Icelandic', async ({ browser }) => {
     const { context, page } = await person(browser, 'Anna')
     await startProject(page, 'is')
-    expect(new URL(page.url()).pathname).toMatch(/^\/is\/innsendingar\//)
+    expect(new URL(page.url()).pathname).toMatch(/^\/is\/minar-sidur\/verkefni\//)
     await expect(page.getByRole('navigation', { name: 'Hlutar' })).toBeVisible()
     await context.close()
   })
@@ -339,15 +339,15 @@ test.describe('the project form', () => {
     const anna = await person(browser, 'Anna')
     const id = await startProject(anna.page)
     const stranger = await person(browser, 'Stranger')
-    const res = await stranger.page.goto(urlFor('en', `/innsendingar/${id}`))
+    const res = await stranger.page.goto(urlFor('en', `/minar-sidur/verkefni/${id}`))
     expect(res?.status()).toBe(404)
     await anna.context.close()
     await stranger.context.close()
   })
 
   test('sends someone who is not signed in to sign in, and back afterwards', async ({ page }) => {
-    await page.goto(urlFor('en', '/innsendingar/ny'))
+    await page.goto(urlFor('en', '/minar-sidur/verkefni/nytt'))
     await expect(page).toHaveURL(/\/en\/sign-in\?next=/)
-    expect(decodeURIComponent(new URL(page.url()).searchParams.get('next') ?? '')).toBe('/en/submissions/new')
+    expect(decodeURIComponent(new URL(page.url()).searchParams.get('next') ?? '')).toBe('/en/my-pages/projects/new')
   })
 })

@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { eq } from 'drizzle-orm'
-import { requireStaff } from '@/lib/awards/auth/session'
+import { requireAdmin } from '@/lib/awards/auth/viewer'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import { entry } from '@/lib/awards/db/schema'
 import {
@@ -14,18 +14,19 @@ import { serverNow } from '@/lib/awards/staff/clock'
 import { viewCredentials, type DecryptedCredential } from '@/lib/awards/staff/credentials'
 import { transferProject } from '@/lib/awards/staff/transfer'
 import { DEFAULT_LOCALE, isLocale, localePath, type Locale } from '@/lib/i18n'
+import { ADMIN } from '@/lib/portal/paths'
 
 export type RevealResult = { ok: true; items: DecryptedCredential[] } | { ok: false }
 
 /**
- * Decrypts the entry's login details for the signed-in staff member. Each call writes a
+ * Decrypts the entry's login details for the signed-in admin. Each call writes a
  * `credentials_viewed` event (see `viewCredentials`); the values go back to the one caller
- * and are neither logged nor cached. The staff check is made here too: an action can be
+ * and are neither logged nor cached. The admin check is made here too: an action can be
  * posted to without ever loading the page.
  */
 export async function revealCredentialsAction(entryId: string, localeValue: string): Promise<RevealResult> {
   const locale: Locale = isLocale(localeValue) ? localeValue : DEFAULT_LOCALE
-  const user = await requireStaff({ locale, next: localePath('/innsendingar/starfsfolk', locale) })
+  const user = await requireAdmin({ locale, next: localePath(ADMIN.projects, locale) })
   try {
     const items = await viewCredentials(getAwardsDb(), { entryId, actorUserId: user.id })
     return { ok: true, items }
@@ -45,8 +46,8 @@ export async function transferProjectAction(form: FormData): Promise<void> {
   const localeValue = text(form, 'locale')
   const locale: Locale = isLocale(localeValue) ? localeValue : DEFAULT_LOCALE
   const entryId = text(form, 'entryId')
-  const here = localePath(`/innsendingar/starfsfolk/${encodeURIComponent(entryId)}`, locale)
-  const user = await requireStaff({ locale, next: here })
+  const here = localePath(ADMIN.entry(encodeURIComponent(entryId)), locale)
+  const user = await requireAdmin({ locale, next: here })
 
   const db = getAwardsDb()
   const [row] = await db
@@ -72,7 +73,7 @@ export async function transferProjectAction(form: FormData): Promise<void> {
 
 /** Where the entry page shows the outcome of the last request action. */
 function backTo(locale: Locale, entryId: string, params: Record<string, string>): never {
-  const base = localePath(`/innsendingar/starfsfolk/${encodeURIComponent(entryId)}`, locale)
+  const base = localePath(ADMIN.entry(encodeURIComponent(entryId)), locale)
   redirect(`${base}?${new URLSearchParams(params)}#requests`)
 }
 
@@ -92,8 +93,8 @@ export async function openRequestAction(form: FormData): Promise<void> {
   const localeValue = text(form, 'locale')
   const locale: Locale = isLocale(localeValue) ? localeValue : DEFAULT_LOCALE
   const entryId = text(form, 'entryId')
-  const here = localePath(`/innsendingar/starfsfolk/${encodeURIComponent(entryId)}`, locale)
-  const user = await requireStaff({ locale, next: here })
+  const here = localePath(ADMIN.entry(encodeURIComponent(entryId)), locale)
+  const user = await requireAdmin({ locale, next: here })
 
   const result = await openRequest(getAwardsDb(), {
     entryId,
@@ -114,8 +115,8 @@ export async function staffReplyAction(form: FormData): Promise<void> {
   const localeValue = text(form, 'locale')
   const locale: Locale = isLocale(localeValue) ? localeValue : DEFAULT_LOCALE
   const entryId = text(form, 'entryId')
-  const here = localePath(`/innsendingar/starfsfolk/${encodeURIComponent(entryId)}`, locale)
-  const user = await requireStaff({ locale, next: here })
+  const here = localePath(ADMIN.entry(encodeURIComponent(entryId)), locale)
+  const user = await requireAdmin({ locale, next: here })
   const result = await replyToRequest(getAwardsDb(), {
     requestId: text(form, 'requestId'),
     side: 'staff',
@@ -131,8 +132,8 @@ export async function resolveRequestAction(form: FormData): Promise<void> {
   const localeValue = text(form, 'locale')
   const locale: Locale = isLocale(localeValue) ? localeValue : DEFAULT_LOCALE
   const entryId = text(form, 'entryId')
-  const here = localePath(`/innsendingar/starfsfolk/${encodeURIComponent(entryId)}`, locale)
-  const user = await requireStaff({ locale, next: here })
+  const here = localePath(ADMIN.entry(encodeURIComponent(entryId)), locale)
+  const user = await requireAdmin({ locale, next: here })
   const result = await resolveRequestAsStaff(getAwardsDb(), {
     requestId: text(form, 'requestId'),
     actor: { userId: user.id, roles: ['staff'] },

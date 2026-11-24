@@ -1,15 +1,15 @@
 import type { EntryStatus } from '@/lib/awards/types'
 import type { Locale } from '@/lib/i18n'
 
-/** Interface copy for the staff entry view (svef/www#168). Plain on purpose: a design pass comes later. */
+/** Interface copy for the admin's entry view (svef/www#168). */
 export const entryCopy = {
   is: {
     // A fixed heading: a project title is entrant text of any length and shape, and is shown in the fields below.
     title: 'Færsla',
-    eyebrow: 'Starfsfólk',
+    eyebrow: 'Stjórnborð',
     tableRegion: (name: string) => `${name}, hægt að fletta til hliðar`,
-    back: 'Allar færslur',
-    adminTitle: 'Aðeins fyrir starfsfólk',
+    back: 'Öll verkefni',
+    adminTitle: 'Aðeins fyrir stjórnendur',
     adminLead: 'Þetta sér dómnefnd aldrei: hver á verkefnið og hver greiðir.',
     juryTitle: 'Það sem dómnefnd sér',
     juryLead: 'Reitir sem eru merktir fyrir dómnefnd eða almenning, í sömu röð og í eyðublaðinu.',
@@ -65,7 +65,7 @@ export const entryCopy = {
     credentialNotes: 'Athugasemdir',
     requestsTitle: 'Beiðnir',
     requestDeadline: 'Frestur',
-    resolvedByStaff: 'Starfsfólk lokaði',
+    resolvedByStaff: 'Stjórnandi lokaði',
     resolvedByEntrant: 'Þátttakandi merkti sem lokið',
     transferTitle: 'Flytja verkefni til annars skapara',
     transferLead:
@@ -121,10 +121,10 @@ export const entryCopy = {
   },
   en: {
     title: 'Entry',
-    eyebrow: 'Staff',
+    eyebrow: 'Admin',
     tableRegion: (name: string) => `${name}, scrolls sideways`,
-    back: 'All entries',
-    adminTitle: 'Staff only',
+    back: 'All projects',
+    adminTitle: 'Admins only',
     adminLead: 'The jury never sees these: who owns the project and who pays.',
     juryTitle: 'What the jury sees',
     juryLead: 'Fields marked for the jury or the public, in the order of the form.',
@@ -180,7 +180,7 @@ export const entryCopy = {
     credentialNotes: 'Notes',
     requestsTitle: 'Requests',
     requestDeadline: 'Deadline',
-    resolvedByStaff: 'Closed by staff',
+    resolvedByStaff: 'Closed by an admin',
     resolvedByEntrant: 'Marked as done by the entrant',
     transferTitle: 'Transfer the project to another creator',
     transferLead:

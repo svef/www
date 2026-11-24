@@ -180,7 +180,7 @@ export const accountCopy: Record<Locale, AccountCopy> = {
       resend: 'Senda staðfestingarpóst aftur',
       resent: 'Staðfestingarpóstur sendur.',
       signOut: 'Skrá út',
-      continue: 'Mínar innsendingar',
+      continue: 'Mínar síður',
     },
     common: {
       optional: 'valfrjálst',
@@ -280,7 +280,7 @@ export const accountCopy: Record<Locale, AccountCopy> = {
       resend: 'Resend confirmation email',
       resent: 'Confirmation email sent.',
       signOut: 'Sign out',
-      continue: 'My submissions',
+      continue: 'My pages',
     },
     common: {
       optional: 'optional',

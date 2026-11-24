@@ -3,7 +3,7 @@ import type { Locale } from '@/lib/i18n'
 import type { EntryStatus } from '@/lib/awards/types'
 import { formatDate, formatKr, formatTime } from '@/lib/locale-format'
 
-/** Interface copy for "Mínar innsendingar". Presentation is separate (`Dashboard.module.scss`). */
+/** Interface copy for "Verkefnin mín". Presentation is separate (`Dashboard.module.scss`). */
 
 export const formatMoney = (n: number, locale: Locale) =>
   formatKr(n, locale)
@@ -73,9 +73,9 @@ export type DashboardCopy = {
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many)
 
 const en: DashboardCopy = {
-  title: 'My submissions',
+  title: 'My projects',
   lede: 'Your projects and the categories they are entered in, with what needs doing first at the top.',
-  newSubmission: 'New submission',
+  newSubmission: 'New project',
   signOut: 'Sign out',
   deadline: (line, locale) =>
     line.kind === 'early-bird'
@@ -136,9 +136,9 @@ const en: DashboardCopy = {
 }
 
 const is: DashboardCopy = {
-  title: 'Mínar innsendingar',
+  title: 'Verkefnin mín',
   lede: 'Verkefnin þín og flokkarnir sem þau eru send í. Það sem þarf að gera fyrst er efst.',
-  newSubmission: 'Ný innsending',
+  newSubmission: 'Nýtt verkefni',
   signOut: 'Skrá út',
   deadline: (line, locale) =>
     line.kind === 'early-bird'

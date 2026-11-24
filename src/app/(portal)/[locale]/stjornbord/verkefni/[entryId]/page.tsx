@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { requireStaff } from '@/lib/awards/auth/session'
+import { requireAdmin } from '@/lib/awards/auth/viewer'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import type { FieldDefinition } from '@/lib/awards/fields'
 import { signedImageUrl } from '@/lib/awards/files/images'
@@ -10,20 +10,21 @@ import { listRequestsForEntry } from '@/lib/awards/requests/service'
 import { serverNow } from '@/lib/awards/staff/clock'
 import { getStaffEntryView, type StaffEntryEvent } from '@/lib/awards/staff/entry-view'
 import { isLocale, localePath, type Locale } from '@/lib/i18n'
+import { ADMIN } from '@/lib/portal/paths'
 import { AppHead } from '@/components/AppHead/AppHead'
 import { inputClass } from '@/components/FormParts/FormParts'
 import { GrowText } from '@/components/GrowText/GrowText'
-import { entryCopy } from '../entry-copy'
-import styles from '../staff.module.scss'
+import { entryCopy } from '../../entry-copy'
+import styles from '../../admin.module.scss'
 import { transferProjectAction } from './actions'
 import { CredentialsViewer } from './CredentialsViewer'
 import { Requests } from './Requests'
 
 /**
- * The staff entry view (svef/www#168): the admin-only fields first, then what the
+ * The admin's entry view (svef/www#168): the admin-only fields first, then what the
  * jury will see laid out like a read-only entry, the login details (decrypted on demand), the
  * history, and the transfer. Rendered per request: it reads the session. A non-staff visitor
- * gets a 404 (`requireStaff`), and so does an id that matches no entry.
+ * gets a 404 (`requireAdmin`), and so does an id that matches no entry.
  */
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 
@@ -140,8 +141,8 @@ export default async function StaffEntryPage({
 }) {
   const { locale, entryId } = await params
   if (!isLocale(locale)) notFound()
-  const here = localePath(`/innsendingar/starfsfolk/${entryId}`, locale)
-  await requireStaff({ locale, next: here })
+  const here = localePath(ADMIN.entry(entryId), locale)
+  await requireAdmin({ locale, next: here })
   if (!UUID.test(entryId)) notFound()
 
   const view = await getStaffEntryView(getAwardsDb(), entryId)
@@ -163,7 +164,7 @@ export default async function StaffEntryPage({
   const adminAnswerFields = view.adminFields.filter(
     (f) => f.key !== 'owners' && f.key !== 'collaborators' && f.key !== 'image',
   )
-  const listHref = localePath('/innsendingar/starfsfolk', locale)
+  const listHref = localePath(ADMIN.projects, locale)
 
   const peopleTable = (kind: 'owner' | 'collaborator') => {
     const rows = people(kind)

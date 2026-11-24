@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { inputClass } from '@/components/FormParts/FormParts'
 import { GrowText } from '@/components/GrowText/GrowText'
-import { authClient } from '@/lib/awards/auth/client'
 import type { DeadlineLine } from '@/lib/awards/dashboard/deadline'
 import { filterProjects, NO_FILTER, type ListFilter } from '@/lib/awards/dashboard/filter'
 import type { InvoiceNote } from '@/lib/awards/dashboard/invoice'
@@ -17,6 +16,7 @@ import type {
 } from '@/lib/awards/dashboard/types'
 import { ENTRY_STATUSES, type EntryStatus } from '@/lib/awards/types'
 import { localePath, type Locale } from '@/lib/i18n'
+import { PORTAL } from '@/lib/portal/paths'
 import { BulkDialog, type BillingChoice, type BulkRequest } from './BulkDialog'
 import { bulkCopy } from './bulk-copy'
 import { lastDayBefore } from '@/components/ProjectForm/format'
@@ -30,7 +30,7 @@ import {
 import styles from './Dashboard.module.scss'
 
 /**
- * "Mínar innsendingar". The server page loads, ranks and passes plain data; this component only
+ * "Verkefnin mín" (the portal's projects page). The server page loads, ranks and passes plain data; this component only
  * presents it and holds the search, filter and selection state. One view: the projects as a
  * hairline list (needs-action first), one row per entry, each selectable for the bulk actions.
  * Everything visual lives in `Dashboard.module.scss`; the markup carries the `data-*` hooks the
@@ -53,7 +53,7 @@ export function Dashboard(props: DashboardProps) {
   const { locale, data, deadline, notes, withoutBilling, needsActionIds } = props
   const c = dashboardCopy[locale]
   const urgent = useMemo(() => new Set(needsActionIds), [needsActionIds])
-  const hrefNew = localePath('/innsendingar/ny', locale)
+  const hrefNew = localePath(PORTAL.newProject, locale)
   const invoices = notes.length > 0 || withoutBilling > 0
 
   return (
@@ -108,44 +108,13 @@ export function Dashboard(props: DashboardProps) {
   )
 }
 
-/** The head's actions: start a new submission, or sign out. */
-export function DashboardActions({
-  locale,
-  signOutTo,
-}: {
-  locale: Locale
-  signOutTo: string
-}) {
+/** The head's action: start a new project. Signing out lives in the shell's avatar menu. */
+export function DashboardActions({ locale }: { locale: Locale }) {
   const c = dashboardCopy[locale]
   return (
-    <>
-      <Link
-        href={localePath('/innsendingar/ny', locale)}
-        className={`btn-grow ${styles.primaryButton}`}
-      >
-        <GrowText>{c.newSubmission}</GrowText>
-      </Link>
-      <SignOut label={c.signOut} to={signOutTo} />
-    </>
-  )
-}
-
-function SignOut({ label, to }: { label: string; to: string }) {
-  const [pending, setPending] = useState(false)
-  return (
-    <button
-      type="button"
-      className={styles.quiet}
-      aria-disabled={pending}
-      onClick={async () => {
-        if (pending) return
-        setPending(true)
-        await authClient.signOut()
-        window.location.assign(to)
-      }}
-    >
-      {label}
-    </button>
+    <Link href={localePath(PORTAL.newProject, locale)} className={`btn-grow ${styles.primaryButton}`}>
+      <GrowText>{c.newSubmission}</GrowText>
+    </Link>
   )
 }
 
@@ -469,7 +438,7 @@ function ProjectRow({
 }) {
   const headingId = useId()
   const b = bulkCopy[locale]
-  const href = localePath(`/innsendingar/${p.id}`, locale)
+  const href = localePath(PORTAL.project(p.id), locale)
   return (
     <li>
       <article

@@ -34,14 +34,14 @@ export const inviteCopy = {
       },
       used: {
         title: 'Boðið hefur þegar verið notað',
-        body: 'Hvert boð virkar aðeins einu sinni. Ef þú samþykktir það áður finnurðu innsendinguna í „Mínar innsendingar“.',
+        body: 'Hvert boð virkar aðeins einu sinni. Ef þú samþykktir það áður finnurðu verkefnið undir „Verkefnin mín“.',
       },
       invalid: {
         title: 'Þetta boð fannst ekki',
         body: 'Tengillinn er ekki réttur eða hann hefur verið styttur. Opnaðu tengilinn úr tölvupóstinum aftur, eða biddu um nýtt boð.',
       },
     },
-    mine: 'Mínar innsendingar',
+    mine: 'Verkefnin mín',
   },
   en: {
     title: 'Invitation to edit a submission',
@@ -75,13 +75,13 @@ export const inviteCopy = {
       },
       used: {
         title: 'This invitation has already been used',
-        body: 'Each invitation works once. If you accepted it before, you will find the submission under “My submissions”.',
+        body: 'Each invitation works once. If you accepted it before, you will find the project under “My projects”.',
       },
       invalid: {
         title: 'We could not find this invitation',
         body: 'The link is not right, or it was cut short. Open the link from the email again, or ask for a new invitation.',
       },
     },
-    mine: 'My submissions',
+    mine: 'My projects',
   },
 } satisfies Record<Locale, unknown>

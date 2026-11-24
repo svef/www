@@ -12,9 +12,15 @@ import { DYNAMIC_ROUTES, GATED_ROUTES, PAGES } from './pages'
  * renders a `page.tsx` under `src/app/(app)/[locale]/` must appear in `PAGES`.
  */
 const APP_DIR = path.resolve(process.cwd(), 'src/app/(app)/[locale]')
+// The signed-in portal and the admin have a root layout of their own (no site chrome).
+const PORTAL_DIR = path.resolve(process.cwd(), 'src/app/(portal)/[locale]')
 
-/** Every route path rendered under `[locale]`, e.g. `''`, `/frettir`. */
-function routePathsOnDisk(dir = APP_DIR, prefix = ''): string[] {
+/** Every route path rendered under `[locale]` in either group, e.g. `''`, `/frettir`. */
+function routePathsOnDisk(): string[] {
+  return [...routePathsIn(APP_DIR), ...routePathsIn(PORTAL_DIR)]
+}
+
+function routePathsIn(dir: string, prefix = ''): string[] {
   const found: string[] = []
   const entries = readdirSync(dir, { withFileTypes: true })
 
@@ -27,10 +33,10 @@ function routePathsOnDisk(dir = APP_DIR, prefix = ''): string[] {
     // folders `_x` are not routes at all.
     if (name.startsWith('_')) continue
     if (name.startsWith('(') || name.startsWith('@')) {
-      found.push(...routePathsOnDisk(path.join(dir, name), prefix))
+      found.push(...routePathsIn(path.join(dir, name), prefix))
       continue
     }
-    found.push(...routePathsOnDisk(path.join(dir, name), `${prefix}/${name}`))
+    found.push(...routePathsIn(path.join(dir, name), `${prefix}/${name}`))
   }
 
   return found

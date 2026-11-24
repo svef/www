@@ -73,7 +73,7 @@ for (const locale of LOCALES) {
         await expect(panel.getByRole('link')).toHaveCount(0)
       } else if (now < CLOSES) {
         await expect(panel).toHaveAttribute('data-phase', 'open')
-        const next = encodeURIComponent(urlFor(locale, '/innsendingar/minar'))
+        const next = encodeURIComponent(urlFor(locale, '/minar-sidur'))
         await expect(panel.getByRole('link', { name: COPY[locale].start })).toHaveAttribute(
           'href',
           `${urlFor(locale, '/nyskraning')}?next=${next}`,

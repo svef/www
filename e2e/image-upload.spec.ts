@@ -36,9 +36,9 @@ async function person(browser: Browser, clock?: number, userId?: string) {
 }
 
 async function startProject(page: Page) {
-  await page.goto(urlFor('en', '/innsendingar/ny'))
+  await page.goto(urlFor('en', '/minar-sidur/verkefni/nytt'))
   await page.getByRole('button', { name: 'Create project' }).click()
-  await page.waitForURL(/\/submissions\/[0-9a-f-]{36}$|\/innsendingar\/[0-9a-f-]{36}$/)
+  await page.waitForURL(/\/(projects|verkefni)\/[0-9a-f-]{36}$/)
   await expect(page.locator('[data-lock="held"]')).toBeVisible()
   const id = page.url().split('/').pop()!
   await goToStep(page, 'Image')
@@ -112,7 +112,7 @@ test.describe('the image section', () => {
   test('says so in Icelandic', async ({ browser }) => {
     const { context, page } = await person(browser)
     await startProject(page)
-    await page.goto(page.url().replace('/en/submissions/', '/is/innsendingar/'))
+    await page.goto(page.url().replace('/en/my-pages/projects/', '/is/minar-sidur/verkefni/'))
     await upload(page, 'wide.png', 'image/png', await image(1200, 800))
     await expect(section(page).getByTestId('image-error')).toHaveText(
       'Myndin er 1200 × 800 en þarf að vera 1080 × 1080.',
@@ -187,7 +187,7 @@ test.describe('the image section', () => {
 
     const closed = Date.parse('2027-02-02T00:00:00Z') - Date.now() + 60_000
     const late = await person(browser, closed, userId)
-    await late.page.goto(urlFor('en', `/innsendingar/${id}#section-image`))
+    await late.page.goto(urlFor('en', `/minar-sidur/verkefni/${id}#section-image`))
     await expect(late.page.locator('[data-lock="held"]')).toBeVisible()
     await expect(section(late.page).getByRole('img')).toBeVisible()
     await expect(section(late.page).getByRole('button', { name: 'Replace image' })).toBeDisabled()

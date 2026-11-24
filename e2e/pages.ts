@@ -164,13 +164,21 @@ export interface DynamicRoute {
  * cannot cover them. Each has a spec of its own that signs in and checks it, axe included.
  */
 export const GATED_ROUTES: readonly { path: string; spec: string }[] = [
-  // Staff only (svef/www#170): eligibility list and invoicing export.
-  { path: '/innsendingar/starfsfolk', spec: 'staff-export.spec.ts' },
-  // Signed-in only: the entrant's dashboard (svef/www#164).
-  { path: '/innsendingar/minar', spec: 'dashboard.spec.ts' },
-  // Signed-in only: starting a project. Signed out it redirects to sign-in (#158/#160).
-  { path: '/innsendingar/ny', spec: 'project-form.spec.ts' },
+  // The portal (Mínar síður): signed-in only. Signed out each redirects to sign-in.
+  { path: '/minar-sidur', spec: 'portal-shell.spec.ts' },
+  { path: '/minar-sidur/verkefni', spec: 'dashboard.spec.ts' },
+  { path: '/minar-sidur/verkefni/nytt', spec: 'project-form.spec.ts' },
+  { path: '/minar-sidur/adgangur', spec: 'account-page.spec.ts' },
+  // The admin (Stjórnborð): admins only, a 404 for anyone else.
+  { path: '/stjornbord', spec: 'admin.spec.ts' },
+  { path: '/stjornbord/verkefni', spec: 'staff-export.spec.ts' },
+  { path: '/stjornbord/beidnir', spec: 'requests.spec.ts' },
+  { path: '/stjornbord/notendur', spec: 'admin.spec.ts' },
+  { path: '/stjornbord/verkfaeri', spec: 'staff-export.spec.ts' },
 ]
+
+const UUIDISH = '[^/]+'
+const notFixed = (fixed: string[]) => `(?!(${fixed.join('|')})$)`
 
 export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
   {
@@ -184,25 +192,31 @@ export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
     matches: (path) => /^\/vidburdir\/[^/]+$/.test(path),
   },
   // A signed-in person's project. Covered by `project-form.spec.ts`, which creates one.
-  // `ny`/`new` and `minar`/`mine` are fixed sub-pages, not ids.
+  // `nytt`/`new` is a fixed sub-page, not an id.
   {
-    pattern: '/innsendingar/[id]',
+    pattern: '/minar-sidur/verkefni/[id]',
     name: 'project form',
-    matches: (path) => /^\/innsendingar\/(?!(ny|new|minar|mine|starfsfolk|staff)$)[^/]+$/.test(path),
+    matches: (path) =>
+      new RegExp(`^/minar-sidur/(verkefni|projects)/${notFixed(['nytt', 'new'])}${UUIDISH}$`).test(path),
   },
   // Accepting an invitation to edit (svef/www#165): the token is the segment, covered by
-  // `invitations.spec.ts`. `/en/submissions/invite/<token>` reaches it through the proxy.
+  // `invitations.spec.ts`. `/en/my-pages/invite/<token>` reaches it through the proxy.
   {
-    pattern: '/innsendingar/bod/[token]',
+    pattern: '/minar-sidur/bod/[token]',
     name: 'invitation',
-    matches: (path) => /^\/(innsendingar\/bod|submissions\/invite)\/[^/]+$/.test(path),
+    matches: (path) => /^\/minar-sidur\/(bod|invite)\/[^/]+$/.test(path),
   },
-  // The staff entry view (svef/www#168): staff only, covered by `staff-area.spec.ts`.
-  // `/en/submissions/staff/<id>` reaches it through the proxy's nested-segment rewrite.
+  // The admin's entry view (svef/www#168): admins only, covered by `staff-area.spec.ts`.
   {
-    pattern: '/innsendingar/starfsfolk/[entryId]',
-    name: 'staff entry view',
-    matches: (path) => /^\/(innsendingar\/starfsfolk|submissions\/staff)\/[^/]+$/.test(path),
+    pattern: '/stjornbord/verkefni/[entryId]',
+    name: 'admin entry view',
+    matches: (path) => /^\/stjornbord\/(verkefni|projects)\/[^/]+$/.test(path),
+  },
+  // A user in the admin: covered by `admin.spec.ts`.
+  {
+    pattern: '/stjornbord/notendur/[userId]',
+    name: 'admin user page',
+    matches: (path) => /^\/stjornbord\/(notendur|users)\/[^/]+$/.test(path),
   },
 ]
 

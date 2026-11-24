@@ -15,12 +15,13 @@ import { eq } from 'drizzle-orm'
 import { dashboardCopy } from '@/components/Dashboard/copy'
 import { edition } from '@/lib/awards/db/schema'
 import { isLocale, localePath } from '@/lib/i18n'
-import styles from '../form-page.module.scss'
+import { PORTAL } from '@/lib/portal/paths'
+import styles from '../../form-page.module.scss'
 import { ProjectFormClient } from './ProjectFormClient'
 import { signInPath } from '@/lib/awards/auth/roles'
 
 /**
- * The project form (`/is/innsendingar/<id>` · `/en/submissions/<id>`). It is about one
+ * The project form (`/is/minar-sidur/verkefni/<id>` · `/en/my-pages/projects/<id>`). It is about one
  * signed-in person's data, so it is rendered per request: it reads the session cookie,
  * which opts the route out of prerendering without any `force-dynamic`. Not indexable.
  * Opening it does not take the edit lock (a GET must not have side effects, and
@@ -44,7 +45,7 @@ export default async function ProjectPage({
     userId = await getCurrentUserId()
   } catch (e) {
     if (e instanceof NotSignedInError)
-      redirect(signInPath(locale, localePath(`/innsendingar/${id}`, locale)))
+      redirect(signInPath(locale, localePath(PORTAL.project(id), locale)))
     throw e
   }
 
@@ -76,7 +77,7 @@ export default async function ProjectPage({
         title={(view.answers.title as string | undefined) || copy.pageTitle}
         eyebrow={year ? copy.eyebrow(year) : undefined}
         crumb={{
-          href: localePath('/innsendingar/minar', locale),
+          href: localePath(PORTAL.projects, locale),
           label: dashboardCopy[locale].title,
         }}
       />

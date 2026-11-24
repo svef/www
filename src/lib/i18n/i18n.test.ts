@@ -107,42 +107,53 @@ describe('localePath', () => {
 })
 
 describe('nested routes', () => {
+  const id = '0198c7a0-1111-7222-8333-444455556666'
+
   it('translates the page name and a known sub-page name', () => {
     expect(localePath('/innsendingar', 'en')).toBe('/en/submissions')
-    expect(localePath('/is/innsendingar/minar', 'en')).toBe('/en/submissions/mine')
-    expect(localePath('/en/submissions/mine', 'is')).toBe('/is/innsendingar/minar')
-    expect(localePath('/innsendingar/minar', 'is')).toBe('/is/innsendingar/minar')
+    expect(localePath('/minar-sidur', 'en')).toBe('/en/my-pages')
+    expect(localePath('/is/minar-sidur/adgangur', 'en')).toBe('/en/my-pages/account')
+    expect(localePath('/en/my-pages/account', 'is')).toBe('/is/minar-sidur/adgangur')
+    expect(localePath('/stjornbord/notendur', 'en')).toBe('/en/admin/users')
+    expect(localePath('/en/admin/tools', 'is')).toBe('/is/stjornbord/verkfaeri')
   })
 
-  it('translates both names of a third-level path and keeps the id', () => {
-    const id = '0198c7a0-1111-7222-8333-444455556666'
-    expect(localePath(`/is/innsendingar/starfsfolk/${id}`, 'en')).toBe(`/en/submissions/staff/${id}`)
-    expect(localePath(`/en/submissions/staff/${id}`, 'is')).toBe(`/is/innsendingar/starfsfolk/${id}`)
+  it('translates every level of a deeper path', () => {
+    expect(localePath('/minar-sidur/verkefni/nytt', 'en')).toBe('/en/my-pages/projects/new')
+    expect(localePath('/en/my-pages/projects/new', 'is')).toBe('/is/minar-sidur/verkefni/nytt')
   })
 
-  it('carries a project id across untouched', () => {
-    const id = '0198c7a0-1111-7222-8333-444455556666'
-    expect(localePath(`/innsendingar/${id}`, 'en')).toBe(`/en/submissions/${id}`)
-    expect(localePath(`/en/submissions/${id}`, 'is')).toBe(`/is/innsendingar/${id}`)
-    expect(localePath(`/innsendingar/${id}/minar`, 'en')).toBe(`/en/submissions/${id}/minar`)
+  it('carries an id across untouched, and everything after it', () => {
+    expect(localePath(`/minar-sidur/verkefni/${id}`, 'en')).toBe(`/en/my-pages/projects/${id}`)
+    expect(localePath(`/en/admin/projects/${id}`, 'is')).toBe(`/is/stjornbord/verkefni/${id}`)
+    expect(localePath(`/minar-sidur/verkefni/${id}/nytt`, 'en')).toBe(`/en/my-pages/projects/${id}/nytt`)
+    expect(localePath('/en/my-pages/invite/tok-1', 'is')).toBe('/is/minar-sidur/bod/tok-1')
+  })
+
+  it('looks a name up only at its own level', () => {
+    // `nytt` is a child of `verkefni`, not of the portal root.
+    expect(localePath('/minar-sidur/nytt', 'en')).toBe('/en/my-pages/nytt')
+    // The admin has no `adgangur`.
+    expect(localePath('/stjornbord/adgangur', 'en')).toBe('/en/admin/adgangur')
   })
 
   it('keeps the query and hash', () => {
-    expect(localePath('/is/innsendingar/minar?q=a#x', 'en')).toBe('/en/submissions/mine?q=a#x')
+    expect(localePath('/is/stjornbord/verkefni?q=a&page=2#x', 'en')).toBe('/en/admin/projects?q=a&page=2#x')
   })
 
   it('does not translate a sub-page name under a page that has none', () => {
-    expect(localePath('/vidburdir/minar', 'en')).toBe('/en/events/minar')
-    expect(localePath('/frettir/mine', 'is')).toBe('/is/frettir/mine')
+    expect(localePath('/vidburdir/verkefni', 'en')).toBe('/en/events/verkefni')
+    expect(localePath('/frettir/projects', 'is')).toBe('/is/frettir/projects')
+    expect(localePath(`/innsendingar/${id}`, 'en')).toBe(`/en/submissions/${id}`)
   })
 
   it('maps public segments to directories and back', () => {
-    expect(toInternalSegments(['submissions', 'mine'])).toEqual(['innsendingar', 'minar'])
-    expect(toInternalSegments(['innsendingar', 'minar'])).toEqual(['innsendingar', 'minar'])
-    expect(toInternalSegments(['submissions', 'abc'])).toEqual(['innsendingar', 'abc'])
-    expect(toInternalSegments(['nonsense', 'mine'])).toEqual(['nonsense', 'mine'])
-    expect(toPublicSegments(['innsendingar', 'minar'], 'en')).toEqual(['submissions', 'mine'])
-    expect(toPublicSegments(['submissions', 'mine'], 'is')).toEqual(['innsendingar', 'minar'])
+    expect(toInternalSegments(['my-pages', 'projects', 'new'])).toEqual(['minar-sidur', 'verkefni', 'nytt'])
+    expect(toInternalSegments(['minar-sidur', 'verkefni', 'nytt'])).toEqual(['minar-sidur', 'verkefni', 'nytt'])
+    expect(toInternalSegments(['admin', 'users', id])).toEqual(['stjornbord', 'notendur', id])
+    expect(toInternalSegments(['nonsense', 'projects'])).toEqual(['nonsense', 'projects'])
+    expect(toPublicSegments(['stjornbord', 'beidnir'], 'en')).toEqual(['admin', 'requests'])
+    expect(toPublicSegments(['admin', 'requests'], 'is')).toEqual(['stjornbord', 'beidnir'])
     expect(toPublicSegments([], 'en')).toEqual([])
   })
 })

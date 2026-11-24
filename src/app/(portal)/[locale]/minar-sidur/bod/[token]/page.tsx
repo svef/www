@@ -12,14 +12,15 @@ import { normalizeEmail } from '@/lib/awards/invitations/token'
 import { getRole } from '@/lib/awards/projects/service'
 import { getCurrentUserId, getRequestNow, NotSignedInError } from '@/lib/awards/session'
 import { isLocale, localePath } from '@/lib/i18n'
+import { PORTAL } from '@/lib/portal/paths'
 import { eq } from 'drizzle-orm'
 import { acceptInvitationAction } from './actions'
 import { inviteCopy } from './copy'
 import styles from './invite.module.scss'
 
 /**
- * Accepting an invitation to edit a project (`/is/innsendingar/bod/<token>` ·
- * `/en/submissions/invite/<token>`, svef/www#165). The link only ever *shows* the
+ * Accepting an invitation to edit a project (`/is/minar-sidur/bod/<token>` ·
+ * `/en/my-pages/invite/<token>`, svef/www#165). The link only ever *shows* the
  * invitation (a mail scanner or a prefetch must not use it up); accepting is a button, a
  * POST. Per request, never indexed, and the token never leaves the path.
  */
@@ -38,7 +39,7 @@ export default async function InvitePage({
   const c = inviteCopy[locale]
   const db = getAwardsDb()
   const now = await getRequestNow()
-  const here = localePath(`/innsendingar/bod/${token}`, locale)
+  const here = localePath(PORTAL.invitation(token), locale)
 
   const preview = await previewInvitation(db, token, now)
 
@@ -66,7 +67,7 @@ export default async function InvitePage({
               <Link
                 href={
                   userId
-                    ? localePath('/innsendingar/minar', locale)
+                    ? localePath(PORTAL.projects, locale)
                     : signInPath(locale, here)
                 }
                 className={`btn-grow ${styles.primary}`}
@@ -82,7 +83,7 @@ export default async function InvitePage({
 
   // Someone who can already open the project has nothing to accept.
   if (userId && (await getRole(db, userId, preview.projectId)))
-    redirect(localePath(`/innsendingar/${preview.projectId}`, locale))
+    redirect(localePath(PORTAL.project(preview.projectId), locale))
 
   const title = preview.projectTitle.trim() || c.untitled
   const intro = (

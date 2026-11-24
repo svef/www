@@ -73,5 +73,6 @@ export {
   toPublicSegments,
   toInternalSegments,
   NESTED_SEGMENTS,
+  type NestedName,
   type RouteKey,
 } from './routes'

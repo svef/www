@@ -30,9 +30,9 @@ async function person(browser: Browser, name: string) {
 }
 
 async function startProject(page: Page) {
-  await page.goto(urlFor('en', '/innsendingar/ny'))
+  await page.goto(urlFor('en', '/minar-sidur/verkefni/nytt'))
   await page.getByRole('button', { name: 'Create project' }).click()
-  await page.waitForURL(/\/submissions\/[0-9a-f-]{36}$/)
+  await page.waitForURL(/\/my-pages\/projects\/[0-9a-f-]{36}$/)
   await expect(page.locator('[data-lock="held"]')).toBeVisible()
   return page.url()
 }
@@ -76,7 +76,7 @@ async function invite(page: Page, who: { name: string; email: string }): Promise
 
 async function leaveProject(page: Page, projectId: string) {
   // Leaving the page gives up the edit lock; wait for it so the next person can take it.
-  await page.goto(urlFor('en', '/innsendingar/minar'))
+  await page.goto(urlFor('en', '/minar-sidur/verkefni'))
   await expect
     .poll(async () => {
       const { rows } = await awardsPool().query('select 1 from project_edit_lock where project_id = $1', [projectId])
@@ -120,11 +120,11 @@ test.describe('invitations', () => {
     // Back on the invitation, signed in with the invited address: accept.
     await expect(page.getByText(`You are signed in as ${email}`)).toBeVisible()
     await page.getByRole('button', { name: 'Accept the invitation' }).click()
-    await page.waitForURL(/\/submissions\/[0-9a-f-]{36}$/)
+    await page.waitForURL(/\/my-pages\/projects\/[0-9a-f-]{36}$/)
     await expect(page.locator('[data-lock="held"]')).toBeVisible()
 
     // It is on their dashboard, and they can edit it (the lock applies) but not withdraw.
-    await page.goto(urlFor('en', '/innsendingar/minar'))
+    await page.goto(urlFor('en', '/minar-sidur/verkefni'))
     await expect(page.getByRole('main')).toContainText('Invited Site')
     await page.goto(url)
     await expect(page.locator('[data-lock="held"]')).toBeVisible()
@@ -157,10 +157,10 @@ test.describe('invitations', () => {
 
     await editor.page.goto(link)
     await editor.page.getByRole('button', { name: 'Accept the invitation' }).click()
-    await editor.page.waitForURL(/\/submissions\/[0-9a-f-]{36}$/)
+    await editor.page.waitForURL(/\/my-pages\/projects\/[0-9a-f-]{36}$/)
     await expect(editor.page.locator('[data-lock="held"]')).toBeVisible()
     await leaveProject(editor.page, projectIdOf(url))
-    await editor.page.goto(urlFor('en', '/innsendingar/minar'))
+    await editor.page.goto(urlFor('en', '/minar-sidur/verkefni'))
     await expect(editor.page.locator(`main a[href*="${projectIdOf(url)}"]`).first()).toBeVisible()
 
     await owner.page.goto(url)
@@ -182,7 +182,7 @@ test.describe('invitations', () => {
 
     const gone = await editor.page.goto(url)
     expect(gone?.status()).toBe(404)
-    await editor.page.goto(urlFor('en', '/innsendingar/minar'))
+    await editor.page.goto(urlFor('en', '/minar-sidur/verkefni'))
     await expect(editor.page.locator(`main a[href*="${projectIdOf(url)}"]`)).toHaveCount(0)
     await editor.page.goto(link)
     await expect(editor.page.getByRole('heading', { name: 'This invitation was withdrawn' })).toBeVisible()
@@ -208,7 +208,7 @@ test.describe('invitations', () => {
     await expect(guest.page.getByRole('button', { name: 'Accept the invitation' })).toHaveCount(0)
     expect((await new AxeBuilder({ page: guest.page }).analyze()).violations).toEqual([])
 
-    await guest.page.goto(link.replace('/en/submissions/invite/', '/is/innsendingar/bod/'))
+    await guest.page.goto(link.replace('/en/my-pages/invite/', '/is/minar-sidur/bod/'))
     await expect(guest.page.getByRole('heading', { name: 'Boðið er runnið út' })).toBeVisible()
 
     await owner.context.close()
@@ -256,17 +256,17 @@ test.describe('invitations', () => {
     await expect(other.page.getByRole('heading', { name: 'The invitation was sent to another address' })).toBeVisible()
     expect((await new AxeBuilder({ page: other.page }).analyze()).violations).toEqual([])
     await other.page.getByRole('button', { name: 'Accept with this account' }).click()
-    await other.page.waitForURL(/\/submissions\/[0-9a-f-]{36}$/)
+    await other.page.waitForURL(/\/my-pages\/projects\/[0-9a-f-]{36}$/)
 
     await owner.context.close()
     await other.context.close()
   })
 
   test('a link that matches nothing says so', async ({ page }) => {
-    await page.goto('/en/submissions/invite/not-a-real-token')
+    await page.goto('/en/my-pages/invite/not-a-real-token')
     await settle(page)
     await expect(page.getByRole('heading', { name: 'We could not find this invitation' })).toBeVisible()
-    await page.goto('/is/innsendingar/bod/not-a-real-token')
+    await page.goto('/is/minar-sidur/bod/not-a-real-token')
     await expect(page.getByRole('heading', { name: 'Þetta boð fannst ekki' })).toBeVisible()
   })
 })

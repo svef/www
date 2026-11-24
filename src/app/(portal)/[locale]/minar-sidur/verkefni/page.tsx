@@ -1,25 +1,27 @@
 import type { Metadata } from 'next'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { Dashboard, DashboardActions } from '@/components/Dashboard/Dashboard'
 import { dashboardCopy } from '@/components/Dashboard/copy'
 import { AppHead } from '@/components/AppHead/AppHead'
 import { PageSection } from '@/components/PageSection/PageSection'
-import { signInPath } from '@/lib/awards/auth/roles'
 import { deadlineLine } from '@/lib/awards/dashboard/deadline'
 import { invoiceNotes, entriesWithoutBilling } from '@/lib/awards/dashboard/invoice'
 import { loadDashboard } from '@/lib/awards/dashboard/queries'
 import { needsAction } from '@/lib/awards/dashboard/rank'
 import { listBillingProfiles } from '@/lib/awards/billing/service'
 import { getAwardsDb } from '@/lib/awards/db/client'
-import { getCurrentUserId, getRequestNow, NotSignedInError } from '@/lib/awards/session'
+import { requireViewer } from '@/lib/awards/auth/viewer'
+import { getRequestNow } from '@/lib/awards/session'
 import { isLocale, localePath } from '@/lib/i18n'
+import { PORTAL } from '@/lib/portal/paths'
 import styles from '@/components/Dashboard/Dashboard.module.scss'
 
 /**
- * "Mínar innsendingar" (`/is/innsendingar/minar` · `/en/submissions/mine`): the landing page
- * after sign-in. One signed-in person's projects, so it is rendered per request (it reads the
- * session cookie, which opts the route out of prerendering without `force-dynamic`) and is not
- * indexable. Signed out, it sends the reader to sign-in and back here.
+ * "Verkefnin mín" (`/is/minar-sidur/verkefni` · `/en/my-pages/projects`): every project the
+ * person created or can edit, with the bulk actions. One signed-in person's projects, so it is
+ * rendered per request (it reads the session cookie, which opts the route out of prerendering
+ * without `force-dynamic`) and is not indexable. Signed out, it sends the reader to sign-in and
+ * back here.
  */
 export async function generateMetadata({
   params,
@@ -28,21 +30,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   if (!isLocale(locale)) return {}
-  return { title: dashboardCopy[locale].title, robots: { index: false, follow: false } }
+  return { title: dashboardCopy[locale].title }
 }
 
 export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
-  const here = localePath('/innsendingar/minar', locale)
-
-  let userId: string
-  try {
-    userId = await getCurrentUserId()
-  } catch (e) {
-    if (e instanceof NotSignedInError) redirect(signInPath(locale, here))
-    throw e
-  }
+  const { id: userId } = await requireViewer({ locale, next: localePath(PORTAL.projects, locale) })
 
   const now = await getRequestNow()
   const db = getAwardsDb()
@@ -62,7 +56,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         title={c.title}
         eyebrow={c.eyebrow(data.edition.year)}
         lede={c.lede}
-        actions={<DashboardActions locale={locale} signOutTo={localePath('/innskraning', locale)} />}
+        actions={<DashboardActions locale={locale} />}
       />
       <PageSection last aria-label={c.title} className={styles.section}>
         <Dashboard

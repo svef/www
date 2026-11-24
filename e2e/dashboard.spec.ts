@@ -43,7 +43,7 @@ const LAST_DAY = at('2027-01-04T10:00:00Z')
 const AFTER_EARLY = at('2027-01-10T12:00:00Z')
 const CLOSED = at('2027-02-03T00:00:00Z')
 
-const DASH = (l: Locale) => urlFor(l, '/innsendingar/minar')
+const DASH = (l: Locale) => urlFor(l, '/minar-sidur/verkefni')
 
 async function signedIn(browser: Browser, label: string, clock = EARLY, viewport?: { width: number; height: number }) {
   const context = await browser.newContext({ baseURL: baseURL(), viewport })
@@ -89,7 +89,7 @@ const money = (n: number) => `${new Intl.NumberFormat('en-GB').format(n)} kr.`
 test('signed out, it sends the reader to sign-in and back', async ({ page }) => {
   await page.goto(DASH('en'))
   await expect(page).toHaveURL(
-    new RegExp(`/en/sign-in\\?next=${encodeURIComponent('/en/submissions/mine').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
+    new RegExp(`/en/sign-in\\?next=${encodeURIComponent('/en/my-pages/projects').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
   )
 })
 
@@ -97,10 +97,10 @@ test('a new user sees an empty state with a way to start', async ({ browser }) =
   const { context, page } = await signedIn(browser, 'Newcomer')
   await page.goto(DASH('en'))
   await settle(page)
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('My submissions')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('My projects')
   const empty = page.locator('[data-empty]')
   await expect(empty).toContainText('You have no submissions yet')
-  await expect(empty.getByRole('link', { name: 'New submission' })).toHaveAttribute('href', '/en/submissions/new')
+  await expect(empty.getByRole('link', { name: 'New project' })).toHaveAttribute('href', '/en/my-pages/projects/new')
   await expect(page.getByRole('group', { name: 'View' })).toHaveCount(0)
   await expect(page.locator('[data-invoices]')).toHaveCount(0)
   await context.close()
@@ -109,11 +109,11 @@ test('a new user sees an empty state with a way to start', async ({ browser }) =
 test('the Icelandic page uses the Icelandic names', async ({ browser }) => {
   const { context, page } = await signedIn(browser, 'Nýliði')
   await page.goto(DASH('is'))
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Mínar innsendingar')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Verkefnin mín')
   await expect(page.locator('[data-deadline]')).toHaveText('11 dagar eftir til að tryggja snemmskráningarverðið')
-  await expect(page.locator('[data-empty]').getByRole('link', { name: 'Ný innsending' })).toHaveAttribute(
+  await expect(page.locator('[data-empty]').getByRole('link', { name: 'Nýtt verkefni' })).toHaveAttribute(
     'href',
-    '/is/innsendingar/ny',
+    '/is/minar-sidur/verkefni/nytt',
   )
   await context.close()
 })
@@ -144,7 +144,7 @@ test.describe('with projects', () => {
     await expect(draft).toContainText('Early-bird price if submitted now')
     // What is missing, in one line: the count and the first item, linking to the form's review step.
     await expect(draft.locator('[data-missing]')).toHaveText(/^Missing \((\d+)\): \S.* and \d+ more$/)
-    await expect(draft.locator('[data-missing] a')).toHaveAttribute('href', `/en/submissions/${s.alpha}#section-review`)
+    await expect(draft.locator('[data-missing] a')).toHaveAttribute('href', `/en/my-pages/projects/${s.alpha}#section-review`)
     await expect(draft.locator('[data-early-bird="secured"]')).toHaveCount(0)
     const sub = alpha.locator(`[data-entry="${s.alphaSub}"]`)
     await expect(sub).toContainText('Submitted')
@@ -159,7 +159,7 @@ test.describe('with projects', () => {
     // The title links to the form.
     await expect(alpha.getByRole('link', { name: new RegExp(`^Alpha ${s.run}$`) })).toHaveAttribute(
       'href',
-      `/en/submissions/${s.alpha}`,
+      `/en/my-pages/projects/${s.alpha}`,
     )
     await context.close()
   })

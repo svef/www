@@ -38,7 +38,7 @@ const baseURL = () => test.info().project.use.baseURL as string
 const at = (iso: string) => Date.parse(iso) - Date.now()
 const EARLY = at('2026-12-25T12:00:00Z')
 const AFTER_EARLY = at('2027-01-10T12:00:00Z')
-const DASH = urlFor('en', '/innsendingar/minar')
+const DASH = urlFor('en', '/minar-sidur/verkefni')
 
 async function person(browser: Browser, label: string, clock = EARLY) {
   const context = await browser.newContext({ baseURL: baseURL() })
@@ -121,7 +121,7 @@ test.describe('withdraw on the project page', () => {
   test('states the cost, withdraws, and submitting again re-prices by the new date', async ({ browser }) => {
     const { context, id, page } = await person(browser, 'Anna')
     const projectId = await project(id, 'Fjallavefurinn', { submitted: true })
-    await page.goto(urlFor('en', `/innsendingar/${projectId}#section-review`))
+    await page.goto(urlFor('en', `/minar-sidur/verkefni/${projectId}#section-review`))
     await expect(page.locator('[data-lock="held"]')).toBeVisible()
 
     const withdraw = page.locator('[data-withdraw-entry="app"]')
@@ -175,7 +175,7 @@ test.describe('withdraw on the project page', () => {
     await db().insert(schema.projectPerson).values({
       projectId, kind: 'collaborator', name: 'Helper', canEdit: true, userId: editor.id, acceptedAt: new Date(),
     })
-    await editor.page.goto(urlFor('en', `/innsendingar/${projectId}`))
+    await editor.page.goto(urlFor('en', `/minar-sidur/verkefni/${projectId}`))
     await expect(editor.page.locator('[data-entry-row="app"]')).toContainText('Submitted')
     await expect(editor.page.locator('[data-withdraw-entry]')).toHaveCount(0)
     await owner.context.close()
@@ -211,7 +211,7 @@ test.describe('dashboard bulk actions', () => {
     )
     await expect(d.locator('[data-bulk-skip="project_incomplete"] a')).toHaveAttribute(
       'href',
-      new RegExp(`/en/submissions/${partial}#section-review$`),
+      new RegExp(`/en/my-pages/projects/${partial}#section-review$`),
     )
     expect((await new AxeBuilder({ page }).include('dialog').analyze()).violations).toEqual([])
 

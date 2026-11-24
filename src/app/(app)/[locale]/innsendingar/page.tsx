@@ -10,6 +10,7 @@ import { SectionHead } from '@/components/SectionHead/SectionHead'
 import { SubmissionCategories } from '@/components/SubmissionCategories/SubmissionCategories'
 import { SubmissionCta } from '@/components/SubmissionCta/SubmissionCta'
 import styles from './submissions.module.scss'
+import { PORTAL } from '@/lib/portal/paths'
 
 /**
  * Prerendered and revalidated, not `force-dynamic` (CLAUDE.md, "Rendering").
@@ -65,9 +66,9 @@ export default async function SubmissionsPage({
     { key: 'ceremony', label: s.dates.ceremony, iso: CEREMONY_DATE_2026 },
   ]
 
-  // Sign-up and sign-in come back to the dashboard (`next`), which is the landing page
-  // after login.
-  const next = encodeURIComponent(localePath('/innsendingar/minar', locale))
+  // Sign-up and sign-in come back to the portal's overview (`next`), which is the landing
+  // page after login.
+  const next = encodeURIComponent(localePath(PORTAL.overview, locale))
   const actions = {
     startLabel: s.start,
     startHref: `${localePath('/nyskraning', locale)}?next=${next}`,

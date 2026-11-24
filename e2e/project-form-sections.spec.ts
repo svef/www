@@ -24,11 +24,11 @@ async function person(browser: Browser, name: string) {
 }
 
 async function startProject(page: Page, locale: 'is' | 'en' = 'en') {
-  await page.goto(urlFor(locale, '/innsendingar/ny'))
+  await page.goto(urlFor(locale, '/minar-sidur/verkefni/nytt'))
   await page
     .getByRole('button', { name: locale === 'en' ? 'Create project' : 'Stofna verkefni' })
     .click()
-  await page.waitForURL(/\/innsendingar\/[0-9a-f-]{36}$|\/submissions\/[0-9a-f-]{36}$/)
+  await page.waitForURL(/\/(projects|verkefni)\/[0-9a-f-]{36}$/)
   await expect(page.locator('[data-lock="held"]')).toBeVisible()
 }
 const saved = (page: Page) =>

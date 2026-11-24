@@ -23,6 +23,9 @@ export const ROUTE_SEGMENTS = {
   skraning: { is: 'skraning', en: 'membership' },
   'hafa-samband': { is: 'hafa-samband', en: 'contact' },
   innsendingar: { is: 'innsendingar', en: 'submissions' },
+  // The signed-in portal: everyone's own pages, and the admin (Stjórnborð) for SVEF.
+  'minar-sidur': { is: 'minar-sidur', en: 'my-pages' },
+  stjornbord: { is: 'stjornbord', en: 'admin' },
   // Awards accounts (svef/www#158).
   nyskraning: { is: 'nyskraning', en: 'sign-up' },
   innskraning: { is: 'innskraning', en: 'sign-in' },
@@ -31,24 +34,35 @@ export const ROUTE_SEGMENTS = {
   'stadfesta-netfang': { is: 'stadfesta-netfang', en: 'verify-email' },
 } as const
 
+/** A sub-page's name per language, and the names of the sub-pages under it. */
+export interface NestedName {
+  is: string
+  en: string
+  children?: Readonly<Record<string, NestedName>>
+}
+
 /**
  * Names *under* a page, per language, for the pages that have fixed sub-pages
- * (`/is/innsendingar/minar` ↔ `/en/submissions/mine`). Keyed on the parent's
- * directory name, then on the child's Icelandic name.
+ * (`/is/minar-sidur/verkefni/nytt` ↔ `/en/my-pages/projects/new`). Keyed on the parent's
+ * directory name, then on each child's Icelandic name, as deep as the sub-pages go.
  *
- * Only the second segment of a path is looked up here. Anything else after the
- * page name — a project id, a slug — is data, not a name, and travels untouched.
+ * A segment that names no sub-page at its level (a project id, a token) is data, not a
+ * name: it and everything after it travel untouched.
  */
 export const NESTED_SEGMENTS: Readonly<
-  Partial<Record<RouteKey, Readonly<Record<string, { is: string; en: string }>>>>
+  Partial<Record<RouteKey, Readonly<Record<string, NestedName>>>>
 > = {
-  innsendingar: {
-    minar: { is: 'minar', en: 'mine' },
-    ny: { is: 'ny', en: 'new' },
-    // The staff area (svef/www#168 builds it out; the invoicing export and eligibility list live here for now).
-    starfsfolk: { is: 'starfsfolk', en: 'staff' },
-    // Accepting an invitation to edit a project (svef/www#165): `/is/innsendingar/bod/<token>`.
+  'minar-sidur': {
+    verkefni: { is: 'verkefni', en: 'projects', children: { nytt: { is: 'nytt', en: 'new' } } },
+    adgangur: { is: 'adgangur', en: 'account' },
+    // Accepting an invitation to edit a project (svef/www#165): `/is/minar-sidur/bod/<token>`.
     bod: { is: 'bod', en: 'invite' },
+  },
+  stjornbord: {
+    verkefni: { is: 'verkefni', en: 'projects' },
+    beidnir: { is: 'beidnir', en: 'requests' },
+    notendur: { is: 'notendur', en: 'users' },
+    verkfaeri: { is: 'verkfaeri', en: 'tools' },
   },
 }
 
@@ -123,40 +137,57 @@ export function toPublicSegment(segment: string, locale: Locale): string {
   return key ? ROUTE_SEGMENTS[key][locale] : segment
 }
 
-/** The directory name of a nested child, in any language, under `parent`. */
-function toInternalChild(parent: RouteKey, segment: string): string {
-  const children = NESTED_SEGMENTS[parent]
-  if (!children) return segment
-  for (const [internal, names] of Object.entries(children)) {
-    if (Object.values(names).includes(segment)) return internal
+/** The child of `level` that `segment` names, in any language, as [directory name, names]. */
+function findChild(
+  level: Readonly<Record<string, NestedName>> | undefined,
+  segment: string,
+): [string, NestedName] | undefined {
+  if (!level) return undefined
+  for (const [internal, names] of Object.entries(level)) {
+    if (names.is === segment || names.en === segment) return [internal, names]
   }
-  return segment
+  return undefined
 }
 
 /**
- * The segments of a path (after the locale), with the page name and a known
- * sub-page name written in `locale`. Segments that name nothing are returned
- * as they came, so `['innsendingar', '<uuid>']` keeps its id.
+ * Walks the sub-page names after `key`, mapping each known one with `pick` and stopping at
+ * the first segment that names nothing (an id), which is kept with the rest as it came.
+ */
+function mapNested(
+  key: RouteKey,
+  rest: readonly string[],
+  pick: (internal: string, names: NestedName) => string,
+): string[] {
+  const out: string[] = []
+  let level = NESTED_SEGMENTS[key]
+  let i = 0
+  for (; i < rest.length; i++) {
+    const found = findChild(level, rest[i])
+    if (!found) break
+    out.push(pick(found[0], found[1]))
+    level = found[1].children
+  }
+  return [...out, ...rest.slice(i)]
+}
+
+/**
+ * The segments of a path (after the locale), with the page name and any known
+ * sub-page names written in `locale`. Segments that name nothing are returned
+ * as they came, so `['minar-sidur', 'verkefni', '<uuid>']` keeps its id.
  */
 export function toPublicSegments(segments: readonly string[], locale: Locale): string[] {
-  const [head, second, ...rest] = segments
+  const [head, ...rest] = segments
   if (head === undefined) return []
   const key = toInternalSegment(head)
   if (!key) return [...segments]
-  const out: string[] = [ROUTE_SEGMENTS[key][locale]]
-  if (second === undefined) return out
-  const child = NESTED_SEGMENTS[key]?.[toInternalChild(key, second)]
-  out.push(child ? child[locale] : second)
-  return [...out, ...rest]
+  return [ROUTE_SEGMENTS[key][locale], ...mapNested(key, rest, (_, names) => names[locale])]
 }
 
 /** The same path as directory names on disk: what the proxy rewrites onto. */
 export function toInternalSegments(segments: readonly string[]): string[] {
-  const [head, second, ...rest] = segments
+  const [head, ...rest] = segments
   if (head === undefined) return []
   const key = toInternalSegment(head)
   if (!key) return [...segments]
-  const out: string[] = [key]
-  if (second === undefined) return out
-  return [...out, toInternalChild(key, second), ...rest]
+  return [key, ...mapNested(key, rest, (internal) => internal)]
 }

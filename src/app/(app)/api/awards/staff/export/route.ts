@@ -1,11 +1,13 @@
 import { getAwardsDb } from '@/lib/awards/db/client'
-import { requireStaff } from '@/lib/awards/auth/session'
+import { requireAdmin } from '@/lib/awards/auth/viewer'
 import { buildInvoicingCsv, buildInvoicingXlsx } from '@/lib/awards/export/invoicing'
 import { getExportRows, getStaffEdition, recordExport } from '@/lib/awards/staff/queries'
+import { ADMIN } from '@/lib/portal/paths'
+import { localePath } from '@/lib/i18n'
 
 /**
- * The invoicing export. Staff only: an anonymous request is sent to sign-in and a
- * signed-in non-staff one gets a 404 (`requireStaff`). It reads the session cookie, so Next
+ * The invoicing export. Admins only: an anonymous request is sent to sign-in and a
+ * signed-in non-admin one gets a 404 (`requireAdmin`). It reads the session cookie, so Next
  * never caches it, which is right: it reads billing details as they are now and writes the
  * audit rows.
  */
@@ -16,7 +18,7 @@ const TYPES = {
 } as const
 
 export async function GET(request: Request): Promise<Response> {
-  const user = await requireStaff({ next: '/is/innsendingar/starfsfolk' })
+  const user = await requireAdmin({ next: localePath(ADMIN.tools, 'is') })
   const params = new URL(request.url).searchParams
   const format = params.get('format')
   if (format !== 'csv' && format !== 'xlsx') {

@@ -6,6 +6,7 @@ import { acceptInvitation } from '@/lib/awards/invitations/service'
 import { getCurrentUserId, getRequestNow, NotSignedInError } from '@/lib/awards/session'
 import { signInPath } from '@/lib/awards/auth/roles'
 import { isLocale, localePath } from '@/lib/i18n'
+import { PORTAL } from '@/lib/portal/paths'
 
 /**
  * Accepts the invitation as the signed-in user, then opens the project. A refusal goes
@@ -16,7 +17,7 @@ export async function acceptInvitationAction(formData: FormData): Promise<void> 
   const locale = String(formData.get('locale') ?? '')
   const token = String(formData.get('token') ?? '')
   if (!isLocale(locale)) throw new Error('Unknown locale.')
-  const page = localePath(`/innsendingar/bod/${token}`, locale)
+  const page = localePath(PORTAL.invitation(token), locale)
 
   let userId: string
   try {
@@ -31,5 +32,5 @@ export async function acceptInvitationAction(formData: FormData): Promise<void> 
     now: await getRequestNow(),
     confirmDifferentEmail: formData.get('confirm') === '1',
   })
-  redirect(result.ok ? localePath(`/innsendingar/${result.projectId}`, locale) : page)
+  redirect(result.ok ? localePath(PORTAL.project(result.projectId), locale) : page)
 }

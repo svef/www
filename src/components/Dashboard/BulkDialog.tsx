@@ -8,8 +8,9 @@ import { GrowText } from '@/components/GrowText/GrowText'
 import { getCategory } from '@/lib/awards/categories'
 import type { BulkPlan, Skipped } from '@/lib/awards/bulk/plan'
 import type { BulkResult } from '@/lib/awards/bulk/service'
+import { PORTAL } from '@/lib/portal/paths'
 import { localePath, type Locale } from '@/lib/i18n'
-import { planBulkAction, runBulkAction, type BulkInput } from '@/app/(app)/[locale]/innsendingar/minar/actions'
+import { planBulkAction, runBulkAction, type BulkInput } from '@/app/(portal)/[locale]/minar-sidur/verkefni/actions'
 import { formatMoney } from './copy'
 import { bulkCopy, type BulkCopy } from './bulk-copy'
 import styles from './Dashboard.module.scss'
@@ -327,7 +328,7 @@ function SkippedList({
               {' – '}
               {s.reason === 'locked' && s.detail ? c.lockedBy(s.detail) : c.reasons[s.reason]}
             </span>
-            <Link href={`${localePath(`/innsendingar/${s.projectId}`, locale)}${hashFor(s.reason)}`}>
+            <Link href={`${localePath(PORTAL.project(s.projectId), locale)}${hashFor(s.reason)}`}>
               {c.openProject}
               <span className={styles.srOnly}> – {s.projectTitle || c.untitled}</span>
             </Link>

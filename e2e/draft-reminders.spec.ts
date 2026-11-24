@@ -70,7 +70,7 @@ test('the draft reminder cron is guarded and mails each person once per wave', a
   expect(sent[0].subject).toMatch(/early-bird/i)
   expect(sent[0].text).toContain(`Drög ${RUN}`)
   expect(sent[0].text).toContain('4 January 2027')
-  expect(sent[0].text).toContain('/en/submissions/mine')
+  expect(sent[0].text).toContain('/en/my-pages/projects')
 
   // Again, the next day: nothing more for this person.
   await request.get(`${CRON}?now=2027-01-03T09:00:00Z`, { headers: AUTH })

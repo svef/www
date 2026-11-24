@@ -28,9 +28,9 @@ async function person(browser: Browser, opts: { verified?: boolean; clock?: bool
 }
 
 async function startProject(page: Page) {
-  await page.goto(urlFor('en', '/innsendingar/ny'))
+  await page.goto(urlFor('en', '/minar-sidur/verkefni/nytt'))
   await page.getByRole('button', { name: 'Create project' }).click()
-  await page.waitForURL(/\/submissions\/[0-9a-f-]{36}$/)
+  await page.waitForURL(/\/my-pages\/projects\/[0-9a-f-]{36}$/)
   await expect(page.locator('[data-lock="held"]')).toBeVisible()
 }
 const saved = (page: Page) =>
@@ -307,9 +307,9 @@ test.describe('submit', () => {
 
   test('is in Icelandic on the Icelandic page', async ({ browser }) => {
     const { context, page } = await person(browser)
-    await page.goto(urlFor('is', '/innsendingar/ny'))
+    await page.goto(urlFor('is', '/minar-sidur/verkefni/nytt'))
     await page.getByRole('button', { name: 'Stofna verkefni' }).click()
-    await page.waitForURL(/\/innsendingar\/[0-9a-f-]{36}$/)
+    await page.waitForURL(/\/minar-sidur\/verkefni\/[0-9a-f-]{36}$/)
     await expect(page.locator('[data-lock="held"]')).toBeVisible()
     await page.getByRole('checkbox', { name: 'App', exact: true }).check()
     await expect(page.locator('[data-submit]')).toHaveText('Senda inn')

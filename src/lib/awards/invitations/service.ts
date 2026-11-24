@@ -10,6 +10,7 @@ import { localePath } from '@/lib/i18n'
 import { issueInvitation, type PendingInvite } from './lifecycle'
 import { hashInviteToken, normalizeEmail, RESEND_MIN_INTERVAL_MS } from './token'
 import type { InviteState } from './types'
+import { PORTAL } from '@/lib/portal/paths'
 
 export type InvitationDeps = { send?: (message: OutgoingEmail) => Promise<void> }
 
@@ -17,7 +18,7 @@ const PERSON_ORDER = [asc(projectPerson.sortOrder), asc(projectPerson.createdAt)
 
 /** The link in the email: a page, never an action, so a mail scanner opening it changes nothing. */
 export function inviteUrl(token: string, locale: 'is' | 'en'): string {
-  return `${getSiteUrl()}${localePath(`/innsendingar/bod/${token}`, locale)}`
+  return `${getSiteUrl()}${localePath(PORTAL.invitation(token), locale)}`
 }
 
 /** Sends the invitation emails queued by a transaction. Returns how many could not be sent. */

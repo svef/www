@@ -9,6 +9,7 @@ import {
   toInternalSegments,
   toPublicSegments,
 } from '@/lib/i18n'
+import { legacyPortalPath } from '@/lib/portal/legacy'
 
 // Next.js 16 Proxy (formerly middleware).
 //
@@ -112,11 +113,22 @@ export function proxy(request: NextRequest) {
     return NextResponse.rewrite(url)
   }
 
+  // The awards' signed-in pages moved from /innsendingar to the portal (/minar-sidur) and
+  // the admin (/stjornbord). Emails already sent and bookmarks point at the old addresses,
+  // so those answer with a permanent redirect, query string kept, to where the page is now.
+  const parts = pathname.split('/').slice(2)
+  const moved = legacyPortalPath(parts)
+  if (moved) {
+    const url = request.nextUrl.clone()
+    url.pathname = localePath(moved, segment)
+    return NextResponse.redirect(url, 308)
+  }
+
   // Pages are named in the reader's language — /en/events, not /en/vidburdir —
   // while the directories on disk keep their Icelandic names. So the public name
   // is translated back to the directory and the request rewritten onto it; the
   // URL in the address bar does not change.
-  const routed = routeByName(segment, pathname.split('/').slice(2))
+  const routed = routeByName(segment, parts)
   if (routed) return routed
 
   return NextResponse.next()

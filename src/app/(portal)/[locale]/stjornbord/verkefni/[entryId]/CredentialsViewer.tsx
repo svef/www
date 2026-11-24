@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import type { DecryptedCredential } from '@/lib/awards/staff/credentials'
 import { GrowText } from '@/components/GrowText/GrowText'
 import { revealCredentialsAction } from './actions'
-import styles from '../staff.module.scss'
+import styles from '../../admin.module.scss'
 
 type Props = {
   entryId: string

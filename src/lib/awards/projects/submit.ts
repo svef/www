@@ -19,6 +19,7 @@ import {
   requireRole,
   type Clock,
 } from './service'
+import { PORTAL } from '@/lib/portal/paths'
 
 /**
  * Submitting. One call submits every complete draft
@@ -316,7 +317,7 @@ export async function submitEntries(
           early: s.early,
         })),
         billing: mail.billing,
-        url: `${getSiteUrl()}${localePath(`/innsendingar/${projectId}`, mail.locale)}`,
+        url: `${getSiteUrl()}${localePath(PORTAL.project(projectId), mail.locale)}`,
       })
       await (deps.send ?? sendEmail)({ to: mail.to, ...content })
       result.receipt = 'sent'

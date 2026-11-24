@@ -6,6 +6,7 @@ import { loadDashboard } from '../dashboard/queries'
 import { localePath, type Locale } from '@/lib/i18n'
 import { getSiteUrl } from '@/lib/site-url'
 import { dueWave } from './rules'
+import { PORTAL } from '@/lib/portal/paths'
 
 export type DraftReminderDeps = {
   send?: (message: OutgoingEmail) => Promise<void>
@@ -135,7 +136,7 @@ export async function sendDueDraftReminders(
           wave,
           boundAt: bound,
           projects,
-          url: `${base}${localePath('/innsendingar/minar', locale)}`,
+          url: `${base}${localePath(PORTAL.projects, locale)}`,
         }),
       })
       reminded.push({ userId: u.id, result: 'sent' })

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { desc, isNull } from 'drizzle-orm'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { AppHead } from '@/components/AppHead/AppHead'
 import { dashboardCopy } from '@/components/Dashboard/copy'
 import { PageSection } from '@/components/PageSection/PageSection'
@@ -8,10 +8,10 @@ import { getProjectFormCopy } from '@/components/ProjectForm/copy'
 import { SECTIONS } from '@/components/ProjectForm/sections'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import { edition } from '@/lib/awards/db/schema'
-import { getCurrentUserId, NotSignedInError } from '@/lib/awards/session'
 import { isLocale, localePath } from '@/lib/i18n'
-import { signInPath } from '@/lib/awards/auth/roles'
-import styles from '../form-page.module.scss'
+import { requireViewer } from '@/lib/awards/auth/viewer'
+import { PORTAL } from '@/lib/portal/paths'
+import styles from '../../form-page.module.scss'
 import { createProjectAction } from './actions'
 import { CreateButton } from './CreateButton'
 
@@ -31,13 +31,7 @@ export default async function NewSubmissionPage({
   if (!isLocale(locale)) notFound()
   const copy = getProjectFormCopy(locale)
 
-  try {
-    await getCurrentUserId()
-  } catch (e) {
-    if (e instanceof NotSignedInError)
-      redirect(signInPath(locale, localePath('/innsendingar/ny', locale)))
-    throw e
-  }
+  await requireViewer({ locale, next: localePath(PORTAL.newProject, locale) })
 
   // The edition new projects go into: the latest one.
   const [ed] = await getAwardsDb()
@@ -54,7 +48,7 @@ export default async function NewSubmissionPage({
         lede={copy.newLead}
         eyebrow={ed ? copy.eyebrow(ed.year) : undefined}
         crumb={{
-          href: localePath('/innsendingar/minar', locale),
+          href: localePath(PORTAL.projects, locale),
           label: dashboardCopy[locale].title,
         }}
       />
