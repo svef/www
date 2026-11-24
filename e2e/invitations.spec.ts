@@ -4,6 +4,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Browser, type Locator, type Page } from '@playwright/test'
 import { actAs, awardsPool, closeAwardsPool, createUser, emailOf } from './awards-session'
 import { settle, urlFor } from './pages'
+import { goToStep } from './project-steps'
 
 /**
  * Editor invitations (svef/www#165): ticking "Can edit" on a collaborator emails an
@@ -59,6 +60,7 @@ async function invitationTo(to: string, count = 1) {
 /** Owner side: a collaborator ticked "Can edit" with an email. */
 async function invite(page: Page, who: { name: string; email: string }): Promise<Locator> {
   const collab = page.locator('[data-field="collaborators"]')
+  if (await collab.isHidden()) await goToStep(page, 'People and credit')
   await collab.getByRole('button', { name: 'Add a collaborator' }).click()
   const row = collab.getByRole('group', { name: /^Collaborator \d$/ }).last()
   await row.getByLabel('Name').fill(who.name)
@@ -88,6 +90,7 @@ test.describe('invitations', () => {
   test('owner invites by email; the invitee signs up from the link, accepts, and edits', async ({ browser }) => {
     const owner = await person(browser, 'Anna Owner')
     const url = await startProject(owner.page)
+    await goToStep(owner.page, 'The project')
     await owner.page.getByLabel('Title').fill('Invited Site')
     const email = `invitee-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.is`
     const row = await invite(owner.page, { name: 'Katrín', email })
@@ -125,6 +128,7 @@ test.describe('invitations', () => {
     await expect(page.getByRole('main')).toContainText('Invited Site')
     await page.goto(url)
     await expect(page.locator('[data-lock="held"]')).toBeVisible()
+    await goToStep(page, 'The project')
     await page.getByLabel('Title').fill('Invited Site, edited')
     await expect(page.getByRole('status').filter({ hasText: /^Saved/ })).toBeVisible()
     await expect(page.getByRole('button', { name: /Withdraw/ })).toHaveCount(0)
@@ -161,6 +165,7 @@ test.describe('invitations', () => {
 
     await owner.page.goto(url)
     await expect(owner.page.locator('[data-lock="held"]')).toBeVisible()
+    await goToStep(owner.page, 'People and credit')
     await row.getByLabel('Can edit').uncheck()
     await expect(row.locator('[data-invite]')).toHaveCount(0)
     await expect(owner.page.getByRole('status').filter({ hasText: /^Saved/ })).toBeVisible()

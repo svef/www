@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Browser, type Page } from '@playwright/test'
 import { actAs, closeAwardsPool, createUser, lockTokenOf, makeEditor, markSubmitted } from './awards-session'
 import { settle, urlFor } from './pages'
+import { currentStep, goToStep, stepLink, stepper } from './project-steps'
 
 /**
  * The project form: creating a project, autosave, the edit lock with two people, lock
@@ -35,11 +36,12 @@ async function startProject(page: Page, locale: 'is' | 'en' = 'en') {
 const SAVED = /^Saved/
 
 test.describe('the project form', () => {
-  test('is reached from "New submission", opens read-write, and lists the seven sections', async ({ browser }) => {
+  test('is reached from "New submission", opens read-write, and shows the seven steps one at a time', async ({ browser }) => {
     const { context, page } = await person(browser, 'Anna')
-    await startProject(page)
-    await expect(page.getByRole('navigation', { name: 'Sections' }).getByRole('link')).toHaveCount(7)
-    await expect(page.locator('main#main h2')).toHaveText([
+    const id = await startProject(page)
+    await expect(stepper(page).getByRole('link')).toHaveCount(7)
+    // Every step is in the page, in order; only the current one is shown.
+    await expect(page.locator('section[data-step] h2')).toHaveText([
       'Categories',
       'The project',
       'Category questions',
@@ -48,6 +50,40 @@ test.describe('the project form', () => {
       'Billing',
       'Review and submit',
     ])
+    await expect(page.locator('section[data-step]:not([hidden])')).toHaveCount(1)
+    await expect(currentStep(page).locator('h2')).toHaveText('Categories')
+    await expect(stepLink(page, 'Categories')).toHaveAttribute('aria-current', 'step')
+
+    // Next: the step changes, the heading takes focus, the hash says where we are.
+    await currentStep(page).getByRole('link', { name: /^Next/ }).click()
+    await expect(currentStep(page).locator('h2')).toHaveText('The project')
+    await expect(currentStep(page).locator('h2')).toBeFocused()
+    await expect(stepLink(page, 'The project')).toHaveAttribute('aria-current', 'step')
+    await expect(stepLink(page, 'Categories')).not.toHaveAttribute('aria-current', 'step')
+    expect(new URL(page.url()).hash).toBe('#section-project')
+    await expect(page.locator('[data-step-announce]')).toHaveText('Step 2 of 7: The project')
+
+    // Any step can be opened at any time, in any order.
+    await goToStep(page, 'Review and submit')
+    await expect(currentStep(page).getByRole('link', { name: /^Next/ })).toHaveCount(0)
+    await currentStep(page).getByRole('link', { name: /^Previous/ }).click()
+    await expect(currentStep(page).locator('h2')).toHaveText('Billing')
+
+    // Reload keeps the step; back and forward walk the steps.
+    await page.reload()
+    await expect(page.locator('[data-lock="held"]')).toBeVisible()
+    await expect(currentStep(page).locator('h2')).toHaveText('Billing')
+    await page.goBack()
+    await expect(currentStep(page).locator('h2')).toHaveText('Review and submit')
+    await page.goBack()
+    await expect(currentStep(page).locator('h2')).toHaveText('The project')
+    await page.goForward()
+    await expect(currentStep(page).locator('h2')).toHaveText('Review and submit')
+
+    // A link straight to a field opens its step and focuses it.
+    await page.goto(urlFor('en', `/innsendingar/${id}#field-publicCredit`))
+    await expect(currentStep(page).locator('h2')).toHaveText('People and credit')
+    await expect(page.locator('[data-field="publicCredit"] input')).toBeFocused()
     await context.close()
   })
 
@@ -58,6 +94,7 @@ test.describe('the project form', () => {
     await page.getByRole('checkbox', { name: 'Marketing Website' }).check()
     await expect(page.getByRole('status').filter({ hasText: SAVED })).toBeVisible()
 
+    await goToStep(page, 'The project')
     await page.locator('[data-field="title"] input').fill('Brand new site')
     await expect(page.getByRole('status').filter({ hasText: 'Saving…' })).toBeVisible()
     await expect(page.getByRole('status').filter({ hasText: SAVED })).toBeVisible()
@@ -65,6 +102,7 @@ test.describe('the project form', () => {
     await page.reload()
     await expect(page.locator('[data-lock="held"]')).toBeVisible()
     await expect(page.locator('[data-field="title"] input')).toHaveValue('Brand new site')
+    await goToStep(page, 'Categories')
     await expect(page.getByRole('checkbox', { name: 'Marketing Website' })).toBeChecked()
     expect(page.url()).toContain(id)
     await context.close()
@@ -74,6 +112,7 @@ test.describe('the project form', () => {
     const { context, page } = await person(browser, 'Anna')
     await startProject(page)
     await page.getByRole('checkbox', { name: 'Marketing Website' }).check()
+    await goToStep(page, 'The project')
     const field = page.locator('[data-field="title"]')
     await expect(field.locator('[id$="-error"]')).toHaveCount(0)
     await field.locator('input').focus()
@@ -83,17 +122,28 @@ test.describe('the project form', () => {
     await context.close()
   })
 
-  test('has no axe violations', async ({ browser }) => {
+  test('has no axe violations on any step', async ({ browser }) => {
     const { context, page } = await person(browser, 'Anna')
     await startProject(page)
     await page.getByRole('checkbox', { name: 'Marketing Website' }).check()
-    await settle(page)
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      .analyze()
-    expect(
-      results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`),
-    ).toEqual([])
+    for (const step of [
+      'Categories',
+      'The project',
+      'Category questions',
+      'People and credit',
+      'Image',
+      'Billing',
+      'Review and submit',
+    ]) {
+      await goToStep(page, step)
+      await settle(page)
+      const results = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze()
+      expect(
+        results.violations.map((v) => `${step}: ${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`),
+      ).toEqual([])
+    }
     await context.close()
   })
 
@@ -184,6 +234,7 @@ test.describe('the project form', () => {
     await expect(bjarni.page.locator('[data-lock="held"]')).toBeVisible()
 
     // Anna types on, unaware. Her save is refused, her text stays, and she sees who has it.
+    await goToStep(anna.page, 'The project')
     await anna.page.locator('[data-field="title"] input').fill('Typed after losing the lock')
     await expect(anna.page.locator('[data-lock="other"]')).toBeVisible({ timeout: 10_000 })
     await expect(anna.page.locator('[data-lock="other"]')).toContainText('Bjarni is editing this project')
@@ -206,6 +257,7 @@ test.describe('the project form', () => {
     await expect(anna.page.getByRole('status').filter({ hasText: SAVED })).toBeVisible()
     await actAs(anna.context, baseURL(), anna.id, 21 * 60 * 1000)
 
+    await goToStep(anna.page, 'The project')
     await anna.page.locator('[data-field="title"] input').fill('Saved after a lapse')
     await expect(anna.page.getByRole('status').filter({ hasText: SAVED })).toBeVisible({ timeout: 10_000 })
     await expect(anna.page.locator('[data-lock="held"]')).toBeVisible()
@@ -224,6 +276,7 @@ test.describe('the project form', () => {
     await anna.page.reload()
     await expect(anna.page.locator('[data-lock="held"]')).toBeVisible()
 
+    await goToStep(anna.page, 'The project')
     const locked = anna.page.locator('[data-field="title"]')
     await expect(locked.locator('input')).toHaveAttribute('readonly', '')
     await locked.getByText('Why can’t I edit this?').click()

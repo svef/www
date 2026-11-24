@@ -122,7 +122,7 @@ test.describe('withdraw on the project page', () => {
   test('states the cost, withdraws, and submitting again re-prices by the new date', async ({ browser }) => {
     const { context, id, page } = await person(browser, 'Anna')
     const projectId = await project(id, 'Fjallavefurinn', { submitted: true })
-    await page.goto(urlFor('en', `/innsendingar/${projectId}`))
+    await page.goto(urlFor('en', `/innsendingar/${projectId}#section-review`))
     await expect(page.locator('[data-lock="held"]')).toBeVisible()
 
     const withdraw = page.locator('[data-withdraw-entry="app"]')
@@ -149,7 +149,8 @@ test.describe('withdraw on the project page', () => {
 
     // Days later, after the early bird: submitting again costs the regular price.
     await actAs(context, baseURL(), id, AFTER_EARLY)
-    await page.goto(urlFor('en', `/innsendingar/${projectId}`))
+    // A reload, not a same-URL visit (which, with a hash, would not load the page again).
+    await page.reload()
     await expect(page.locator('[data-lock="held"]')).toBeVisible()
     await expect(page.locator('[data-withdrawn-entries] [data-entry-row="app"]')).toContainText(
       '26,900 kr. if submitted now (regular price)',

@@ -5,6 +5,7 @@ import { expect, test, type Browser, type Page } from '@playwright/test'
 import sharp from 'sharp'
 import { actAs, awardsPool, closeAwardsPool, createUser } from './awards-session'
 import { urlFor } from './pages'
+import { goToStep } from './project-steps'
 
 /**
  * The presentation image (svef/www#162): a valid 1080 × 1080 upload goes to the private bucket
@@ -39,7 +40,9 @@ async function startProject(page: Page) {
   await page.getByRole('button', { name: 'Create project' }).click()
   await page.waitForURL(/\/submissions\/[0-9a-f-]{36}$|\/innsendingar\/[0-9a-f-]{36}$/)
   await expect(page.locator('[data-lock="held"]')).toBeVisible()
-  return page.url().split('/').pop()!
+  const id = page.url().split('/').pop()!
+  await goToStep(page, 'Image')
+  return id
 }
 
 const section = (page: Page) => page.locator('#section-image')
@@ -184,7 +187,7 @@ test.describe('the image section', () => {
 
     const closed = Date.parse('2027-02-02T00:00:00Z') - Date.now() + 60_000
     const late = await person(browser, closed, userId)
-    await late.page.goto(urlFor('en', `/innsendingar/${id}`))
+    await late.page.goto(urlFor('en', `/innsendingar/${id}#section-image`))
     await expect(late.page.locator('[data-lock="held"]')).toBeVisible()
     await expect(section(late.page).getByRole('img')).toBeVisible()
     await expect(section(late.page).getByRole('button', { name: 'Replace image' })).toBeDisabled()

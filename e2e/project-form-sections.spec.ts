@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Browser, type Page } from '@playwright/test'
 import { actAs, closeAwardsPool, createUser } from './awards-session'
 import { settle, urlFor } from './pages'
+import { currentStep, goToStep, stepLink } from './project-steps'
 
 /**
  * The seven sections of the project form: choosing categories (tiers, exclusions, the
@@ -32,10 +33,7 @@ async function startProject(page: Page, locale: 'is' | 'en' = 'en') {
 }
 const saved = (page: Page) =>
   expect(page.getByRole('status').filter({ hasText: SAVED })).toBeVisible()
-const outline = (page: Page, title: string) =>
-  page
-    .getByRole('navigation', { name: 'Sections' })
-    .getByRole('link', { name: new RegExp(`^${title}`) })
+const outline = stepLink
 
 test.describe('categories', () => {
   test('are choice cards with a description, a size choice for the group, and a running total', async ({
@@ -135,12 +133,15 @@ test.describe('the project', () => {
     await saved(page)
 
     const toggle = page.locator('[data-field="requiresLogin"] input[type="checkbox"]')
+    await goToStep(page, 'The project')
     await expect(toggle).not.toBeChecked()
     await expect(toggle).toBeEnabled()
     await expect(page.locator('[data-field="loginInformation"]')).toHaveCount(0)
 
+    await goToStep(page, 'Categories')
     await page.getByRole('checkbox', { name: 'Logged-In Platform' }).check()
     await saved(page)
+    await goToStep(page, 'The project')
     await expect(toggle).toBeChecked()
     await expect(toggle).toBeDisabled()
     await expect(page.locator('[data-field="requiresLogin"]')).toContainText(
@@ -167,6 +168,7 @@ test.describe('the project', () => {
     ).toHaveValue('demo@example.com / correct horse')
 
     // Without the category the toggle is free again.
+    await goToStep(page, 'Categories')
     await page.getByRole('checkbox', { name: 'Logged-In Platform' }).uncheck()
     await saved(page)
     await expect(toggle).toBeEnabled()
@@ -181,6 +183,7 @@ test.describe('the project', () => {
     await page.getByRole('checkbox', { name: 'Marketing Website' }).check()
     await saved(page)
 
+    await goToStep(page, 'The project')
     const field = page.locator('[data-field="description"]')
     const tip = field.getByRole('button', { name: 'More information' })
     await expect(tip).toHaveAttribute('aria-expanded', 'false')
@@ -199,9 +202,11 @@ test.describe('the project', () => {
 
     await expect(page.locator('[data-field="links"]')).toBeVisible()
     await expect(page.locator('[data-field="appLinks"]')).toHaveCount(0)
+    await goToStep(page, 'Categories')
     await page.getByRole('checkbox', { name: 'Marketing Website' }).uncheck()
     await page.getByRole('checkbox', { name: 'App', exact: true }).check()
     await saved(page)
+    await goToStep(page, 'The project')
     await expect(page.locator('[data-field="appLinks"]')).toBeVisible()
     await expect(page.locator('[data-field="links"]')).toHaveCount(0)
     await context.close()
@@ -219,22 +224,29 @@ test.describe('category questions', () => {
 
     await page.getByRole('checkbox', { name: 'Marketing Website' }).check()
     await saved(page)
+    await goToStep(page, 'Category questions')
     await expect(section.locator('[data-field="campaignPeriod"]')).toBeVisible()
     await expect(section.locator('[data-field="campaignArchive"]')).toBeVisible()
     await expect(section.locator('[data-field="aiRole"]')).toHaveCount(0)
 
+    await goToStep(page, 'Categories')
     await page.getByRole('checkbox', { name: 'AI Solution' }).check()
     await saved(page)
+    await goToStep(page, 'Category questions')
     await expect(section.locator('[data-field="aiRole"]')).toBeVisible()
     await expect(section.locator('[data-category="ai-solution"] h3')).toHaveText('AI Solution')
 
+    await goToStep(page, 'Categories')
     await page.getByRole('checkbox', { name: 'Student Project' }).check()
     await saved(page)
+    await goToStep(page, 'Category questions')
     await expect(section.locator('[data-field="school"]')).toBeVisible()
     await expect(section.locator('[data-field="programme"]')).toBeVisible()
 
+    await goToStep(page, 'Categories')
     await page.getByRole('checkbox', { name: 'AI Solution' }).uncheck()
     await saved(page)
+    await goToStep(page, 'Category questions')
     await expect(section.locator('[data-field="aiRole"]')).toHaveCount(0)
 
     // The pitch: collapsed by default, one per entry, saved per entry.
@@ -262,6 +274,7 @@ test.describe('people and credit', () => {
   }) => {
     const { context, page } = await person(browser, 'Anna')
     await startProject(page)
+    await goToStep(page, 'People and credit')
     const owners = page.locator('[data-field="owners"]')
     await expect(owners.getByRole('group', { name: 'Owner 1' })).toBeVisible()
     // One owner is required: nothing to remove, nothing to reorder.
@@ -335,6 +348,7 @@ test.describe('image', () => {
   }) => {
     const { context, page } = await person(browser, 'Anna')
     await startProject(page)
+    await goToStep(page, 'Image')
     const image = page.locator('#section-image')
     await expect(image).toContainText('Square, 1080 × 1080 px, PNG or JPG, up to 10 MB.')
     await expect(image.getByRole('button', { name: 'Choose an image' })).toBeEnabled()
@@ -352,6 +366,7 @@ test.describe('billing', () => {
     email = 'invoices@example.is',
   ) {
     const billing = page.locator('#section-billing')
+    if (await billing.isHidden()) await goToStep(page, 'Billing')
     await billing.getByRole('button', { name: 'Add a billing profile' }).click()
     const editor = billing.getByRole('group', { name: 'Add a billing profile' })
     await editor.getByLabel('Company name').fill(name)
@@ -479,12 +494,15 @@ test.describe('review', () => {
   }) => {
     const { context, page } = await person(browser, 'Anna')
     await startProject(page)
+    await goToStep(page, 'Review and submit')
     const review = page.locator('#section-review')
     await expect(review.locator('[data-missing] li')).toHaveCount(2) // a category, and billing
     await expect(review.locator('[data-missing]')).toContainText('Choose at least one category.')
 
+    await goToStep(page, 'Categories')
     await page.getByRole('checkbox', { name: 'Marketing Website' }).check()
     await saved(page)
+    await goToStep(page, 'Review and submit')
     const missing = review.locator('[data-missing]')
     await expect(missing).toContainText('Project title: This field is required.')
     await expect(missing).toContainText('Project owner')
@@ -498,20 +516,32 @@ test.describe('review', () => {
     )
     await expect(review.locator('[data-review-total-early]')).toHaveText('18,900 kr.')
 
-    // A link takes you to its field, and fixing the field removes the item.
+    // A link takes you to its field (switching to its step), and fixing the field removes the item.
     await missing.getByRole('link', { name: /^Project title/ }).click()
+    await expect(currentStep(page).locator('h2')).toHaveText('The project')
     await expect(page.locator('[data-field="title"] input')).toBeFocused()
+    expect(new URL(page.url()).hash).toBe('#section-project')
     await page.locator('[data-field="title"] input').fill('Brand new site')
     await expect(missing.getByRole('link', { name: /^Project title/ })).toHaveCount(0)
 
+    await goToStep(page, 'Review and submit')
     await missing.getByRole('link', { name: /^Public credit/ }).click()
     await expect(page.locator('[data-field="publicCredit"] input')).toBeFocused()
+    // Back returns to the review.
+    await page.goBack()
+    await expect(currentStep(page).locator('h2')).toHaveText('Review and submit')
     await missing.getByRole('link', { name: 'Choose who is invoiced.' }).click()
     await expect(page.locator('#section-billing').locator('button, input').first()).toBeFocused()
+    await goToStep(page, 'Review and submit')
 
     // The summary shows answers, never the login details.
     await expect(review.locator('[data-answer="title"]')).toContainText('Brand new site')
     await expect(review.locator('[data-answer="description"]')).toContainText('Not answered')
+    // Each step's answers link back to the step.
+    await review.getByRole('link', { name: 'Change: The project' }).click()
+    await expect(currentStep(page).locator('h2')).toHaveText('The project')
+    await expect(currentStep(page).locator('h2')).toBeFocused()
+    await goToStep(page, 'Review and submit')
     // The submit step is its own panel at the end.
     await expect(review.locator('[data-slot="submit"]')).toBeVisible()
     await context.close()
@@ -522,15 +552,18 @@ test.describe('review', () => {
     await startProject(page)
     await page.getByRole('checkbox', { name: 'App', exact: true }).check()
     await saved(page)
+    await goToStep(page, 'The project')
     await page.locator('[data-field="title"] input').fill('The app')
     await page.locator('[data-field="description"] textarea').fill('A fine app.')
     await page.locator('[data-field="appLinks"] input').first().fill('https://example.is/app')
+    await goToStep(page, 'People and credit')
     const owner = page.locator('[data-field="owners"]').getByRole('group', { name: 'Owner 1' })
     await owner.getByLabel('Name').fill('Anna')
     await owner.getByLabel('Email').fill('anna@example.is')
     await page.locator('[data-field="publicCredit"] input').fill('Anna Ltd.')
     await saved(page)
     await expect(outline(page, 'Review and submit')).not.toContainText('(complete)') // billing still missing
+    await goToStep(page, 'Billing')
     const billing = page.locator('#section-billing')
     await billing.getByRole('button', { name: 'Add a billing profile' }).click()
     const editor = billing.getByRole('group', { name: 'Add a billing profile' })
@@ -540,6 +573,7 @@ test.describe('review', () => {
     await editor.getByLabel('Address').fill('Laugavegur 1')
     await editor.getByRole('button', { name: 'Save profile' }).click()
     await saved(page)
+    await goToStep(page, 'Review and submit')
     const review = page.locator('#section-review')
     await expect(review.locator('[data-missing-none]')).toHaveText('Nothing is missing.')
     await expect(review).toContainText(
@@ -559,9 +593,20 @@ test.describe('review', () => {
 })
 
 test.describe('the whole form', () => {
-  test('has no axe violations with everything open', async ({ browser }) => {
+  test('has no axe violations with everything open, on every step', async ({ browser }) => {
     const { context, page } = await person(browser, 'Anna')
     await startProject(page)
+    const axe = async (step: string) => {
+      await settle(page)
+      const results = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze()
+      expect(
+        results.violations.map(
+          (v) => `${step}: ${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`,
+        ),
+      ).toEqual([])
+    }
     await page.getByRole('checkbox', { name: 'Logged-In Platform' }).check()
     await page.getByRole('checkbox', { name: 'Student Project' }).check()
     await page
@@ -570,36 +615,46 @@ test.describe('the whole form', () => {
       .check()
     await saved(page)
     await page.locator('[data-choice="marketing-website"]').getByText('Full description').click()
+    await axe('Categories')
+
+    await goToStep(page, 'The project')
     await page
       .locator('[data-field="description"]')
       .getByRole('button', { name: 'More information' })
       .click()
+    await axe('The project')
+
+    await goToStep(page, 'Category questions')
+    await page.locator('#section-questions details summary').first().click()
+    await axe('Category questions')
+
+    await goToStep(page, 'People and credit')
     await page.locator('#section-people').getByRole('button', { name: 'Add an owner' }).click()
     await page
       .locator('#section-people')
       .getByRole('button', { name: 'Add a collaborator' })
       .click()
-    await page.locator('#section-questions details summary').first().click()
+    await axe('People and credit')
+
+    await goToStep(page, 'Image')
+    await axe('Image')
+
+    await goToStep(page, 'Billing')
     await page
       .locator('#section-billing')
       .getByRole('button', { name: 'Add a billing profile' })
       .click()
-    await settle(page)
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      .analyze()
-    expect(
-      results.violations.map(
-        (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`,
-      ),
-    ).toEqual([])
+    await axe('Billing')
+
+    await goToStep(page, 'Review and submit')
+    await axe('Review and submit')
     await context.close()
   })
 
   test('works in Icelandic', async ({ browser }) => {
     const { context, page } = await person(browser, 'Anna')
     await startProject(page, 'is')
-    await expect(page.locator('main#main h2')).toHaveText([
+    await expect(page.locator('section[data-step] h2')).toHaveText([
       'Flokkar',
       'Verkefnið',
       'Spurningar flokkanna',
