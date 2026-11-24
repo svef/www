@@ -1,23 +1,20 @@
-// The request banners on the project page (svef/www#169). Semantic and token-driven.
+// The request banners on the project page (svef/www#169): the shared notice box, yellow
+// because a request needs the entrant to act.
+@use '../../styles/breakpoints' as bp;
+
 .requests {
   display: grid;
-  gap: 1rem;
+  gap: 16px;
   min-width: 0;
-  margin: 0 0 2rem;
 }
 
 .banner {
   display: grid;
-  gap: 0.75rem;
+  gap: 12px;
   min-width: 0;
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--color-violet-light);
-  border-left-width: 6px;
-  background: var(--surface-3);
-
-  &[data-status='overdue'] {
-    border-color: var(--accent-yellow);
-  }
+  padding: 16px 20px 20px;
+  background: var(--ink-2);
+  border-left: 6px solid var(--accent-yellow);
 
   p,
   h2,
@@ -32,23 +29,45 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 1rem;
+  gap: 8px 16px;
 }
 
 .title {
-  font-size: 1.25rem;
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: 1.05rem;
+  line-height: 1.3;
   overflow-wrap: anywhere;
 }
 
+// The shared status tag.
 .chip {
-  padding: 0.1rem 0.6rem;
-  border: 1px solid currentcolor;
-  font-size: 0.875rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-white);
 
-  &[data-status='overdue'] {
-    color: var(--accent-yellow);
+  &::before {
+    content: '';
+    flex: none;
+    width: 8px;
+    height: 8px;
+    background: var(--accent-yellow);
   }
+
+  &[data-status='overdue']::before {
+    background: var(--muted);
+  }
+}
+
+.deadline {
+  color: var(--color-white);
 }
 
 .message {
@@ -58,22 +77,27 @@
 
 .note,
 .who {
-  color: var(--muted);
+  color: var(--color-lavender);
 }
 
 .sub {
-  font-size: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .fields {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
+  gap: 8px 20px;
   padding: 0;
   list-style: none;
 
   a {
-    color: var(--fg);
+    color: var(--color-white);
     text-underline-offset: 3px;
 
     &:hover {
@@ -89,60 +113,55 @@
 
 .thread {
   display: grid;
-  gap: 0.5rem;
+  gap: 10px;
   padding: 0;
   list-style: none;
 
   li {
     display: grid;
-    gap: 0.15rem;
-    padding-left: 0.75rem;
+    gap: 2px;
+    padding-left: 12px;
     border-left: 3px solid var(--line);
     min-width: 0;
 
     &[data-side='staff'] {
-      border-left-color: var(--color-violet-light);
+      border-left-color: var(--color-violet);
     }
   }
 }
 
 .reply {
   display: grid;
-  gap: 0.5rem;
+  gap: 8px;
+  padding-top: 4px;
 
   label {
-    font-weight: var(--weight-title);
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
   }
 
   textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 0.6rem 0.75rem;
-    border: 1px solid var(--line);
-    border-radius: 0;
-    background: var(--surface-2);
-    color: var(--fg);
-    font: inherit;
-
-    &:focus-visible {
-      outline: 3px solid var(--focus-ring);
-      outline-offset: 2px;
-    }
+    min-height: 96px;
   }
 }
 
 .buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 .primary,
 .secondary {
-  padding: 0.6rem 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
   border-radius: 0;
   font: inherit;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  line-height: 1.2;
   cursor: pointer;
 
   &:focus-visible {
@@ -157,30 +176,42 @@
 }
 
 .primary {
-  border: 1px solid var(--color-violet);
+  border: 2px solid var(--color-violet);
   background: var(--color-violet);
   color: var(--color-white);
-
-  &:hover:not(:disabled) {
-    background: var(--color-violet-bright);
-  }
 }
 
 .secondary {
-  border: 1px solid var(--line);
+  border: 2px solid var(--line);
   background: transparent;
-  color: var(--fg);
+  color: var(--color-white);
+  transition: border-color var(--dur-hover);
+
+  &:hover:not(:disabled) {
+    border-color: var(--muted);
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
 }
 
 .status {
-  min-height: 1.5em;
+  margin: 0;
+
+  // Always rendered (a live region that appears with its text is not reliably read), so
+  // while it is empty it gives back the gap it would add.
+  &:empty {
+    margin-bottom: -16px;
+  }
 
   &:focus {
     outline: none;
   }
 
   &[data-kind='error'] {
-    color: var(--accent-pink);
+    color: var(--accent-yellow);
+    font-weight: var(--weight-bold);
   }
 }
 
@@ -189,13 +220,28 @@
 
   summary {
     cursor: pointer;
+    font-family: var(--font-display);
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
   }
 
   ul {
     display: grid;
-    gap: 0.75rem;
-    margin: 0.75rem 0 0;
+    gap: 0;
+    margin: 12px 0 0;
     padding: 0;
     list-style: none;
+  }
+
+  li {
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+
+    p {
+      margin: 4px 0 0;
+    }
   }
 }

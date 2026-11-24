@@ -1,8 +1,12 @@
 'use client'
 
 import { useId, useRef, useState } from 'react'
+import { textareaClass } from '@/components/FormParts/FormParts'
+import { GrowText } from '@/components/GrowText/GrowText'
 import type { Locale } from '@/lib/i18n'
+import { goToField } from './focus'
 import { requestsCopy } from './requests-copy'
+import { sectionOfField } from './sections'
 import styles from './Requests.module.scss'
 
 /** Plain data for one request, built on the server in the entrant's language. */
@@ -156,16 +160,10 @@ function Banner({
   }
 
   const jump = (key: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Move focus, not just the scroll position, so a keyboard user lands in the field.
-    const target = document.getElementById(`field-${key}`)
-    if (!target) return
+    // Switch to the field's step and move focus, not just the scroll position, so a
+    // keyboard user lands in the field. `goToField` also opens the collapsed category note.
     e.preventDefault()
-    target.scrollIntoView({ block: 'center' })
-    const focusable = target.querySelector<HTMLElement>('input, textarea, select, button')
-    ;(focusable ?? target).focus({ preventScroll: true })
-    // `field-categoryPitch` sits inside a collapsed <details>; open it so the field can be seen.
-    const details = target.closest('details')
-    if (details) details.open = true
+    goToField({ fieldKey: key, section: sectionOfField(key) ?? 'project' })
   }
 
   return (
@@ -228,6 +226,7 @@ function Banner({
         <label htmlFor={`${id}-reply`}>{c.replyLabel}</label>
         <textarea
           id={`${id}-reply`}
+          className={textareaClass}
           value={reply}
           onChange={(e) => setReply(e.target.value)}
           rows={3}
@@ -244,8 +243,13 @@ function Banner({
             {c.send}
           </button>
           {!overdue && (
-            <button type="button" className={styles.primary} onClick={() => run('done')} disabled={busy}>
-              {busy ? c.working : c.done}
+            <button
+              type="button"
+              className={`btn-grow ${styles.primary}`}
+              onClick={() => run('done')}
+              disabled={busy}
+            >
+              <GrowText>{busy ? c.working : c.done}</GrowText>
             </button>
           )}
         </div>

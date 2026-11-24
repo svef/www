@@ -2,6 +2,7 @@
 
 import { PencilSimple, Plus, Trash } from '@phosphor-icons/react'
 import { useId, useState } from 'react'
+import { GrowText } from '@/components/GrowText/GrowText'
 import {
   BILLING_FIELDS,
   BILLING_LIMITS,
@@ -15,6 +16,7 @@ import type { ActionResult } from '@/lib/awards/projects/errors'
 import type { Locale } from '@/lib/i18n'
 import styles from './Billing.module.scss'
 import { getProjectFormCopy } from './copy'
+import { controlClass } from './FieldInput'
 import fieldStyles from './ProjectForm.module.scss'
 import type { ProjectFormApi } from './useProjectForm'
 
@@ -148,7 +150,7 @@ export function BillingSection({
         )}
         <input
           id={id}
-          className={fieldStyles.input}
+          className={controlClass}
           value={draft[field]}
           maxLength={
             field === 'kennitala' ? 11 : BILLING_LIMITS[field as keyof typeof BILLING_LIMITS]
@@ -182,7 +184,14 @@ export function BillingSection({
           {foreign && form.view.billing && (
             <li className={styles.profile} data-profile={form.view.billing.id} data-selected="">
               <label className={styles.pick}>
-                <input type="radio" name="billing" checked disabled readOnly />
+                <input
+                  type="radio"
+                  name="billing"
+                  className={styles.radioInput}
+                  checked
+                  disabled
+                  readOnly
+                />
                 <span>
                   <strong>{form.view.billing.companyName}</strong>
                   <span className={styles.meta}>
@@ -203,6 +212,7 @@ export function BillingSection({
                 <input
                   type="radio"
                   name="billing"
+                  className={styles.radioInput}
                   checked={chosenId === p.id}
                   onChange={() => void form.changeBilling(p.id)}
                 />
@@ -220,10 +230,12 @@ export function BillingSection({
               <div className={styles.actions}>
                 {confirming === p.id ? (
                   <>
-                    <span role="alert">{copy.billingDeleteConfirm(p.companyName)}</span>
+                    <span role="alert" className={styles.confirm}>
+                      {copy.billingDeleteConfirm(p.companyName)}
+                    </span>
                     <button
                       type="button"
-                      className={fieldStyles.small}
+                      className={`${fieldStyles.small} ${fieldStyles.danger}`}
                       onClick={() => void remove(p)}
                     >
                       {copy.billingDeleteYes}
@@ -248,7 +260,7 @@ export function BillingSection({
                     </button>
                     <button
                       type="button"
-                      className={fieldStyles.small}
+                      className={`${fieldStyles.small} ${fieldStyles.danger}`}
                       aria-label={`${copy.billingDelete}: ${p.companyName}`}
                       onClick={() => {
                         setListError('')
@@ -298,11 +310,13 @@ export function BillingSection({
           <h3 id={`${seed}-editor`} className={styles.editorTitle}>
             {editing === 'new' ? copy.billingAdd : copy.billingEdit}
           </h3>
-          {inputFor('companyName')}
-          {inputFor('kennitala', { inputMode: 'numeric' })}
-          {inputFor('invoiceEmail', { type: 'email' })}
-          {inputFor('address')}
-          {inputFor('reference')}
+          <div className={styles.grid}>
+            {inputFor('companyName')}
+            {inputFor('kennitala', { inputMode: 'numeric' })}
+            {inputFor('invoiceEmail', { type: 'email' })}
+            {inputFor('address')}
+            {inputFor('reference')}
+          </div>
           {failure && (
             <p className={fieldStyles.error} role="alert">
               {failure}
@@ -311,11 +325,11 @@ export function BillingSection({
           <div className={styles.actions}>
             <button
               type="button"
-              className={styles.primary}
+              className={`btn-grow ${styles.primary}`}
               disabled={busy}
               onClick={() => void save()}
             >
-              {copy.billingSave}
+              <GrowText>{copy.billingSave}</GrowText>
             </button>
             <button type="button" className={fieldStyles.small} onClick={close}>
               {copy.billingCancel}
