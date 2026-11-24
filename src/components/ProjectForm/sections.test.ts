@@ -32,7 +32,7 @@ describe('sections', () => {
     expect(s.people).toBe('incomplete')
   })
 
-  it('gives the image section no check until its upload exists', () => {
+  it('leaves the image section check to the form, as it is optional', () => {
     expect(sectionStatuses(['app'], {}).image).toBe('later')
   })
 

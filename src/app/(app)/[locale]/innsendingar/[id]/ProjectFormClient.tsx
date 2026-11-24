@@ -25,6 +25,13 @@ import {
   submitAction,
   withdrawAction,
 } from './actions'
+import {
+  finalizeImageUploadAction,
+  imagePreviewAction,
+  removeImageAction,
+  requestImageUploadAction,
+} from './image-actions'
+import type { ImageActions } from '@/components/ProjectForm/ImageUpload'
 import { markRequestDoneAction, replyToRequestAction } from './request-actions'
 
 const requestActions: RequestActions = {
@@ -69,9 +76,19 @@ export function ProjectFormClient({
     }),
     [initial.id],
   )
+  const images = useMemo<ImageActions>(
+    () => ({
+      request: (file) => requestImageUploadAction(initial.id, file),
+      finalize: (fileId) => finalizeImageUploadAction(initial.id, fileId),
+      remove: () => removeImageAction(initial.id),
+      preview: () => imagePreviewAction(initial.id),
+    }),
+    [initial.id],
+  )
   return (
     <ProjectForm
       initial={initial}
+      images={images}
       locale={locale}
       actions={actions}
       billing={{ initialProfiles: billingProfiles, actions: billingActions }}

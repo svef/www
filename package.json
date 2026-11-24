@@ -23,9 +23,12 @@
     "seed:dev": "payload run src/scripts/seed-dev.ts",
     "awards:generate": "drizzle-kit generate --config drizzle.awards.config.ts",
     "awards:migrate": "tsx --env-file-if-exists=.env.local src/lib/awards/db/migrate.ts",
-    "awards:seed": "tsx --env-file-if-exists=.env.local src/lib/awards/db/seed.ts"
+    "awards:seed": "tsx --env-file-if-exists=.env.local src/lib/awards/db/seed.ts",
+    "awards:bucket": "tsx --env-file-if-exists=.env.local src/lib/awards/files/ensure-bucket.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1102.0",
+    "@aws-sdk/s3-request-presigner": "^3.1102.0",
     "@mantine/core": "^8.3.17",
     "@mantine/form": "^8.3.17",
     "@mantine/hooks": "^8.3.17",

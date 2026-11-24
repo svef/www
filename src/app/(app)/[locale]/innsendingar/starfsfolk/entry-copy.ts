@@ -46,6 +46,8 @@ export const entryCopy = {
     empty: 'Ekki útfyllt',
     image: 'Mynd',
     imageNone: 'Engin mynd',
+    imageAlt: 'Kynningarmynd verkefnisins',
+    imageOpen: 'Opna í fullri stærð',
     imageValue: (name: string, type: string, kb: number, status: string) =>
       `${name} (${type}, ${kb} KB, ${status})`,
     credentialsTitle: 'Innskráningarupplýsingar',
@@ -100,6 +102,10 @@ export const entryCopy = {
       request_replied: 'Svar við beiðni',
       request_resolved: 'Beiðni lokið',
       request_reminder_sent: 'Áminning um frest send',
+      image_uploaded: 'Mynd hlaðið upp',
+      image_rejected: 'Mynd hafnað',
+      image_removed: 'Mynd fjarlægð',
+      image_expired: 'Ókláruð upphleðsla felld niður',
     } as Record<string, string>,
     status_: {
       draft: 'Drög',
@@ -153,6 +159,8 @@ export const entryCopy = {
     empty: 'Not filled in',
     image: 'Image',
     imageNone: 'No image',
+    imageAlt: 'The presentation image for this project',
+    imageOpen: 'Open full size',
     imageValue: (name: string, type: string, kb: number, status: string) =>
       `${name} (${type}, ${kb} KB, ${status})`,
     credentialsTitle: 'Login details',
@@ -207,6 +215,10 @@ export const entryCopy = {
       request_replied: 'Request reply',
       request_resolved: 'Request resolved',
       request_reminder_sent: 'Deadline reminder sent',
+      image_uploaded: 'Image uploaded',
+      image_rejected: 'Image rejected',
+      image_removed: 'Image removed',
+      image_expired: 'Unfinished upload expired',
     } as Record<string, string>,
     status_: {
       draft: 'Draft',

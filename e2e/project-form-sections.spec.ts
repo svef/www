@@ -324,16 +324,14 @@ test.describe('people and credit', () => {
 })
 
 test.describe('image', () => {
-  test('is a marked placeholder with the requirements and a disabled control', async ({
+  test('shows the requirements and an enabled picker (the upload itself is in image-upload.spec.ts)', async ({
     browser,
   }) => {
     const { context, page } = await person(browser, 'Anna')
     await startProject(page)
     const image = page.locator('#section-image')
-    await expect(image).toContainText('Square, 1080 × 1080 px, PNG / JPG, up to 10 MB.')
-    await expect(image.getByText('Coming', { exact: true })).toBeVisible()
-    await expect(image.locator('input[type="file"]')).toBeDisabled()
-    await expect(image.locator('[data-state="coming"]')).toBeVisible()
+    await expect(image).toContainText('Square, 1080 × 1080 px, PNG or JPG, up to 10 MB.')
+    await expect(image.getByRole('button', { name: 'Choose an image' })).toBeEnabled()
     await context.close()
   })
 })
@@ -605,7 +603,7 @@ test.describe('the whole form', () => {
       'Yfirlit og innsending',
     ])
     await expect(page.locator('[data-choice="company-website"]').getByRole('radio')).toHaveCount(4)
-    await expect(page.locator('#section-image')).toContainText('Væntanlegt')
+    await expect(page.locator('#section-image')).toContainText('Velja mynd')
     await expect(page.locator('#section-billing')).toContainText(
       'Reikningur er sendur eftir að innsendingum lýkur',
     )

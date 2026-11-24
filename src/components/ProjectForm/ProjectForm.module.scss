@@ -444,9 +444,9 @@
   }
 }
 
-// ---- The image section, until the upload exists ----------------------------
+// ---- The image section -----------------------------------------------------
 
-.imagePlaceholder {
+.imageField {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   min-width: 0;
@@ -464,19 +464,47 @@
   border: 1px dashed var(--line);
   color: var(--muted);
 
-  input {
-    max-width: 100%;
-    min-width: 0;
-    color: var(--muted);
+  &[data-dragging] {
+    border-color: var(--color-violet);
+    border-style: solid;
+    background: color-mix(in srgb, var(--color-violet) 12%, transparent);
+  }
+
+  &[data-disabled] {
+    border-style: solid;
   }
 }
 
-.badge {
-  padding: 0.15rem 0.6rem;
-  background: var(--color-violet);
-  color: var(--color-white);
-  font-weight: 700;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.imagePreview {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.imageFrame {
+  width: min(100%, 20rem);
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  background: var(--surface-3);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.imageSkeleton {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--line);
+  opacity: 0.4;
+}
+
+.imageProgress {
+  width: 100%;
+  accent-color: var(--color-violet);
 }

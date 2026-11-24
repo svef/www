@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { requireStaff } from '@/lib/awards/auth/session'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import type { FieldDefinition } from '@/lib/awards/fields'
+import { signedImageUrl } from '@/lib/awards/files/images'
+import { getObjectStore, isStoreConfigured } from '@/lib/awards/files/store'
 import { requestableFields } from '@/lib/awards/requests/fields'
 import { listRequestsForEntry } from '@/lib/awards/requests/service'
 import { serverNow } from '@/lib/awards/staff/clock'
@@ -126,6 +128,11 @@ export default async function StaffEntryPage({
   const staffNow = serverNow()
   const requests = await listRequestsForEntry(getAwardsDb(), entryId, staffNow)
   const fields = await requestableFields(getAwardsDb(), entryId)
+  // A short-lived signed URL: the bucket is private. No bucket (not configured) just means no preview.
+  const imageUrl =
+    view.imageKey && isStoreConfigured()
+      ? await signedImageUrl(getObjectStore(), view.imageKey).catch(() => null)
+      : null
   const people = (kind: 'owner' | 'collaborator') => view.people.filter((p) => p.kind === kind)
   const label = (f: FieldDefinition) => f.label[locale]
   const adminAnswerFields = view.adminFields.filter(
@@ -267,6 +274,20 @@ export default async function StaffEntryPage({
                   view.image.status,
                 )
               : c.imageNone}
+            {imageUrl && (
+              <a
+                className={styles.imageLink}
+                href={imageUrl}
+                target="_blank"
+                rel="noreferrer"
+                data-testid="staff-image"
+              >
+                {/* Signed, short-lived URL to a private bucket: next/image cannot optimise it. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imageUrl} alt={c.imageAlt} width={160} height={160} />
+                <span>{c.imageOpen}</span>
+              </a>
+            )}
           </dd>
           {adminAnswerFields.map((f) => (
             <div key={f.key} className={styles.fact} data-field={f.key}>

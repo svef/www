@@ -33,6 +33,8 @@ export type AwardsErrorCode =
   | 'not_withdrawable'
   | 'invite_not_allowed'
   | 'invite_too_soon'
+  | 'storage_unavailable'
+  | 'upload_missing'
 
 /** The serialisable form of an `AwardsError`, returned by server actions. */
 export type ErrorPayload = {

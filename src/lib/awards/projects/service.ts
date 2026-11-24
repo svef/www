@@ -24,6 +24,7 @@ import { forcedValue, resolveAnswers } from '../visibility'
 import { issueInvitation, revokeInvitation, type PendingInvite } from '../invitations/lifecycle'
 import { normalizeEmail } from '../invitations/token'
 import { deliverInvitations, inviteStates, type InvitationDeps } from '../invitations/service'
+import { loadProjectImage } from '../files/queries'
 import { decryptCredential, encryptCredential } from './crypto'
 import type { AwardsDb, Queryable, Tx } from './db-types'
 import { diffAnswers, redactChange, sameValue, type FieldChange } from './diff'
@@ -369,6 +370,7 @@ export async function loadProject(
     categories: activeCategories(ctx),
     entries,
     answers: ctx.answers,
+    image: await loadProjectImage(db, args.projectId),
     editability,
     entryEditability,
     lock,

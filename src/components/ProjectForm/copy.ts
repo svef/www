@@ -90,9 +90,19 @@ type Strings = {
   inviteFailedNotice: string
   inviteTooSoon: string
   // image
-  imageComing: string
-  imageRequirements: (w: number, h: number, types: string, mb: number) => string
-  imageNote: string
+  imageDrop: string
+  imageChoose: string
+  imageReplace: string
+  imageRemove: string
+  imageNone: string
+  imageChecking: string
+  imageUploading: (percent: number) => string
+  imageProcessing: string
+  imageAdded: string
+  imageRemoved: string
+  imageFailed: string
+  imageAlt: string
+  imageFile: (name: string, size: string) => string
   // billing
   billingProfiles: string
   billingNone: string
@@ -296,10 +306,19 @@ const en: Strings = {
   inviteFailedNotice:
     'The invitation could not be emailed. Use “Resend invitation” to try again.',
   inviteTooSoon: 'An invitation was just sent. Try again in a minute.',
-  imageComing: 'Coming',
-  imageRequirements: (w, h, t, mb) => `Square, ${w} × ${h} px, ${t}, up to ${mb} MB.`,
-  imageNote:
-    'Uploading the image is not open yet. It is optional, and you will be able to add it here later.',
+  imageDrop: 'Drop an image here, or',
+  imageChoose: 'Choose an image',
+  imageReplace: 'Replace image',
+  imageRemove: 'Remove image',
+  imageNone: 'No image yet. It is optional.',
+  imageChecking: 'Checking the image…',
+  imageUploading: (p) => `Uploading… ${p}%`,
+  imageProcessing: 'Checking the upload…',
+  imageAdded: 'The image was added.',
+  imageRemoved: 'The image was removed.',
+  imageFailed: 'The image could not be uploaded. Try again.',
+  imageAlt: 'The presentation image for this project',
+  imageFile: (name, size) => `${name} (${size})`,
   billingProfiles: 'Who should be invoiced?',
   billingNone: 'You have no billing profiles yet. Add one to continue.',
   billingAdd: 'Add a billing profile',
@@ -553,10 +572,19 @@ const is: Strings = {
   inviteSentNotice: (w) => `Nýtt boð var sent til ${w}.`,
   inviteFailedNotice: 'Ekki tókst að senda boðið í tölvupósti. Notaðu „Senda boð aftur“ til að reyna aftur.',
   inviteTooSoon: 'Boð var rétt í þessu sent. Reyndu aftur eftir mínútu.',
-  imageComing: 'Væntanlegt',
-  imageRequirements: (w, h, t, mb) => `Ferningslaga, ${w} × ${h} px, ${t}, að hámarki ${mb} MB.`,
-  imageNote:
-    'Ekki er enn hægt að hlaða upp mynd. Hún er valfrjáls og þú getur bætt henni við hér síðar.',
+  imageDrop: 'Slepptu mynd hér, eða',
+  imageChoose: 'Velja mynd',
+  imageReplace: 'Skipta um mynd',
+  imageRemove: 'Fjarlægja mynd',
+  imageNone: 'Engin mynd enn. Hún er valfrjáls.',
+  imageChecking: 'Athuga myndina…',
+  imageUploading: (p) => `Hleð upp… ${p}%`,
+  imageProcessing: 'Athuga upphleðsluna…',
+  imageAdded: 'Myndinni var bætt við.',
+  imageRemoved: 'Myndin var fjarlægð.',
+  imageFailed: 'Ekki tókst að hlaða myndinni upp. Reyndu aftur.',
+  imageAlt: 'Kynningarmynd verkefnisins',
+  imageFile: (name, size) => `${name} (${size})`,
   billingProfiles: 'Hver á að fá reikninginn?',
   billingNone: 'Þú átt engan greiðanda enn. Bættu einum við til að halda áfram.',
   billingAdd: 'Bæta við greiðanda',

@@ -15,7 +15,7 @@ export type SectionDef = {
   fields: readonly string[]
   /** Entry-scope field keys, rendered once per chosen category. */
   entryFields?: readonly string[]
-  /** Not built yet (the image upload): no completeness check, no check mark. */
+  /** Optional, with its own upload flow: no completeness check here (the form adds a check mark once there is an image). */
   later?: boolean
 }
 
@@ -62,7 +62,7 @@ export type SectionStatus = 'complete' | 'incomplete' | 'later'
  * The check mark per section: complete when the section's visible fields all pass the
  * submit-time rules (so "complete" means "would not block submitting"). Categories are
  * complete once one is chosen, billing once a profile is. The review is complete when
- * nothing else is missing. The image section has no check until its upload exists.
+ * nothing else is missing. The image section is optional and has no check here.
  */
 export function sectionStatuses(
   categories: readonly string[],

@@ -6,7 +6,7 @@ import type { Editability } from '@/lib/awards/editability'
 import type { FieldDefinition } from '@/lib/awards/fields'
 import type { Locale } from '@/lib/i18n'
 import type { ProjectFormCopy } from './copy'
-import { ImagePlaceholder } from './ImagePlaceholder'
+import { ImageUpload, type ImageBinding } from './ImageUpload'
 import { InfoTip } from './InfoTip'
 import { CredentialList, PersonList, type InviteProps } from './lists'
 import styles from './ProjectForm.module.scss'
@@ -39,6 +39,8 @@ export type FieldInputProps = {
   requested?: boolean
   /** The collaborators list only: invitation states and "Resend invitation". */
   invite?: InviteProps
+  /** The image field only: the upload actions and the current image. */
+  imageUpload?: ImageBinding
 }
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '')
@@ -222,14 +224,17 @@ export function FieldInput(props: FieldInputProps) {
           />
         )
       case 'image':
-        return (
-          <ImagePlaceholder
+        return props.imageUpload ? (
+          <ImageUpload
             field={field}
             idBase={id}
             copy={copy}
+            locale={locale}
             describedBy={described || undefined}
+            disabled={disabled}
+            binding={props.imageUpload}
           />
-        )
+        ) : null
     }
   })()
 

@@ -157,6 +157,11 @@ jobs:
       AWARDS_DATABASE_URL_UNPOOLED: postgresql://svef:svef@localhost:5432/svef_awards
       PLAYWRIGHT_PORT: 3100
       NEXT_PUBLIC_SITE_URL: http://localhost:3100
+      # The private uploads bucket: MinIO, started by the step below (R2 is S3-compatible).
+      AWARDS_R2_ENDPOINT: http://localhost:9000
+      AWARDS_R2_BUCKET: svef-awards-ci
+      AWARDS_R2_ACCESS_KEY_ID: svefminio
+      AWARDS_R2_SECRET_ACCESS_KEY: svefminio-secret
 
     steps:
       - uses: actions/checkout@v5
@@ -180,6 +185,19 @@ jobs:
 
       - name: Seed development fixtures
         run: npm run seed:dev
+
+      # A service container cannot be given a command, so MinIO is started here. The image is
+      # Chainguard's build of MinIO (the minio/minio image is no longer published).
+      - name: Start MinIO and create the uploads bucket
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=svefminio -e MINIO_ROOT_PASSWORD=svefminio-secret \
+            cgr.dev/chainguard/minio:latest server /data
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && break
+            sleep 1
+          done
+          npm run awards:bucket
 
       # `playwright.config.ts` builds the app and starts it on PLAYWRIGHT_PORT.
       - name: Run e2e + axe sweeps

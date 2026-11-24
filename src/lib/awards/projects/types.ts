@@ -1,6 +1,7 @@
 import type { Editability } from '../editability'
 import type { EntryStatus } from '../types'
 import type { InviteState } from '../invitations/types'
+import type { ProjectImage } from '../files/types'
 import type { LockInfo } from './errors'
 
 /** Plain-data views, safe to hand to a client component. */
@@ -35,6 +36,8 @@ export type ProjectView = {
   entries: EntryView[]
   /** Project-scope answers by field key, people and login details included. */
   answers: Record<string, unknown>
+  /** The presentation image, once one has been uploaded and checked. */
+  image?: ProjectImage | null
   /** Editability of every project-scope field right now. */
   editability: Record<string, Editability>
   /** Editability of the entry-scope fields, per category slug. */

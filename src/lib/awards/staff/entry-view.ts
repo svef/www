@@ -1,4 +1,4 @@
-import { and, asc, count, eq, isNull, or } from 'drizzle-orm'
+import { and, asc, count, desc, eq, isNull, or } from 'drizzle-orm'
 import type { AwardsDb } from '../db/client'
 import {
   billingProfile,
@@ -14,6 +14,7 @@ import {
   projectPerson,
   user,
 } from '../db/schema'
+import { currentImage } from '../files/queries'
 import { ENTRY_FIELDS, PROJECT_FIELDS, type FieldDefinition } from '../fields'
 import type { EntryStatus } from '../types'
 import { resolveAnswers } from '../visibility'
@@ -73,6 +74,8 @@ export type StaffEntryView = {
   } | null
   people: StaffPerson[]
   image: { fileName: string; contentType: string; sizeBytes: number; status: string } | null
+  /** The image's object key when it is `available`, for the page to sign a short-lived URL from. Never sent to a browser as is. */
+  imageKey: string | null
   /** Resolved answers for this entry (project answers plus this entry's own), by field key. */
   answers: Record<string, unknown>
   /** The fields that apply to this entry's project, in definition order. */
@@ -171,18 +174,23 @@ export async function getStaffEntryView(
   )
   const shown = visible.filter((f) => !NOT_ANSWER_ROWS.has(f.key))
 
-  const [file] = await db
-    .select()
-    .from(entryFile)
-    .where(
-      and(
-        eq(entryFile.projectId, p.id),
-        eq(entryFile.fieldKey, 'image'),
-        isNull(entryFile.deletedAt),
-      ),
-    )
-    .orderBy(asc(entryFile.createdAt))
-    .limit(1)
+  // The live image if there is one; otherwise the latest attempt (shown with its status).
+  const live = await currentImage(db, p.id)
+  const [latest] = live
+    ? []
+    : await db
+        .select()
+        .from(entryFile)
+        .where(
+          and(
+            eq(entryFile.projectId, p.id),
+            eq(entryFile.fieldKey, 'image'),
+            isNull(entryFile.deletedAt),
+          ),
+        )
+        .orderBy(desc(entryFile.createdAt))
+        .limit(1)
+  const file = live ?? latest
 
   const [{ credentialCount }] = await db
     .select({ credentialCount: count() })
@@ -233,6 +241,7 @@ export async function getStaffEntryView(
           status: file.status,
         }
       : null,
+    imageKey: file?.status === 'available' ? file.r2Key : null,
     answers: resolved,
     adminFields: shown.filter((f) => f.visibility === 'admin'),
     juryFields: shown.filter((f) => f.visibility !== 'admin'),

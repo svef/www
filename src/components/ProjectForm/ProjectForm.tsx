@@ -5,12 +5,14 @@ import { useMemo, useState } from 'react'
 import type { BillingProfileView } from '@/lib/awards/billing/rules'
 import { getField, PROJECT_FIELDS } from '@/lib/awards/fields'
 import { forcedValue, resolveAnswers } from '@/lib/awards/visibility'
+import type { ProjectImage } from '@/lib/awards/files/types'
 import type { ProjectView } from '@/lib/awards/projects/types'
 import type { Locale } from '@/lib/i18n'
 import { BillingSection, type BillingActions } from './BillingSection'
 import { CategoriesSection } from './CategoriesSection'
 import { getProjectFormCopy, type SectionId } from './copy'
 import { FieldInput } from './FieldInput'
+import type { ImageActions } from './ImageUpload'
 import styles from './ProjectForm.module.scss'
 import { QuestionsSection } from './QuestionsSection'
 import { RequestBanners, type RequestActions, type RequestBannerData } from './RequestBanners'
@@ -41,12 +43,15 @@ export function ProjectForm({
   locale,
   actions,
   billing,
+  images,
   requests,
 }: {
   initial: ProjectView
   locale: Locale
   actions: ProjectFormActions
   billing: BillingProps
+  /** The server calls behind the image upload. */
+  images: ImageActions
   /** Staff requests on this project's entries (svef/www#169), with the actions to answer them. */
   requests?: { items: RequestBannerData[]; actions: RequestActions; onChanged: () => void }
 }) {
@@ -54,6 +59,7 @@ export function ProjectForm({
   const form = useProjectForm(initial, actions)
   const [profiles, setProfiles] = useState(billing.initialProfiles)
   const { view, lockState } = form
+  const [image, setImage] = useState<ProjectImage | null>(initial.image ?? null)
 
   const resolved = useMemo(
     () => resolveAnswers(PROJECT_FIELDS, form.categories, form.answers),
@@ -118,6 +124,7 @@ export function ProjectForm({
         errors={messagesFor(key)}
         forced={forced}
         requested={requestedKeys.has(key)}
+        imageUpload={key === 'image' ? { actions: images, image, onChange: setImage } : undefined}
         invite={
           key === 'collaborators'
             ? {
@@ -136,7 +143,8 @@ export function ProjectForm({
       <nav className={styles.outline} aria-label={copy.outline}>
         <ol>
           {SECTIONS.map((s, i) => {
-            const status = form.statuses[s.id]
+            // The image is optional: it earns a check once there is one, and is never "incomplete".
+            const status = s.id === 'image' ? (image ? 'complete' : 'later') : form.statuses[s.id]
             return (
               <li key={s.id}>
                 <a href={`#section-${s.id}`} data-status={status}>
