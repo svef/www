@@ -43,6 +43,13 @@
       "when": 1795498539476,
       "tag": "0005_needy_groot",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795499448197,
+      "tag": "0006_sharp_goblin_queen",
+      "breakpoints": true
     }
   ]
 }
