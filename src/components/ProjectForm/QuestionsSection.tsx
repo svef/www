@@ -4,11 +4,13 @@ import { Plus } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { getCategory } from '@/lib/awards/categories'
 import { ENTRY_FIELDS, getField } from '@/lib/awards/fields'
+import { Step } from '@/components/FormParts/FormParts'
 import type { Locale } from '@/lib/i18n'
 import { getProjectFormCopy } from './copy'
 import { FieldInput } from './FieldInput'
 import styles from './ProjectForm.module.scss'
-import { SECTIONS } from './sections'
+import { blockNum, SECTIONS } from './sections'
+import { BlockFields } from './Blocks'
 import type { ProjectFormApi } from './useProjectForm'
 
 const QUESTION_KEYS = SECTIONS.find((s) => s.id === 'questions')!.fields
@@ -22,8 +24,9 @@ export function questionsFor(slug: string): string[] {
 }
 
 /**
- * The third section: for each chosen category, the questions only it asks, then the
- * optional "Why this category?" note, collapsed until someone wants it. One shared
+ * The third section: a numbered block per chosen category, titled with its name, holding
+ * the questions it asks (a question two chosen categories ask is shown once, in the first
+ * block), then the optional "Why this category?" note, collapsed until someone wants it. One shared
  * description is the default; the note is for when a jury needs to hear something
  * different.
  */
@@ -47,38 +50,45 @@ export function QuestionsSection({
   const anyQuestions = form.categories.some((c) => questionsFor(c).length > 0)
   const pitch = ENTRY_FIELDS.find((f) => f.key === 'categoryPitch')!
 
-  if (form.categories.length === 0) return <p className={styles.hint}>{copy.chooseCategories}</p>
+  // One block per chosen category with something to ask; a question asked by more than one
+  // of them is shown once, in the first block that needs it.
+  const asked = new Set<string>()
+  const blocks = form.categories
+    .map((slug) => {
+      const keys = questionsFor(slug).filter((k) => !asked.has(k))
+      keys.forEach((k) => asked.add(k))
+      return { slug, keys, entry: live.find((e) => e.category === slug) }
+    })
+    .filter((b) => b.keys.length > 0 || b.entry)
+
+  if (form.categories.length === 0)
+    return <p className={styles.hint}>{copy.chooseCategories}</p>
 
   return (
     <>
       {!anyQuestions && <p className={styles.hint}>{copy.noQuestions}</p>}
-      {form.categories.map((slug) => {
+      {blocks.map(({ slug, keys, entry }, i) => {
         const name = getCategory(slug)?.name[locale] ?? slug
-        const keys = questionsFor(slug)
-        const entry = live.find((e) => e.category === slug)
-        if (!keys.length && !entry) return null
         return (
-          <section
-            key={slug}
-            className={styles.categoryBlock}
-            data-category={slug}
-            aria-label={name}
-          >
-            <h3 className={styles.categoryTitle}>{name}</h3>
-            {keys.map(renderField)}
-            {entry && (
-              <Pitch
-                key={entry.id}
-                slug={slug}
-                name={name}
-                form={form}
-                locale={locale}
-                field={pitch}
-                state={view.entryEditability[slug]?.categoryPitch}
-                requested={requestedKeys?.has('categoryPitch')}
-              />
-            )}
-          </section>
+          <div key={slug} data-category={slug}>
+            <Step num={blockNum(i + 1)} title={name}>
+              <div className={styles.blockBody}>
+                {keys.length > 0 && <BlockFields keys={keys} render={renderField} />}
+                {entry && (
+                  <Pitch
+                    key={entry.id}
+                    slug={slug}
+                    name={name}
+                    form={form}
+                    locale={locale}
+                    field={pitch}
+                    state={view.entryEditability[slug]?.categoryPitch}
+                    requested={requestedKeys?.has('categoryPitch')}
+                  />
+                )}
+              </div>
+            </Step>
+          </div>
         )
       })}
     </>
@@ -108,7 +118,9 @@ function Pitch({
   // Open from the start when there is already a note; then the person decides, so
   // clearing the text never folds the box away under the cursor.
   // A request that asks for the note opens it too, or the field it points to would be hidden.
-  const [open, setOpen] = useState((typeof value === 'string' && value !== '') || Boolean(requested))
+  const [open, setOpen] = useState(
+    (typeof value === 'string' && value !== '') || Boolean(requested),
+  )
   return (
     <details
       className={styles.pitch}

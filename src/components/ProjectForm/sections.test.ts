@@ -6,6 +6,16 @@ describe('sections', () => {
     expect(UNPLACED_FIELDS).toEqual([])
   })
 
+  it('groups every field of a blocked section into exactly one block, in order', () => {
+    for (const s of SECTIONS.filter((x) => x.blocks))
+      expect(s.blocks!.flatMap((b) => b.fields)).toEqual(s.fields)
+  })
+
+  it('titles a block with its field only when it holds one field', () => {
+    for (const b of SECTIONS.flatMap((s) => s.blocks ?? []).filter((b) => b.titled))
+      expect(b.fields).toHaveLength(1)
+  })
+
   it('has the seven sections in order', () => {
     expect(SECTIONS.map((s) => s.id)).toEqual([
       'categories',

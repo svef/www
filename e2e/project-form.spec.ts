@@ -87,6 +87,47 @@ test.describe('the project form', () => {
     await context.close()
   })
 
+  test('keeps the step bar at the foot of the screen on a long step, with the total in it on the categories step', async ({ browser }) => {
+    const { context, page } = await person(browser, 'Anna')
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await startProject(page)
+    const bar = currentStep(page).locator('[data-step-nav]')
+    const viewport = page.viewportSize()!
+    const section = currentStep(page)
+
+    // Before scrolling: the step runs past the screen, and the bar sits on its bottom edge,
+    // the running total and Next in the one bar.
+    expect((await section.boundingBox())!.height).toBeGreaterThan(viewport.height)
+    await expect(bar).toBeVisible()
+    await expect(bar.locator('[data-total]')).toBeVisible()
+    await expect(bar.getByRole('link', { name: /^Next/ })).toBeVisible()
+    await expect(page.locator('[data-total]:visible')).toHaveCount(1)
+    const stuck = (await bar.boundingBox())!
+    expect(Math.abs(stuck.y + stuck.height - viewport.height)).toBeLessThanOrEqual(1)
+
+    // At the end of the step it rests in place, under the last block.
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    await expect(async () => {
+      const rest = (await bar.boundingBox())!
+      const end = (await section.boundingBox())!
+      expect(Math.abs(rest.y + rest.height - (end.y + end.height))).toBeLessThanOrEqual(1)
+      expect(rest.y + rest.height).toBeLessThan(viewport.height - 1)
+    }).toPass()
+
+    // A field taken to with the keyboard is never left under the bar.
+    await page.setViewportSize({ width: 390, height: 640 })
+    await goToStep(page, 'The project')
+    await page.locator('[data-field="title"] input').focus()
+    const description = page.locator('[data-field="description"] textarea')
+    for (let i = 0; i < 4 && !(await description.evaluate((el) => el === document.activeElement)); i++)
+      await page.keyboard.press('Tab')
+    await expect(description).toBeFocused()
+    const field = (await description.boundingBox())!
+    const over = (await currentStep(page).locator('[data-step-nav]').boundingBox())!
+    expect(field.y + field.height).toBeLessThanOrEqual(over.y + 1)
+    await context.close()
+  })
+
   test('autosaves a second after typing stops and keeps the answers across a reload', async ({ browser }) => {
     const { context, page } = await person(browser, 'Anna')
     const id = await startProject(page)

@@ -307,9 +307,9 @@ export function BillingSection({
             }
           }}
         >
-          <h3 id={`${seed}-editor`} className={styles.editorTitle}>
+          <h4 id={`${seed}-editor`} className={styles.editorTitle}>
             {editing === 'new' ? copy.billingAdd : copy.billingEdit}
-          </h3>
+          </h4>
           <div className={styles.grid}>
             {inputFor('companyName')}
             {inputFor('kennitala', { inputMode: 'numeric' })}

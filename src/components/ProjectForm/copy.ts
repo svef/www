@@ -1,4 +1,5 @@
 import type { Locale } from '@/lib/i18n'
+import type { BlockId } from './sections'
 
 /**
  * Interface copy for the project form. Field labels, hints and error messages come
@@ -29,6 +30,8 @@ type Strings = {
   /** The page head's eyebrow. */
   eyebrow: (year: number) => string
   sections: Record<SectionId, { title: string; intro?: string }>
+  /** The numbered blocks inside a step (the sign-up form's layout). */
+  blocks: Record<BlockId | 'otherCategories' | 'payer' | 'missing' | 'price' | 'answers' | 'terms' | 'send', string>
   complete: string
   incomplete: string
   saving: string
@@ -145,20 +148,16 @@ type Strings = {
   // review
   yes: string
   no: string
-  reviewAnswers: string
   reviewLoginSaved: (n: number) => string
   reviewChange: string
   reviewCategory: string
   reviewNotAnswered: string
-  reviewMissing: string
   reviewNothingMissing: string
-  reviewPrices: string
   reviewTotal: string
   reviewEarlyHint: (lastDay: string, early: string, regular: string) => string
   reviewGoTo: string
   reviewBillingTo: (company: string, kennitala: string) => string
   // submit
-  termsTitle: string
   termsBody: string[]
   termsAccept: string
   termsAcceptedAlready: string
@@ -254,6 +253,22 @@ const en: Strings = {
       title: 'Review and submit',
       intro: 'Check your answers and what is still missing.',
     },
+  },
+  blocks: {
+    basics: 'Title and description',
+    links: 'Links',
+    login: 'Signing in',
+    owners: 'Owners',
+    collaborators: 'Collaborators',
+    credit: 'Credits',
+    image: 'Presentation image',
+    otherCategories: 'Other categories',
+    payer: 'Payer',
+    missing: 'Still to do',
+    price: 'Price',
+    answers: 'Your answers',
+    terms: 'Terms',
+    send: 'Send',
   },
   complete: 'complete',
   incomplete: 'not complete',
@@ -374,20 +389,16 @@ const en: Strings = {
   billingChosenError: 'The billing profile could not be chosen.',
   yes: 'Yes',
   no: 'No',
-  reviewAnswers: 'Your answers',
   reviewLoginSaved: (n) => `${n} login ${n === 1 ? 'detail' : 'details'} saved, not shown here`,
   reviewChange: 'Change',
   reviewCategory: 'Category',
   reviewNotAnswered: 'Not answered',
-  reviewMissing: 'Still to do',
   reviewNothingMissing: 'Nothing is missing.',
-  reviewPrices: 'Price per category',
   reviewTotal: 'Total',
   reviewEarlyHint: (d, e, r) =>
     `Submit by the end of ${d} to get the early-bird price, ${e} instead of ${r}`,
   reviewGoTo: 'Go to',
   reviewBillingTo: (c, k) => `An invoice will be sent to ${c}, kt. ${k}, after submissions close.`,
-  termsTitle: 'Competition terms',
   termsBody: [
     'By submitting you confirm that you are entitled to enter the project, that the answers are true, and that the people credited have agreed to be named.',
     'Entry fees are invoiced after submissions close, for every entry that has not been withdrawn. Fees are not refunded, including when an entry is found ineligible.',
@@ -530,6 +541,22 @@ const is: Strings = {
       intro: 'Skoðaðu svörin þín og hvað vantar enn.',
     },
   },
+  blocks: {
+    basics: 'Heiti og lýsing',
+    links: 'Tenglar',
+    login: 'Innskráning',
+    owners: 'Eigendur',
+    collaborators: 'Samstarfsfólk',
+    credit: 'Birting',
+    image: 'Kynningarmynd',
+    otherCategories: 'Aðrir flokkar',
+    payer: 'Greiðandi',
+    missing: 'Eftir að gera',
+    price: 'Verð',
+    answers: 'Svörin þín',
+    terms: 'Skilmálar',
+    send: 'Senda',
+  },
   complete: 'lokið',
   incomplete: 'ólokið',
   saving: 'Vista…',
@@ -651,21 +678,17 @@ const is: Strings = {
   billingChosenError: 'Ekki tókst að velja greiðandann.',
   yes: 'Já',
   no: 'Nei',
-  reviewAnswers: 'Svörin þín',
   reviewLoginSaved: (n) => `${n} innskráningarupplýsingar vistaðar, ekki sýndar hér`,
   reviewChange: 'Breyta',
   reviewCategory: 'Flokkur',
   reviewNotAnswered: 'Ósvarað',
-  reviewMissing: 'Eftir að gera',
   reviewNothingMissing: 'Ekkert vantar.',
-  reviewPrices: 'Verð eftir flokkum',
   reviewTotal: 'Samtals',
   reviewEarlyHint: (d, e, r) =>
     `Sendu inn fyrir lok ${d} til að fá snemmskráningarverð, ${e} í stað ${r}`,
   reviewGoTo: 'Fara í',
   reviewBillingTo: (c, k) =>
     `Reikningur verður sendur á ${c}, kt. ${k}, eftir að innsendingum lýkur.`,
-  termsTitle: 'Skilmálar keppninnar',
   termsBody: [
     'Með innsendingu staðfestir þú að þú megir senda verkefnið inn, að svörin séu rétt og að þau sem nefnd eru hafi samþykkt að vera nafngreind.',
     'Þátttökugjald er innheimt eftir að innsendingum lýkur, fyrir hverja innsendingu sem hefur ekki verið dregin til baka. Gjöld eru ekki endurgreidd, líka þegar innsending reynist ekki gjaldgeng.',

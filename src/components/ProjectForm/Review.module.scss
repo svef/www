@@ -6,23 +6,14 @@
 
 .review {
   display: grid;
-  gap: 44px;
   min-width: 0;
 }
 
+// A numbered block's body (the FormParts `Step` holds the number and title).
 .block {
   display: grid;
   gap: 14px;
   min-width: 0;
-}
-
-// The block's label: small, mono, above its hairline list.
-.title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-title);
-  font-weight: var(--weight-title);
-  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
 }
 
 .muted {

@@ -5,8 +5,12 @@
 
 .panel {
   display: grid;
-  gap: 32px;
   min-width: 0;
+}
+
+// The outcome of a submit or withdrawal: a notice between the numbered blocks.
+.panel > .done {
+  margin-block: 8px 32px;
 }
 
 .block {
@@ -15,12 +19,9 @@
   min-width: 0;
 }
 
+// The blockers' and verify notice's heading, inside the Send block (an h4).
 .title {
   margin: 0;
-  font-family: var(--font-display);
-  font-stretch: var(--stretch-title);
-  font-weight: var(--weight-title);
-  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
 }
 
 .muted {
@@ -103,7 +104,8 @@
     margin: 0;
   }
 
-  h3 {
+  h3,
+  h4 {
     @include ui.notice-title;
   }
 
@@ -163,8 +165,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 14px 24px;
-  padding-top: 28px;
-  border-top: 1px solid var(--line);
 }
 
 .hint {

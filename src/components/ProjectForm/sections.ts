@@ -9,21 +9,52 @@ import type { SectionId } from './copy'
  * table says where a field goes, and each section's real UI can replace the generic
  * rendering later without touching the state logic.
  */
+/**
+ * A numbered block inside a step (the FormParts `Step` layout, as on the sign-up form):
+ * a title and the fields under it. `titled` blocks hold one control and their title is that
+ * control's label, so the field's own label is not said twice.
+ */
+export type BlockDef = {
+  id: BlockId
+  fields: readonly string[]
+  titled?: boolean
+  optional?: boolean
+}
+
+export type BlockId =
+  | 'basics'
+  | 'links'
+  | 'login'
+  | 'owners'
+  | 'collaborators'
+  | 'credit'
+  | 'image'
+
 export type SectionDef = {
   id: SectionId
   /** Project-scope field keys, in display order. */
   fields: readonly string[]
+  /** How a generic section groups its fields into numbered blocks (the same fields, in order). */
+  blocks?: readonly BlockDef[]
   /** Entry-scope field keys, rendered once per chosen category. */
   entryFields?: readonly string[]
   /** Optional, with its own upload flow: no completeness check here (the form adds a check mark once there is an image). */
   later?: boolean
 }
 
+/** A block's number, two digits as on the sign-up form: 01, 02, … (restarting in each step). */
+export const blockNum = (n: number) => String(n).padStart(2, '0')
+
 export const SECTIONS: readonly SectionDef[] = [
   { id: 'categories', fields: [] },
   {
     id: 'project',
     fields: ['title', 'description', 'links', 'appLinks', 'requiresLogin', 'loginInformation'],
+    blocks: [
+      { id: 'basics', fields: ['title', 'description'] },
+      { id: 'links', fields: ['links', 'appLinks'] },
+      { id: 'login', fields: ['requiresLogin', 'loginInformation'] },
+    ],
   },
   {
     id: 'questions',
@@ -37,8 +68,21 @@ export const SECTIONS: readonly SectionDef[] = [
     ],
     entryFields: ['categoryPitch'],
   },
-  { id: 'people', fields: ['owners', 'collaborators', 'publicCredit'] },
-  { id: 'image', fields: ['image'], later: true },
+  {
+    id: 'people',
+    fields: ['owners', 'collaborators', 'publicCredit'],
+    blocks: [
+      { id: 'owners', fields: ['owners'], titled: true },
+      { id: 'collaborators', fields: ['collaborators'], titled: true, optional: true },
+      { id: 'credit', fields: ['publicCredit'] },
+    ],
+  },
+  {
+    id: 'image',
+    fields: ['image'],
+    later: true,
+    blocks: [{ id: 'image', fields: ['image'], titled: true, optional: true }],
+  },
   { id: 'billing', fields: [] },
   // The terms checkbox belongs to the submit step (#163); it is not a missing item here.
   { id: 'review', fields: ['termsAccepted'] },

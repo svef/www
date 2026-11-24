@@ -46,6 +46,12 @@ export type FieldInputProps = {
   invite?: InviteProps
   /** The image field only: the upload actions and the current image. */
   imageUpload?: ImageBinding
+  /**
+   * The field is the only control in a numbered block whose title is its label: the control
+   * takes `controlId` (the block's `<label for>`), a group is named by the title (`titleId`),
+   * and the field shows no label of its own, so the same words are not on screen twice.
+   */
+  titled?: { controlId: string; titleId: string }
 }
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '')
@@ -53,7 +59,8 @@ const str = (v: unknown) => (typeof v === 'string' ? v : '')
 export function FieldInput(props: FieldInputProps) {
   const { field, locale, copy, locked, errors, forced } = props
   const seed = useId()
-  const id = `f-${props.idSeed ?? field.key}-${seed.replace(/:/g, '')}`
+  const titled = props.titled
+  const id = titled?.controlId ?? `f-${props.idSeed ?? field.key}-${seed.replace(/:/g, '')}`
   const hintId = `${id}-hint`
   const tipId = `${id}-tip`
   const forcedId = `${id}-forced`
@@ -264,8 +271,11 @@ export function FieldInput(props: FieldInputProps) {
       data-field={field.key}
       data-locked={locked ? '' : undefined}
       data-requested={props.requested ? '' : undefined}
+      aria-labelledby={multi && titled ? titled.titleId : undefined}
     >
-      {multi ? (
+      {titled ? (
+        tip
+      ) : multi ? (
         <legend className={styles.label}>
           {label}
           {optional}

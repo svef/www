@@ -1,12 +1,17 @@
 'use client'
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Step } from '@/components/FormParts/FormParts'
 import { GrowText } from '@/components/GrowText/GrowText'
 import { getCategory } from '@/lib/awards/categories'
 import { earlyBirdPrice } from '@/lib/awards/pricing'
 import type { EntryView } from '@/lib/awards/projects/types'
 import { authClient } from '@/lib/awards/auth/client'
-import { FIELD_DEFINITIONS, PROJECT_FIELDS, type FieldDefinition } from '@/lib/awards/fields'
+import {
+  FIELD_DEFINITIONS,
+  PROJECT_FIELDS,
+  type FieldDefinition,
+} from '@/lib/awards/fields'
 import { isSubmittedLike, toMs } from '@/lib/awards/types'
 import { resolveAnswers } from '@/lib/awards/visibility'
 import type { Locale } from '@/lib/i18n'
@@ -14,7 +19,7 @@ import { getProjectFormCopy } from './copy'
 import { goToField } from './focus'
 import { formatMoney, lastDayBefore } from './format'
 import styles from './Submit.module.scss'
-import { SUBMIT_STEP_FIELDS } from './sections'
+import { blockNum, SUBMIT_STEP_FIELDS } from './sections'
 import { missingItems, type MissingItem, type PriceBreakdown } from './summary'
 import type { ProjectFormApi } from './useProjectForm'
 import { formatDate } from '@/lib/locale-format'
@@ -32,11 +37,14 @@ export function SubmitPanel({
   locale,
   missing,
   prices,
+  firstBlock,
 }: {
   form: ProjectFormApi
   locale: Locale
   missing: MissingItem[]
   prices: PriceBreakdown
+  /** The review's blocks come first; this panel's blocks number on from here. */
+  firstBlock: number
 }) {
   const copy = getProjectFormCopy(locale)
   const { view, submitOutcome, submitting } = form
@@ -70,8 +78,7 @@ export function SubmitPanel({
   const now = toMs(view.serverNow)
   const opened = now >= toMs(view.intakeOpensAt)
   const closed = now >= toMs(view.intakeClosesBefore)
-  const dateLong = (iso: string) =>
-    formatDate(iso, locale)
+  const dateLong = (iso: string) => formatDate(iso, locale)
 
   // With nothing but withdrawn entries left, what stops a re-submit is judged with their
   // categories counted in (the review's list only counts live entries).
@@ -84,13 +91,23 @@ export function SubmitPanel({
             form.answers,
             form.billingProfileId,
           ),
-    [drafts.length, withdrawn, missing, form.categories, form.answers, form.billingProfileId],
+    [
+      drafts.length,
+      withdrawn,
+      missing,
+      form.categories,
+      form.answers,
+      form.billingProfileId,
+    ],
   )
 
   const verified = view.viewer.emailVerified
   const blockers: { key: string; node: React.ReactNode }[] = []
   if (!opened)
-    blockers.push({ key: 'not-open', node: copy.submitBlockNotOpen(dateLong(view.intakeOpensAt)) })
+    blockers.push({
+      key: 'not-open',
+      node: copy.submitBlockNotOpen(dateLong(view.intakeOpensAt)),
+    })
   if (closed) blockers.push({ key: 'closed', node: copy.submitBlockClosed })
   if (form.readOnly) blockers.push({ key: 'lock', node: copy.submitBlockLock })
   for (const m of effectiveMissing)
@@ -151,7 +168,10 @@ export function SubmitPanel({
   }, [form.categories, form.answers, locale])
 
   function open(next: Target) {
-    const stopped = next.entryId && withdrawn.some((e) => e.id === next.entryId) ? resubmitBlocked : blocked
+    const stopped =
+      next.entryId && withdrawn.some((e) => e.id === next.entryId)
+        ? resubmitBlocked
+        : blocked
     if (stopped) {
       setPressedBlocked(true)
       blockersRef.current?.focus()
@@ -184,6 +204,20 @@ export function SubmitPanel({
     focusSummary.current = false
     summaryRef.current?.focus()
   }, [target, result])
+
+  // Which numbered blocks this panel shows, so they number on from the review's.
+  const canSend = drafts.length > 0 || (withdrawn.length > 0 && !closed)
+  const showEntries = live.length > 0 && hasSubmitted
+  const showTerms = canSend && (drafts.length > 0 || !view.terms.accepted)
+  const showSend = canSend && (unverified || blockers.length > 0 || drafts.length > 0)
+  let n = firstBlock
+  const num = (shown: boolean) => (shown ? blockNum(n++) : '')
+  const nums = {
+    entries: num(showEntries),
+    withdrawn: num(withdrawn.length > 0),
+    terms: num(showTerms),
+    send: num(showSend),
+  }
 
   return (
     <div className={styles.panel} data-submit-panel data-slot="submit">
@@ -244,100 +278,105 @@ export function SubmitPanel({
         {notice}
       </p>
 
-      {live.length > 0 && hasSubmitted && (
-        <div className={styles.block}>
-          <h3 className={styles.title}>{copy.entriesTitle}</h3>
-          <ul className={styles.entries} data-entries>
-            {live.map((e) => (
-              <li key={e.id} data-entry-row={e.category} data-status={e.status}>
-                <span className={styles.entryName}>{nameOf(e.category)}</span>
-                <span className={styles.status} data-tone={e.status}>
-                  {copy.status[e.status] ?? e.status}
-                </span>
-                {e.price && (
-                  <span className={styles.entryPrice}>
-                    {copy.entryLockedPrice(
-                      money(e.price.amount),
-                      e.price.discountPercent > 0 ? copy.tierEarly : copy.tierRegular,
-                    )}
+      {showEntries && (
+        <Step num={nums.entries} title={copy.entriesTitle}>
+          <div className={styles.block}>
+            <ul className={styles.entries} data-entries>
+              {live.map((e) => (
+                <li key={e.id} data-entry-row={e.category} data-status={e.status}>
+                  <span className={styles.entryName}>{nameOf(e.category)}</span>
+                  <span className={styles.status} data-tone={e.status}>
+                    {copy.status[e.status] ?? e.status}
                   </span>
-                )}
-                {e.status === 'submitted' && isCreator && (
-                  <button
-                    type="button"
-                    className={`${styles.secondary} ${styles.danger}`}
-                    aria-disabled={closed || form.readOnly || submitting}
-                    data-withdraw-entry={e.category}
-                    onClick={() => {
-                      if (closed || form.readOnly || submitting) return
-                      setNotice(null)
-                      setWithdrawing(e)
-                    }}
-                  >
-                    {copy.withdrawButton(nameOf(e.category))}
-                  </button>
-                )}
-                {e.status === 'draft' && (
-                  <button
-                    type="button"
-                    className={styles.secondary}
-                    aria-disabled={blocked}
-                    data-submit-entry={e.category}
-                    onClick={() => open({ entryId: e.id, categories: [e.category] })}
-                  >
-                    {copy.submitThis(nameOf(e.category))}
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-          <p className={styles.muted}>{copy.submittedNote}</p>
-        </div>
+                  {e.price && (
+                    <span className={styles.entryPrice}>
+                      {copy.entryLockedPrice(
+                        money(e.price.amount),
+                        e.price.discountPercent > 0 ? copy.tierEarly : copy.tierRegular,
+                      )}
+                    </span>
+                  )}
+                  {e.status === 'submitted' && isCreator && (
+                    <button
+                      type="button"
+                      className={`${styles.secondary} ${styles.danger}`}
+                      aria-disabled={closed || form.readOnly || submitting}
+                      data-withdraw-entry={e.category}
+                      onClick={() => {
+                        if (closed || form.readOnly || submitting) return
+                        setNotice(null)
+                        setWithdrawing(e)
+                      }}
+                    >
+                      {copy.withdrawButton(nameOf(e.category))}
+                    </button>
+                  )}
+                  {e.status === 'draft' && (
+                    <button
+                      type="button"
+                      className={styles.secondary}
+                      aria-disabled={blocked}
+                      data-submit-entry={e.category}
+                      onClick={() => open({ entryId: e.id, categories: [e.category] })}
+                    >
+                      {copy.submitThis(nameOf(e.category))}
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className={styles.muted}>{copy.submittedNote}</p>
+          </div>
+        </Step>
       )}
 
       {withdrawn.length > 0 && (
-        <div className={styles.block}>
-          <h3 className={styles.title}>{copy.withdrawnTitle}</h3>
-          <ul className={styles.entries} data-withdrawn-entries>
-            {withdrawn.map((e) => {
-              const regular = getCategory(e.category)?.price ?? 0
-              const early = prices.earlyAvailable
-              const price = early
-                ? earlyBirdPrice(regular, view.earlyBird.discountPercent, view.earlyBird.rounding)
-                : regular
-              return (
-                <li key={e.id} data-entry-row={e.category} data-status="withdrawn">
-                  <span className={styles.entryName}>{nameOf(e.category)}</span>
-                  <span className={styles.status} data-tone="withdrawn">
-                    {copy.status.withdrawn}
-                  </span>
-                  <span className={styles.entryPrice}>
-                    {copy.withdrawnNow(money(price), early ? copy.tierEarly : copy.tierRegular)}
-                  </span>
-                  <button
-                    type="button"
-                    className={styles.secondary}
-                    aria-disabled={resubmitBlocked || closed}
-                    data-resubmit-entry={e.category}
-                    onClick={() => open({ entryId: e.id, categories: [e.category] })}
-                  >
-                    {copy.resubmit(nameOf(e.category))}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-          <p className={styles.muted}>{copy.resubmitNote}</p>
-        </div>
+        <Step num={nums.withdrawn} title={copy.withdrawnTitle}>
+          <div className={styles.block}>
+            <ul className={styles.entries} data-withdrawn-entries>
+              {withdrawn.map((e) => {
+                const regular = getCategory(e.category)?.price ?? 0
+                const early = prices.earlyAvailable
+                const price = early
+                  ? earlyBirdPrice(
+                      regular,
+                      view.earlyBird.discountPercent,
+                      view.earlyBird.rounding,
+                    )
+                  : regular
+                return (
+                  <li key={e.id} data-entry-row={e.category} data-status="withdrawn">
+                    <span className={styles.entryName}>{nameOf(e.category)}</span>
+                    <span className={styles.status} data-tone="withdrawn">
+                      {copy.status.withdrawn}
+                    </span>
+                    <span className={styles.entryPrice}>
+                      {copy.withdrawnNow(
+                        money(price),
+                        early ? copy.tierEarly : copy.tierRegular,
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.secondary}
+                      aria-disabled={resubmitBlocked || closed}
+                      data-resubmit-entry={e.category}
+                      onClick={() => open({ entryId: e.id, categories: [e.category] })}
+                    >
+                      {copy.resubmit(nameOf(e.category))}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+            <p className={styles.muted}>{copy.resubmitNote}</p>
+          </div>
+        </Step>
       )}
 
-      {(drafts.length > 0 || (withdrawn.length > 0 && !closed)) && (
-        <>
-          {(drafts.length > 0 || !view.terms.accepted) && (
+      {showTerms && (
+        <Step num={nums.terms} title={copy.blocks.terms} titleId={`${termsId}-title`}>
           <div className={styles.block}>
-            <h3 className={styles.title} id={`${termsId}-title`}>
-              {copy.termsTitle}
-            </h3>
             <div
               className={styles.terms}
               role="region"
@@ -366,54 +405,59 @@ export function SubmitPanel({
               </label>
             )}
           </div>
-          )}
+        </Step>
+      )}
 
-          {unverified && (
-            <VerifyNotice email={view.viewer.email} locale={locale} />
-          )}
+      {showSend && (
+        <Step num={nums.send} title={copy.blocks.send}>
+          <div className={styles.block}>
+            {unverified && <VerifyNotice email={view.viewer.email} locale={locale} />}
 
-          {blockers.length > 0 && (
-            <div
-              ref={blockersRef}
-              tabIndex={-1}
-              id={blockersId}
-              className={styles.blockers}
-              data-submit-blockers
-              data-pressed={pressedBlocked || undefined}
-            >
-              <h3 className={styles.title}>{copy.submitBlockers}</h3>
-              <ul>
-                {blockers.map((b) => (
-                  <li key={b.key}>{b.node}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {drafts.length > 0 && (
-            <div className={styles.actions}>
-              <button
-                type="button"
-                className={`btn-grow ${styles.primary} ${styles.send}`}
-                aria-disabled={blocked}
-                aria-describedby={blockers.length ? blockersId : undefined}
-                data-submit
-                onClick={() => open({ categories: drafts.map((e) => e.category) })}
+            {blockers.length > 0 && (
+              <div
+                ref={blockersRef}
+                tabIndex={-1}
+                id={blockersId}
+                className={styles.blockers}
+                data-submit-blockers
+                data-pressed={pressedBlocked || undefined}
               >
-                <GrowText>{submitting ? copy.submitWorking : copy.submitButton}</GrowText>
-              </button>
-              <p className={styles.hint} data-early-explain>
-                {prices.earlyAvailable
-                  ? copy.submitEarlyExplain(
-                      lastDayBefore(view.earlyBird.endsBefore, locale),
-                      money(prices.totalEarly),
-                      money(prices.totalRegular),
-                    )
-                  : copy.submitEarlyOver}
-              </p>
-            </div>
-          )}
-        </>
+                <h4 className={styles.title}>{copy.submitBlockers}</h4>
+                <ul>
+                  {blockers.map((b) => (
+                    <li key={b.key}>{b.node}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {drafts.length > 0 && (
+              <div className={styles.actions}>
+                <button
+                  type="button"
+                  className={`btn-grow ${styles.primary} ${styles.send}`}
+                  aria-disabled={blocked}
+                  aria-describedby={blockers.length ? blockersId : undefined}
+                  data-submit
+                  onClick={() => open({ categories: drafts.map((e) => e.category) })}
+                >
+                  <GrowText>
+                    {submitting ? copy.submitWorking : copy.submitButton}
+                  </GrowText>
+                </button>
+                <p className={styles.hint} data-early-explain>
+                  {prices.earlyAvailable
+                    ? copy.submitEarlyExplain(
+                        lastDayBefore(view.earlyBird.endsBefore, locale),
+                        money(prices.totalEarly),
+                        money(prices.totalRegular),
+                      )
+                    : copy.submitEarlyOver}
+                </p>
+              </div>
+            )}
+          </div>
+        </Step>
       )}
 
       {withdrawing && (
@@ -425,7 +469,8 @@ export function SubmitPanel({
           onClose={() => setWithdrawing(null)}
           onConfirm={async () => {
             const r = await form.withdraw(withdrawing.id)
-            if (!r.ok) return copy.withdrawErrors[r.error.code] ?? copy.withdrawErrors.unexpected
+            if (!r.ok)
+              return copy.withdrawErrors[r.error.code] ?? copy.withdrawErrors.unexpected
             setWithdrawing(null)
             setNotice(copy.withdrawDone(nameOf(withdrawing.category)))
             return null
@@ -441,7 +486,8 @@ export function SubmitPanel({
           submitting={submitting}
           error={
             submitOutcome && 'error' in submitOutcome
-              ? (copy.submitErrors[submitOutcome.error.code] ?? copy.submitErrors.unexpected)
+              ? (copy.submitErrors[submitOutcome.error.code] ??
+                copy.submitErrors.unexpected)
               : null
           }
           lines={entryTargets(target).map((e) => {
@@ -454,7 +500,11 @@ export function SubmitPanel({
                 ? line.early
                 : line.regular
               : early
-                ? earlyBirdPrice(regular, view.earlyBird.discountPercent, view.earlyBird.rounding)
+                ? earlyBirdPrice(
+                    regular,
+                    view.earlyBird.discountPercent,
+                    view.earlyBird.rounding,
+                  )
                 : regular
             return {
               slug: e.category,
@@ -490,9 +540,14 @@ function VerifyNotice({ email, locale }: { email: string; locale: Locale }) {
   }
   return (
     <div className={styles.verify} data-verify-notice>
-      <h3 className={styles.title}>{copy.verifyTitle}</h3>
+      <h4 className={styles.title}>{copy.verifyTitle}</h4>
       <p>{copy.verifyBody(email)}</p>
-      <button type="button" className={styles.secondary} onClick={resend} aria-disabled={state === 'sending'}>
+      <button
+        type="button"
+        className={styles.secondary}
+        onClick={resend}
+        aria-disabled={state === 'sending'}
+      >
         {copy.verifyResend}
       </button>
       <p role="status" className={styles.muted}>
@@ -619,7 +674,12 @@ function ConfirmDialog({
           </p>
         )}
         <div className={styles.dialogActions}>
-          <button type="button" className={styles.secondary} onClick={onClose} disabled={submitting}>
+          <button
+            type="button"
+            className={styles.secondary}
+            onClick={onClose}
+            disabled={submitting}
+          >
             {copy.dialogCancel}
           </button>
           <button
@@ -713,7 +773,12 @@ function WithdrawDialog({
           </p>
         )}
         <div className={styles.dialogActions}>
-          <button type="button" className={styles.secondary} onClick={onClose} disabled={working}>
+          <button
+            type="button"
+            className={styles.secondary}
+            onClick={onClose}
+            disabled={working}
+          >
             {copy.dialogCancel}
           </button>
           <button

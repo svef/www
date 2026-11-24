@@ -10,15 +10,21 @@ import type { ProjectImage } from '@/lib/awards/files/types'
 import type { ProjectView } from '@/lib/awards/projects/types'
 import type { Locale } from '@/lib/i18n'
 import { BillingSection, type BillingActions } from './BillingSection'
-import { CategoriesSection } from './CategoriesSection'
+import { CategoriesSection, CategoryTotal } from './CategoriesSection'
 import { getProjectFormCopy, type SectionId } from './copy'
 import { FieldInput } from './FieldInput'
 import type { ImageActions } from './ImageUpload'
 import styles from './ProjectForm.module.scss'
 import { QuestionsSection } from './QuestionsSection'
-import { RequestBanners, type RequestActions, type RequestBannerData } from './RequestBanners'
+import {
+  RequestBanners,
+  type RequestActions,
+  type RequestBannerData,
+} from './RequestBanners'
 import { ReviewSection } from './ReviewSection'
 import { SECTIONS } from './sections'
+import { Blocks } from './Blocks'
+import { Step } from '@/components/FormParts/FormParts'
 import { Stepper, type StepItem } from './Stepper'
 import { neighbours, parseStepHash, stepHash, STEP_IDS } from './steps'
 import { focusTarget, focusWithin, GO_TO_EVENT, type GoToTarget } from './focus'
@@ -60,7 +66,11 @@ export function ProjectForm({
   /** The server calls behind the image upload. */
   images: ImageActions
   /** Staff requests on this project's entries (svef/www#169), with the actions to answer them. */
-  requests?: { items: RequestBannerData[]; actions: RequestActions; onChanged: () => void }
+  requests?: {
+    items: RequestBannerData[]
+    actions: RequestActions
+    onChanged: () => void
+  }
 }) {
   const copy = getProjectFormCopy(locale)
   const form = useProjectForm(initial, actions)
@@ -107,9 +117,13 @@ export function ProjectForm({
             ? copy.notSavedLock
             : copy.notSaved
           : ''
-  const saveNote = form.saveState === 'saved' && form.invalidUnsaved ? copy.notSavedCheck : ''
+  const saveNote =
+    form.saveState === 'saved' && form.invalidUnsaved ? copy.notSavedCheck : ''
 
-  const renderProjectField = (key: string) => {
+  const renderProjectField = (
+    key: string,
+    titled?: { controlId: string; titleId: string },
+  ) => {
     if (!visible.has(key)) return null
     const field = getField(key)
     const e = view.editability[key]
@@ -131,7 +145,10 @@ export function ProjectForm({
         errors={messagesFor(key)}
         forced={forced}
         requested={requestedKeys.has(key)}
-        imageUpload={key === 'image' ? { actions: images, image, onChange: setImage } : undefined}
+        titled={titled}
+        imageUpload={
+          key === 'image' ? { actions: images, image, onChange: setImage } : undefined
+        }
         invite={
           key === 'collaborators'
             ? {
@@ -153,6 +170,29 @@ export function ProjectForm({
   })
   const [announcement, setAnnouncement] = useState('')
   const layoutRef = useRef<HTMLDivElement>(null)
+
+  // The current step's bottom bar is sticky: keep what the browser scrolls to (a focused
+  // field, a link target) clear of it by padding the page's scroll area by its height.
+  useEffect(() => {
+    const bar = document.querySelector<HTMLElement>(
+      `section[data-step="${nav.step}"] [data-step-nav]`,
+    )
+    const root = document.documentElement
+    if (!bar) return
+    const sync = () => {
+      const stuck = getComputedStyle(bar).position === 'sticky'
+      root.style.scrollPaddingBottom = stuck ? `${bar.offsetHeight + 16}px` : ''
+    }
+    sync()
+    const ro = new ResizeObserver(sync)
+    ro.observe(bar)
+    window.addEventListener('resize', sync)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', sync)
+      root.style.scrollPaddingBottom = ''
+    }
+  }, [nav.step])
 
   const go = useCallback(
     (step: SectionId, focus: FocusRequest, push: boolean) => {
@@ -290,7 +330,11 @@ export function ProjectForm({
                 )}
               </p>
               {form.lostLock && <p>{copy.lockLost}</p>}
-              <button type="button" className={styles.small} onClick={form.checkLockAgain}>
+              <button
+                type="button"
+                className={styles.small}
+                onClick={form.checkLockAgain}
+              >
                 {copy.lockTryAgain}
               </button>
             </>
@@ -362,47 +406,55 @@ export function ProjectForm({
                   />
                 </div>
                 {(prev || next) && (
-                  <div className={styles.stepNav}>
-                    {prev && (
-                      <a
-                        href={stepHash(prev)}
-                        className={styles.prev}
-                        data-step-prev
-                        onClick={(e) => {
-                          e.preventDefault()
-                          go(prev, { kind: 'heading' }, true)
-                        }}
-                      >
-                        <ArrowLeft aria-hidden="true" weight="bold" />
-                        <span>
-                          {copy.prevStep}
-                          <span className={styles.srOnly}>: </span>
-                          <span className={styles.stepNavName}>
-                            {copy.sections[prev].title}
-                          </span>
-                        </span>
-                      </a>
+                  // Sticky at the foot of the screen while the step is longer than it, at
+                  // rest at the end of the step. The categories step's running total rides
+                  // in the same bar, so there is only ever one.
+                  <div className={styles.stepBar} data-step-nav>
+                    {s.id === 'categories' && (
+                      <CategoryTotal form={form} locale={locale} />
                     )}
-                    {next && (
-                      <a
-                        href={stepHash(next)}
-                        className={`btn-grow ${styles.next}`}
-                        data-step-next
-                        onClick={(e) => {
-                          e.preventDefault()
-                          go(next, { kind: 'heading' }, true)
-                        }}
-                      >
-                        <span>
-                          <GrowText>{copy.nextStep}</GrowText>
-                          <span className={styles.srOnly}>: </span>
-                          <span className={styles.stepNavName}>
-                            {copy.sections[next].title}
+                    <div className={styles.stepNav}>
+                      {prev && (
+                        <a
+                          href={stepHash(prev)}
+                          className={styles.prev}
+                          data-step-prev
+                          onClick={(e) => {
+                            e.preventDefault()
+                            go(prev, { kind: 'heading' }, true)
+                          }}
+                        >
+                          <ArrowLeft aria-hidden="true" weight="bold" />
+                          <span>
+                            {copy.prevStep}
+                            <span className={styles.srOnly}>: </span>
+                            <span className={styles.stepNavName}>
+                              {copy.sections[prev].title}
+                            </span>
                           </span>
-                        </span>
-                        <ArrowRight aria-hidden="true" weight="bold" />
-                      </a>
-                    )}
+                        </a>
+                      )}
+                      {next && (
+                        <a
+                          href={stepHash(next)}
+                          className={`btn-grow ${styles.next}`}
+                          data-step-next
+                          onClick={(e) => {
+                            e.preventDefault()
+                            go(next, { kind: 'heading' }, true)
+                          }}
+                        >
+                          <span>
+                            <GrowText>{copy.nextStep}</GrowText>
+                            <span className={styles.srOnly}>: </span>
+                            <span className={styles.stepNavName}>
+                              {copy.sections[next].title}
+                            </span>
+                          </span>
+                          <ArrowRight aria-hidden="true" weight="bold" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
               </section>
@@ -425,7 +477,10 @@ function SectionBody({
   id: SectionId
   form: ProjectFormApi
   locale: Locale
-  renderProjectField: (key: string) => React.ReactNode
+  renderProjectField: (
+    key: string,
+    titled?: { controlId: string; titleId: string },
+  ) => React.ReactNode
   requestedKeys: ReadonlySet<string>
   billing: BillingProps & {
     profiles: BillingProfileView[]
@@ -433,29 +488,40 @@ function SectionBody({
   }
 }) {
   const section = SECTIONS.find((s) => s.id === id)!
+  const copy = getProjectFormCopy(locale)
   switch (id) {
     case 'categories':
       return <CategoriesSection form={form} locale={locale} />
     case 'questions':
-      return <QuestionsSection
+      return (
+        <QuestionsSection
           form={form}
           locale={locale}
           renderField={renderProjectField}
           requestedKeys={requestedKeys}
         />
+      )
     case 'billing':
       return (
-        <BillingSection
-          form={form}
-          locale={locale}
-          profiles={billing.profiles}
-          onProfiles={billing.onProfiles}
-          actions={billing.actions}
-        />
+        <Step num="01" title={copy.blocks.payer}>
+          <BillingSection
+            form={form}
+            locale={locale}
+            profiles={billing.profiles}
+            onProfiles={billing.onProfiles}
+            actions={billing.actions}
+          />
+        </Step>
       )
     case 'review':
       return <ReviewSection form={form} locale={locale} />
     default:
-      return <>{section.fields.map(renderProjectField)}</>
+      return (
+        <Blocks
+          blocks={section.blocks ?? [{ id: 'basics', fields: section.fields }]}
+          copy={copy}
+          renderProjectField={renderProjectField}
+        />
+      )
   }
 }
