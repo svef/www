@@ -48,6 +48,7 @@ export function useProjectForm(initial: ProjectView, actions: ProjectFormActions
     billingProfileId,
     changeBilling: (id: string | null) => controller.changeBilling(id),
     submit: (args: { entryId?: string; acceptTerms: boolean }) => controller.submit(args),
+    withdraw: (entryId: string) => controller.withdraw(entryId),
     markTouched: (key: string) => controller.markTouched(key),
     retrySave: controller.retrySave,
     checkLockAgain: controller.checkLockAgain,

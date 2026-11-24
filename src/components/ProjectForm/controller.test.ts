@@ -64,6 +64,9 @@ function setup(over: Partial<ProjectFormActions> = {}) {
     setCategories: vi.fn(async () => ok(view())),
     setBilling: vi.fn(async () => ok(view())),
     submit: vi.fn(async () => ok({ result: submitted, view: view() })),
+    withdraw: vi.fn(async (entryId: string) =>
+      ok({ result: { entryId, category: 'app', clearedPrice: null }, view: view() }),
+    ),
     release: vi.fn(),
     ...over,
   }
@@ -464,6 +467,38 @@ describe('ProjectFormController', () => {
     expect(c.getSnapshot().submitOutcome).toEqual({ result: submitted })
     expect(c.getSnapshot().submitting).toBe(false)
     stop()
+  })
+
+  it('saves what was typed before withdrawing, refreshes the project, and passes a refusal back', async () => {
+    const order: string[] = []
+    const after = view({ entries: [{ id: 'en1', category: 'app', status: 'withdrawn', answers: {}, price: null }] })
+    const { c } = setup({
+      save: vi.fn(async (p) => {
+        order.push('save')
+        return ok(saved(Object.keys(p.answers ?? {})))
+      }),
+      withdraw: vi.fn(async (entryId: string) => {
+        order.push('withdraw')
+        return ok({ result: { entryId, category: 'app', clearedPrice: null }, view: after })
+      }),
+    })
+    const stop = c.start()
+    await settle()
+    c.setAnswer('title', 'Typed')
+    const r = await c.withdraw('en1')
+    expect(r.ok).toBe(true)
+    expect(order).toEqual(['save', 'withdraw'])
+    expect(c.getSnapshot().view.entries[0].status).toBe('withdrawn')
+    stop()
+
+    const refused = setup({
+      withdraw: vi.fn(async () => fail({ code: 'not_withdrawable', message: 'No.' })),
+    })
+    const stop2 = refused.c.start()
+    await settle()
+    const r2 = await refused.c.withdraw('en1')
+    expect(r2.ok).toBe(false)
+    stop2()
   })
 
   it('ignores a second press while a submit is in flight, and reports a refusal', async () => {

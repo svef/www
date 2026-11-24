@@ -1,6 +1,7 @@
 import { HEARTBEAT_INTERVAL_MS } from '@/lib/awards/projects/lock-rules'
 import type { ActionResult, ErrorPayload, LockInfo } from '@/lib/awards/projects/errors'
 import type { SubmitResult } from '@/lib/awards/projects/submit'
+import type { WithdrawResult } from '@/lib/awards/projects/withdraw'
 import type { ProjectView, SaveAnswersPatch, SaveResult } from '@/lib/awards/projects/types'
 import { wireValue } from './wire'
 
@@ -39,6 +40,8 @@ export type ProjectFormActions = {
     entryId?: string
     acceptTerms: boolean
   }): Promise<ActionResult<{ result: SubmitResult; view: ProjectView }>>
+  /** Withdraw one submitted entry (the creator only). Returns what was cleared and the refreshed project. */
+  withdraw(entryId: string): Promise<ActionResult<{ result: WithdrawResult; view: ProjectView }>>
   /** Release on leave. Fire-and-forget (a beacon). */
   release(): void
 }
@@ -494,6 +497,26 @@ export class ProjectFormController {
     if (r.error.code === 'lock_required') await this.loseLock()
     this.set({ submitting: false, submitOutcome: { error: r.error } })
     return false
+  }
+
+  /**
+   * Withdraws a submitted entry. What was typed is saved first, like a submit. The result is
+   * handed back to the caller (the dialog shows its own error); the lock is given up only if
+   * the server says it is gone.
+   */
+  async withdraw(entryId: string): Promise<ActionResult<WithdrawResult>> {
+    if (!this.held)
+      return { ok: false, error: { code: 'lock_required', message: 'You do not hold the edit lock.' } }
+    await this.queue
+    await this.flush()
+    const r = await this.actions.withdraw(entryId).catch(networkError)
+    if (r.ok) {
+      this.applyView(r.value.view)
+      this.lastPing = this.clock()
+      return { ok: true, value: r.value.result }
+    }
+    if (r.error.code === 'lock_required') await this.loseLock()
+    return r
   }
 
   markTouched(key: string) {

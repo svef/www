@@ -30,6 +30,7 @@ export type AwardsErrorCode =
   | 'billing_required'
   | 'terms_required'
   | 'nothing_to_submit'
+  | 'not_withdrawable'
 
 /** The serialisable form of an `AwardsError`, returned by server actions. */
 export type ErrorPayload = {

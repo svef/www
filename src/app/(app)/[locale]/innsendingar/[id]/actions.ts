@@ -11,6 +11,7 @@ import {
   setProjectBillingProfile,
 } from '@/lib/awards/projects/service'
 import { submitEntries, type SubmitResult } from '@/lib/awards/projects/submit'
+import { withdrawEntry, type WithdrawResult } from '@/lib/awards/projects/withdraw'
 import type { ProjectView, SaveAnswersPatch, SaveResult } from '@/lib/awards/projects/types'
 import type { LockInfo } from '@/lib/awards/projects/errors'
 import { getCurrentUserId, getRequestNow } from '@/lib/awards/session'
@@ -89,6 +90,18 @@ export async function submitAction(
   return run(async (userId, now) => {
     const db = getAwardsDb()
     const result = await submitEntries(db, { userId, projectId, now, ...args })
+    return { result, view: await loadProject(db, { userId, projectId, now }) }
+  })
+}
+
+/** Withdraws one submitted entry (the creator only) and returns what was cleared with the refreshed project. */
+export async function withdrawAction(
+  projectId: string,
+  entryId: string,
+): Promise<ActionResult<{ result: WithdrawResult; view: ProjectView }>> {
+  return run(async (userId, now) => {
+    const db = getAwardsDb()
+    const result = await withdrawEntry(db, { userId, projectId, entryId, now })
     return { result, view: await loadProject(db, { userId, projectId, now }) }
   })
 }
