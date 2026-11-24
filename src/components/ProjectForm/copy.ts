@@ -117,8 +117,54 @@ type Strings = {
   reviewTotal: string
   reviewEarlyHint: (lastDay: string, early: string, regular: string) => string
   reviewGoTo: string
-  reviewSubmitSlot: string
   reviewBillingTo: (company: string, kennitala: string) => string
+  // submit
+  termsTitle: string
+  termsDraftNote: string
+  termsVersion: (v: string) => string
+  termsBody: string[]
+  termsAccept: (v: string) => string
+  termsAcceptedAlready: (v: string) => string
+  submitButton: string
+  submitWorking: string
+  submitEarlyExplain: (lastDay: string, early: string, regular: string) => string
+  submitEarlyOver: string
+  submitBlockers: string
+  submitBlockTerms: string
+  submitBlockLock: string
+  submitBlockNotOpen: (opens: string) => string
+  submitBlockClosed: string
+  submitBlockNothing: string
+  verifyTitle: string
+  verifyBody: (email: string) => string
+  verifyResend: string
+  verifySending: string
+  verifySent: string
+  verifyFailed: string
+  dialogTitle: string
+  dialogIntro: (n: number) => string
+  dialogPrices: string
+  dialogTotal: string
+  dialogEditable: string
+  dialogLocked: string
+  dialogWithdrawEarly: (lastDay: string) => string
+  dialogWithdrawRegular: string
+  dialogCancel: string
+  dialogConfirm: string
+  entriesTitle: string
+  entryLockedPrice: (amount: string, tier: string) => string
+  tierEarly: string
+  tierRegular: string
+  submitThis: (category: string) => string
+  doneTitle: (n: number) => string
+  doneLocked: string
+  doneReceipt: (email: string) => string
+  doneReceiptFailed: string
+  doneAlready: string
+  doneSkipped: string
+  skipReason: Record<'project_incomplete' | 'entry_incomplete', string>
+  submitErrors: Record<string, string>
+  submittedNote: string
 }
 
 export type SectionId =
@@ -253,10 +299,81 @@ const en: Strings = {
   reviewPrices: 'Price per category',
   reviewTotal: 'Total',
   reviewEarlyHint: (d, e, r) =>
-    `Submit by the end of ${d} to get the early-bird price, ${e} instead of ${r}.`,
+    `Submit by the end of ${d} to get the early-bird price, ${e} instead of ${r}`,
   reviewGoTo: 'Go to',
-  reviewSubmitSlot: 'Accepting the terms and submitting arrive in the next step.',
   reviewBillingTo: (c, k) => `An invoice will be sent to ${c}, kt. ${k}, after submissions close.`,
+  termsTitle: 'Competition terms',
+  termsDraftNote: 'Draft text. SVEF will replace it with the final terms before submissions open.',
+  termsVersion: (v) => `Version ${v}`,
+  termsBody: [
+    'By submitting you confirm that you are entitled to enter the project, that the answers are true, and that the people credited have agreed to be named.',
+    'Entry fees are invoiced after submissions close. Fees are not refunded, including when an entry is withdrawn or found ineligible.',
+    'The jury judges the project as submitted. After submitting, some answers are locked; changing them means withdrawing the entry.',
+  ],
+  termsAccept: (v) => `I accept the competition terms (version ${v})`,
+  termsAcceptedAlready: (v) => `You have accepted the competition terms (version ${v}) for this project.`,
+  submitButton: 'Submit',
+  submitWorking: 'Submitting…',
+  submitEarlyExplain: (d, e, r) =>
+    `Submit by the end of ${d} to secure the early-bird price, ${e} instead of ${r}`,
+  submitEarlyOver: 'The early-bird period has ended, so the regular price is locked when you submit.',
+  submitBlockers: 'Before you can submit',
+  submitBlockTerms: 'Accept the competition terms',
+  submitBlockLock: 'Someone else is editing the project, so you can’t submit right now.',
+  submitBlockNotOpen: (d) => `Submissions open on ${d}.`,
+  submitBlockClosed: 'Submissions have closed.',
+  submitBlockNothing: 'There is nothing left to submit.',
+  verifyTitle: 'Verify your email to submit',
+  verifyBody: (e) =>
+    `You can fill in the project without verifying, but to submit it we need to know ${e} is yours. Open the link in the email we sent you.`,
+  verifyResend: 'Send the confirmation email again',
+  verifySending: 'Sending…',
+  verifySent: 'Sent. Check your inbox.',
+  verifyFailed: 'Could not send the email. Try again in a moment.',
+  dialogTitle: 'Submit your entries?',
+  dialogIntro: (n) =>
+    n === 1
+      ? 'You are about to submit 1 entry. Its price is locked as soon as you submit.'
+      : `You are about to submit ${n} entries. Their prices are locked as soon as you submit.`,
+  dialogPrices: 'Price you lock in',
+  dialogTotal: 'Total',
+  dialogEditable: 'Still editable after submitting',
+  dialogLocked: 'Locked once submitted',
+  dialogWithdrawEarly: (d) =>
+    `Changing a locked answer means withdrawing the entry, and that gives up the early-bird price: if you submit again after ${d} it costs the regular price.`,
+  dialogWithdrawRegular:
+    'Changing a locked answer means withdrawing the entry. Submitting it again is priced by the date you do it.',
+  dialogCancel: 'Cancel',
+  dialogConfirm: 'Submit',
+  entriesTitle: 'Your entries',
+  entryLockedPrice: (a, t) => `${a} (${t}, locked)`,
+  tierEarly: 'early-bird price',
+  tierRegular: 'regular price',
+  submitThis: (c) => `Submit ${c}`,
+  doneTitle: (n) => (n === 1 ? '1 entry submitted' : `${n} entries submitted`),
+  doneLocked: 'The prices are locked and will not change.',
+  doneReceipt: (e) => `A receipt has been sent to ${e}.`,
+  doneReceiptFailed: 'The entries are submitted, but the receipt email could not be sent.',
+  doneAlready: 'These entries were already submitted.',
+  doneSkipped: 'Not submitted',
+  skipReason: {
+    project_incomplete: 'the project still has something missing',
+    entry_incomplete: 'this entry still has something missing',
+  },
+  submitErrors: {
+    email_unverified: 'Verify your email address to submit.',
+    intake_closed: 'Submissions have closed.',
+    intake_not_open: 'Submissions have not opened yet.',
+    billing_required: 'Choose who is invoiced before submitting.',
+    terms_required: 'Accept the competition terms to submit.',
+    nothing_to_submit: 'There is nothing left to submit.',
+    lock_required: 'Someone else is editing the project, so it could not be submitted.',
+    forbidden: 'You can’t submit this project.',
+    not_found: 'The project could not be found.',
+    unexpected: 'Something went wrong and nothing was submitted. Try again.',
+  },
+  submittedNote:
+    'Some answers are now locked, and the rest keep saving as you type. Changes to those are logged.',
   status: {
     draft: 'Draft',
     submitted: 'Submitted',
@@ -403,11 +520,82 @@ const is: Strings = {
   reviewPrices: 'Verð eftir flokkum',
   reviewTotal: 'Samtals',
   reviewEarlyHint: (d, e, r) =>
-    `Sendu inn fyrir lok ${d} til að fá snemmskráningarverð, ${e} í stað ${r}.`,
+    `Sendu inn fyrir lok ${d} til að fá snemmskráningarverð, ${e} í stað ${r}`,
   reviewGoTo: 'Fara í',
-  reviewSubmitSlot: 'Samþykki skilmála og innsending koma í næsta skrefi.',
   reviewBillingTo: (c, k) =>
     `Reikningur verður sendur á ${c}, kt. ${k}, eftir að innsendingum lýkur.`,
+  termsTitle: 'Skilmálar keppninnar',
+  termsDraftNote: 'Drög að texta. SVEF skiptir honum út fyrir endanlega skilmála áður en innsendingar opna.',
+  termsVersion: (v) => `Útgáfa ${v}`,
+  termsBody: [
+    'Með innsendingu staðfestir þú að þú megir senda verkefnið inn, að svörin séu rétt og að þau sem nefnd eru hafi samþykkt að vera nafngreind.',
+    'Þátttökugjald er innheimt eftir að innsendingum lýkur. Gjöld eru ekki endurgreidd, líka þegar innsending er dregin til baka eða reynist ekki gjaldgeng.',
+    'Dómnefnd metur verkefnið eins og það var sent inn. Eftir innsendingu læsast sum svör og til að breyta þeim þarf að draga innsendinguna til baka.',
+  ],
+  termsAccept: (v) => `Ég samþykki skilmála keppninnar (útgáfa ${v})`,
+  termsAcceptedAlready: (v) => `Þú hefur samþykkt skilmála keppninnar (útgáfa ${v}) fyrir þetta verkefni.`,
+  submitButton: 'Senda inn',
+  submitWorking: 'Sendi inn…',
+  submitEarlyExplain: (d, e, r) =>
+    `Sendu inn fyrir lok ${d} til að tryggja snemmskráningarverðið, ${e} í stað ${r}`,
+  submitEarlyOver: 'Snemmskráningu er lokið, svo almennt verð festist þegar þú sendir inn.',
+  submitBlockers: 'Áður en þú getur sent inn',
+  submitBlockTerms: 'Samþykktu skilmála keppninnar',
+  submitBlockLock: 'Einhver annar er að breyta verkefninu og því er ekki hægt að senda inn núna.',
+  submitBlockNotOpen: (d) => `Innsendingar opna ${d}.`,
+  submitBlockClosed: 'Innsendingum er lokið.',
+  submitBlockNothing: 'Ekkert er eftir til að senda inn.',
+  verifyTitle: 'Staðfestu netfangið til að senda inn',
+  verifyBody: (e) =>
+    `Þú getur fyllt út verkefnið án staðfestingar en til að senda það inn þurfum við að vita að ${e} sé þitt. Opnaðu tengilinn í póstinum sem við sendum þér.`,
+  verifyResend: 'Senda staðfestingarpóstinn aftur',
+  verifySending: 'Sendi…',
+  verifySent: 'Sent. Athugaðu pósthólfið.',
+  verifyFailed: 'Ekki tókst að senda póstinn. Reyndu aftur eftir augnablik.',
+  dialogTitle: 'Senda innsendingarnar inn?',
+  dialogIntro: (n) =>
+    n === 1
+      ? 'Þú ert að fara að senda 1 innsendingu inn. Verðið festist um leið og þú sendir inn.'
+      : `Þú ert að fara að senda ${n} innsendingar inn. Verðið festist um leið og þú sendir inn.`,
+  dialogPrices: 'Verðið sem festist',
+  dialogTotal: 'Samtals',
+  dialogEditable: 'Hægt að breyta eftir innsendingu',
+  dialogLocked: 'Læst eftir innsendingu',
+  dialogWithdrawEarly: (d) =>
+    `Til að breyta læstu svari þarf að draga innsendinguna til baka og þá fellur snemmskráningarverðið niður: ef hún er send aftur inn eftir ${d} kostar hún almennt verð.`,
+  dialogWithdrawRegular:
+    'Til að breyta læstu svari þarf að draga innsendinguna til baka. Ný innsending er verðlögð eftir því hvaða dag hún er send.',
+  dialogCancel: 'Hætta við',
+  dialogConfirm: 'Senda inn',
+  entriesTitle: 'Innsendingarnar þínar',
+  entryLockedPrice: (a, t) => `${a} (${t}, fest)`,
+  tierEarly: 'snemmskráningarverð',
+  tierRegular: 'almennt verð',
+  submitThis: (c) => `Senda inn ${c}`,
+  doneTitle: (n) => (n === 1 ? '1 innsending send inn' : `${n} innsendingar sendar inn`),
+  doneLocked: 'Verðið er fest og breytist ekki.',
+  doneReceipt: (e) => `Kvittun hefur verið send á ${e}.`,
+  doneReceiptFailed: 'Innsendingarnar eru komnar inn en ekki tókst að senda kvittunina.',
+  doneAlready: 'Þessar innsendingar voru þegar sendar inn.',
+  doneSkipped: 'Ekki send inn',
+  skipReason: {
+    project_incomplete: 'enn vantar eitthvað í verkefnið',
+    entry_incomplete: 'enn vantar eitthvað í þessa innsendingu',
+  },
+  submitErrors: {
+    email_unverified: 'Staðfestu netfangið þitt til að senda inn.',
+    intake_closed: 'Innsendingum er lokið.',
+    intake_not_open: 'Innsendingar eru ekki opnar enn.',
+    billing_required: 'Veldu greiðanda reiknings áður en þú sendir inn.',
+    terms_required: 'Samþykktu skilmála keppninnar til að senda inn.',
+    nothing_to_submit: 'Ekkert er eftir til að senda inn.',
+    lock_required: 'Einhver annar er að breyta verkefninu og því var ekki hægt að senda inn.',
+    forbidden: 'Þú getur ekki sent þetta verkefni inn.',
+    not_found: 'Verkefnið fannst ekki.',
+    unexpected: 'Eitthvað fór úrskeiðis og ekkert var sent inn. Reyndu aftur.',
+  },
+  submittedNote:
+    'Sum svör eru nú læst en hin vistast áfram um leið og þú skrifar. Breytingar á þeim eru skráðar.',
   status: {
     draft: 'Drög',
     submitted: 'Innsent',

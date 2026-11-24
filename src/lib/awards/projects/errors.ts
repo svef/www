@@ -25,6 +25,11 @@ export type AwardsErrorCode =
   | 'no_edition'
   | 'billing_in_use'
   | 'intake_closed'
+  | 'intake_not_open'
+  | 'email_unverified'
+  | 'billing_required'
+  | 'terms_required'
+  | 'nothing_to_submit'
 
 /** The serialisable form of an `AwardsError`, returned by server actions. */
 export type ErrorPayload = {

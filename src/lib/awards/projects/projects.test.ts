@@ -3,6 +3,7 @@ import { and, eq } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { createTestDatabase, type TestDatabase } from '../db/test-database'
 import * as schema from '../db/schema'
 import { AwardsError } from './errors'
 import { LOCK_TTL_MS } from './lock-rules'
@@ -17,25 +18,31 @@ import {
 } from './service'
 
 /**
- * The project service against a real Postgres, which must already be migrated
- * and seeded (`npm run awards:migrate && npm run awards:seed`; CI does both).
- * Skipped when AWARDS_DATABASE_URL is unset. Every test makes its own users and
- * project, and moves the clock through `now` rather than waiting.
+ * The project service against a real Postgres. The suite creates, migrates and seeds a
+ * database of its own and drops it afterwards, so it leaves nothing in the shared one
+ * (`AWARDS_DATABASE_URL` only says which server to use; the role needs CREATEDB).
+ * Skipped when it is unset. Every test makes its own users and project, and moves the
+ * clock through `now` rather than waiting.
  */
 const url = process.env.AWARDS_DATABASE_URL_UNPOOLED ?? process.env.AWARDS_DATABASE_URL
 
 describe.skipIf(!url)('project service', () => {
   let pool: Pool
+  let scratch: TestDatabase
   let db: ReturnType<typeof drizzle<typeof schema>>
   const T0 = new Date()
   const at = (ms: number) => new Date(T0.getTime() + ms)
 
-  beforeAll(() => {
-    pool = new Pool({ connectionString: url, max: 12 })
+  // The suite writes users, projects and (append-only) events, so it runs in a database of
+  // its own that is dropped afterwards; the shared one is only used to find the server.
+  beforeAll(async () => {
+    scratch = await createTestDatabase(url!)
+    pool = new Pool({ connectionString: scratch.url, max: 12 })
     db = drizzle(pool, { schema })
-  })
+  }, 60_000)
   afterAll(async () => {
     await pool?.end()
+    await scratch?.drop()
   })
 
   let n = 0

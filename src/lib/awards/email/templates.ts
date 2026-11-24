@@ -120,3 +120,130 @@ export function passwordResetEmail(input: {
 }): EmailContent {
   return render(input.locale, input.name, input.url, copy[input.locale].reset)
 }
+
+// ── Receipt on submitting ───────────────────────────────────────────────────
+
+export interface ReceiptInput {
+  locale: Locale
+  name: string
+  projectTitle: string
+  /** The entries submitted just now, with the price locked for each. */
+  entries: { category: string; amount: number; early: boolean }[]
+  /** Who the invoice goes to; null if (impossibly) none was chosen. */
+  billing: { companyName: string; kennitala: string; invoiceEmail?: string; address?: string } | null
+  /** The project's page, for the "view or change" link. */
+  url: string
+}
+
+const receiptCopy: Record<
+  Locale,
+  {
+    subject: (title: string) => string
+    intro: (title: string) => string
+    entries: string
+    early: string
+    regular: string
+    total: string
+    billing: string
+    invoiceNote: string
+    editable: string
+    link: string
+    button: string
+  }
+> = {
+  is: {
+    subject: (t) => `Kvittun: ${t} – Íslensku vefverðlaunin`,
+    intro: (t) => `Við höfum móttekið innsendinguna „${t}“. Hér er staðfestingin.`,
+    entries: 'Innsendir flokkar og staðfest verð',
+    early: 'snemmskráningarverð',
+    regular: 'almennt verð',
+    total: 'Samtals',
+    billing: 'Reikningur fer á',
+    invoiceNote:
+      'Reikningur er sendur eftir að innsendingum lýkur. Ekkert er greitt núna og verðið breytist ekki þótt verðskrá breytist síðar.',
+    editable:
+      'Þú getur enn breytt tenglum, mynd, aðgangsupplýsingum, samstarfsfólki og nafni í þakkarlista. Til að breyta titli, lýsingu eða svörum flokka þarf að draga innsendinguna til baka, en þá fellur snemmskráningarverðið niður.',
+    link: 'Opna innsendinguna:',
+    button: 'Opna innsendinguna',
+  },
+  en: {
+    subject: (t) => `Receipt: ${t} – Icelandic Web Awards`,
+    intro: (t) => `We have received your submission “${t}”. This is your confirmation.`,
+    entries: 'Entries submitted and their locked prices',
+    early: 'early-bird price',
+    regular: 'regular price',
+    total: 'Total',
+    billing: 'Invoice goes to',
+    invoiceNote:
+      'The invoice is sent after submissions close. Nothing is charged now, and the price does not change if prices change later.',
+    editable:
+      'You can still change links, the image, login details, collaborators and public credit. To change the title, description or category answers you would withdraw the entry, which gives up the early-bird price.',
+    link: 'Open your submission:',
+    button: 'Open your submission',
+  },
+}
+
+const money = (amount: number, locale: Locale) =>
+  `${new Intl.NumberFormat(locale === 'is' ? 'is-IS' : 'en-GB').format(amount)} kr.`
+
+export function receiptEmail(input: ReceiptInput): EmailContent {
+  const { locale } = input
+  const c = receiptCopy[locale]
+  const g = copy[locale]
+  const total = input.entries.reduce((n, e) => n + e.amount, 0)
+  const line = (e: ReceiptInput['entries'][number]) =>
+    `${e.category}: ${money(e.amount, locale)} (${e.early ? c.early : c.regular})`
+  const billingLine = input.billing
+    ? [
+        input.billing.companyName,
+        `kt. ${input.billing.kennitala}`,
+        input.billing.invoiceEmail,
+        input.billing.address,
+      ]
+        .filter(Boolean)
+        .join(', ')
+    : ''
+
+  const text = [
+    g.greeting(input.name),
+    '',
+    c.intro(input.projectTitle),
+    '',
+    `${c.entries}:`,
+    ...input.entries.map((e) => `- ${line(e)}`),
+    `${c.total}: ${money(total, locale)}`,
+    '',
+    ...(billingLine ? [`${c.billing}: ${billingLine}`, ''] : []),
+    c.invoiceNote,
+    '',
+    c.editable,
+    '',
+    `${c.link} ${input.url}`,
+    '',
+    g.signoff,
+  ].join('\n')
+
+  const paragraph = (value: string) => `<p style="margin:0 0 16px">${escapeHtml(value)}</p>`
+  const row = (e: ReceiptInput['entries'][number]) =>
+    `<tr><td style="padding:6px 12px 6px 0;border-bottom:1px solid #ddd">${escapeHtml(e.category)}<br><span style="font-size:13px;color:#555">${escapeHtml(e.early ? c.early : c.regular)}</span></td><td style="padding:6px 0;border-bottom:1px solid #ddd;text-align:right;white-space:nowrap">${escapeHtml(money(e.amount, locale))}</td></tr>`
+  const html = `<!doctype html>
+<html lang="${locale}">
+<body style="margin:0;padding:24px;background:#fcfbfe;color:#09060c;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5">
+<div style="max-width:520px;margin:0 auto">
+${paragraph(g.greeting(input.name))}
+${paragraph(c.intro(input.projectTitle))}
+<h2 style="margin:24px 0 8px;font-size:18px">${escapeHtml(c.entries)}</h2>
+<table style="width:100%;border-collapse:collapse">
+${input.entries.map(row).join('\n')}
+<tr><td style="padding:8px 12px 8px 0;font-weight:bold">${escapeHtml(c.total)}</td><td style="padding:8px 0;font-weight:bold;text-align:right;white-space:nowrap">${escapeHtml(money(total, locale))}</td></tr>
+</table>
+${billingLine ? `<p style="margin:16px 0"><strong>${escapeHtml(c.billing)}:</strong> ${escapeHtml(billingLine)}</p>` : ''}
+${paragraph(c.invoiceNote)}
+${paragraph(c.editable)}
+<p style="margin:24px 0"><a href="${escapeHtml(input.url)}" style="display:inline-block;background:#8917e1;color:#fcfbfe;padding:12px 20px;text-decoration:none;font-weight:bold">${escapeHtml(c.button)}</a></p>
+<p style="margin:0;white-space:pre-line">${escapeHtml(g.signoff)}</p>
+</div>
+</body>
+</html>`
+  return { subject: c.subject(input.projectTitle), text, html }
+}

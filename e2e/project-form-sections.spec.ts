@@ -506,7 +506,7 @@ test.describe('review', () => {
     // The summary shows answers, never the login details.
     await expect(review.locator('[data-answer="title"]')).toContainText('Brand new site')
     await expect(review.locator('[data-answer="description"]')).toContainText('Not answered')
-    // The submit step is a marked slot, not built here.
+    // The submit step is its own panel at the end.
     await expect(review.locator('[data-slot="submit"]')).toBeVisible()
     await context.close()
   })

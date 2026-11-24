@@ -23,12 +23,18 @@ export function awardsPool(): Pool {
 }
 
 let counter = 0
-export async function createUser(name: string): Promise<string> {
+export async function createUser(name: string, verified = false): Promise<string> {
   const { rows } = await awardsPool().query(
-    `insert into "user" (id, name, email) values (gen_random_uuid(), $1, $2) returning id`,
-    [name, `e2e-${Date.now()}-${counter++}-${Math.random().toString(36).slice(2)}@example.com`],
+    `insert into "user" (id, name, email, email_verified) values (gen_random_uuid(), $1, $2, $3) returning id`,
+    [name, `e2e-${Date.now()}-${counter++}-${Math.random().toString(36).slice(2)}@example.com`, verified],
   )
   return rows[0].id as string
+}
+
+/** The account's email, for finding what was sent to it. */
+export async function emailOf(userId: string): Promise<string> {
+  const { rows } = await awardsPool().query(`select email from "user" where id = $1`, [userId])
+  return rows[0].email as string
 }
 
 /** Lets `userId` edit the project, as if they had accepted an invitation. */

@@ -19,6 +19,7 @@ import {
   saveAnswersAction,
   setBillingProfileAction,
   setCategoriesAction,
+  submitAction,
 } from './actions'
 
 /** Binds the project's server actions to the form, and the beacon that releases the lock on leave. */
@@ -45,6 +46,7 @@ export function ProjectFormClient({
       save: (patch) => saveAnswersAction(initial.id, patch),
       setCategories: (categories) => setCategoriesAction(initial.id, categories),
       setBilling: (billingProfileId) => setBillingProfileAction(initial.id, billingProfileId),
+      submit: (args) => submitAction(initial.id, args),
       release: () => {
         // sendBeacon survives the page going away; a server action would not.
         navigator.sendBeacon(`/api/awards/projects/${initial.id}/lock`)
