@@ -2,7 +2,9 @@
 @use '../../styles/breakpoints' as bp;
 
 .head {
-  padding-block: clamp(120px, 11vw, 160px) clamp(24px, 3vw, 40px);
+  // Clears the site header, which overlays the top of the page; the portal's shell has no header
+  // over the page and sets a smaller top.
+  padding-block: var(--app-head-pad-top, clamp(120px, 11vw, 160px)) clamp(24px, 3vw, 40px);
   border-bottom: 1px solid var(--line);
 }
 

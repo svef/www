@@ -40,6 +40,7 @@ export function Logo({
   tone = 'brand',
   size,
   hoverColours = false,
+  cycle = true,
 }: {
   label?: string
   /**
@@ -51,6 +52,11 @@ export function Logo({
   size?: string
   /** Change colour on hover/focus, as the header's mark does in the export. */
   hoverColours?: boolean
+  /**
+   * Cycle through the lockups. Off where the mark is always on screen and the page is a
+   * place to work (the portal's sidebar): it stays on the first lockup.
+   */
+  cycle?: boolean
 }) {
   const [i, setI] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
@@ -88,6 +94,7 @@ export function Logo({
   }, [hoverColours, tone])
 
   useEffect(() => {
+    if (!cycle) return
     const start = Math.floor(Math.random() * LOCKUPS.length)
     // Deliberately setting state from an effect. The starting lockup has to be
     // chosen after hydration, not during render: the page is prerendered, so a
@@ -130,7 +137,7 @@ export function Logo({
       io?.disconnect()
       document.removeEventListener('visibilitychange', sync)
     }
-  }, [])
+  }, [cycle])
 
   const lockup = LOCKUPS[i]
 

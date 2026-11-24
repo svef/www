@@ -1,7 +1,6 @@
 import type React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Archivo, Overpass_Mono } from 'next/font/google'
 import { Header } from '@/components/Header/Header'
 import { Footer } from '@/components/Footer/Footer'
 import { LANDING_ONLY } from '@/lib/site-mode'
@@ -17,6 +16,7 @@ import { getSiteChrome } from '@/lib/content/site-settings'
 import { getSiteUrl } from '@/lib/site-url'
 import { Analytics } from '@/components/Analytics/Analytics'
 import { NavigationProgress } from '@/components/NavigationProgress/NavigationProgress'
+import { fontClassName, fontStyle } from '@/lib/fonts'
 // Not `@mantine/core/styles.css`: that is every Mantine component's CSS (~200KB, ~29KB gzip,
 // render-blocking on every page) for a site that uses two of them. This is the baseline,
 // the default theme variables, the globals and the one component with a stylesheet
@@ -26,24 +26,6 @@ import '@mantine/core/styles/default-css-variables.css'
 import '@mantine/core/styles/global.css'
 import '@mantine/core/styles/VisuallyHidden.css'
 import '@/styles/globals.scss'
-
-// Archivo carries body and headings alike, as the *variable* font with both axes:
-// wght 100-900 and wdth 62-125. The redesign leans on the width axis everywhere
-// (hover-widen, the hero word morph, condensed running text), so a static cut would
-// silently ignore `font-stretch`. Omitting `weight` selects the variable weight
-// range; `axes: ['wdth']` adds the width axis. (Roc Grotesk, which the export uses,
-// is licensed and cannot go in a public repository.)
-const archivo = Archivo({
-  subsets: ['latin'],
-  variable: '--font-archivo',
-  axes: ['wdth'],
-  display: 'swap',
-})
-
-// The design sets small uppercase labels — eyebrows, album meta, the share row —
-// in Overpass Mono. Nothing loaded a mono face before, so all of them fell back
-// to the body font and quietly stopped reading as labels.
-const mono = Overpass_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
 export const metadata: Metadata = {
   title: { default: 'SVEF — Samtök vefiðnaðarins', template: '%s | SVEF' },
@@ -81,11 +63,8 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className={`${archivo.variable} ${mono.variable}`}
-      style={{
-        ['--font-body' as string]: 'var(--font-archivo)',
-        ['--font-heading' as string]: 'var(--font-archivo)',
-      }}
+      className={fontClassName}
+      style={fontStyle}
       {...mantineHtmlProps}
     >
       <head>
