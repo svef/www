@@ -391,6 +391,25 @@
   }
 }
 
+.selectAll {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  cursor: pointer;
+
+  input {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--color-violet);
+  }
+
+  &:focus-within {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
 .none {
   margin: 0;
 }

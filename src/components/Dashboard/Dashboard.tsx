@@ -418,6 +418,18 @@ function List({
       </p>
 
       <div className={styles.bulk} data-slot="bulk-actions">
+        {/* Not in the table header: on a phone the header is hidden, and this must work at every width. */}
+        {rows.length > 0 && (
+          <label className={styles.selectAll}>
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={toggleAll}
+              disabled={shownIds.length === 0}
+            />
+            <span>{c.list.selectAll}</span>
+          </label>
+        )}
         <span aria-live="polite" data-selected-count>
           {selected.size > 0 ? c.list.selected(selected.size) : ''}
         </span>
@@ -465,13 +477,7 @@ function List({
           <thead>
             <tr>
               <th scope="col" className={styles.checkCol}>
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={toggleAll}
-                  aria-label={c.list.selectAll}
-                  disabled={shownIds.length === 0}
-                />
+                <span className={styles.srOnly}>{c.list.colSelect}</span>
               </th>
               <th scope="col">{c.list.colProject}</th>
               <th scope="col">{c.list.colCategory}</th>

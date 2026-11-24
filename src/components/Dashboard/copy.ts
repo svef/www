@@ -76,6 +76,7 @@ export type DashboardCopy = {
     colPrice: string
     colNotes: string
     selectAll: string
+    colSelect: string
     selectRow: (project: string, category: string) => string
     selected: (n: number) => string
     untitled: string
@@ -142,6 +143,7 @@ const en: DashboardCopy = {
     colPrice: 'Price',
     colNotes: 'Notes',
     selectAll: 'Select all shown',
+    colSelect: 'Select',
     selectRow: (p, c) => `Select ${p}, ${c}`,
     selected: (n) => `${n} selected`,
     untitled: 'Untitled project',
@@ -206,6 +208,7 @@ const is: DashboardCopy = {
     colPrice: 'Verð',
     colNotes: 'Athugasemdir',
     selectAll: 'Velja allt sem er sýnt',
+    colSelect: 'Velja',
     selectRow: (p, c) => `Velja ${p}, ${c}`,
     selected: (n) => `${n} valið`,
     untitled: 'Verkefni án heitis',

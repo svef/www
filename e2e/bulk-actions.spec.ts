@@ -332,6 +332,27 @@ test.describe('dashboard bulk actions', () => {
     await anna.context.close()
   })
 
+  test('"select all shown" works on a phone, where the table header is hidden', async ({ browser }) => {
+    const anna = await person(browser, 'Anna')
+    await project(anna.id, 'Fyrsta', { submitted: true })
+    await project(anna.id, 'Önnur', { submitted: true })
+    await anna.context.close()
+    const context = await browser.newContext({ baseURL: baseURL(), viewport: { width: 390, height: 800 } })
+    await actAs(context, baseURL(), anna.id, EARLY)
+    const page = await context.newPage()
+    await listView(page)
+    const box = page.getByRole('checkbox', { name: 'Select all shown' })
+    await expect(box).toBeVisible()
+    const rect = await box.boundingBox()
+    expect(rect!.x).toBeGreaterThanOrEqual(0)
+    expect(rect!.x + rect!.width).toBeLessThanOrEqual(390)
+    await box.check()
+    await expect(page.locator('[data-selected-count]')).toHaveText('2 selected')
+    await box.uncheck()
+    await expect(page.locator('[data-selected-count]')).toHaveText('')
+    await context.close()
+  })
+
   test('the dialogs fit a phone: nothing runs past the edge', async ({ browser }) => {
     const anna = await person(browser, 'Anna')
     await project(anna.id, 'Mjög langt heiti á verkefni sem þarf að brjótast á milli lína', { submitted: true })
@@ -340,7 +361,7 @@ test.describe('dashboard bulk actions', () => {
     await actAs(context, baseURL(), anna.id, EARLY)
     const page = await context.newPage()
     await listView(page)
-    // On a phone the table is stacked and its header (with "select all") is hidden: pick the row.
+    // On a phone the table is stacked and its header is hidden: pick the row.
     await page.getByRole('checkbox', { name: /^Select (?!all)/ }).first().check()
     await page.getByRole('button', { name: 'Withdraw', exact: true }).click()
     const d = page.getByRole('dialog', { name: 'Withdraw the selected entries' })
