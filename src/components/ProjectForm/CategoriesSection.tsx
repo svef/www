@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Plus, Prohibit } from '@phosphor-icons/react'
+import { Check, Prohibit } from '@phosphor-icons/react'
 import clsx from 'clsx'
 import { useMemo } from 'react'
 import Markdown from 'react-markdown'
@@ -16,21 +16,17 @@ import type { ProjectFormApi } from './useProjectForm'
 /** Markdown from the category texts: prose only, never a heading or an image. */
 const ALLOWED = ['p', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'br']
 
-function Description({ text, label }: { text: string; label: string }) {
+/**
+ * A category's full description, always shown: people pick categories from these texts, so
+ * hiding them behind a click makes wrong picks likelier. Collapsing is the exception on this site.
+ */
+function Description({ text }: { text: string }) {
   return (
-    <details className={styles.details}>
-      <summary className={styles.summary}>
-        <span className={styles.plus} aria-hidden="true">
-          <Plus weight="bold" />
-        </span>
-        <span>{label}</span>
-      </summary>
-      <div className={styles.prose}>
-        <Markdown allowedElements={ALLOWED} unwrapDisallowed>
-          {text}
-        </Markdown>
-      </div>
-    </details>
+    <div className={styles.prose}>
+      <Markdown allowedElements={ALLOWED} unwrapDisallowed>
+        {text}
+      </Markdown>
+    </div>
   )
 }
 
@@ -106,6 +102,7 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
             >
               <fieldset className={styles.cardFieldset}>
                 <legend className={styles.name}>{g.name[locale]}</legend>
+                {g.description && <Description text={g.description[locale]} />}
                 <p className={styles.sizeTitle} id={`size-${g.slug}`}>
                   {copy.chooseSize}
                 </p>
@@ -152,12 +149,6 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
                     {copy.clearGroup(g.name[locale])}
                   </button>
                 )}
-                {g.description && (
-                  <Description
-                    text={g.description[locale]}
-                    label={copy.fullDescription}
-                  />
-                )}
               </fieldset>
             </li>
           )
@@ -201,6 +192,7 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
                   {c.blurb[locale]}
                 </p>
               )}
+              {c.description && <Description text={c.description[locale]} />}
               {why && (
                 <p id={whyId} className={styles.why}>
                   <Prohibit aria-hidden="true" weight="bold" />
@@ -208,9 +200,6 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
                 </p>
               )}
               <Prices line={quote(c)} />
-              {c.description && (
-                <Description text={c.description[locale]} label={copy.fullDescription} />
-              )}
             </li>
           )
         })}

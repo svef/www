@@ -81,6 +81,10 @@ export interface AccountCopy {
   }
   common: {
     optional: string
+    /** Step titles, as the site's other forms name theirs. */
+    stepAbout: string
+    stepAccount: string
+    stepSend: string
     showPassword: string
     hidePassword: string
     sending: string
@@ -103,7 +107,7 @@ export const accountCopy: Record<Locale, AccountCopy> = {
     signUp: {
       title: 'Nýskráning',
       lead: 'Stofnaðu aðgang til að senda inn verkefni í Íslensku vefverðlaunin.',
-      heading: 'Stofna aðgang',
+      heading: 'Einn aðgangur fyrir öll verkefnin',
       name: 'Nafn',
       email: 'Netfang',
       phone: 'Símanúmer',
@@ -121,7 +125,7 @@ export const accountCopy: Record<Locale, AccountCopy> = {
     signIn: {
       title: 'Innskráning',
       lead: 'Skráðu þig inn til að sjá og senda inn verkefni.',
-      heading: 'Skrá inn',
+      heading: 'Haltu áfram þar sem frá var horfið',
       email: 'Netfang',
       password: 'Lykilorð',
       submit: 'Skrá inn',
@@ -132,7 +136,7 @@ export const accountCopy: Record<Locale, AccountCopy> = {
     forgot: {
       title: 'Gleymt lykilorð',
       lead: 'Sláðu inn netfangið þitt og við sendum þér tengil til að velja nýtt lykilorð.',
-      heading: 'Endurstilla lykilorð',
+      heading: 'Gleymdirðu lykilorðinu?',
       email: 'Netfang',
       submit: 'Senda tengil',
       doneTitle: 'Athugaðu póstinn þinn',
@@ -143,7 +147,7 @@ export const accountCopy: Record<Locale, AccountCopy> = {
     reset: {
       title: 'Nýtt lykilorð',
       lead: 'Veldu nýtt lykilorð fyrir aðganginn þinn.',
-      heading: 'Velja nýtt lykilorð',
+      heading: 'Veldu lykilorð sem þú manst',
       password: 'Nýtt lykilorð',
       passwordHint: 'Að minnsta kosti 10 stafir.',
       submit: 'Vista lykilorð',
@@ -180,6 +184,9 @@ export const accountCopy: Record<Locale, AccountCopy> = {
     },
     common: {
       optional: 'valfrjálst',
+      stepAbout: 'Um þig',
+      stepAccount: 'Aðgangurinn',
+      stepSend: 'Senda',
       showPassword: 'Sýna lykilorð',
       hidePassword: 'Fela lykilorð',
       sending: 'Augnablik…',
@@ -200,7 +207,7 @@ export const accountCopy: Record<Locale, AccountCopy> = {
     signUp: {
       title: 'Sign up',
       lead: 'Create an account to submit projects to the Icelandic Web Awards.',
-      heading: 'Create an account',
+      heading: 'One account for all your projects',
       name: 'Name',
       email: 'Email',
       phone: 'Phone number',
@@ -218,7 +225,7 @@ export const accountCopy: Record<Locale, AccountCopy> = {
     signIn: {
       title: 'Sign in',
       lead: 'Sign in to see and submit your projects.',
-      heading: 'Sign in',
+      heading: 'Pick up where you left off',
       email: 'Email',
       password: 'Password',
       submit: 'Sign in',
@@ -229,7 +236,7 @@ export const accountCopy: Record<Locale, AccountCopy> = {
     forgot: {
       title: 'Forgot your password',
       lead: 'Enter your email address and we will send you a link to choose a new password.',
-      heading: 'Reset your password',
+      heading: 'Forgot your password?',
       email: 'Email',
       submit: 'Send link',
       doneTitle: 'Check your email',
@@ -240,7 +247,7 @@ export const accountCopy: Record<Locale, AccountCopy> = {
     reset: {
       title: 'Choose a new password',
       lead: 'Choose a new password for your account.',
-      heading: 'Choose a new password',
+      heading: 'Choose a password you will remember',
       password: 'New password',
       passwordHint: 'At least 10 characters.',
       submit: 'Save password',
@@ -277,6 +284,9 @@ export const accountCopy: Record<Locale, AccountCopy> = {
     },
     common: {
       optional: 'optional',
+      stepAbout: 'About you',
+      stepAccount: 'Your account',
+      stepSend: 'Send',
       showPassword: 'Show password',
       hidePassword: 'Hide password',
       sending: 'One moment…',

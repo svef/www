@@ -44,9 +44,9 @@ test.describe('categories', () => {
 
     const card = page.locator('[data-choice="marketing-website"]')
     await expect(card).toContainText('Campaigns, events and microsites')
-    await expect(card.locator('details')).not.toHaveAttribute('open', '')
-    await card.getByText('Full description').click()
-    await expect(card.locator('details')).toHaveAttribute('open', '')
+    // The full description is always on screen, not behind a disclosure.
+    await expect(card.getByText('Websites built for a specific marketing campaign')).toBeVisible()
+    await expect(page.locator('[data-choice] details')).toHaveCount(0)
 
     // The group's four sizes are a radio group, not a dropdown.
     const group = page.locator('[data-choice="company-website"]')
@@ -614,7 +614,6 @@ test.describe('the whole form', () => {
       .getByRole('radio', { name: 'Small' })
       .check()
     await saved(page)
-    await page.locator('[data-choice="marketing-website"]').getByText('Full description').click()
     await axe('Categories')
 
     await goToStep(page, 'The project')

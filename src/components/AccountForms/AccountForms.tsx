@@ -287,19 +287,9 @@ export function SignUpForm({
           ]}
           common={common}
         />
-        <Step num="01" title={copy.heading}>
+        <Step num="01" title={common.stepAbout}>
           <Fields>
             <TextField id={ids.name} name="name" label={copy.name} autoComplete="name" error={s.errors.name} />
-            <TextField
-              id={ids.email}
-              name="email"
-              type="email"
-              inputMode="email"
-              label={copy.email}
-              autoComplete="email"
-              defaultValue={defaultEmail}
-              error={s.errors.email}
-            />
             <TextField
               id={ids.phone}
               name="phone"
@@ -311,6 +301,20 @@ export function SignUpForm({
               autoComplete="tel"
               error={s.errors.phone}
             />
+          </Fields>
+        </Step>
+        <Step num="02" title={common.stepAccount}>
+          <Fields>
+            <TextField
+              id={ids.email}
+              name="email"
+              type="email"
+              inputMode="email"
+              label={copy.email}
+              autoComplete="email"
+              defaultValue={defaultEmail}
+              error={s.errors.email}
+            />
             <PasswordField
               id={ids.password}
               label={copy.password}
@@ -321,7 +325,7 @@ export function SignUpForm({
             />
           </Fields>
         </Step>
-        <Step num="02" title={copy.submit}>
+        <Step num="03" title={common.stepSend}>
           <Send>
             <SubmitButton label={copy.submit} pending={s.pending} />
             <Pending text={s.pending ? common.sending : null} />
@@ -391,7 +395,7 @@ export function SignInForm({
           ]}
           common={common}
         />
-        <Step num="01" title={copy.heading}>
+        <Step num="01" title={common.stepAccount}>
           <Fields>
             <TextField
               id={ids.email}
@@ -411,7 +415,7 @@ export function SignInForm({
             />
           </Fields>
         </Step>
-        <Step num="02" title={copy.submit}>
+        <Step num="02" title={common.stepSend}>
           <Send>
             <SubmitButton label={copy.submit} pending={s.pending} />
             <Pending text={s.pending ? common.sending : null} />
@@ -485,7 +489,7 @@ export function ForgotPasswordForm({
           fields={[['email', emailId, copy.email]]}
           common={common}
         />
-        <Step num="01" title={copy.heading}>
+        <Step num="01" title={common.stepAccount}>
           <Fields>
             <TextField
               id={emailId}
@@ -498,7 +502,7 @@ export function ForgotPasswordForm({
             />
           </Fields>
         </Step>
-        <Step num="02" title={copy.submit}>
+        <Step num="02" title={common.stepSend}>
           <Send>
             <SubmitButton label={copy.submit} pending={s.pending} />
             <Pending text={s.pending ? common.sending : null} />
@@ -569,7 +573,7 @@ export function ResetPasswordForm({
           fields={[['password', passwordId, copy.password]]}
           common={common}
         />
-        <Step num="01" title={copy.heading}>
+        <Step num="01" title={common.stepAccount}>
           <Fields>
             <PasswordField
               id={passwordId}
@@ -581,7 +585,7 @@ export function ResetPasswordForm({
             />
           </Fields>
         </Step>
-        <Step num="02" title={copy.submit}>
+        <Step num="02" title={common.stepSend}>
           <Send>
             <SubmitButton label={copy.submit} pending={s.pending} />
             <Pending text={s.pending ? common.sending : null} />

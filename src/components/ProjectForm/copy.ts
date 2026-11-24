@@ -75,7 +75,6 @@ type Strings = {
   status: Record<string, string>
   moreInfo: string
   // categories
-  fullDescription: string
   chooseSize: string
   clearGroup: (name: string) => string
   earlyBird: string
@@ -304,7 +303,6 @@ const en: Strings = {
   categoryError: 'The categories could not be changed.',
   submittedLocked: 'Submitted',
   moreInfo: 'More information',
-  fullDescription: 'Full description',
   chooseSize: 'Choose a size',
   clearGroup: (n) => `Don’t enter in ${n}`,
   earlyBird: 'Early bird',
@@ -579,7 +577,6 @@ const is: Strings = {
   categoryError: 'Ekki var hægt að breyta flokkum.',
   submittedLocked: 'Innsent',
   moreInfo: 'Nánari upplýsingar',
-  fullDescription: 'Öll lýsingin',
   chooseSize: 'Veldu stærð',
   clearGroup: (n) => `Ekki senda inn í ${n}`,
   earlyBird: 'Snemmskráning',

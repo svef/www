@@ -187,6 +187,22 @@
     border-bottom-color: var(--accent-yellow);
   }
 
+  // The browser's autofill paints its own light-blue fill over the field, which breaks the
+  // underlined style on the dark canvas. It can't be unset, only covered: an inset shadow in
+  // the canvas colour, and the text colour forced back to white.
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-white);
+    caret-color: var(--color-white);
+    box-shadow: 0 0 0 1000px var(--color-black) inset;
+  }
+
+  &:autofill {
+    color: var(--color-white);
+    box-shadow: 0 0 0 1000px var(--color-black) inset;
+  }
+
   @include bp.reduced-motion {
     transition: none;
   }

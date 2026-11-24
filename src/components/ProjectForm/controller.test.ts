@@ -387,6 +387,45 @@ describe('ProjectFormController', () => {
     stop()
   })
 
+  it('quick category clicks never flip the boxes back: only the latest choice is shown and sent', async () => {
+    const confirms: ((r: ActionResult<ProjectView>) => void)[] = []
+    const setCategories = vi.fn(
+      (_next: string[]) => new Promise<ActionResult<ProjectView>>((r) => confirms.push(r)),
+    )
+    const { c } = setup({ setCategories })
+    const stop = c.start()
+    await settle()
+    const shown: (string[] | null)[] = []
+    const unsubscribe = c.subscribe(() => shown.push(c.getSnapshot().pendingCategories))
+
+    // On, then a second one on, then the first off again, faster than the server answers.
+    const first = c.changeCategories(['app'])
+    await settle()
+    const rest = [c.changeCategories(['app', 'ai-solution']), c.changeCategories(['ai-solution'])]
+    expect(c.getSnapshot().pendingCategories).toEqual(['ai-solution'])
+
+    // The first run sends what was wanted when it started; the server's answer to it must not
+    // put the boxes back while the later choice is still queued.
+    confirms[0](ok(view({ categories: ['app'] })))
+    await first
+    await settle()
+    expect(c.getSnapshot().pendingCategories).toEqual(['ai-solution'])
+
+    // The queued runs send the latest choice once, not each intermediate one.
+    confirms[1]?.(ok(view({ categories: ['ai-solution'] })))
+    await settle()
+    confirms[2]?.(ok(view({ categories: ['ai-solution'] })))
+    await Promise.all(rest)
+    expect(setCategories.mock.calls.map((call) => call[0])).not.toContainEqual(['app', 'ai-solution'])
+    expect(c.getSnapshot().view.categories).toEqual(['ai-solution'])
+    expect(c.getSnapshot().pendingCategories).toBeNull()
+    // After the last click, the screen never showed an older choice again.
+    const afterLastClick = shown.slice(shown.findIndex((s) => s?.join() === 'ai-solution'))
+    expect(afterLastClick.filter((s) => s !== null && s.join() !== 'ai-solution')).toEqual([])
+    unsubscribe()
+    stop()
+  })
+
   it('surfaces a refused category change without losing the lock', async () => {
     const { c } = setup({
       setCategories: vi.fn(async () =>

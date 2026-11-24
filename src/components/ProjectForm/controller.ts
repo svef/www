@@ -301,8 +301,10 @@ export class ProjectFormController {
       invites: fresh.invites,
       answers,
       entryAnswers,
-      pendingCategories: null,
-      pendingBilling: null,
+      // A choice still waiting in the queue stays on screen: showing the server's answer to an
+      // earlier click would flip the boxes back until the later one is sent.
+      pendingCategories: this.queuedCategories > 0 ? this.wantedCategories : null,
+      pendingBilling: this.queuedBilling > 0 ? this.snap.pendingBilling : null,
     })
   }
 
@@ -437,6 +439,9 @@ export class ProjectFormController {
   /** Category and billing changes run one after another, so quick clicks land in the order made. */
   private queue: Promise<unknown> = Promise.resolve()
   private queuedCategories = 0
+  /** The latest category choice; every queued run sends this, never the choice of its own click. */
+  private wantedCategories: string[] | null = null
+  private sentCategories: string | null = null
   private queuedBilling = 0
   private enqueue(run: () => Promise<void>): Promise<void> {
     const result = this.queue.then(run, run)
@@ -447,18 +452,25 @@ export class ProjectFormController {
   changeCategories(next: string[]): Promise<void> {
     if (!this.held) return Promise.resolve()
     this.queuedCategories++
+    this.wantedCategories = next
     this.set({ pendingCategories: next, saveState: 'saving' })
-    return this.enqueue(() => this.applyCategories(next))
+    return this.enqueue(() => this.applyCategories())
   }
 
-  private async applyCategories(next: string[], retried = false) {
+  private async applyCategories(retried = false) {
     if (!retried) this.queuedCategories--
-    if (!this.held) return void this.set({ pendingCategories: null })
+    const next = this.wantedCategories
+    if (!this.held || !next) return void this.set({ pendingCategories: null })
+    // Quick clicks queue one run each, but only the last choice matters: a run whose choice
+    // was already sent by the run before it has nothing to do.
+    const key = JSON.stringify(next)
+    if (!retried && key === this.sentCategories && this.queuedCategories > 0) return
     this.set({ categoryError: null, pendingCategories: next, saveState: 'saving' })
     // What was typed goes first, so the server sees one consistent order.
     await this.flush()
     this.set({ saveState: 'saving' })
     const r = await this.actions.setCategories(next).catch(networkError)
+    this.sentCategories = r.ok ? key : null
     if (r.ok) {
       this.applyView(r.value)
       this.lastPing = this.clock()
@@ -470,8 +482,9 @@ export class ProjectFormController {
       this.set({ pendingCategories: null })
       await this.loseLock()
       // The lock lapsed (or a leaving tab released it) between clicks: with it back, the choice still stands.
-      if (!retried && this.held) await this.applyCategories(next, true)
+      if (!retried && this.held) await this.applyCategories(true)
     } else {
+      this.wantedCategories = null
       this.set({ categoryError: r.error, pendingCategories: null, saveState: 'error' })
     }
   }

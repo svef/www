@@ -229,64 +229,11 @@
   }
 }
 
-// ---- The description disclosure ----------------------------------------------------
-
-.details {
-  position: relative;
-  z-index: 2; // above the card's click area
-  margin-top: 2px;
-  border-top: 1px solid var(--line);
-}
-
-.summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding-block: 10px 2px;
-  cursor: pointer;
-  list-style: none;
-  font-family: var(--font-display);
-  font-size: 0.9rem;
-  color: var(--color-lavender);
-
-  &::-webkit-details-marker {
-    display: none;
-  }
-
-  &:hover {
-    color: var(--color-white);
-  }
-
-  &:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
-}
-
-.plus {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  background: var(--color-violet);
-  color: var(--color-white);
-
-  svg {
-    transition: transform 0.2s ease;
-
-    @include bp.reduced-motion {
-      transition: none;
-    }
-  }
-}
-
-details[open] > .summary .plus svg {
-  transform: rotate(45deg);
-}
+// ---- The full description, always shown -----------------------------------------
 
 .prose {
-  padding-block: 10px 4px;
+  color: var(--color-lavender);
+  padding-block: 2px 4px;
   max-width: 62ch;
   font-size: 0.95rem;
 
@@ -295,6 +242,8 @@ details[open] > .summary .plus svg {
   }
 
   a {
+    position: relative;
+    z-index: 2; // above the card's click area, so a link in the text is a link
     color: var(--color-violet-light);
     text-decoration: underline;
   }
