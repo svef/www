@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ActionResult, ErrorPayload, LockInfo } from '@/lib/awards/projects/errors'
+import type { SubmitResult } from '@/lib/awards/projects/submit'
 import type { ProjectView, SaveResult } from '@/lib/awards/projects/types'
 import {
   AUTOSAVE_MS,
@@ -27,7 +28,10 @@ const view = (over: Partial<ProjectView> = {}): ProjectView => ({
   editability: {},
   entryEditability: {},
   lock: null,
+  intakeOpensAt: '2026-12-01T00:00:00.000Z',
   intakeClosesBefore: '2027-02-02T00:00:00.000Z',
+  viewer: { email: 'anna@example.com', emailVerified: true },
+  terms: { version: 'draft', accepted: false },
   earlyBird: {
     endsBefore: '2027-01-05T00:00:00.000Z',
     discountPercent: 30,
@@ -59,11 +63,18 @@ function setup(over: Partial<ProjectFormActions> = {}) {
     save: vi.fn(async (p) => ok(saved(Object.keys(p.answers ?? {})))),
     setCategories: vi.fn(async () => ok(view())),
     setBilling: vi.fn(async () => ok(view())),
+    submit: vi.fn(async () => ok({ result: submitted, view: view() })),
     release: vi.fn(),
     ...over,
   }
   const c = new ProjectFormController(view(), actions)
   return { c, actions }
+}
+const submitted: SubmitResult = {
+  submitted: [],
+  skipped: [],
+  alreadySubmitted: [],
+  receipt: 'sent',
 }
 const settle = () => vi.advanceTimersByTimeAsync(0)
 
@@ -428,6 +439,51 @@ describe('ProjectFormController', () => {
     expect(calls).toEqual(['b1', 'b2'])
     expect(c.getSnapshot().view.billing?.id).toBe('b2')
     expect(c.getSnapshot().pendingBilling).toBeNull()
+    stop()
+  })
+
+  it('saves what was typed before submitting, then shows the outcome and the refreshed project', async () => {
+    const order: string[] = []
+    const after = view({ entries: [{ id: 'en1', category: 'app', status: 'submitted', answers: {}, price: { regular: 1, discountPercent: 0, amount: 1 } }] })
+    const { c } = setup({
+      save: vi.fn(async (p) => {
+        order.push('save')
+        return ok(saved(Object.keys(p.answers ?? {})))
+      }),
+      submit: vi.fn(async () => {
+        order.push('submit')
+        return ok({ result: submitted, view: after })
+      }),
+    })
+    const stop = c.start()
+    await settle()
+    c.setAnswer('title', 'Typed')
+    expect(await c.submit({ acceptTerms: true })).toBe(true)
+    expect(order).toEqual(['save', 'submit'])
+    expect(c.getSnapshot().view.entries[0].status).toBe('submitted')
+    expect(c.getSnapshot().submitOutcome).toEqual({ result: submitted })
+    expect(c.getSnapshot().submitting).toBe(false)
+    stop()
+  })
+
+  it('ignores a second press while a submit is in flight, and reports a refusal', async () => {
+    let release!: () => void
+    const submit = vi.fn(
+      () =>
+        new Promise<ActionResult<{ result: SubmitResult; view: ProjectView }>>((resolve) => {
+          release = () => resolve(fail({ code: 'terms_required', message: 'Accept the terms to submit.' }))
+        }),
+    )
+    const { c } = setup({ submit })
+    const stop = c.start()
+    await settle()
+    const first = c.submit({ acceptTerms: false })
+    expect(await c.submit({ acceptTerms: false })).toBe(false)
+    await settle()
+    release()
+    expect(await first).toBe(false)
+    expect(submit).toHaveBeenCalledTimes(1)
+    expect(c.getSnapshot().submitOutcome).toMatchObject({ error: { code: 'terms_required' } })
     stop()
   })
 })

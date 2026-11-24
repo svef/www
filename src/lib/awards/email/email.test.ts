@@ -11,7 +11,7 @@ vi.mock('resend', () => ({
   },
 }))
 
-import { OUTBOX_DIR, passwordResetEmail, sendEmail, verificationEmail } from './index'
+import { OUTBOX_DIR, passwordResetEmail, receiptEmail, sendEmail, verificationEmail } from './index'
 
 const URL_ = 'https://svef.is/api/account/verify-email?token=abc&callbackURL=%2Fis'
 
@@ -37,6 +37,38 @@ describe('templates', () => {
     const mail = verificationEmail({ locale: 'en', name: '<script>x</script>', url: URL_ })
     expect(mail.html).not.toContain('<script>')
     expect(mail.html).toContain('&lt;script&gt;')
+  })
+})
+
+describe('receipt', () => {
+  const input = {
+    name: 'Anna',
+    projectTitle: 'Fjallavefurinn <3',
+    entries: [
+      { category: 'Marketing Website', amount: 10900, early: true },
+      { category: 'App', amount: 6900, early: false },
+    ],
+    billing: { companyName: 'Fjall ehf.', kennitala: '5902697199' },
+    url: 'https://svef.is/en/submissions/abc',
+  }
+  it('lists the entries with their locked prices, the total, the billing profile and the invoice note', () => {
+    const mail = receiptEmail({ ...input, locale: 'en' })
+    expect(mail.subject).toMatch(/^Receipt/)
+    expect(mail.text).toContain('Marketing Website: 10,900 kr. (early-bird price)')
+    expect(mail.text).toContain('App: 6,900 kr. (regular price)')
+    expect(mail.text).toContain('Total: 17,800 kr.')
+    expect(mail.text).toContain('Fjall ehf., kt. 5902697199')
+    expect(mail.text).toMatch(/invoice is sent after submissions close/)
+    expect(mail.text).toContain(input.url)
+    expect(mail.html).toContain('lang="en"')
+    expect(mail.html).toContain('Fjallavefurinn &lt;3')
+  })
+  it('is in Icelandic for an Icelandic submitter', () => {
+    const mail = receiptEmail({ ...input, locale: 'is' })
+    expect(mail.subject).toMatch(/^Kvittun/)
+    expect(mail.text).toContain('Samtals: 17.800 kr.')
+    expect(mail.text).toContain('Reikningur er sendur eftir að innsendingum lýkur')
+    expect(mail.html).toContain('lang="is"')
   })
 })
 

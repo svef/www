@@ -1,5 +1,6 @@
 import { HEARTBEAT_INTERVAL_MS } from '@/lib/awards/projects/lock-rules'
 import type { ActionResult, ErrorPayload, LockInfo } from '@/lib/awards/projects/errors'
+import type { SubmitResult } from '@/lib/awards/projects/submit'
 import type { ProjectView, SaveAnswersPatch, SaveResult } from '@/lib/awards/projects/types'
 import { wireValue } from './wire'
 
@@ -33,6 +34,11 @@ export type ProjectFormActions = {
   setCategories(categories: string[]): Promise<ActionResult<ProjectView>>
   /** Choose who is invoiced (null clears it). Returns the refreshed project. */
   setBilling(billingProfileId: string | null): Promise<ActionResult<ProjectView>>
+  /** Submit every complete draft entry, or just `entryId`. Returns what happened and the refreshed project. */
+  submit(args: {
+    entryId?: string
+    acceptTerms: boolean
+  }): Promise<ActionResult<{ result: SubmitResult; view: ProjectView }>>
   /** Release on leave. Fire-and-forget (a beacon). */
   release(): void
 }
@@ -67,6 +73,10 @@ export type Snapshot = {
   lostLock: boolean
   /** The lock came back after being lost. Cleared by the next edit. */
   recovered: boolean
+  /** A submit is in flight. */
+  submitting: boolean
+  /** What the last submit in this page did (the success summary), or why it was refused. */
+  submitOutcome: { result: SubmitResult } | { error: ErrorPayload } | null
 }
 
 const entryId = (slug: string, key: string) => `${slug}:${key}`
@@ -119,6 +129,8 @@ export class ProjectFormController {
       billingError: null,
       lostLock: false,
       recovered: false,
+      submitting: false,
+      submitOutcome: null,
     }
   }
 
@@ -460,6 +472,28 @@ export class ProjectFormController {
     } else {
       this.set({ billingError: r.error, pendingBilling: null, saveState: 'error' })
     }
+  }
+
+  /**
+   * Submits. What was typed is saved first, so the server validates what is on screen; a
+   * second press while one is in flight does nothing (the server is idempotent as well).
+   */
+  async submit(args: { entryId?: string; acceptTerms: boolean }): Promise<boolean> {
+    if (!this.held || this.snap.submitting) return false
+    this.set({ submitting: true, submitOutcome: null })
+    // Category and billing changes already queued land before the submit does.
+    await this.queue
+    await this.flush()
+    const r = await this.actions.submit(args).catch(networkError)
+    if (r.ok) {
+      this.applyView(r.value.view)
+      this.lastPing = this.clock()
+      this.set({ submitting: false, submitOutcome: { result: r.value.result } })
+      return true
+    }
+    if (r.error.code === 'lock_required') await this.loseLock()
+    this.set({ submitting: false, submitOutcome: { error: r.error } })
+    return false
   }
 
   markTouched(key: string) {

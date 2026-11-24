@@ -12,6 +12,8 @@ import {
   project,
   projectAnswer,
   projectPerson,
+  termsAcceptance,
+  user,
 } from '../db/schema'
 import { fieldEditability, type Editability, type UnlockRequest } from '../editability'
 import { ENTRY_FIELDS, FIELD_DEFINITIONS, PROJECT_FIELDS, type FieldDefinition } from '../fields'
@@ -40,6 +42,9 @@ import type {
  * starts by proving the caller holds a live edit lock, and appends its events
  * (`field_changed`, `category_added`, …) to the append-only log before commit.
  */
+
+/** Recorded as the terms version while the edition has none (the terms text is still a draft). */
+export const DRAFT_TERMS_VERSION = 'draft'
 
 export type Clock = { now?: Date; ttlMs?: number }
 type Locale = 'is' | 'en'
@@ -87,7 +92,7 @@ export async function getRole(
   return person ? 'editor' : null
 }
 
-async function requireRole(db: Queryable, userId: string, projectId: string): Promise<Role> {
+export async function requireRole(db: Queryable, userId: string, projectId: string): Promise<Role> {
   const [p] = await db
     .select({ id: project.id })
     .from(project)
@@ -143,7 +148,7 @@ type EntryRow = {
   price: EntryView['price']
 }
 
-type Context = {
+export type Context = {
   project: typeof project.$inferSelect
   edition: typeof edition.$inferSelect
   billing: ProjectBilling | null
@@ -167,7 +172,7 @@ function personToItem(kind: 'owner' | 'collaborator', row: typeof projectPerson.
   return item
 }
 
-async function loadContext(q: Queryable, projectId: string): Promise<Context> {
+export async function loadContext(q: Queryable, projectId: string): Promise<Context> {
   const [p] = await q
     .select()
     .from(project)
@@ -319,6 +324,23 @@ export async function loadProject(
   const role = await requireRole(db, args.userId, args.projectId)
   const ctx = await loadContext(db, args.projectId)
   const lock = await getLiveLock(db, args.projectId, now, args.ttlMs)
+  const [viewer] = await db
+    .select({ email: user.email, emailVerified: user.emailVerified })
+    .from(user)
+    .where(eq(user.id, args.userId))
+  // Terms are accepted per project and version; a null edition version is the draft text's.
+  const termsVersion = ctx.edition.termsVersion ?? DRAFT_TERMS_VERSION
+  const [accepted] = await db
+    .select({ id: termsAcceptance.id })
+    .from(termsAcceptance)
+    .where(
+      and(
+        eq(termsAcceptance.projectId, args.projectId),
+        eq(termsAcceptance.termsVersion, termsVersion),
+        isNull(termsAcceptance.deletedAt),
+      ),
+    )
+    .limit(1)
 
   const editability: Record<string, Editability> = {}
   for (const f of PROJECT_FIELDS) editability[f.key] = editabilityFor(ctx, now, f)
@@ -346,7 +368,10 @@ export async function loadProject(
     editability,
     entryEditability,
     lock,
+    intakeOpensAt: ctx.edition.intakeOpensAt.toISOString(),
     intakeClosesBefore: ctx.intakeClosesBefore.toISOString(),
+    viewer: { email: viewer?.email ?? '', emailVerified: viewer?.emailVerified ?? false },
+    terms: { version: termsVersion, accepted: Boolean(accepted) },
     earlyBird: {
       endsBefore: ctx.edition.earlyBirdEndsBefore.toISOString(),
       discountPercent: ctx.edition.earlyBirdDiscountPercent,

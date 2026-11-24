@@ -11,6 +11,7 @@ import { formatMoney, lastDayBefore } from './format'
 import { goToField } from './focus'
 import styles from './Review.module.scss'
 import { sectionOfField, SUBMIT_STEP_FIELDS } from './sections'
+import { SubmitPanel } from './SubmitPanel'
 import { missingItems, priceBreakdown } from './summary'
 import type { ProjectFormApi } from './useProjectForm'
 
@@ -43,8 +44,8 @@ function show(field: FieldDefinition, value: unknown, copy: ProjectFormCopy): st
 
 /**
  * The last section: a summary of the answers, the price per category, and what is still
- * missing, each item linking to its field. **The terms checkbox, the confirmation
- * dialog and the submit button are #163 and go in the marked slot at the bottom.**
+ * missing, each item linking to its field; then the submit step (`SubmitPanel`): terms,
+ * the "Senda inn" button, the confirmation dialog and what happened after.
  */
 export function ReviewSection({ form, locale }: { form: ProjectFormApi; locale: Locale }) {
   const copy = getProjectFormCopy(locale)
@@ -136,11 +137,14 @@ export function ReviewSection({ form, locale }: { form: ProjectFormApi; locale: 
                 </tr>
               </tfoot>
             </table>
-            <p className={styles.muted}>
-              {prices.earlyAvailable
-                ? copy.reviewEarlyHint(until, money(prices.totalEarly), money(prices.totalRegular))
-                : copy.totalEarlyClosed}
-            </p>
+            {/* Once every entry has its price locked there is nothing left to hint at. */}
+            {prices.lines.some((l) => l.locked === null) && (
+              <p className={styles.muted}>
+                {prices.earlyAvailable
+                  ? copy.reviewEarlyHint(until, money(prices.totalEarly), money(prices.totalRegular))
+                  : copy.totalEarlyClosed}
+              </p>
+            )}
           </>
         )}
         {view.billing && (
@@ -212,15 +216,7 @@ export function ReviewSection({ form, locale }: { form: ProjectFormApi; locale: 
         )}
       </div>
 
-      {/*
-        #163 — SUBMIT SLOT. The versioned terms checkbox, the "Senda inn" button (with the
-        early-bird explanation next to it and the missing-items list on a blocked press)
-        and the confirmation dialog go here. Everything above is the review; nothing
-        below this line is built yet.
-      */}
-      <div className={styles.slot} data-slot="submit" data-issue="163">
-        <p className={styles.muted}>{copy.reviewSubmitSlot}</p>
-      </div>
+      <SubmitPanel form={form} locale={locale} missing={missing} prices={prices} />
     </div>
   )
 }

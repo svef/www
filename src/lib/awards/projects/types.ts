@@ -49,7 +49,13 @@ export type ProjectView = {
   billing: ProjectBilling | null
   /** The live lock, or null when the project is free to take. */
   lock: LockInfo | null
+  /** ISO. Submitting opens at this moment. */
+  intakeOpensAt: string
   intakeClosesBefore: string
+  /** The viewer's account: submitting needs a verified email. */
+  viewer: { email: string; emailVerified: boolean }
+  /** The terms in force, and whether this project already accepted that version. */
+  terms: { version: string; accepted: boolean }
   /** The server clock when this view was built. */
   serverNow: string
 }

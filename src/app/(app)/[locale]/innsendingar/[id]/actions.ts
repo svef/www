@@ -10,6 +10,7 @@ import {
   setCategories,
   setProjectBillingProfile,
 } from '@/lib/awards/projects/service'
+import { submitEntries, type SubmitResult } from '@/lib/awards/projects/submit'
 import type { ProjectView, SaveAnswersPatch, SaveResult } from '@/lib/awards/projects/types'
 import type { LockInfo } from '@/lib/awards/projects/errors'
 import { getCurrentUserId, getRequestNow } from '@/lib/awards/session'
@@ -74,5 +75,20 @@ export async function setBillingProfileAction(
     const db = getAwardsDb()
     await setProjectBillingProfile(db, { userId, projectId, billingProfileId, now })
     return loadProject(db, { userId, projectId, now })
+  })
+}
+
+/**
+ * Submits every complete draft entry (or just `entryId`), locks the prices and sends the
+ * receipt, and returns what happened together with the refreshed project.
+ */
+export async function submitAction(
+  projectId: string,
+  args: { entryId?: string; acceptTerms: boolean },
+): Promise<ActionResult<{ result: SubmitResult; view: ProjectView }>> {
+  return run(async (userId, now) => {
+    const db = getAwardsDb()
+    const result = await submitEntries(db, { userId, projectId, now, ...args })
+    return { result, view: await loadProject(db, { userId, projectId, now }) }
   })
 }
