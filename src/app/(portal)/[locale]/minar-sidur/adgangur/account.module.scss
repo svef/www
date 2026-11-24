@@ -1,0 +1,149 @@
+// The account page: sections under the app head, each a FormParts form (numbered steps),
+// with the account forms' password toggle and error summary.
+@use '../../../../../styles/awards-ui' as ui;
+
+.page {
+  display: grid;
+  gap: clamp(36px, 4vw, 56px);
+  min-width: 0;
+  max-width: 980px;
+  padding: clamp(28px, 3.5vw, 48px) max(24px, env(safe-area-inset-right, 0px)) var(--page-pad-bottom)
+    max(24px, env(safe-area-inset-left, 0px));
+}
+
+.part {
+  min-width: 0;
+  padding-top: clamp(20px, 2.4vw, 28px);
+  border-top: 1px solid var(--line);
+
+  &:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+.heading {
+  margin: 0 0 20px;
+  font-family: var(--font-display);
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
+  font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+  line-height: 1.15;
+}
+
+.note {
+  max-width: 62ch;
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+
+.facts {
+  margin: 0 0 12px;
+
+  > div {
+    display: grid;
+    grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr);
+    gap: 4px 16px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  dt {
+    color: var(--muted);
+  }
+
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 520px) {
+    > div {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+
+.tag {
+  @include ui.status-tag;
+  --tone: var(--accent-yellow);
+
+  &[data-verified='true'] {
+    --tone: #3ddc84;
+  }
+}
+
+.select {
+  @include ui.select;
+  height: 50px;
+  cursor: pointer;
+}
+
+.secondary {
+  @include ui.button-secondary;
+}
+
+.passwordWrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-2);
+}
+
+.toggle {
+  appearance: none;
+  min-height: 44px;
+  padding: 0 2px;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid var(--line);
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+  white-space: nowrap;
+
+  &:hover,
+  &[aria-pressed='true'] {
+    color: var(--color-white);
+    border-bottom-color: var(--muted);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 4px;
+  }
+}
+
+.alert {
+  margin: 0 0 clamp(24px, 3vw, 40px);
+  padding: var(--space-4) var(--space-6);
+  border: 2px solid var(--accent-yellow);
+  background: var(--ink-2);
+
+  p {
+    margin: 0 0 var(--space-2);
+    font-weight: var(--weight-bold);
+  }
+
+  ul {
+    margin: 0;
+    padding-left: var(--space-6);
+  }
+
+  a {
+    color: var(--color-white);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}

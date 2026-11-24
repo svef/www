@@ -1,0 +1,228 @@
+// The portal's overview: sections divided by hairlines under the app head, the same calm
+// vocabulary as the admin (mono labels, hairline lists, stat blocks), and the violet block
+// only where something is the next step.
+@use '../../../../styles/breakpoints' as bp;
+@use '../../../../styles/awards-ui' as ui;
+
+.page {
+  display: grid;
+  gap: clamp(36px, 4vw, 56px);
+  min-width: 0;
+  padding: clamp(28px, 3.5vw, 48px) max(24px, env(safe-area-inset-right, 0px)) var(--page-pad-bottom)
+    max(24px, env(safe-area-inset-left, 0px));
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: clamp(36px, 4vw, 56px) clamp(28px, 4vw, 64px);
+
+  @include bp.below(bp.$lg) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.part {
+  min-width: 0;
+  padding-top: clamp(20px, 2.4vw, 28px);
+  border-top: 1px solid var(--line);
+}
+
+.heading {
+  margin: 0 0 16px;
+  font-family: var(--font-display);
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
+  font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+  line-height: 1.15;
+}
+
+.subheading {
+  @include ui.mono-label;
+  margin: 24px 0 8px;
+}
+
+.text {
+  max-width: 62ch;
+  margin: 0 0 16px;
+  color: var(--color-lavender);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.notice {
+  @include ui.notice(var(--accent-yellow));
+  max-width: 980px;
+
+  p {
+    margin: 0;
+  }
+
+  p + p {
+    margin-top: 6px;
+    color: var(--color-lavender);
+  }
+}
+
+.noticeTitle {
+  @include ui.notice-title;
+}
+
+.primary {
+  @include ui.button-primary;
+}
+
+.secondary {
+  @include ui.button-secondary;
+}
+
+// ---- Needs attention ----
+
+.attention {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    gap: 6px;
+    padding: 14px 0 14px 18px;
+    border-bottom: 1px solid var(--line);
+    // The block motif, small: this row is a next step.
+    border-left: 6px solid var(--color-violet);
+  }
+}
+
+.attentionTitle {
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
+
+  &:hover {
+    color: var(--color-violet-light);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+.reasons {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-lavender);
+
+  li[data-overdue] {
+    color: var(--accent-yellow);
+  }
+}
+
+.more {
+  margin: 16px 0 0;
+
+  a {
+    color: var(--color-white);
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-underline-offset: 4px;
+
+    &:hover {
+      color: var(--color-violet-light);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 3px;
+    }
+  }
+}
+
+// ---- Deadlines ----
+
+.deadline {
+  margin: 0 0 16px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.dates {
+  display: grid;
+  margin: 0;
+
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 16px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  dt {
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+  }
+}
+
+// ---- At a glance ----
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stat {
+  display: grid;
+  gap: 6px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  background: var(--ink-2);
+}
+
+.statLabel {
+  @include ui.mono-label;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  font-stretch: var(--stretch-count);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.invoices ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--color-lavender);
+}
+
+// ---- Get started ----
+
+.quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
