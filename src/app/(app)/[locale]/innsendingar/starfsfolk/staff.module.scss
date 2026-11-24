@@ -1,0 +1,425 @@
+// A plain, accessible page: svef/www#168 folds it into the staff area and a design pass follows.
+.heading {
+  margin: 0 0 16px;
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+}
+
+.text,
+.note {
+  max-width: 62ch;
+  margin: 0 0 16px;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.result {
+  border: 2px solid var(--accent-yellow);
+  padding: 12px 16px;
+
+  p {
+    margin: 0 0 8px;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.button,
+.small {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 0;
+  background: var(--color-violet);
+  color: var(--color-white);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--color-violet-bright);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.small {
+  padding: 4px 10px;
+  font-size: 0.875rem;
+}
+
+.filter,
+.bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+  margin: 0 0 20px;
+
+  label {
+    display: grid;
+    gap: 4px;
+  }
+
+  select {
+    min-width: 12rem;
+    padding: 8px;
+    border: 1px solid var(--line);
+    background: var(--ink-2);
+    color: var(--color-white);
+    font: inherit;
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.bulk {
+  margin: 20px 0 0;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  tbody th {
+    font-weight: 600;
+  }
+
+  input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-violet);
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// Entry view (svef/www#168).
+.subheading {
+  margin: 24px 0 8px;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+}
+
+.imageLink {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  margin-top: 8px;
+  color: inherit;
+
+  img {
+    display: block;
+    width: 160px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: contain;
+    border: 1px solid var(--line);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0 0 16px;
+
+  dt {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  // A field is a dt/dd pair in a wrapper (valid in a dl); the wrapper takes the grid's place.
+  > .fact {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+  }
+
+  @media (max-width: 40rem) {
+    grid-template-columns: minmax(0, 1fr);
+
+    > .fact {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+
+.fact {
+  min-width: 0;
+}
+
+.pre {
+  white-space: pre-wrap;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.plainList,
+.credentials {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.credentials li {
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+}
+
+.wrap {
+  overflow-wrap: anywhere;
+}
+
+.error {
+  margin: 0 0 12px;
+  color: var(--accent-yellow);
+}
+
+.filter input[type='email'],
+.filter input[type='search'] {
+  min-width: 14rem;
+  padding: 8px;
+  border: 1px solid var(--line);
+  background: var(--ink-2);
+  color: var(--color-white);
+  font: inherit;
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin: 16px 0 0;
+}
+
+.sortLink {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+// Requests (svef/www#169).
+.requestList {
+  display: grid;
+  gap: 16px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.request {
+  padding: 4px 16px 16px;
+  border: 1px solid var(--line);
+
+  &[data-status='overdue'] {
+    border-color: var(--accent-yellow);
+  }
+}
+
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid currentcolor;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  &[data-status='overdue'] {
+    color: var(--accent-yellow);
+  }
+}
+
+.threadHeading {
+  margin: 12px 0 4px;
+  font-size: 1rem;
+}
+
+.thread {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding-left: 12px;
+    border-left: 3px solid var(--line);
+    overflow-wrap: anywhere;
+
+    &[data-side='staff'] {
+      border-left-color: var(--color-violet);
+    }
+  }
+
+  .pre {
+    display: block;
+  }
+}
+
+.requestActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+}
+
+.requestForm {
+  display: grid;
+  gap: 8px;
+  max-width: 44rem;
+
+  textarea,
+  input[type='datetime-local'] {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px;
+    border: 1px solid var(--line);
+    background: var(--ink-2);
+    color: var(--color-white);
+    font: inherit;
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+
+  input[type='datetime-local'] {
+    width: auto;
+  }
+
+  input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-violet);
+  }
+}
+
+.filter textarea {
+  min-width: 18rem;
+  padding: 8px;
+  border: 1px solid var(--line);
+  background: var(--ink-2);
+  color: var(--color-white);
+  font: inherit;
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.block {
+  display: block;
+  font-weight: 600;
+}
+
+.fieldset {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+
+  legend {
+    padding: 0 4px;
+    font-weight: 600;
+  }
+}
+
+.checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 6px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.actions a[aria-current='true'] {
+  outline: 2px solid var(--color-white);
+  outline-offset: 2px;
+}

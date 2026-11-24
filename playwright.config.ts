@@ -38,6 +38,21 @@ export default defineConfig({
           // Opt in explicitly with PLAYWRIGHT_REUSE_SERVER=1.
           reuseExistingServer: !process.env.CI && !!process.env.PLAYWRIGHT_REUSE_SERVER,
           timeout: 300_000,
+          // Account flows read their emails from the local outbox, and their tests share
+          // one IP, which Better Auth's production rate limiter would otherwise throttle.
+          // `AWARDS_TEST_SESSION` lets an e2e act as several users through a cookie, on top
+          // of real sign-in; it is honoured only off Vercel (src/lib/awards/session.ts).
+          // The credential key is a throwaway so a production build can encrypt login details.
+          // The staff area reads `AWARDS_CLOCK_NOW` instead of the real time, so its
+          // after-close flows can run: 1 March 2027 is past the 2026 edition's close.
+          env: {
+            AWARDS_EMAIL_OUTBOX: '1',
+            AWARDS_AUTH_RATE_LIMIT: 'off',
+            AWARDS_TEST_SESSION: '1',
+            AWARDS_CREDENTIAL_KEY: Buffer.alloc(32, 7).toString('base64'),
+            AWARDS_CLOCK_NOW: '2027-03-01T00:00:00Z',
+            CRON_SECRET: 'e2e-cron-secret',
+          },
         },
       }
     : {}),

@@ -113,6 +113,8 @@ export const is = {
     // Where the export's 'Lesa meira' button sits. Not a link: the awards page is
     // hidden (#128), so the section teases the next date instead.
     awardsTeaser: 'Opnað verður fyrir innsendingar 1. desember 2026',
+    // The teaser's link, once intake has opened (the edition row says when).
+    awardsOpenCta: 'Senda inn verkefni',
     eventsTitle: 'Næstu viðburðir',
     // The same section when nothing is coming up: the latest events that have been.
     pastEventsTitle: 'Liðnir viðburðir',
@@ -272,6 +274,44 @@ export const is = {
     // Marks a section that is published in Icelandic only as an editorial
     // decision — not a translation that is on its way.
     icelandicOnly: 'Íslenska eingöngu',
+  },
+  submissions: {
+    title: 'Innsendingar',
+    lead: (year: number) =>
+      `Sendu verkefni í Íslensku vefverðlaunin ${year}. Hér eru flokkarnir, verðin og tímasetningarnar.`,
+    datesTitle: 'Tímasetningar',
+    dates: {
+      opens: 'Opnað fyrir innsendingar',
+      earlyBird: 'Snemmskráningarverð gildir til og með',
+      closes: 'Innsendingum lýkur, til og með',
+      ceremony: 'Verðlaunahátíðin',
+    },
+    categoriesTitle: 'Flokkar og verð',
+    categoriesLead: (percent: number) =>
+      `Hægt er að senda sama verkefni í fleiri en einn flokk. Snemmskráningarverð er ${percent}% lægra og fæst með því að senda inn fyrir lok snemmskráningar. Verð eru í íslenskum krónum.`,
+    categoriesLabel: 'Flokkar',
+    earlyBird: 'Snemmskráning',
+    regular: 'Almennt verð',
+    currency: 'kr.',
+    description: 'Lýsing á flokknum',
+    tiersTitle: 'Veldu eina stærð',
+    tiersNote:
+      'Verkefni getur aðeins verið í einum af þessum flokkum. Veltumörkin eru til viðmiðunar.',
+    needTitle: 'Þetta þarftu að hafa við höndina',
+    need: [
+      'Tengla á verkefnið, vef eða app.',
+      'Innskráningarupplýsingar ef verkefnið krefst innskráningar.',
+      'Mynd af verkefninu, 1080 × 1080 punktar, PNG eða JPG.',
+      'Kennitölu fyrir reikning. Reikningur er sendur eftir að innsendingum lýkur.',
+    ],
+    ctaTitle: 'Senda inn verkefni',
+    ctaOpen:
+      'Þú býrð til aðgang eða skráir þig inn og byrjar svo á innsendingunni. Drög vistast sjálfkrafa.',
+    ctaBefore: (date: string) => `Opnað verður fyrir innsendingar ${date}.`,
+    ctaClosed: (date: string) => `Innsendingum lauk ${date}.`,
+    start: 'Hefja innsendingu',
+    hasAccount: 'Ertu með aðgang?',
+    signIn: 'Skrá inn',
   },
   awards: {
     title: 'Íslensku vefverðlaunin',

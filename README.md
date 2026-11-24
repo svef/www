@@ -40,6 +40,81 @@ changing a collection or a global.
 | `e2e` / `e2e:a11y` | Playwright (+ axe sweeps) |
 | `generate:types` / `generate:importmap` | Payload codegen |
 | `seed:dev` | Fill a **local** database with development fixtures (see below) |
+| `awards:bucket` | Create the awards uploads bucket if missing and apply its CORS rule (see "Awards uploads") |
+| `awards:generate` / `awards:migrate` / `awards:seed` | Awards submission database: generate SQL from the schema / apply it / upsert the 2026 edition and categories (see below) |
+
+## Awards database
+
+The awards submission system keeps its data in a **separate Postgres database**
+(Drizzle + `drizzle-kit`, not Payload; Payload never imports it). Code lives in
+`src/lib/awards/db/`: `schema.ts` (all tables), `migrations/` (generated SQL plus
+the hand-written append-only trigger for `entry_event`), `seed.ts`, `client.ts`
+(server-only `getAwardsDb()`).
+
+```bash
+# once: create the database next to Payload's, in the local Postgres container
+docker exec svef-pg psql -U svef -d postgres -c 'create database svef_awards'
+# .env.local (see .env.example): AWARDS_DATABASE_URL and AWARDS_DATABASE_URL_UNPOOLED,
+# e.g. postgresql://svef:svef@localhost:5433/svef_awards
+
+npm run awards:migrate       # apply pending migrations (safe to re-run)
+npm run awards:seed          # upsert the 2026 edition, group, 18 categories, exclusion
+```
+
+After changing `schema.ts`, run `npm run awards:generate -- --name <what_changed>`
+and commit the SQL it writes. `awards:migrate` runs in the Vercel build right after
+Payload's `migrate`, and in both CI jobs; production is **not** seeded by the build
+(prices may be edited there), so run `awards:seed` once by hand against it. The
+smoke test `src/lib/awards/db/db.test.ts` migrates and seeds whatever
+`AWARDS_DATABASE_URL` points at, and skips when it is unset.
+
+## Awards uploads
+
+Entrants' presentation images go to a **private** S3-compatible bucket, separate from the
+public media bucket. The browser uploads straight to it with a presigned `PUT` (nothing is
+proxied through Vercel); the server then reads the object, checks the real type from its magic
+bytes, the size (at most 10 MB) and the dimensions (exactly 1080 × 1080), and marks the
+`entry_file` row `available` or `rejected` (and deletes the object). Previews, for the entrant
+and for staff, are short-lived presigned `GET` URLs. Code: `src/lib/awards/files/`. A daily
+cron (`/api/awards/cron/file-cleanup`, `CRON_SECRET` as for the other crons) rejects uploads
+that stayed `pending` for over an hour and deletes their objects.
+
+Configuration (`.env.example`): `AWARDS_R2_ENDPOINT` (R2: `https://<account id>.r2.cloudflarestorage.com`),
+`AWARDS_R2_BUCKET`, `AWARDS_R2_ACCESS_KEY_ID`, `AWARDS_R2_SECRET_ACCESS_KEY`; the region is `auto`.
+The R2 API token needs object read and write on this bucket only.
+
+**CORS rule the bucket needs** (R2 dashboard, bucket, Settings, CORS policy), since the browser
+PUTs from the site's origin. List every origin that serves the form (production, previews you
+test on):
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://svef.is", "https://dev.svef.is"],
+    "AllowedMethods": ["PUT", "GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+**Locally**, use MinIO (its Docker Hub image is gone; Chainguard's build is the same server):
+
+```bash
+docker run -d --name svef-minio -p 9000:9000 -p 9001:9001 \
+  -e MINIO_ROOT_USER=svefminio -e MINIO_ROOT_PASSWORD=svefminio-secret \
+  cgr.dev/chainguard/minio:latest server /data --console-address :9001
+# .env.local
+AWARDS_R2_ENDPOINT=http://localhost:9000
+AWARDS_R2_BUCKET=svef-awards-dev
+AWARDS_R2_ACCESS_KEY_ID=svefminio
+AWARDS_R2_SECRET_ACCESS_KEY=svefminio-secret
+npm run awards:bucket        # creates the bucket; MinIO allows every origin itself
+```
+
+`npm run e2e` needs this container running, like Postgres (the upload specs skip when
+`AWARDS_R2_ENDPOINT` is unset); CI starts one. Quit it when you are done (`docker rm -f svef-minio`).
 
 ## Development fixtures
 

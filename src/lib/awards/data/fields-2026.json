@@ -1,0 +1,441 @@
+{
+  "_note": "Entry form fields. Derived from Fields.csv plus the decisions made while planning. Copy (en + is) is a draft for review. `scope: project` = answered once per project and copied onto each entry on export; `scope: entry` = answered per category entry. `when` rules: `categories.any` = shown if the project is entered in any of these; `categories.anyExcept` = shown if entered in any category other than these; `field` = shown when another field has a value. Lengths are characters.",
+  "visibilityLevels": {
+    "admin": "SVEF admins only",
+    "judges": "admins and judges",
+    "public": "everyone, including later public pages"
+  },
+  "fields": [
+    {
+      "key": "owners",
+      "scope": "project",
+      "type": "person_list",
+      "label": {
+        "en": "Project owner",
+        "is": "Eigandi verkefnis"
+      },
+      "description": {
+        "en": "Who the project belongs to, for example the client. Add more than one if needed.",
+        "is": "Hver á verkefnið, til dæmis verkkaupi. Hægt er að bæta við fleiri en einum."
+      },
+      "required": true,
+      "visibility": "admin",
+      "editableAfterSubmit": false,
+      "item": {
+        "name": {
+          "label": {
+            "en": "Name",
+            "is": "Nafn"
+          },
+          "type": "short_text",
+          "required": true,
+          "maxLength": 120
+        },
+        "email": {
+          "label": {
+            "en": "Email",
+            "is": "Netfang"
+          },
+          "type": "email",
+          "required": true
+        },
+        "company": {
+          "label": {
+            "en": "Company",
+            "is": "Fyrirtæki"
+          },
+          "type": "short_text",
+          "required": false,
+          "maxLength": 120
+        }
+      },
+      "minItems": 1
+    },
+    {
+      "key": "title",
+      "scope": "project",
+      "type": "short_text",
+      "label": {
+        "en": "Project title",
+        "is": "Heiti verkefnis"
+      },
+      "description": {
+        "en": "The name of the project as it should appear, for example „Svef.is“.",
+        "is": "Heiti verkefnisins eins og það á að birtast, til dæmis „Svef.is“."
+      },
+      "required": true,
+      "visibility": "public",
+      "editableAfterSubmit": false,
+      "maxLength": 80
+    },
+    {
+      "key": "description",
+      "scope": "project",
+      "type": "long_text",
+      "label": {
+        "en": "Project description",
+        "is": "Lýsing á verkefninu"
+      },
+      "description": {
+        "en": "What the project is, who it’s for and what makes it stand out. If you’ve entered it before, say what has changed.",
+        "is": "Hvað er verkefnið, fyrir hverja er það og hvað gerir það framúrskarandi? Ef verkefnið hefur verið sent inn áður skaltu segja frá því hvað hefur breyst."
+      },
+      "tooltip": {
+        "en": "The jury doesn’t see who made the project. Don’t name the people or companies behind it, and don’t link to anything that identifies them, such as personal pages or videos.",
+        "is": "Dómnefnd sér ekki hverjir unnu verkefnið. Ekki nefna fólk eða fyrirtæki sem stóðu að því og ekki vísa á efni sem segir til um það, svo sem persónulegar síður eða myndbönd."
+      },
+      "required": true,
+      "visibility": "judges",
+      "editableAfterSubmit": false,
+      "maxLength": 1000
+    },
+    {
+      "key": "categoryPitch",
+      "scope": "entry",
+      "type": "long_text",
+      "label": {
+        "en": "Why this category?",
+        "is": "Af hverju þessi flokkur?"
+      },
+      "description": {
+        "en": "Optional. What makes the project a strong fit for this category, beyond what the description already says.",
+        "is": "Valfrjálst. Hvað gerir verkefnið að sterkum kosti í þessum flokki, umfram það sem kemur fram í lýsingunni?"
+      },
+      "required": false,
+      "visibility": "judges",
+      "editableAfterSubmit": false,
+      "maxLength": 500
+    },
+    {
+      "key": "links",
+      "scope": "project",
+      "type": "url_list",
+      "label": {
+        "en": "Project links",
+        "is": "Tenglar á verkefnið"
+      },
+      "description": {
+        "en": "Links to what the jury should judge. Promotional videos and other marketing material don’t belong here.",
+        "is": "Tenglar á það sem dómnefnd á að meta. Kynningarmyndbönd og annað kynningarefni á ekki heima hér."
+      },
+      "required": true,
+      "visibility": "judges",
+      "editableAfterSubmit": true,
+      "minItems": 1,
+      "when": {
+        "categories": {
+          "anyExcept": [
+            "app"
+          ]
+        }
+      }
+    },
+    {
+      "key": "appLinks",
+      "scope": "project",
+      "type": "url_list",
+      "label": {
+        "en": "App links",
+        "is": "Tenglar á appið"
+      },
+      "description": {
+        "en": "Where the app can be downloaded or tested, for example the App Store, Google Play or TestFlight. Only the app being judged.",
+        "is": "Hvar hægt er að sækja eða prófa appið, til dæmis í App Store, Google Play eða TestFlight. Aðeins tenglar á appið sem á að meta."
+      },
+      "required": true,
+      "visibility": "judges",
+      "editableAfterSubmit": true,
+      "minItems": 1,
+      "when": {
+        "categories": {
+          "any": [
+            "app"
+          ]
+        }
+      }
+    },
+    {
+      "key": "requiresLogin",
+      "scope": "project",
+      "type": "boolean",
+      "label": {
+        "en": "Does the project require a login?",
+        "is": "Þarf að skrá sig inn til að nota verkefnið?"
+      },
+      "description": {
+        "en": "If so, the jury needs a way in.",
+        "is": "Ef svo er þarf dómnefnd að komast inn."
+      },
+      "required": true,
+      "visibility": "judges",
+      "editableAfterSubmit": true,
+      "default": false,
+      "forced": {
+        "value": true,
+        "when": {
+          "categories": {
+            "any": [
+              "logged-in-platform"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "key": "loginInformation",
+      "scope": "project",
+      "type": "access_credentials",
+      "label": {
+        "en": "Login details",
+        "is": "Innskráningarupplýsingar"
+      },
+      "description": {
+        "en": "The jury must be able to log in. If the public can’t create an account, provide a test account or instructions for how the jury gets access. A project the jury can’t log in to can’t be judged. Stored encrypted and only used for judging.",
+        "is": "Dómnefnd þarf að geta skráð sig inn. Ef almenningur getur ekki stofnað aðgang þarf að fylgja prufuaðgangur eða leiðbeiningar um hvernig dómnefnd fær aðgang. Ekki er hægt að meta verkefni sem dómnefnd kemst ekki inn í. Upplýsingarnar eru geymdar dulkóðaðar og eingöngu notaðar við dómgæslu."
+      },
+      "required": true,
+      "visibility": "judges",
+      "editableAfterSubmit": true,
+      "encrypted": true,
+      "when": {
+        "field": {
+          "key": "requiresLogin",
+          "equals": true
+        }
+      }
+    },
+    {
+      "key": "technicalAchievement",
+      "scope": "project",
+      "type": "long_text",
+      "label": {
+        "en": "What is the technical achievement?",
+        "is": "Í hverju felst tækninýtingin?"
+      },
+      "description": {
+        "en": "What technology is used and what’s notable about how it’s used, whether it’s new technology or older technology put to new use.",
+        "is": "Hvaða tækni er notuð og hvað er eftirtektarvert við nýtingu hennar, hvort sem tæknin er ný eða eldri tækni er notuð á nýjan hátt."
+      },
+      "required": true,
+      "visibility": "judges",
+      "editableAfterSubmit": false,
+      "maxLength": 1000,
+      "when": {
+        "categories": {
+          "any": [
+            "technical-achievement"
+          ]
+        }
+      }
+    },
+    {
+      "key": "aiRole",
+      "scope": "project",
+      "type": "long_text",
+      "label": {
+        "en": "What role does AI play in the solution?",
+        "is": "Hvert er hlutverk gervigreindar í lausninni?"
+      },
+      "description": {
+        "en": "How AI is at the core of the experience, and how it changes the way users work, solve problems or access services. Being built with the help of AI is not enough on its own.",
+        "is": "Hvernig gervigreind er kjarninn í upplifuninni og hvernig hún breytir því hvernig notandinn vinnur, leysir vandamál eða nálgast þjónustu. Það eitt að lausnin hafi verið smíðuð með hjálp gervigreindar dugir ekki."
+      },
+      "required": true,
+      "visibility": "judges",
+      "editableAfterSubmit": false,
+      "maxLength": 1000,
+      "when": {
+        "categories": {
+          "any": [
+            "ai-solution"
+          ]
+        }
+      }
+    },
+    {
+      "key": "school",
+      "scope": "project",
+      "type": "short_text",
+      "label": {
+        "en": "School",
+        "is": "Skóli"
+      },
+      "required": true,
+      "visibility": "admin",
+      "editableAfterSubmit": false,
+      "maxLength": 120,
+      "when": {
+        "categories": {
+          "any": [
+            "student-project"
+          ]
+        }
+      }
+    },
+    {
+      "key": "programme",
+      "scope": "project",
+      "type": "short_text",
+      "label": {
+        "en": "Programme or course",
+        "is": "Námsbraut eða námskeið"
+      },
+      "required": true,
+      "visibility": "admin",
+      "editableAfterSubmit": false,
+      "maxLength": 120,
+      "when": {
+        "categories": {
+          "any": [
+            "student-project"
+          ]
+        }
+      }
+    },
+    {
+      "key": "campaignPeriod",
+      "scope": "project",
+      "type": "date_range",
+      "label": {
+        "en": "Campaign period",
+        "is": "Tímabil herferðar"
+      },
+      "description": {
+        "en": "When the campaign, event or launch ran.",
+        "is": "Hvenær herferðin, viðburðurinn eða kynningin stóð yfir."
+      },
+      "required": true,
+      "visibility": "judges",
+      "editableAfterSubmit": false,
+      "when": {
+        "categories": {
+          "any": [
+            "marketing-website"
+          ]
+        }
+      }
+    },
+    {
+      "key": "campaignArchive",
+      "scope": "project",
+      "type": "url",
+      "label": {
+        "en": "Archived copy",
+        "is": "Afrit af vefnum"
+      },
+      "description": {
+        "en": "If the site is no longer live, or may be taken down before judging, link to an archived copy the jury can browse.",
+        "is": "Ef vefurinn er ekki lengur í loftinu, eða gæti verið tekinn niður fyrir dómgæslu, settu inn tengil á afrit sem dómnefnd getur skoðað."
+      },
+      "required": false,
+      "visibility": "judges",
+      "editableAfterSubmit": true,
+      "when": {
+        "categories": {
+          "any": [
+            "marketing-website"
+          ]
+        }
+      }
+    },
+    {
+      "key": "image",
+      "scope": "project",
+      "type": "image",
+      "label": {
+        "en": "Presentation image",
+        "is": "Kynningarmynd"
+      },
+      "description": {
+        "en": "Used to present the project, for example if it’s a finalist. Square, 1080 × 1080 px, PNG or JPG, up to 10 MB.",
+        "is": "Notuð til að kynna verkefnið, til dæmis ef það kemst í úrslit. Ferningslaga, 1080 × 1080 px, PNG eða JPG, að hámarki 10 MB."
+      },
+      "required": false,
+      "visibility": "admin",
+      "editableAfterSubmit": true,
+      "validation": {
+        "width": 1080,
+        "height": 1080,
+        "types": [
+          "image/png",
+          "image/jpeg"
+        ],
+        "maxBytes": 10485760
+      }
+    },
+    {
+      "key": "collaborators",
+      "scope": "project",
+      "type": "person_list",
+      "label": {
+        "en": "Collaborators",
+        "is": "Samstarfsfólk"
+      },
+      "description": {
+        "en": "People who worked on the project and what they did, for example development, design or project management.",
+        "is": "Fólk sem vann að verkefninu og hvert hlutverk þess var, til dæmis forritun, hönnun eða verkefnastjórn."
+      },
+      "required": false,
+      "visibility": "admin",
+      "editableAfterSubmit": true,
+      "item": {
+        "name": {
+          "label": {
+            "en": "Name",
+            "is": "Nafn"
+          },
+          "type": "short_text",
+          "required": true,
+          "maxLength": 120
+        },
+        "role": {
+          "label": {
+            "en": "Role",
+            "is": "Hlutverk"
+          },
+          "type": "short_text",
+          "required": true,
+          "maxLength": 80
+        },
+        "email": {
+          "label": {
+            "en": "Email",
+            "is": "Netfang"
+          },
+          "type": "email",
+          "required": false
+        }
+      }
+    },
+    {
+      "key": "publicCredit",
+      "scope": "project",
+      "type": "short_text",
+      "label": {
+        "en": "Public credit",
+        "is": "Aðstandendur til birtingar"
+      },
+      "description": {
+        "en": "How the project should be credited if it’s a finalist or winner, for example the client and the people who made it. Shown exactly as written.",
+        "is": "Hvernig á að geta aðstandenda ef verkefnið kemst í úrslit eða vinnur, til dæmis verkkaupa og þeirra sem unnu verkefnið. Birt nákvæmlega eins og það er skrifað."
+      },
+      "required": true,
+      "visibility": "admin",
+      "editableAfterSubmit": true,
+      "maxLength": 200
+    },
+    {
+      "key": "termsAccepted",
+      "scope": "project",
+      "type": "waiver",
+      "label": {
+        "en": "I accept the competition terms",
+        "is": "Ég samþykki skilmála keppninnar"
+      },
+      "required": true,
+      "visibility": "admin",
+      "editableAfterSubmit": false,
+      "termsVersion": null
+    }
+  ]
+}

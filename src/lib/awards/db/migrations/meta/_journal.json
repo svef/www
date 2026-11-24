@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1795486096527,
+      "tag": "0000_awards_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795486127983,
+      "tag": "0001_entry_event_append_only",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795486850976,
+      "tag": "0002_auth_rate_limit",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795495598381,
+      "tag": "0003_request_reminder",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795497338039,
+      "tag": "0004_cultured_spacker_dave",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795498539476,
+      "tag": "0005_needy_groot",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795499448197,
+      "tag": "0006_sharp_goblin_queen",
+      "breakpoints": true
+    }
+  ]
+}

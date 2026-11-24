@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LANDING_ONLY } from '@/lib/site-mode'
-import { DEFAULT_LOCALE, isLocale, localePath, toInternalSegment, toPublicSegment } from '@/lib/i18n'
+import {
+  DEFAULT_LOCALE,
+  isLocale,
+  type Locale,
+  localePath,
+  toInternalSegment,
+  toInternalSegments,
+  toPublicSegments,
+} from '@/lib/i18n'
 
 // Next.js 16 Proxy (formerly middleware).
 //
@@ -18,7 +26,7 @@ import { DEFAULT_LOCALE, isLocale, localePath, toInternalSegment, toPublicSegmen
  * list only decides which of them stay reachable while the flag is on. It is not
  * cutover scaffolding — see the note on `LANDING_ONLY` below.
  */
-const LANDING_PAGES = new Set(['abendingar', 'erindi'])
+const LANDING_PAGES = new Set(['abendingar', 'erindi', 'innsendingar'])
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -27,6 +35,26 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = path
     return NextResponse.redirect(url)
+  }
+
+  // Names the page in the reader's language, or rewrites it onto its directory.
+  // `parts` are the segments after the locale. Null when the path needs neither.
+  const routeByName = (locale: Locale, parts: string[]) => {
+    if (!toInternalSegment(parts[0] ?? '')) return null
+    // A page (or sub-page) asked for by its name in the *other* language is a
+    // real page under the wrong name. Send it to the right one rather than
+    // serving the same page at two URLs.
+    const expected = toPublicSegments(parts, locale)
+    if (expected.join('/') !== parts.join('/')) {
+      return redirectTo(`/${locale}/${expected.join('/')}`)
+    }
+    const internal = toInternalSegments(parts)
+    if (internal.join('/') !== parts.join('/')) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/${locale}/${internal.join('/')}`
+      return NextResponse.rewrite(url)
+    }
+    return null
   }
 
   // The root's only job is choosing a language.
@@ -70,9 +98,12 @@ export function proxy(request: NextRequest) {
     // A few real pages are reachable before the rest of the site is. They live
     // where they will live afterwards, under `(app)/[locale]`, so the cutover
     // moves nothing — it only drops this check.
-    const page = pathname.split('/')[2]
-    if (page && LANDING_PAGES.has(page) && pathname === `/${segment}/${page}`) {
-      return NextResponse.next()
+    // `innsendingar` has an English name, so it goes through the same naming
+    // rules as the full site; the two forms are the same in both languages.
+    const parts = pathname.split('/').slice(2)
+    const internalPage = toInternalSegment(parts[0] ?? '') ?? parts[0]
+    if (parts.length === 1 && internalPage && LANDING_PAGES.has(internalPage)) {
+      return routeByName(segment, parts) ?? NextResponse.next()
     }
 
     if (pathname !== `/${segment}`) return redirectTo(`/${segment}`)
@@ -85,24 +116,8 @@ export function proxy(request: NextRequest) {
   // while the directories on disk keep their Icelandic names. So the public name
   // is translated back to the directory and the request rewritten onto it; the
   // URL in the address bar does not change.
-  const [, , page = '', ...rest] = pathname.split('/')
-  const internal = toInternalSegment(page)
-
-  if (internal) {
-    // A page asked for by its name in the *other* language is a real page under
-    // the wrong name. Send it to the right one rather than serving the same page
-    // at two URLs.
-    const expected = toPublicSegment(internal, segment)
-    if (page !== expected) {
-      return redirectTo(`/${segment}/${[expected, ...rest].join('/')}`)
-    }
-
-    if (internal !== page) {
-      const url = request.nextUrl.clone()
-      url.pathname = `/${segment}/${[internal, ...rest].join('/')}`
-      return NextResponse.rewrite(url)
-    }
-  }
+  const routed = routeByName(segment, pathname.split('/').slice(2))
+  if (routed) return routed
 
   return NextResponse.next()
 }

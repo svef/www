@@ -1,0 +1,45 @@
+.panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 56ch;
+  min-width: 0;
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: var(--weight-heading);
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.title {
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  min-width: 0;
+
+  > a,
+  > button {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+.notice {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid currentcolor;
+}

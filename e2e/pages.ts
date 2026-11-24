@@ -80,6 +80,11 @@ export const PAGES = [
     name: 'photos',
     h1: { is: 'Myndir', en: 'Photos' },
   },
+  {
+    path: '/innsendingar',
+    name: 'submissions',
+    h1: { is: 'Innsendingar', en: 'Submissions' },
+  },
   // The two public forms, linked from the footer. They are not in
   // `ROUTE_SEGMENTS`, so their path is the same in both locales
   // (`/en/abendingar`), and they are the pages that stay reachable while
@@ -93,6 +98,32 @@ export const PAGES = [
     path: '/erindi',
     name: 'talk proposal',
     h1: { is: 'Bjóða fram erindi', en: 'Propose a talk' },
+  },
+  // Awards accounts (svef/www#158). Their own spec (account.spec.ts) drives the flows.
+  {
+    path: '/nyskraning',
+    name: 'sign up',
+    h1: { is: 'Nýskráning', en: 'Sign up' },
+  },
+  {
+    path: '/innskraning',
+    name: 'sign in',
+    h1: { is: 'Innskráning', en: 'Sign in' },
+  },
+  {
+    path: '/gleymt-lykilord',
+    name: 'forgot password',
+    h1: { is: 'Gleymt lykilorð', en: 'Forgot your password' },
+  },
+  {
+    path: '/endurstilla-lykilord',
+    name: 'reset password',
+    h1: { is: 'Nýtt lykilorð', en: 'Choose a new password' },
+  },
+  {
+    path: '/stadfesta-netfang',
+    name: 'verify email',
+    h1: { is: 'Staðfesting netfangs', en: 'Email confirmation' },
   },
 ] as const
 
@@ -127,6 +158,20 @@ export interface DynamicRoute {
   matches: (path: string) => boolean
 }
 
+/**
+ * Pages that exist on disk but are not public: they answer an anonymous visitor with a
+ * redirect or a 404, so the sweeps (which visit as an anonymous reader and expect an `<h1>`)
+ * cannot cover them. Each has a spec of its own that signs in and checks it, axe included.
+ */
+export const GATED_ROUTES: readonly { path: string; spec: string }[] = [
+  // Staff only (svef/www#170): eligibility list and invoicing export.
+  { path: '/innsendingar/starfsfolk', spec: 'staff-export.spec.ts' },
+  // Signed-in only: the entrant's dashboard (svef/www#164).
+  { path: '/innsendingar/minar', spec: 'dashboard.spec.ts' },
+  // Signed-in only: starting a project. Signed out it redirects to sign-in (#158/#160).
+  { path: '/innsendingar/ny', spec: 'project-form.spec.ts' },
+]
+
 export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
   {
     pattern: '/frettir/[slug]',
@@ -137,6 +182,27 @@ export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
     pattern: '/vidburdir/[slug]',
     name: 'event',
     matches: (path) => /^\/vidburdir\/[^/]+$/.test(path),
+  },
+  // A signed-in person's project. Covered by `project-form.spec.ts`, which creates one.
+  // `ny`/`new` and `minar`/`mine` are fixed sub-pages, not ids.
+  {
+    pattern: '/innsendingar/[id]',
+    name: 'project form',
+    matches: (path) => /^\/innsendingar\/(?!(ny|new|minar|mine|starfsfolk|staff)$)[^/]+$/.test(path),
+  },
+  // Accepting an invitation to edit (svef/www#165): the token is the segment, covered by
+  // `invitations.spec.ts`. `/en/submissions/invite/<token>` reaches it through the proxy.
+  {
+    pattern: '/innsendingar/bod/[token]',
+    name: 'invitation',
+    matches: (path) => /^\/(innsendingar\/bod|submissions\/invite)\/[^/]+$/.test(path),
+  },
+  // The staff entry view (svef/www#168): staff only, covered by `staff-area.spec.ts`.
+  // `/en/submissions/staff/<id>` reaches it through the proxy's nested-segment rewrite.
+  {
+    pattern: '/innsendingar/starfsfolk/[entryId]',
+    name: 'staff entry view',
+    matches: (path) => /^\/(innsendingar\/starfsfolk|submissions\/staff)\/[^/]+$/.test(path),
   },
 ]
 

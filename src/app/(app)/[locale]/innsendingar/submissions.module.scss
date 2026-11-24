@@ -1,0 +1,68 @@
+@use '../../../../styles/breakpoints' as bp;
+
+.lead {
+  margin: 0 0 clamp(24px, 3vw, 40px);
+  max-width: 62ch;
+  color: var(--muted);
+}
+
+// The key dates: four facts, ruled like the FAQ rather than carded.
+.dates {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0 24px;
+  border-top: 1px solid var(--line);
+
+  @include bp.below(bp.$lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include bp.below(bp.$xs) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.date {
+  min-width: 0;
+  padding-block: 20px;
+  border-bottom: 1px solid var(--line);
+
+  dt {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  dd {
+    margin: 6px 0 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.3rem, 2vw, 1.75rem);
+    overflow-wrap: anywhere;
+  }
+}
+
+.need {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+  max-width: 62ch;
+  font-size: 1.1rem;
+
+  li {
+    position: relative;
+    padding-left: 32px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.45em;
+      width: 14px;
+      height: 14px;
+      background: var(--color-violet);
+    }
+  }
+}

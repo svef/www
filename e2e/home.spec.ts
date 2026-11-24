@@ -20,6 +20,9 @@ test.describe('home', () => {
     test(`${locale}: no text leaves the screen, and the headline keeps its lines`, async ({
       page,
     }) => {
+      // Six page loads in one test: the default 30s was right at the limit and timed out
+      // under load.
+      test.setTimeout(90_000)
       for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         await page.setViewportSize({ width, height: 900 })
         await page.goto(urlFor(locale, ''))
@@ -110,12 +113,19 @@ test.describe('home', () => {
       )
       // The date · venue line sits above it, and the three photos are decorative.
       expect((await section.locator('p').first().innerText()).trim().length).toBeGreaterThan(5)
-      // Where the export's button sits, a teaser for the next submissions date — text, not a link.
-      await expect(section.getByText(/innsendingar 1\. desember 2026|Submissions open 1 December 2026/)).toBeVisible()
+      // Where the export's button sits: until intake opens (1 December, from the awards
+      // database's edition row) a teaser with the date — text, not a link; from then on one
+      // link, to the submissions page. The server clock decides, so the test reads the same date.
+      if (Date.now() < Date.parse('2026-12-01T00:00:00Z')) {
+        await expect(section.getByText(/innsendingar 1\. desember 2026|Submissions open 1 December 2026/)).toBeVisible()
+        await expect(section.locator('a')).toHaveCount(0)
+      } else {
+        await expect(section.locator('a')).toHaveCount(1)
+        await expect(section.locator('a')).toHaveAttribute('href', urlFor(locale, '/innsendingar'))
+      }
       await expect(section.locator('[aria-hidden="true"] img')).toHaveCount(3)
-      // The export's "Lesa meira" button is left out: no link at all while the awards page is
+      // The export's "Lesa meira" button is left out: no link to the awards page while it is
       // on hold.
-      await expect(section.locator('a')).toHaveCount(0)
       await expect(
         page.locator(`main a[href="${urlFor(locale, '/vefverdlaunin')}"]`),
       ).toHaveCount(0)

@@ -5,7 +5,8 @@ import { expect, vi } from 'vitest'
 expect.extend(matchers)
 
 // jsdom has no matchMedia; Mantine's provider and hooks call it on mount.
-if (!window.matchMedia) {
+// (Files opting into `@vitest-environment node` have no window at all.)
+if (typeof window !== 'undefined' && !window.matchMedia) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,

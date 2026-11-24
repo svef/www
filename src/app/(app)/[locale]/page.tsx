@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation'
 import { Fragment } from 'react'
+import Link from 'next/link'
 import { getDictionary, isHiddenPath, isLocale, localePath } from '@/lib/i18n'
 import { resolveContentLocale } from '@/lib/localized'
 import { HOME_EVENT_COUNT, getAwardsMeta, getHomeSettings } from '@/lib/content/home'
 import { listEvents } from '@/lib/content/events'
+import { getIntakePhase } from '@/lib/awards/public-catalog.server'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { HomeOpening } from '@/components/HomeOpening/HomeOpening'
 import { HomeAwardsPhotos } from '@/components/HomeAwards/HomeAwards'
@@ -44,7 +46,11 @@ export default async function HomePage({
   if (!isLocale(locale)) notFound()
 
   const t = getDictionary(locale)
-  const [settings, awardsMeta] = await Promise.all([getHomeSettings(locale), getAwardsMeta(locale)])
+  const [settings, awardsMeta, intake] = await Promise.all([
+    getHomeSettings(locale),
+    getAwardsMeta(locale),
+    getIntakePhase(),
+  ])
 
   // A section the global turns off costs no query. With nothing coming up, the grid shows
   // the latest events that have been, under a heading that says so, rather than a hole.
@@ -102,7 +108,17 @@ export default async function HomePage({
               </Fragment>
             ))}
           </h2>
-          <p className={styles.awardsTeaser}>{t.home.awardsTeaser}</p>
+          {/* Until intake opens the teaser is plain text with the date; from the edition's
+              opening moment (the awards database, not a constant here) it is a link to
+              the submissions page. Home revalidates every five minutes, so the link
+              appears within that window of the moment. */}
+          {intake === 'open' ? (
+            <Link href={localePath('/innsendingar', locale)} className={styles.awardsLink}>
+              {t.home.awardsOpenCta}
+            </Link>
+          ) : (
+            <p className={styles.awardsTeaser}>{t.home.awardsTeaser}</p>
+          )}
         </div>
       </PageSection>
 

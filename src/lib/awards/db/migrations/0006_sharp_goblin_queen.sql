@@ -1,0 +1,1 @@
+ALTER TABLE "project_edit_lock" ADD COLUMN "token" uuid DEFAULT gen_random_uuid() NOT NULL;

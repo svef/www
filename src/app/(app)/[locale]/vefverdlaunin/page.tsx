@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
-import { getDictionary, isHiddenPage, isLocale, DEFAULT_LOCALE } from '@/lib/i18n'
+import { getDictionary, isHiddenPage, isLocale, localePath, DEFAULT_LOCALE } from '@/lib/i18n'
 import { formatLongDate } from '@/lib/dates'
 import { resolveContentLocale } from '@/lib/localized'
+import { getIntakePhase } from '@/lib/awards/public-catalog.server'
 import { getAwardsIntro, getCeremony, getWinnersArchive, listAwardCategories } from '@/lib/content/awards'
 import { TranslationNote } from '@/components/TranslationNote/TranslationNote'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
@@ -38,6 +39,7 @@ export default async function AwardsPage({
   if (isHiddenPage('vefverdlaunin')) notFound()
 
   const t = getDictionary(locale)
+  const intake = await getIntakePhase()
   const [{ intro, introLocale }, categories, ceremony] = await Promise.all([
     getAwardsIntro(locale),
     listAwardCategories(locale),
@@ -137,10 +139,14 @@ export default async function AwardsPage({
           // editor's written headline can have fallen back.
           headlineLang={ceremony.headline ? langOf(ceremony.headlineLocale) : undefined}
           lines={ceremonyLines}
+          // Once intake has opened the button goes to our own submissions page, whatever
+          // an editor typed into `submissionUrl`; until then the stored URL is shown as before.
           submit={
-            ceremony.submissionUrl
-              ? { label: t.awards.ceremony.submit, href: ceremony.submissionUrl }
-              : null
+            intake === 'open'
+              ? { label: t.awards.ceremony.submit, href: localePath('/innsendingar', locale) }
+              : ceremony.submissionUrl
+                ? { label: t.awards.ceremony.submit, href: ceremony.submissionUrl }
+                : null
           }
           tickets={
             ceremony.ticketUrl

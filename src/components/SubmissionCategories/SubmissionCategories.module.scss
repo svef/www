@@ -1,0 +1,202 @@
+@use '../../styles/breakpoints' as bp;
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+
+  @include bp.below(bp.$md) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// The brand's violet block, as a marker above each name.
+.card {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 36px clamp(20px, 2.4vw, 32px) clamp(20px, 2.4vw, 28px);
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 56px;
+    height: 12px;
+    background: var(--color-violet);
+  }
+}
+
+.group {
+  grid-column: 1 / -1;
+}
+
+.name,
+.tierName,
+.tiersTitle {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.name {
+  font-size: var(--text-h3);
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
+}
+
+.blurb {
+  margin: 0;
+  color: var(--muted);
+  max-width: 60ch;
+}
+
+// ---- The description disclosure -------------------------------------------
+
+.details {
+  border-top: 1px solid var(--line);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-block: 12px;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+  font-weight: 600;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.plus {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  background: var(--color-violet);
+  color: var(--color-white);
+
+  svg {
+    transition: transform 0.2s ease;
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+}
+
+details[open] > .summary .plus svg {
+  transform: rotate(45deg);
+}
+
+.prose {
+  padding-bottom: 8px;
+  max-width: 62ch;
+
+  > * {
+    margin-block: 0 0.8em;
+  }
+
+  a {
+    color: var(--color-violet-light);
+    text-decoration: underline;
+  }
+}
+
+// ---- Prices ---------------------------------------------------------------
+
+.prices {
+  margin: auto 0 0;
+  padding-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}
+
+.price {
+  min-width: 0;
+
+  dt {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 2px 0 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.15rem;
+  }
+}
+
+.early {
+  font-size: 1.5rem;
+  color: var(--color-white);
+}
+
+// ---- The group's size tiers -----------------------------------------------
+
+.tiersTitle {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.tiersNote {
+  margin: -8px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.tiers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+
+  @include bp.below(bp.$lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include bp.below(bp.$xs) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.tier {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: var(--ink-3);
+  border-left: 4px solid var(--color-violet);
+}
+
+.tierName {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-transform: capitalize;
+}
