@@ -36,6 +36,15 @@ describe('proxy: full site', () => {
     )
   })
 
+  it('rewrites a third level: the staff entry view keeps its id', async () => {
+    const id = '0198c7a0-1111-7222-8333-444455556666'
+    expect((await run(`/en/submissions/staff/${id}`, false)).rewrite).toBe(
+      `http://localhost/en/innsendingar/starfsfolk/${id}`,
+    )
+    const back = await run(`/en/innsendingar/starfsfolk/${id}`, false)
+    expect(new URL(back.location!).pathname).toBe(`/en/submissions/staff/${id}`)
+  })
+
   it('redirects the other language’s names to the right ones', async () => {
     const r = await run('/en/innsendingar/minar', false)
     expect(r.status).toBe(307)

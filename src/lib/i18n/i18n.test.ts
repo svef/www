@@ -114,6 +114,12 @@ describe('nested routes', () => {
     expect(localePath('/innsendingar/minar', 'is')).toBe('/is/innsendingar/minar')
   })
 
+  it('translates both names of a third-level path and keeps the id', () => {
+    const id = '0198c7a0-1111-7222-8333-444455556666'
+    expect(localePath(`/is/innsendingar/starfsfolk/${id}`, 'en')).toBe(`/en/submissions/staff/${id}`)
+    expect(localePath(`/en/submissions/staff/${id}`, 'is')).toBe(`/is/innsendingar/starfsfolk/${id}`)
+  })
+
   it('carries a project id across untouched', () => {
     const id = '0198c7a0-1111-7222-8333-444455556666'
     expect(localePath(`/innsendingar/${id}`, 'en')).toBe(`/en/submissions/${id}`)

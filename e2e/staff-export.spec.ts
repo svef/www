@@ -181,6 +181,9 @@ test('staff set eligibility after close, one by one and in bulk', async ({ page 
   await makeStaff(await signUp(page, 'staff-eligibility'))
   await page.goto(`/is/innsendingar/starfsfolk`)
 
+  // The list is paginated and the edition holds other specs' rows: narrow it to this run's.
+  await page.getByLabel('Leita í heiti verkefnis').fill(RUN)
+  await page.getByRole('button', { name: 'Sía' }).click()
   const row = (id: string) => page.locator(`tr[data-entry="${id}"]`)
   await expect(row(entries.a1).locator('[data-status]')).toHaveText('Innsent')
   await expect(page.locator(`tr[data-entry="${entries.withdrawn}"]`)).toHaveCount(0)
