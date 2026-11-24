@@ -4,20 +4,29 @@ import { useId, useMemo, useState } from 'react'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ButtonLink } from '@/components/ButtonLink/ButtonLink'
 import { inputClass } from '@/components/FormParts/FormParts'
 import { GrowText } from '@/components/GrowText/GrowText'
 import { authClient } from '@/lib/awards/auth/client'
 import type { DeadlineLine } from '@/lib/awards/dashboard/deadline'
 import { filterProjects, NO_FILTER, type ListFilter } from '@/lib/awards/dashboard/filter'
 import type { InvoiceNote } from '@/lib/awards/dashboard/invoice'
-import type { DashboardData, DashboardEntry, DashboardProject } from '@/lib/awards/dashboard/types'
+import type {
+  DashboardData,
+  DashboardEntry,
+  DashboardProject,
+} from '@/lib/awards/dashboard/types'
 import { ENTRY_STATUSES, type EntryStatus } from '@/lib/awards/types'
 import { localePath, type Locale } from '@/lib/i18n'
 import { BulkDialog, type BillingChoice, type BulkRequest } from './BulkDialog'
 import { bulkCopy } from './bulk-copy'
 import { lastDayBefore } from '@/components/ProjectForm/format'
-import { dashboardCopy, formatClock, formatDayMonth, formatMoney, type DashboardCopy } from './copy'
+import {
+  dashboardCopy,
+  formatClock,
+  formatDayMonth,
+  formatMoney,
+  type DashboardCopy,
+} from './copy'
 import styles from './Dashboard.module.scss'
 
 /**
@@ -62,7 +71,12 @@ export function Dashboard(props: DashboardProps) {
             <ul>
               {notes.map((n) => (
                 <li key={n.billing.id} data-invoice={n.billing.id}>
-                  {c.invoiceNote(n.total, n.billing.companyName, n.billing.kennitala, locale)}
+                  {c.invoiceNote(
+                    n.total,
+                    n.billing.companyName,
+                    n.billing.kennitala,
+                    locale,
+                  )}
                 </li>
               ))}
               {withoutBilling > 0 && <li>{c.invoiceNoBilling(withoutBilling)}</li>}
@@ -75,7 +89,9 @@ export function Dashboard(props: DashboardProps) {
         <div className={styles.empty} data-empty>
           <h2>{c.emptyTitle}</h2>
           <p>{c.emptyBody}</p>
-          <ButtonLink href={hrefNew}>{c.newSubmission}</ButtonLink>
+          <Link href={hrefNew} className={`btn-grow ${styles.primaryButton}`}>
+            <GrowText>{c.newSubmission}</GrowText>
+          </Link>
         </div>
       ) : (
         <Projects
@@ -93,11 +109,22 @@ export function Dashboard(props: DashboardProps) {
 }
 
 /** The head's actions: start a new submission, or sign out. */
-export function DashboardActions({ locale, signOutTo }: { locale: Locale; signOutTo: string }) {
+export function DashboardActions({
+  locale,
+  signOutTo,
+}: {
+  locale: Locale
+  signOutTo: string
+}) {
   const c = dashboardCopy[locale]
   return (
     <>
-      <ButtonLink href={localePath('/innsendingar/ny', locale)}>{c.newSubmission}</ButtonLink>
+      <Link
+        href={localePath('/innsendingar/ny', locale)}
+        className={`btn-grow ${styles.primaryButton}`}
+      >
+        <GrowText>{c.newSubmission}</GrowText>
+      </Link>
       <SignOut label={c.signOut} to={signOutTo} />
     </>
   )
@@ -132,7 +159,15 @@ function StatusTag({ status, c }: { status: EntryStatus; c: DashboardCopy }) {
   )
 }
 
-function Price({ entry, c, locale }: { entry: DashboardEntry; c: DashboardCopy; locale: Locale }) {
+function Price({
+  entry,
+  c,
+  locale,
+}: {
+  entry: DashboardEntry
+  c: DashboardCopy
+  locale: Locale
+}) {
   const note = entry.earlyBirdSecured
     ? null
     : entry.priceKind === 'locked'
@@ -176,7 +211,9 @@ function Notes({
         return (
           <p key={r.id} className={styles.request} data-request={r.id}>
             <Link href={`${projectHref}#requests`}>
-              {overdue ? c.requestOverdue : c.requestAsked(formatDayMonth(r.deadlineAt, locale))}
+              {overdue
+                ? c.requestOverdue
+                : c.requestAsked(formatDayMonth(r.deadlineAt, locale))}
             </Link>
             <span className={styles.requestMessage}>{r.message}</span>
           </p>
@@ -184,7 +221,9 @@ function Notes({
       })}
       {missing.length > 0 && (
         <p className={styles.missing} data-missing>
-          <Link href={`${projectHref}#section-review`}>{c.missing(missing.length, missing[0].label[locale])}</Link>
+          <Link href={`${projectHref}#section-review`}>
+            {c.missing(missing.length, missing[0].label[locale])}
+          </Link>
         </p>
       )}
     </div>
@@ -222,8 +261,11 @@ function Projects({
   const categories = useMemo(() => {
     const seen = new Map<string, string>()
     for (const p of projects)
-      for (const e of p.entries) if (!seen.has(e.categorySlug)) seen.set(e.categorySlug, e.categoryName[locale])
-    return [...seen].map(([slug, name]) => ({ slug, name })).sort((a, b) => a.name.localeCompare(b.name, locale))
+      for (const e of p.entries)
+        if (!seen.has(e.categorySlug)) seen.set(e.categorySlug, e.categoryName[locale])
+    return [...seen]
+      .map(([slug, name]) => ({ slug, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, locale))
   }, [projects, locale])
 
   const shown = useMemo(() => filterProjects(projects, filter), [projects, filter])
@@ -280,7 +322,9 @@ function Projects({
             className={inputClass}
             name="status"
             value={filter.status}
-            onChange={(ev) => setFilter({ ...filter, status: ev.target.value as EntryStatus | '' })}
+            onChange={(ev) =>
+              setFilter({ ...filter, status: ev.target.value as EntryStatus | '' })
+            }
           >
             <option value="">{c.list.all}</option>
             {ENTRY_STATUSES.map((s) => (
@@ -307,7 +351,12 @@ function Projects({
             ))}
           </select>
         </div>
-        <button type="button" className={styles.quiet} onClick={() => setFilter(NO_FILTER)} disabled={!filtered}>
+        <button
+          type="button"
+          className={styles.quiet}
+          onClick={() => setFilter(NO_FILTER)}
+          disabled={!filtered}
+        >
           {c.list.reset}
         </button>
       </form>
@@ -346,7 +395,10 @@ function Projects({
       )}
 
       {/* Always mounted, so the count is announced; it only shows itself once something is chosen. */}
-      <div className={clsx(styles.bulkBar, selected.size > 0 && styles.bulkBarOpen)} data-slot="bulk-actions">
+      <div
+        className={clsx(styles.bulkBar, selected.size > 0 && styles.bulkBarOpen)}
+        data-slot="bulk-actions"
+      >
         <p className={styles.bulkCount} aria-live="polite" data-selected-count>
           {selected.size > 0 ? c.list.selected(selected.size) : ''}
         </p>
@@ -358,7 +410,11 @@ function Projects({
                   type="button"
                   className={clsx(
                     'btn-grow',
-                    kind === 'submit' ? styles.primarySmall : kind === 'withdraw' ? styles.destructiveSmall : styles.secondarySmall,
+                    kind === 'submit'
+                      ? styles.primarySmall
+                      : kind === 'withdraw'
+                        ? styles.destructiveSmall
+                        : styles.secondarySmall,
                   )}
                   data-bulk={kind}
                   onClick={() => setDialog({ kind, entryIds: [...selected] })}
@@ -428,13 +484,21 @@ function ProjectRow({
           </h2>
           {(urgent || p.role === 'editor') && (
             <p className={styles.flags}>
-              {urgent && <span className={clsx(styles.tag, styles.attention)}>{c.needsAction}</span>}
+              {urgent && (
+                <span className={clsx(styles.tag, styles.attention)}>
+                  {c.needsAction}
+                </span>
+              )}
               {p.role === 'editor' && <span className={styles.tag}>{c.roleEditor}</span>}
             </p>
           )}
           {p.lock && (
             <p className={styles.lock} data-lock>
-              {c.locked(p.lock.holderName, formatClock(p.lock.since, locale), p.lock.heldByViewer)}
+              {c.locked(
+                p.lock.holderName,
+                formatClock(p.lock.since, locale),
+                p.lock.heldByViewer,
+              )}
             </p>
           )}
         </header>
@@ -443,7 +507,12 @@ function ProjectRow({
         ) : (
           <ul className={styles.entries}>
             {p.entries.map((e) => (
-              <li key={e.id} className={styles.entry} data-entry={e.id} data-status={e.status}>
+              <li
+                key={e.id}
+                className={styles.entry}
+                data-entry={e.id}
+                data-status={e.status}
+              >
                 <span className={styles.check}>
                   <input
                     type="checkbox"
@@ -462,7 +531,10 @@ function ProjectRow({
                     <button
                       type="button"
                       className={styles.destructiveSmall}
-                      aria-label={b.rowWithdrawLabel(titleOf(p, c), e.categoryName[locale])}
+                      aria-label={b.rowWithdrawLabel(
+                        titleOf(p, c),
+                        e.categoryName[locale],
+                      )}
                       data-withdraw-row={e.id}
                       onClick={() => withdraw(e.id)}
                     >
