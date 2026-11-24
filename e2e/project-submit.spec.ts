@@ -4,6 +4,7 @@ import { readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { actAs, awardsPool, closeAwardsPool, createUser, emailOf } from './awards-session'
 import { urlFor } from './pages'
+import { goToStep } from './project-steps'
 
 /**
  * Submitting: the terms, what blocks the button, the early-bird note, the confirmation
@@ -39,14 +40,17 @@ const saved = (page: Page) =>
 async function fillApp(page: Page, title = 'The app') {
   await page.getByRole('checkbox', { name: 'App', exact: true }).check()
   await saved(page)
+  await goToStep(page, 'The project')
   await page.locator('[data-field="title"] input').fill(title)
   await page.locator('[data-field="description"] textarea').fill('A fine app.')
   await page.locator('[data-field="appLinks"] input').first().fill('https://example.is/app')
+  await goToStep(page, 'People and credit')
   const owner = page.locator('[data-field="owners"]').getByRole('group', { name: 'Owner 1' })
   await owner.getByLabel('Name').fill('Anna')
   await owner.getByLabel('Email').fill('anna@example.is')
   await page.locator('[data-field="publicCredit"] input').fill('Anna Ltd.')
   await saved(page)
+  await goToStep(page, 'Billing')
   const billing = page.locator('#section-billing')
   await billing.getByRole('button', { name: 'Add a billing profile' }).click()
   const editor = billing.getByRole('group', { name: 'Add a billing profile' })
@@ -56,6 +60,7 @@ async function fillApp(page: Page, title = 'The app') {
   await editor.getByLabel('Address').fill('Laugavegur 1')
   await editor.getByRole('button', { name: 'Save profile' }).click()
   await saved(page)
+  await goToStep(page, 'Review and submit')
   await expect(page.locator('#section-review [data-missing-none]')).toBeVisible()
 }
 
@@ -113,10 +118,12 @@ test.describe('submit', () => {
     await startProject(page)
     await page.getByRole('checkbox', { name: 'App', exact: true }).check()
     await saved(page)
+    await goToStep(page, 'Review and submit')
     const blockers = page.locator('[data-submit-blockers]')
     await expect(blockers).toContainText('Project title')
     await blockers.locator('[data-blocker-key="title"]').click()
     await expect(page.locator('[data-field="title"] input')).toBeFocused()
+    await goToStep(page, 'Review and submit')
     await expect(blockers.locator('[data-blocker-key="billing"]')).toBeVisible()
     await context.close()
   })
@@ -199,6 +206,7 @@ test.describe('submit', () => {
     )
 
     // An editable field keeps autosaving, and the change is logged.
+    await goToStep(page, 'People and credit')
     await page.locator('[data-field="publicCredit"] input').fill('Anna Ltd. and friends')
     await saved(page)
     await expect
@@ -232,8 +240,10 @@ test.describe('submit', () => {
     await expect(page.locator('[data-submit-done]')).toBeVisible()
 
     // Add a category: a new draft, whose own questions are open until it is submitted.
+    await goToStep(page, 'Categories')
     await page.getByRole('checkbox', { name: 'Marketing Website' }).check()
     await saved(page)
+    await goToStep(page, 'Review and submit')
     await expect(page.locator('[data-entry-row="marketing-website"]')).toContainText('Draft')
     const entryButton = page.locator('[data-submit-entry="marketing-website"]')
     await expect(entryButton).toHaveAttribute('aria-disabled', 'true')
@@ -242,11 +252,14 @@ test.describe('submit', () => {
     await expect(blockers).toContainText('Campaign period')
     await expect(blockers).toContainText('Project links')
 
+    await goToStep(page, 'The project')
     await page.locator('[data-field="links"] input').first().fill('https://example.is')
+    await goToStep(page, 'Category questions')
     const period = page.locator('[data-field="campaignPeriod"]')
     await period.getByLabel('From').fill('2026-05-01')
     await period.getByLabel('To').fill('2026-06-01')
     await saved(page)
+    await goToStep(page, 'Review and submit')
     // Terms were accepted for this project already: no checkbox again.
     await expect(page.locator('[data-terms-accepted]')).toBeVisible()
     await expect(entryButton).toHaveAttribute('aria-disabled', 'false')

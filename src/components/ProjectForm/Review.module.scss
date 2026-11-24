@@ -1,21 +1,27 @@
-// The review: missing items, prices, a summary of answers, and the submit slot.
-// Presentation only.
+@use '../../styles/breakpoints' as bp;
+
+// The review step: what is missing, the prices, a summary of the answers per step, and the
+// submit panel. Hairline lists, tabular numbers. Presentation only.
 
 .review {
   display: grid;
-  gap: 1.75rem;
+  gap: 44px;
   min-width: 0;
 }
 
 .block {
   display: grid;
-  gap: 0.75rem;
+  gap: 14px;
   min-width: 0;
 }
 
+// The block's label: small, mono, above its hairline list.
 .title {
   margin: 0;
-  font-size: 1.15rem;
+  font-family: var(--font-display);
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
+  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
 }
 
 .muted {
@@ -24,28 +30,55 @@
 }
 
 .ok {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
-  color: var(--color-violet-light);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
+
+  &::before {
+    content: '';
+    flex: none;
+    width: 10px;
+    height: 10px;
+    background: var(--color-violet-light);
+  }
 }
 
+// What is missing: each a link to its field, a yellow square before it.
 .missing {
   display: grid;
-  gap: 0.4rem;
   margin: 0;
   padding: 0;
   list-style: none;
 
   li {
-    padding: 0.5rem 0.75rem;
-    border-left: 4px solid var(--accent-pink);
-    background: var(--surface-3);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
     overflow-wrap: anywhere;
+
+    &:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+
+    &::before {
+      content: '';
+      flex: none;
+      width: 8px;
+      height: 8px;
+      background: var(--accent-yellow);
+      transform: translateY(-1px);
+    }
   }
 
   a {
-    color: var(--fg);
+    min-width: 0;
+    color: var(--color-white);
     text-decoration: underline;
+    text-underline-offset: 3px;
 
     &:hover {
       color: var(--color-violet-light);
@@ -64,39 +97,138 @@
 
   th,
   td {
-    padding: 0.5rem 0.75rem 0.5rem 0;
-    border-bottom: 1px solid var(--line);
+    padding: 12px 16px 12px 0;
+    border-top: 1px solid var(--line);
     text-align: left;
     font-weight: 400;
     vertical-align: top;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+
+    &:last-child {
+      padding-right: 0;
+    }
   }
 
   thead th {
+    border-top: 0;
+    padding-top: 0;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: var(--muted);
-    font-size: 0.9rem;
   }
 
   tbody th {
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
+  }
+
+  // The category column gives way first, so the two prices always fit beside it.
+  tbody th,
+  tfoot th {
+    overflow-wrap: anywhere;
+  }
+
+  @include bp.below(bp.$xs) {
+    font-size: 0.92rem;
+
+    th,
+    td {
+      padding-right: 10px;
+    }
   }
 
   tfoot th,
   tfoot td {
-    font-weight: 700;
-    border-bottom: 0;
+    border-top: 2px solid var(--muted);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
   }
+}
+
+.num {
+  text-align: right !important;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: normal !important;
+}
+
+// The answers, step by step, each step with its "Change" link.
+.groups {
+  display: grid;
+  gap: 28px;
+}
+
+.group {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.groupHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding-bottom: 8px;
+}
+
+.groupTitle {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.change {
+  flex: none;
+  color: var(--color-violet-light);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  text-underline-offset: 3px;
+
+  &:hover {
+    color: var(--color-white);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.categoryList {
+  margin: 0;
+  padding: 12px 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 4px;
 }
 
 .answers {
   display: grid;
-  gap: 0.9rem;
   margin: 0;
 
   > div {
     display: grid;
-    gap: 0.2rem;
+    grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+    gap: 4px 24px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
     min-width: 0;
+
+    &:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+
+    @media (max-width: 640px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   dt {
@@ -118,19 +250,4 @@
 
 .value {
   white-space: pre-wrap;
-}
-
-.change {
-  margin-left: 0.5rem;
-  color: var(--color-violet-light);
-
-  &:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
-}
-
-.slot {
-  padding: 1rem;
-  border: 1px dashed var(--line);
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { Plus, Prohibit } from '@phosphor-icons/react'
+import { Check, Plus, Prohibit } from '@phosphor-icons/react'
 import clsx from 'clsx'
 import { useMemo } from 'react'
 import Markdown from 'react-markdown'
@@ -106,9 +106,6 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
             >
               <fieldset className={styles.cardFieldset}>
                 <legend className={styles.name}>{g.name[locale]}</legend>
-                {g.description && (
-                  <Description text={g.description[locale]} label={copy.fullDescription} />
-                )}
                 <p className={styles.sizeTitle} id={`size-${g.slug}`}>
                   {copy.chooseSize}
                 </p>
@@ -118,8 +115,9 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
                       const line = quote(t)
                       return (
                         <li key={t.slug} className={styles.tier} data-category={t.slug}>
-                          <label>
+                          <label className={styles.tierChoice}>
                             <input
+                              className={styles.input}
                               type="radio"
                               name={`tier-${g.slug}`}
                               checked={chosen?.slug === t.slug}
@@ -131,6 +129,7 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
                                 ])
                               }
                             />
+                            <span className={styles.radio} aria-hidden="true" />
                             <span className={styles.tierName}>
                               {t.tierLabel?.[locale] ?? t.name[locale]}
                             </span>
@@ -147,10 +146,17 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
                   <button
                     type="button"
                     className={styles.clear}
+                    data-clear-group
                     onClick={() => toggle(chosen.slug, false)}
                   >
                     {copy.clearGroup(g.name[locale])}
                   </button>
+                )}
+                {g.description && (
+                  <Description
+                    text={g.description[locale]}
+                    label={copy.fullDescription}
+                  />
                 )}
               </fieldset>
             </li>
@@ -172,6 +178,7 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
             >
               <label className={styles.choice}>
                 <input
+                  className={styles.input}
                   type="checkbox"
                   checked={checked}
                   disabled={Boolean(why) || (checked && pinned(c.slug))}
@@ -182,6 +189,9 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
                   onChange={(e) => toggle(c.slug, e.target.checked)}
                 />
                 <span className={styles.name}>{c.name[locale]}</span>
+                <span className={styles.mark} aria-hidden="true">
+                  <Check weight="bold" />
+                </span>
               </label>
               {checked && status && status !== 'draft' && (
                 <p className={styles.status}>{copy.status[status]}</p>
@@ -191,9 +201,6 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
                   {c.blurb[locale]}
                 </p>
               )}
-              {c.description && (
-                <Description text={c.description[locale]} label={copy.fullDescription} />
-              )}
               {why && (
                 <p id={whyId} className={styles.why}>
                   <Prohibit aria-hidden="true" weight="bold" />
@@ -201,18 +208,27 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
                 </p>
               )}
               <Prices line={quote(c)} />
+              {c.description && (
+                <Description text={c.description[locale]} label={copy.fullDescription} />
+              )}
             </li>
           )
         })}
       </ul>
 
+      {form.categoryError && (
+        <p className={styles.error} role="alert">
+          {form.categoryError.message || copy.categoryError}
+        </p>
+      )}
+
       <div className={styles.total} role="status" aria-live="polite" data-total>
         <h3 className={styles.totalTitle}>{copy.totalTitle}</h3>
         {breakdown.lines.length === 0 ? (
-          <p className={styles.blurb}>{copy.totalEmpty}</p>
+          <p className={styles.totalNote}>{copy.totalEmpty}</p>
         ) : (
           <>
-            <dl className={styles.prices}>
+            <dl className={clsx(styles.prices, styles.totalPrices)}>
               <div>
                 <dt>{copy.earlyBird}</dt>
                 <dd className={styles.early} data-total-early>
@@ -224,18 +240,14 @@ export function CategoriesSection({ form, locale }: { form: ProjectFormApi; loca
                 <dd data-total-regular>{money(breakdown.totalRegular)}</dd>
               </div>
             </dl>
-            <p className={styles.blurb}>
-              {breakdown.earlyAvailable ? copy.totalEarlyOpen(until) : copy.totalEarlyClosed}
+            <p className={styles.totalNote}>
+              {breakdown.earlyAvailable
+                ? copy.totalEarlyOpen(until)
+                : copy.totalEarlyClosed}
             </p>
           </>
         )}
       </div>
-
-      {form.categoryError && (
-        <p className={styles.error} role="alert">
-          {form.categoryError.message || copy.categoryError}
-        </p>
-      )}
     </fieldset>
   )
 }

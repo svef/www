@@ -1,7 +1,8 @@
 'use client'
 
-import { Check } from '@phosphor-icons/react'
-import { useMemo, useState } from 'react'
+import { ArrowLeft, ArrowRight, Lock } from '@phosphor-icons/react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { GrowText } from '@/components/GrowText/GrowText'
 import type { BillingProfileView } from '@/lib/awards/billing/rules'
 import { getField, PROJECT_FIELDS } from '@/lib/awards/fields'
 import { forcedValue, resolveAnswers } from '@/lib/awards/visibility'
@@ -18,7 +19,14 @@ import { QuestionsSection } from './QuestionsSection'
 import { RequestBanners, type RequestActions, type RequestBannerData } from './RequestBanners'
 import { ReviewSection } from './ReviewSection'
 import { SECTIONS } from './sections'
-import { useProjectForm, type ProjectFormActions, type ProjectFormApi } from './useProjectForm'
+import { Stepper, type StepItem } from './Stepper'
+import { neighbours, parseStepHash, stepHash, STEP_IDS } from './steps'
+import { focusTarget, focusWithin, GO_TO_EVENT, type GoToTarget } from './focus'
+import {
+  useProjectForm,
+  type ProjectFormActions,
+  type ProjectFormApi,
+} from './useProjectForm'
 
 export type BillingProps = {
   /** The signed-in user's saved billing profiles, as loaded with the page. */
@@ -34,9 +42,13 @@ const time = (iso: string, locale: Locale) =>
     timeZone: 'UTC', // Iceland is UTC all year
   }).format(new Date(iso))
 
+/** Where focus goes once a step is on screen: its heading, a field in it, or nowhere (a reload). */
+type FocusRequest = { kind: 'heading' } | { kind: 'target'; target: GoToTarget } | null
+
 /**
- * The project form: one page, a sticky outline with a check per section, autosave,
- * and the edit lock. Presentation only; the state lives in `useProjectForm`.
+ * The project form: a stepper across the top and one section at a time, autosave, and the
+ * edit lock. The step is in the URL hash (see `steps.ts`). Presentation only; the state
+ * lives in `useProjectForm`.
  */
 export function ProjectForm({
   initial,
@@ -138,60 +150,149 @@ export function ProjectForm({
     )
   }
 
+  // ---- Steps ----------------------------------------------------------------------------
+  const [nav, setNav] = useState<{ step: SectionId; tick: number; focus: FocusRequest }>({
+    step: 'categories',
+    tick: 0,
+    focus: null,
+  })
+  const [announcement, setAnnouncement] = useState('')
+  const layoutRef = useRef<HTMLDivElement>(null)
+
+  const go = useCallback(
+    (step: SectionId, focus: FocusRequest, push: boolean) => {
+      if (push && window.location.hash !== stepHash(step))
+        window.history.pushState(null, '', stepHash(step))
+      const n = STEP_IDS.indexOf(step) + 1
+      setAnnouncement(
+        focus ? copy.stepAnnounce(n, STEP_IDS.length, copy.sections[step].title) : '',
+      )
+      setNav((v) => ({ step, tick: v.tick + 1, focus }))
+    },
+    [copy],
+  )
+
+  // Once the step is on screen: bring the top of the form into view (if the page has been
+  // scrolled past it) and focus the step's heading, or take the person to the field asked for.
+  useLayoutEffect(() => {
+    const f = nav.focus
+    if (!f) return
+    if (f.kind === 'heading') {
+      const top = (layoutRef.current?.getBoundingClientRect().top ?? 0) + window.scrollY
+      if (window.scrollY > top) window.scrollTo({ top })
+      document.getElementById(`heading-${nav.step}`)?.focus({ preventScroll: true })
+    } else {
+      focusTarget(f.target)
+    }
+  }, [nav])
+
+  // The hash decides the step: on load, on back and forward, and when a link changes it.
+  useLayoutEffect(() => {
+    const fromHash = (initial: boolean) => {
+      const hit = parseStepHash(window.location.hash)
+      if (!hit) return
+      const focus: FocusRequest = hit.fieldKey
+        ? { kind: 'target', target: { fieldKey: hit.fieldKey, section: hit.step } }
+        : initial
+          ? null
+          : { kind: 'heading' }
+      go(hit.step, focus, false)
+    }
+    fromHash(true)
+    const onChange = () => fromHash(false)
+    window.addEventListener('popstate', onChange)
+    window.addEventListener('hashchange', onChange)
+    return () => {
+      window.removeEventListener('popstate', onChange)
+      window.removeEventListener('hashchange', onChange)
+    }
+  }, [go])
+
+  // A link to a field elsewhere in the form (the review's missing items, a request's fields).
+  useEffect(() => {
+    const onGoTo = (e: Event) => {
+      const target = (e as CustomEvent<GoToTarget>).detail
+      e.preventDefault()
+      const el =
+        (target.fieldKey && document.getElementById(`field-${target.fieldKey}`)) ||
+        document.getElementById(`section-${target.section}`)
+      const step = el?.closest<HTMLElement>('[data-step]')?.dataset.step as
+        SectionId | undefined
+      if (!step) {
+        if (el) focusWithin(el)
+        return
+      }
+      go(step, { kind: 'target', target }, true)
+    }
+    window.addEventListener(GO_TO_EVENT, onGoTo)
+    return () => window.removeEventListener(GO_TO_EVENT, onGoTo)
+  }, [go])
+
+  const steps: StepItem[] = SECTIONS.map((s) => ({
+    id: s.id,
+    title: copy.sections[s.id].title,
+    // The image is optional: it earns a check once there is one, and is never "incomplete".
+    status: s.id === 'image' ? (image ? 'complete' : 'later') : form.statuses[s.id],
+  }))
+
+  const lockBadge =
+    lockState.kind === 'other'
+      ? copy.lockBadgeOther(lockState.lock.holderName)
+      : lockState.kind === 'unreachable'
+        ? copy.lockBadgeReadOnly
+        : ''
+
   return (
-    <div className={styles.layout} data-lock={lockState.kind} data-save={form.saveState}>
-      <nav className={styles.outline} aria-label={copy.outline}>
-        <ol>
-          {SECTIONS.map((s, i) => {
-            // The image is optional: it earns a check once there is one, and is never "incomplete".
-            const status = s.id === 'image' ? (image ? 'complete' : 'later') : form.statuses[s.id]
-            return (
-              <li key={s.id}>
-                <a href={`#section-${s.id}`} data-status={status}>
-                  <span className={styles.num} aria-hidden="true">
-                    {i + 1}
-                  </span>
-                  <span>{copy.sections[s.id].title}</span>
-                  {status === 'complete' && (
-                    <>
-                      <Check aria-hidden="true" weight="bold" className={styles.tick} />
-                      <span className={styles.srOnly}>({copy.complete})</span>
-                    </>
-                  )}
-                  {status === 'incomplete' && (
-                    <span className={styles.srOnly}>({copy.incomplete})</span>
-                  )}
-                </a>
-              </li>
-            )
-          })}
-        </ol>
-        <p
-          className={styles.saveState}
-          role="status"
-          aria-live="polite"
-          data-state={form.saveState}
-        >
-          {saveText}
-          {form.saveState === 'error' && lockState.kind !== 'other' && (
-            <>
-              {' '}
-              <button type="button" className={styles.link} onClick={form.retrySave}>
-                {copy.retry}
-              </button>
-            </>
-          )}
-          {saveNote && <span className={styles.saveNote}> {saveNote}</span>}
-        </p>
-      </nav>
+    <div
+      ref={layoutRef}
+      className={styles.layout}
+      data-lock={lockState.kind}
+      data-save={form.saveState}
+    >
+      <Stepper
+        steps={steps}
+        current={nav.step}
+        onGo={(id) => go(id, { kind: 'heading' }, true)}
+        copy={copy}
+        status={
+          <>
+            {lockBadge && (
+              <p className={styles.lockBadge} data-lock-badge>
+                <Lock aria-hidden="true" weight="bold" />
+                <span>{lockBadge}</span>
+              </p>
+            )}
+            <p
+              className={styles.saveState}
+              role="status"
+              aria-live="polite"
+              data-state={form.saveState}
+            >
+              {saveText}
+              {form.saveState === 'error' && lockState.kind !== 'other' && (
+                <>
+                  {' '}
+                  <button type="button" className={styles.link} onClick={form.retrySave}>
+                    {copy.retry}
+                  </button>
+                </>
+              )}
+              {saveNote && <span className={styles.saveNote}> {saveNote}</span>}
+            </p>
+          </>
+        }
+      />
 
       <div className={styles.main}>
         <div className={styles.banner} role="status" data-kind={lockState.kind}>
           {lockState.kind === 'acquiring' && <p>{copy.lockAcquiring}</p>}
           {lockState.kind === 'other' && (
             <>
-              <p>
-                {copy.lockHeld(lockState.lock.holderName, time(lockState.lock.acquiredAt, locale))}
+              <p className={styles.bannerTitle}>
+                {copy.lockHeld(
+                  lockState.lock.holderName,
+                  time(lockState.lock.acquiredAt, locale),
+                )}
               </p>
               {form.lostLock && <p>{copy.lockLost}</p>}
               <button type="button" className={styles.small} onClick={form.checkLockAgain}>
@@ -201,8 +302,12 @@ export function ProjectForm({
           )}
           {lockState.kind === 'unreachable' && (
             <>
-              <p>{copy.lockError}</p>
-              <button type="button" className={styles.small} onClick={form.checkLockAgain}>
+              <p className={styles.bannerTitle}>{copy.lockError}</p>
+              <button
+                type="button"
+                className={styles.small}
+                onClick={form.checkLockAgain}
+              >
                 {copy.lockTryAgain}
               </button>
             </>
@@ -223,28 +328,91 @@ export function ProjectForm({
           />
         )}
 
+        <p className={styles.srOnly} role="status" aria-live="polite" data-step-announce>
+          {announcement}
+        </p>
+
         <form onSubmit={(e) => e.preventDefault()} noValidate className={styles.sections}>
-          {SECTIONS.map((s) => (
-            <section
-              key={s.id}
-              id={`section-${s.id}`}
-              className={styles.section}
-              aria-labelledby={`heading-${s.id}`}
-            >
-              <h2 id={`heading-${s.id}`}>{copy.sections[s.id].title}</h2>
-              {copy.sections[s.id].intro && (
-                <p className={styles.intro}>{copy.sections[s.id].intro}</p>
-              )}
-              <SectionBody
-                id={s.id}
-                form={form}
-                locale={locale}
-                renderProjectField={renderProjectField}
-                requestedKeys={requestedKeys}
-                billing={{ ...billing, profiles, onProfiles: setProfiles }}
-              />
-            </section>
-          ))}
+          {SECTIONS.map((s, i) => {
+            const { prev, next } = neighbours(s.id)
+            return (
+              // Every step stays mounted, hidden when it is not the current one, so what a
+              // step holds in its own state (a half-typed email, an open note) survives a
+              // switch, and a link to any field can find it.
+              <section
+                key={s.id}
+                id={`section-${s.id}`}
+                className={styles.section}
+                aria-labelledby={`heading-${s.id}`}
+                data-step={s.id}
+                hidden={s.id !== nav.step}
+              >
+                <header className={styles.sectionHead}>
+                  <p className={styles.stepNo}>{copy.stepOf(i + 1, SECTIONS.length)}</p>
+                  <h2 id={`heading-${s.id}`} tabIndex={-1}>
+                    {copy.sections[s.id].title}
+                  </h2>
+                  {copy.sections[s.id].intro && (
+                    <p className={styles.intro}>{copy.sections[s.id].intro}</p>
+                  )}
+                </header>
+                <div className={styles.body}>
+                  <SectionBody
+                    id={s.id}
+                    form={form}
+                    locale={locale}
+                    renderProjectField={renderProjectField}
+                    requestedKeys={requestedKeys}
+                    billing={{ ...billing, profiles, onProfiles: setProfiles }}
+                  />
+                </div>
+                {(prev || next) && (
+                  <div className={styles.stepNav}>
+                    {prev && (
+                      <a
+                        href={stepHash(prev)}
+                        className={styles.prev}
+                        data-step-prev
+                        onClick={(e) => {
+                          e.preventDefault()
+                          go(prev, { kind: 'heading' }, true)
+                        }}
+                      >
+                        <ArrowLeft aria-hidden="true" weight="bold" />
+                        <span>
+                          {copy.prevStep}
+                          <span className={styles.srOnly}>: </span>
+                          <span className={styles.stepNavName}>
+                            {copy.sections[prev].title}
+                          </span>
+                        </span>
+                      </a>
+                    )}
+                    {next && (
+                      <a
+                        href={stepHash(next)}
+                        className={`btn-grow ${styles.next}`}
+                        data-step-next
+                        onClick={(e) => {
+                          e.preventDefault()
+                          go(next, { kind: 'heading' }, true)
+                        }}
+                      >
+                        <span>
+                          <GrowText>{copy.nextStep}</GrowText>
+                          <span className={styles.srOnly}>: </span>
+                          <span className={styles.stepNavName}>
+                            {copy.sections[next].title}
+                          </span>
+                        </span>
+                        <ArrowRight aria-hidden="true" weight="bold" />
+                      </a>
+                    )}
+                  </div>
+                )}
+              </section>
+            )
+          })}
         </form>
       </div>
     </div>

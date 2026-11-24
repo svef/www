@@ -1,18 +1,24 @@
 import type { Metadata } from 'next'
+import { desc, isNull } from 'drizzle-orm'
 import { notFound, redirect } from 'next/navigation'
-import { Button } from '@/components/Button/Button'
 import { AppHead } from '@/components/AppHead/AppHead'
+import { dashboardCopy } from '@/components/Dashboard/copy'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { getProjectFormCopy } from '@/components/ProjectForm/copy'
+import { SECTIONS } from '@/components/ProjectForm/sections'
+import { getAwardsDb } from '@/lib/awards/db/client'
+import { edition } from '@/lib/awards/db/schema'
 import { getCurrentUserId, NotSignedInError } from '@/lib/awards/session'
 import { isLocale, localePath } from '@/lib/i18n'
 import { signInPath } from '@/lib/awards/auth/roles'
+import styles from '../form-page.module.scss'
 import { createProjectAction } from './actions'
+import { CreateButton } from './CreateButton'
 
 /**
- * "New submission": the simplest way to start a project until the dashboard exists.
- * Creating is a POST (a button), never a GET, so a prefetch or a crawler can't make
- * projects. Per request, like the form itself.
+ * "New submission": creating a project. Creating is a POST (a button), never a GET, so a
+ * prefetch or a crawler can't make projects. Per request, like the form itself. The page
+ * says what the form will ask, step by step, in the form's own words.
  */
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 
@@ -33,16 +39,52 @@ export default async function NewSubmissionPage({
     throw e
   }
 
+  // The edition new projects go into: the latest one.
+  const [ed] = await getAwardsDb()
+    .select({ year: edition.year })
+    .from(edition)
+    .where(isNull(edition.deletedAt))
+    .orderBy(desc(edition.year))
+    .limit(1)
+
   return (
     <>
-      <AppHead title={copy.newTitle} lede={copy.newLead} />
-      <PageSection last aria-label={copy.newTitle}>
-        <form action={createProjectAction}>
-          <input type="hidden" name="locale" value={locale} />
-          <Button type="submit">
-            {copy.newButton}
-          </Button>
-        </form>
+      <AppHead
+        title={copy.newTitle}
+        lede={copy.newLead}
+        eyebrow={ed ? copy.eyebrow(ed.year) : undefined}
+        crumb={{
+          href: localePath('/innsendingar/minar', locale),
+          label: dashboardCopy[locale].title,
+        }}
+      />
+      <PageSection last className={styles.newSection} aria-labelledby="new-steps">
+        <div className={styles.newBody}>
+          <h2 id="new-steps" className={styles.newStepsTitle}>
+            {copy.newSteps}
+          </h2>
+          <ol className={styles.newSteps}>
+            {SECTIONS.map((s, i) => (
+              <li key={s.id}>
+                <span className={styles.newNum} aria-hidden="true">
+                  {i + 1}
+                </span>
+                <span className={styles.newStepText}>
+                  <span className={styles.newStepName}>{copy.sections[s.id].title}</span>
+                  {copy.sections[s.id].intro && (
+                    <span className={styles.newStepIntro}>
+                      {copy.sections[s.id].intro}
+                    </span>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <form action={createProjectAction} className={styles.newForm}>
+            <input type="hidden" name="locale" value={locale} />
+            <CreateButton label={copy.newButton} />
+          </form>
+        </div>
       </PageSection>
     </>
   )

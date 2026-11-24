@@ -1,7 +1,9 @@
 @use '../../styles/breakpoints' as bp;
 
-// The category choice cards and the running total. Presentation only: the rules live
-// in `selection.ts` and `summary.ts`, so this file can be restyled freely.
+// The category choice cards and the running total. Calm: a card is a raised panel with a
+// hairline border; a chosen one gets a violet border and a check (not the stepped fill, so
+// the two signals never stack). Presentation only: the rules live in `selection.ts` and
+// `summary.ts`.
 
 .categories {
   min-width: 0;
@@ -9,7 +11,7 @@
   padding: 0;
   border: 0;
   display: grid;
-  gap: 1.5rem;
+  gap: 24px;
 }
 
 .srOnly {
@@ -23,46 +25,49 @@
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
 
-  @include bp.below(bp.$md) {
+  @include bp.below(bp.$lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include bp.below(bp.$sm) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-// The brand's violet block marks a card; a chosen card carries it in full.
 .card {
   position: relative;
   min-width: 0;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
-  align-content: start;
-  padding: 30px 20px 18px;
+  padding: 18px 20px 14px;
   background: var(--ink-2);
-  border: 1px solid var(--line);
+  border: 2px solid var(--line);
+  transition: border-color var(--dur-hover);
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 40px;
-    height: 8px;
-    background: var(--line);
+  &:hover:not([data-blocked]) {
+    border-color: var(--muted);
   }
 
-  &[data-selected] {
-    border-color: var(--color-violet-light);
+  &[data-selected],
+  &[data-selected]:hover {
+    border-color: var(--color-violet);
+  }
 
-    &::before {
-      width: 100%;
-      background: var(--color-violet);
-    }
+  // The whole card is the choice: its keyboard focus shows on the card.
+  &:has(.choice input:focus-visible) {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
   }
 }
 
@@ -81,61 +86,126 @@
 
 .cardFieldset {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
 
   legend {
+    float: left;
+    width: 100%;
     padding: 0;
-    margin-bottom: 10px;
+  }
+}
+
+// The real control is in the page, invisible, over the drawn mark; the label stretches over
+// the card so a click anywhere on it chooses.
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
   }
 }
 
 .choice {
   display: flex;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 12px;
   cursor: pointer;
 
-  input {
-    flex: none;
-    width: 1.25rem;
-    height: 1.25rem;
-    margin: 0.2rem 0 0;
-    accent-color: var(--color-violet);
+  // Covers the card, under its links and disclosure.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
   }
 
-  &:has(input:disabled) {
+  .input {
+    z-index: 1;
+  }
+
+  &:has(.input:disabled) {
     cursor: not-allowed;
   }
+}
 
-  &:has(input:focus-visible) {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 4px;
+// The check: an empty square, filled violet with a check once chosen.
+.mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--line);
+  color: transparent;
+
+  .input:checked ~ & {
+    border-color: var(--color-violet);
+    background: var(--color-violet);
+    color: var(--color-white);
+  }
+
+  .input:disabled ~ & {
+    border-style: dashed;
   }
 }
 
 .name {
   margin: 0;
+  min-width: 0;
   overflow-wrap: anywhere;
   font-family: var(--font-display);
+  font-stretch: var(--stretch-title);
   font-weight: var(--weight-title);
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   line-height: 1.2;
+
+  // Long Icelandic compounds ("Gervigreindarlausn") must fit a phone's card unbroken.
+  @include bp.below(bp.$xs) {
+    font-stretch: var(--stretch-normal);
+    font-size: 1.08rem;
+  }
 }
 
 .blurb {
   margin: 0;
   color: var(--muted);
   max-width: 60ch;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  font-stretch: var(--stretch-body);
+  letter-spacing: var(--tracking-body);
 }
 
+// The shared status tag (a submitted entry can't be unticked here).
 .status {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
-  color: var(--color-violet-light);
-  font-weight: 600;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--color-violet-light);
+  }
 }
 
 .note {
@@ -149,32 +219,42 @@
   gap: 8px;
   align-items: flex-start;
   margin: 0;
-  color: var(--fg);
+  color: var(--color-white);
+  font-size: 0.95rem;
 
   svg {
     flex: none;
     margin-top: 0.2em;
-    color: var(--accent-pink);
+    color: var(--accent-yellow);
   }
 }
 
-// ---- The description disclosure --------------------------------------------
+// ---- The description disclosure ----------------------------------------------------
 
 .details {
+  position: relative;
+  z-index: 2; // above the card's click area
+  margin-top: 2px;
   border-top: 1px solid var(--line);
 }
 
 .summary {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding-block: 10px;
+  padding-block: 10px 2px;
   cursor: pointer;
   list-style: none;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--color-lavender);
 
   &::-webkit-details-marker {
     display: none;
+  }
+
+  &:hover {
+    color: var(--color-white);
   }
 
   &:focus-visible {
@@ -187,15 +267,15 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   background: var(--color-violet);
   color: var(--color-white);
 
   svg {
     transition: transform 0.2s ease;
 
-    @media (prefers-reduced-motion: reduce) {
+    @include bp.reduced-motion {
       transition: none;
     }
   }
@@ -206,8 +286,9 @@ details[open] > .summary .plus svg {
 }
 
 .prose {
-  padding-bottom: 8px;
+  padding-block: 10px 4px;
   max-width: 62ch;
+  font-size: 0.95rem;
 
   > * {
     margin-block: 0 0.8em;
@@ -219,11 +300,15 @@ details[open] > .summary .plus svg {
   }
 }
 
-// ---- Group tiers: a radio choice -------------------------------------------
+// ---- Group tiers: a single choice within the group ---------------------------------
 
 .sizeTitle {
   margin: 0;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .tiers {
@@ -244,61 +329,105 @@ details[open] > .summary .plus svg {
 }
 
 .tier {
-  display: grid;
-  gap: 6px;
-  align-content: start;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   min-width: 0;
-  padding: 12px;
-  border: 1px solid var(--line);
+  padding: 14px;
+  border: 2px solid var(--line);
+  transition: border-color var(--dur-hover);
 
-  &:has(input:checked) {
-    border-color: var(--color-violet-light);
-    background: var(--surface-3);
+  &:hover:not(:has(.input:disabled)) {
+    border-color: var(--muted);
   }
 
-  &:has(input:disabled) {
+  &:has(.input:checked),
+  &:has(.input:checked):hover {
+    border-color: var(--color-violet);
+  }
+
+  &:has(.input:disabled) {
     border-style: dashed;
   }
 
-  label {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    cursor: pointer;
-
-    &:has(input:disabled) {
-      cursor: not-allowed;
-    }
-
-    &:has(input:focus-visible) {
-      outline: 3px solid var(--focus-ring);
-      outline-offset: 4px;
-    }
+  &:has(.input:focus-visible) {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
   }
 
-  input {
-    flex: none;
-    width: 1.15rem;
-    height: 1.15rem;
-    margin: 0;
-    accent-color: var(--color-violet);
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}
+
+.tierChoice {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .input {
+    z-index: 1;
+  }
+
+  &:has(.input:disabled) {
+    cursor: not-allowed;
+  }
+}
+
+// A radio drawn square (the brand has no round corners): an inner block once chosen.
+.radio {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--line);
+
+  &::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+  }
+
+  .input:checked ~ & {
+    border-color: var(--color-violet);
+
+    &::before {
+      background: var(--color-violet);
+    }
   }
 }
 
 .tierName {
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
   overflow-wrap: anywhere;
 }
 
 .clear {
+  position: relative;
+  z-index: 2;
   justify-self: start;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid var(--line);
+  padding: 8px 14px;
+  border: 2px solid var(--line);
   border-radius: 0;
   background: transparent;
-  color: var(--fg);
+  color: var(--color-white);
   font: inherit;
+  font-size: 0.95rem;
   cursor: pointer;
+
+  &:hover {
+    border-color: var(--muted);
+  }
 
   &:focus-visible {
     outline: 3px solid var(--focus-ring);
@@ -306,28 +435,33 @@ details[open] > .summary .plus svg {
   }
 }
 
-// ---- Prices ----------------------------------------------------------------
+// ---- Prices ------------------------------------------------------------------------
 
 .prices {
-  margin: 0;
+  margin: auto 0 0; // to the foot of the card
+  padding-top: 6px;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 28px;
+  gap: 4px 24px;
 
   > div {
     min-width: 0;
   }
 
   dt {
-    font-size: 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--muted);
   }
 
   dd {
     margin: 2px 0 0;
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.05rem;
+    font-weight: var(--weight-semibold);
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -335,20 +469,71 @@ details[open] > .summary .plus svg {
   color: var(--color-violet-light);
 }
 
+// The running total: a bar at the foot of the step that stays in sight while choosing.
 .total {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
   display: grid;
-  gap: 8px;
-  padding: 16px 20px;
-  border: 1px solid var(--color-violet-light);
-  background: var(--surface-3);
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 28px;
+  padding: 14px 20px;
+  background: var(--ink-3);
+  border-top: 4px solid var(--color-violet);
+
+  @include bp.below(bp.$sm) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding: 10px 16px 12px;
+
+    .totalTitle {
+      font-size: 1rem;
+    }
+
+    .totalPrices dd {
+      font-size: 1.05rem;
+    }
+
+    .totalNote {
+      font-size: 0.85rem;
+    }
+  }
+
+  @media (max-height: 500px) {
+    position: static;
+  }
 }
 
 .totalTitle {
   margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
   font-size: 1.1rem;
+}
+
+.totalPrices {
+  margin: 0;
+  padding: 0;
+
+  dd {
+    font-size: 1.2rem;
+  }
+}
+
+.totalNote {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--color-lavender);
+  font-size: 0.9rem;
+
+  .total > h3 + & {
+    grid-column: auto;
+  }
 }
 
 .error {
   margin: 0;
-  color: var(--accent-pink);
+  font-weight: var(--weight-bold);
+  color: var(--accent-yellow);
 }

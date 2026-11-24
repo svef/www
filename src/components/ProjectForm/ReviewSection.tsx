@@ -6,7 +6,7 @@ import { formatKennitala } from '@/lib/awards/billing/rules'
 import { PROJECT_FIELDS, type FieldDefinition } from '@/lib/awards/fields'
 import { resolveAnswers } from '@/lib/awards/visibility'
 import type { Locale } from '@/lib/i18n'
-import { getProjectFormCopy, type ProjectFormCopy } from './copy'
+import { getProjectFormCopy, type ProjectFormCopy, type SectionId } from './copy'
 import { formatMoney, lastDayBefore } from './format'
 import { goToField } from './focus'
 import styles from './Review.module.scss'
@@ -16,6 +16,14 @@ import { missingItems, priceBreakdown } from './summary'
 import type { ProjectFormApi } from './useProjectForm'
 
 type Row = Record<string, unknown>
+
+/** The steps whose answers the summary repeats, each with a link back to it. */
+const ANSWER_STEPS: readonly SectionId[] = [
+  'categories',
+  'project',
+  'questions',
+  'people',
+]
 const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
 
 /** The answer as readable text (or a list of lines), never the login details themselves. */
@@ -108,8 +116,12 @@ export function ReviewSection({ form, locale }: { form: ProjectFormApi; locale: 
               <thead>
                 <tr>
                   <th scope="col">{copy.reviewCategory}</th>
-                  <th scope="col">{copy.earlyBird}</th>
-                  <th scope="col">{copy.regular}</th>
+                  <th scope="col" className={styles.num}>
+                    {copy.earlyBird}
+                  </th>
+                  <th scope="col" className={styles.num}>
+                    {copy.regular}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -117,13 +129,13 @@ export function ReviewSection({ form, locale }: { form: ProjectFormApi; locale: 
                   <tr key={l.slug} data-price={l.slug}>
                     <th scope="row">{nameOf(l.slug)}</th>
                     {l.locked !== null ? (
-                      <td colSpan={2}>
+                      <td colSpan={2} className={styles.num}>
                         {money(l.locked)} ({copy.priceLocked})
                       </td>
                     ) : (
                       <>
-                        <td>{money(l.early)}</td>
-                        <td>{money(l.regular)}</td>
+                        <td className={styles.num}>{money(l.early)}</td>
+                        <td className={styles.num}>{money(l.regular)}</td>
                       </>
                     )}
                   </tr>
@@ -132,8 +144,12 @@ export function ReviewSection({ form, locale }: { form: ProjectFormApi; locale: 
               <tfoot>
                 <tr>
                   <th scope="row">{copy.reviewTotal}</th>
-                  <td data-review-total-early>{money(prices.totalEarly)}</td>
-                  <td data-review-total-regular>{money(prices.totalRegular)}</td>
+                  <td className={styles.num} data-review-total-early>
+                    {money(prices.totalEarly)}
+                  </td>
+                  <td className={styles.num} data-review-total-regular>
+                    {money(prices.totalRegular)}
+                  </td>
                 </tr>
               </tfoot>
             </table>
@@ -162,57 +178,70 @@ export function ReviewSection({ form, locale }: { form: ProjectFormApi; locale: 
         {categories.length === 0 ? (
           <p className={styles.muted}>{copy.chooseCategories}</p>
         ) : (
-          <dl className={styles.answers}>
-            <div>
-              <dt>{copy.sections.categories.title}</dt>
-              <dd>
-                <ul>
-                  {categories.map((c) => (
-                    <li key={c}>{nameOf(c)}</li>
-                  ))}
-                </ul>
-              </dd>
-            </div>
-            {rows.map((f) => {
-              const lines = show(f, resolved.answers[f.key], copy)
+          <div className={styles.groups}>
+            {ANSWER_STEPS.map((step) => {
+              const fields = rows.filter((f) => sectionOfField(f.key) === step)
+              if (step !== 'categories' && fields.length === 0) return null
+              const title = copy.sections[step].title
               return (
-                <div key={f.key} data-answer={f.key}>
-                  <dt>
-                    {f.label[locale]}{' '}
+                <section
+                  key={step}
+                  className={styles.group}
+                  aria-labelledby={`review-${step}`}
+                  data-review-step={step}
+                >
+                  <div className={styles.groupHead}>
+                    <h4 id={`review-${step}`} className={styles.groupTitle}>
+                      {title}
+                    </h4>
+                    {/* A plain link: the form follows the hash to the step. */}
                     <a
                       className={styles.change}
-                      href={`#field-${f.key}`}
-                      aria-label={`${copy.reviewChange}: ${f.label[locale]}`}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        goToField({
-                          fieldKey: f.key,
-                          section: sectionOfField(f.key) ?? 'project',
-                        })
-                      }}
+                      href={`#section-${step}`}
+                      aria-label={`${copy.reviewChange}: ${title}`}
                     >
                       {copy.reviewChange}
                     </a>
-                  </dt>
-                  <dd>
-                    {lines.length ? (
-                      lines.length === 1 ? (
-                        <span className={styles.value}>{lines[0]}</span>
-                      ) : (
-                        <ul>
-                          {lines.map((l, i) => (
-                            <li key={i}>{l}</li>
-                          ))}
-                        </ul>
-                      )
-                    ) : (
-                      <span className={styles.muted}>{copy.reviewNotAnswered}</span>
-                    )}
-                  </dd>
-                </div>
+                  </div>
+                  {step === 'categories' ? (
+                    <ul className={styles.categoryList}>
+                      {categories.map((c) => (
+                        <li key={c}>{nameOf(c)}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <dl className={styles.answers}>
+                      {fields.map((f) => {
+                        const lines = show(f, resolved.answers[f.key], copy)
+                        return (
+                          <div key={f.key} data-answer={f.key}>
+                            <dt>{f.label[locale]}</dt>
+                            <dd>
+                              {lines.length ? (
+                                lines.length === 1 ? (
+                                  <span className={styles.value}>{lines[0]}</span>
+                                ) : (
+                                  <ul>
+                                    {lines.map((l, i) => (
+                                      <li key={i}>{l}</li>
+                                    ))}
+                                  </ul>
+                                )
+                              ) : (
+                                <span className={styles.muted}>
+                                  {copy.reviewNotAnswered}
+                                </span>
+                              )}
+                            </dd>
+                          </div>
+                        )
+                      })}
+                    </dl>
+                  )}
+                </section>
               )
             })}
-          </dl>
+          </div>
         )}
       </div>
 

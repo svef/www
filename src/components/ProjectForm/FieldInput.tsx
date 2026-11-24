@@ -2,6 +2,7 @@
 
 import { Lock } from '@phosphor-icons/react'
 import { useId } from 'react'
+import { inputClass, textareaClass } from '@/components/FormParts/FormParts'
 import type { Editability } from '@/lib/awards/editability'
 import type { FieldDefinition } from '@/lib/awards/fields'
 import type { Locale } from '@/lib/i18n'
@@ -10,6 +11,10 @@ import { ImageUpload, type ImageBinding } from './ImageUpload'
 import { InfoTip } from './InfoTip'
 import { CredentialList, PersonList, type InviteProps } from './lists'
 import styles from './ProjectForm.module.scss'
+
+/** FormParts' underlined input and boxed textarea, plus the form's read-only look. */
+export const controlClass = `${inputClass} ${styles.control}`
+export const areaClass = `${textareaClass} ${styles.control}`
 
 /**
  * One field, rendered generically from its definition: label, hint, control, error.
@@ -78,7 +83,7 @@ export function FieldInput(props: FieldInputProps) {
         return (
           <input
             {...common}
-            className={styles.input}
+            className={controlClass}
             type={field.type === 'url' ? 'url' : 'text'}
             value={str(props.value)}
             maxLength={field.maxLength}
@@ -91,7 +96,7 @@ export function FieldInput(props: FieldInputProps) {
           <>
             <textarea
               {...common}
-              className={styles.textarea}
+              className={areaClass}
               rows={5}
               value={str(props.value)}
               maxLength={field.maxLength}
@@ -128,7 +133,7 @@ export function FieldInput(props: FieldInputProps) {
               <li key={i} className={styles.row}>
                 <input
                   id={i === 0 ? id : `${id}-${i}`}
-                  className={styles.input}
+                  className={controlClass}
                   type="url"
                   aria-label={`${label} ${i + 1}`}
                   value={v}
@@ -143,7 +148,7 @@ export function FieldInput(props: FieldInputProps) {
                 {rows.length > 1 && (
                   <button
                     type="button"
-                    className={styles.small}
+                    className={`${styles.small} ${styles.danger}`}
                     disabled={disabled}
                     onClick={() => props.onChange(rows.filter((_, j) => j !== i))}
                   >
@@ -152,7 +157,7 @@ export function FieldInput(props: FieldInputProps) {
                 )}
               </li>
             ))}
-            <li>
+            <li className={styles.addRow}>
               <button
                 type="button"
                 className={styles.small}
@@ -169,21 +174,21 @@ export function FieldInput(props: FieldInputProps) {
         const range = (props.value ?? {}) as { start?: string; end?: string }
         return (
           <div className={styles.dates}>
-            <label>
+            <label className={styles.rowField}>
               <span>{copy.startDate}</span>
               <input
                 {...common}
-                className={styles.input}
+                className={controlClass}
                 type="date"
                 value={range.start ?? ''}
                 readOnly={disabled}
                 onChange={(e) => props.onChange({ ...range, start: e.target.value })}
               />
             </label>
-            <label>
+            <label className={styles.rowField}>
               <span>{copy.endDate}</span>
               <input
-                className={styles.input}
+                className={controlClass}
                 type="date"
                 value={range.end ?? ''}
                 readOnly={disabled}

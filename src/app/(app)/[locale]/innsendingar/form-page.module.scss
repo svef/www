@@ -1,0 +1,86 @@
+// The project form's pages (the form and "New submission") sit under `AppHead`, not under a
+// violet band, so `PageSection`'s large top padding would leave an empty gap: the form
+// starts right under the head's hairline. Doubled class to win over `PageSection`'s own
+// rule whatever order the two stylesheets load in.
+.formSection.formSection {
+  padding-top: 0;
+}
+
+.newSection.newSection {
+  padding-top: clamp(32px, 4vw, 56px);
+}
+
+// ---- "New submission" ---------------------------------------------------------------
+
+.newBody {
+  display: grid;
+  gap: 24px;
+  max-width: 720px;
+}
+
+.newStepsTitle {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.newSteps {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    min-width: 0;
+
+    &:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+  }
+}
+
+.newNum {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.newStepText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.newStepName {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.newStepIntro {
+  color: var(--muted);
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.newForm {
+  padding-top: 8px;
+}

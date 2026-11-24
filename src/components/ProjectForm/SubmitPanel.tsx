@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { GrowText } from '@/components/GrowText/GrowText'
 import { getCategory } from '@/lib/awards/categories'
 import { earlyBirdPrice } from '@/lib/awards/pricing'
 import type { EntryView } from '@/lib/awards/projects/types'
@@ -254,7 +255,9 @@ export function SubmitPanel({
             {live.map((e) => (
               <li key={e.id} data-entry-row={e.category} data-status={e.status}>
                 <span className={styles.entryName}>{nameOf(e.category)}</span>
-                <span className={styles.status}>{copy.status[e.status] ?? e.status}</span>
+                <span className={styles.status} data-tone={e.status}>
+                  {copy.status[e.status] ?? e.status}
+                </span>
                 {e.price && (
                   <span className={styles.entryPrice}>
                     {copy.entryLockedPrice(
@@ -266,7 +269,7 @@ export function SubmitPanel({
                 {e.status === 'submitted' && isCreator && (
                   <button
                     type="button"
-                    className={styles.secondary}
+                    className={`${styles.secondary} ${styles.danger}`}
                     aria-disabled={closed || form.readOnly || submitting}
                     data-withdraw-entry={e.category}
                     onClick={() => {
@@ -309,7 +312,9 @@ export function SubmitPanel({
               return (
                 <li key={e.id} data-entry-row={e.category} data-status="withdrawn">
                   <span className={styles.entryName}>{nameOf(e.category)}</span>
-                  <span className={styles.status}>{copy.status.withdrawn}</span>
+                  <span className={styles.status} data-tone="withdrawn">
+                    {copy.status.withdrawn}
+                  </span>
                   <span className={styles.entryPrice}>
                     {copy.withdrawnNow(money(price), early ? copy.tierEarly : copy.tierRegular)}
                   </span>
@@ -390,27 +395,27 @@ export function SubmitPanel({
           )}
 
           {drafts.length > 0 && (
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={styles.primary}
-              aria-disabled={blocked}
-              aria-describedby={blockers.length ? blockersId : undefined}
-              data-submit
-              onClick={() => open({ categories: drafts.map((e) => e.category) })}
-            >
-              {submitting ? copy.submitWorking : copy.submitButton}
-            </button>
-            <p className={styles.hint} data-early-explain>
-              {prices.earlyAvailable
-                ? copy.submitEarlyExplain(
-                    lastDayBefore(view.earlyBird.endsBefore, locale),
-                    money(prices.totalEarly),
-                    money(prices.totalRegular),
-                  )
-                : copy.submitEarlyOver}
-            </p>
-          </div>
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={`btn-grow ${styles.primary} ${styles.send}`}
+                aria-disabled={blocked}
+                aria-describedby={blockers.length ? blockersId : undefined}
+                data-submit
+                onClick={() => open({ categories: drafts.map((e) => e.category) })}
+              >
+                <GrowText>{submitting ? copy.submitWorking : copy.submitButton}</GrowText>
+              </button>
+              <p className={styles.hint} data-early-explain>
+                {prices.earlyAvailable
+                  ? copy.submitEarlyExplain(
+                      lastDayBefore(view.earlyBird.endsBefore, locale),
+                      money(prices.totalEarly),
+                      money(prices.totalRegular),
+                    )
+                  : copy.submitEarlyOver}
+              </p>
+            </div>
           )}
         </>
       )}
@@ -579,13 +584,13 @@ function ConfirmDialog({
         </h2>
         <p>{copy.dialogIntro(lines.length)}</p>
 
-        <h3 className={styles.title}>{copy.dialogPrices}</h3>
+        <h3 className={styles.dialogSub}>{copy.dialogPrices}</h3>
         <ul className={styles.priceList} data-dialog-prices>
           {lines.map((l) => (
             <li key={l.slug} data-dialog-price={l.slug}>
               <span>{getCategory(l.slug)?.name[locale] ?? l.slug}</span>
               <span>
-                {money(l.amount)} <span className={styles.muted}>({l.tier})</span>
+                <span className={styles.muted}>({l.tier})</span> {money(l.amount)}
               </span>
             </li>
           ))}
@@ -595,14 +600,14 @@ function ConfirmDialog({
           </li>
         </ul>
 
-        <h3 className={styles.title}>{copy.dialogEditable}</h3>
+        <h3 className={styles.dialogSub}>{copy.dialogEditable}</h3>
         <ul className={styles.plain} data-dialog-editable>
           {editable.map((l) => (
             <li key={l}>{l}</li>
           ))}
         </ul>
 
-        <h3 className={styles.title}>{copy.dialogLocked}</h3>
+        <h3 className={styles.dialogSub}>{copy.dialogLocked}</h3>
         <ul className={styles.plain} data-dialog-locked>
           {locked.map((l) => (
             <li key={l}>{l}</li>
@@ -623,12 +628,12 @@ function ConfirmDialog({
           </button>
           <button
             type="button"
-            className={styles.primary}
+            className={`btn-grow ${styles.primary}`}
             onClick={onConfirm}
             aria-disabled={submitting}
             data-confirm-submit
           >
-            {submitting ? copy.submitWorking : copy.dialogConfirm}
+            <GrowText>{submitting ? copy.submitWorking : copy.dialogConfirm}</GrowText>
           </button>
         </div>
       </div>
@@ -717,7 +722,7 @@ function WithdrawDialog({
           </button>
           <button
             type="button"
-            className={styles.primary}
+            className={`${styles.primary} ${styles.destructive}`}
             onClick={() => void go()}
             aria-disabled={working}
             data-confirm-withdraw
