@@ -254,3 +254,149 @@
     outline-offset: 2px;
   }
 }
+
+// Requests (svef/www#169).
+.requestList {
+  display: grid;
+  gap: 16px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.request {
+  padding: 4px 16px 16px;
+  border: 1px solid var(--line);
+
+  &[data-status='overdue'] {
+    border-color: var(--accent-yellow);
+  }
+}
+
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid currentcolor;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  &[data-status='overdue'] {
+    color: var(--accent-yellow);
+  }
+}
+
+.threadHeading {
+  margin: 12px 0 4px;
+  font-size: 1rem;
+}
+
+.thread {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding-left: 12px;
+    border-left: 3px solid var(--line);
+    overflow-wrap: anywhere;
+
+    &[data-side='staff'] {
+      border-left-color: var(--color-violet);
+    }
+  }
+
+  .pre {
+    display: block;
+  }
+}
+
+.requestActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+}
+
+.requestForm {
+  display: grid;
+  gap: 8px;
+  max-width: 44rem;
+
+  textarea,
+  input[type='datetime-local'] {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px;
+    border: 1px solid var(--line);
+    background: var(--ink-2);
+    color: var(--color-white);
+    font: inherit;
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+
+  input[type='datetime-local'] {
+    width: auto;
+  }
+
+  input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-violet);
+  }
+}
+
+.filter textarea {
+  min-width: 18rem;
+  padding: 8px;
+  border: 1px solid var(--line);
+  background: var(--ink-2);
+  color: var(--color-white);
+  font: inherit;
+
+  &:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.block {
+  display: block;
+  font-weight: 600;
+}
+
+.fieldset {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+
+  legend {
+    padding: 0 4px;
+    font-weight: 600;
+  }
+}
+
+.checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 6px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.actions a[aria-current='true'] {
+  outline: 2px solid var(--color-white);
+  outline-offset: 2px;
+}

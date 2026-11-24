@@ -5,7 +5,10 @@ import { PageSection } from '@/components/PageSection/PageSection'
 import { getProjectFormCopy } from '@/components/ProjectForm/copy'
 import { listBillingProfiles } from '@/lib/awards/billing/service'
 import { getAwardsDb } from '@/lib/awards/db/client'
+import { getCategory } from '@/lib/awards/categories'
+import { getField } from '@/lib/awards/fields'
 import { AwardsError } from '@/lib/awards/projects/errors'
+import { listRequestsForProject } from '@/lib/awards/requests/queries'
 import { loadProject } from '@/lib/awards/projects/service'
 import { getCurrentUserId, getRequestNow, NotSignedInError } from '@/lib/awards/session'
 import { getDictionary, isLocale, localePath } from '@/lib/i18n'
@@ -43,14 +46,14 @@ export default async function ProjectPage({
 
   let view
   let billingProfiles
+  let requests
   try {
     const db = getAwardsDb()
-    view = await loadProject(db, {
-      userId,
-      projectId: id,
-      now: await getRequestNow(),
-    })
+    const now = await getRequestNow()
+    view = await loadProject(db, { userId, projectId: id, now })
     billingProfiles = await listBillingProfiles(db, { userId })
+    // `loadProject` has proved the viewer is the creator or an accepted editor.
+    requests = await listRequestsForProject(db, id, now)
   } catch (e) {
     // Missing and not-yours look the same: a project's existence is not for strangers.
     if (e instanceof AwardsError && (e.code === 'not_found' || e.code === 'forbidden')) notFound()
@@ -68,7 +71,35 @@ export default async function ProjectPage({
         }}
       />
       <PageSection last aria-label={copy.pageTitle}>
-        <ProjectFormClient initial={view} locale={locale} billingProfiles={billingProfiles} />
+        <ProjectFormClient
+          initial={view}
+          locale={locale}
+          billingProfiles={billingProfiles}
+          requests={requests.map((r) => ({
+            id: r.id,
+            categoryName: getCategory(r.category)?.name[locale] ?? r.category,
+            message: r.message,
+            fields: r.fieldKeys.map((key) => {
+              let label = key
+              try {
+                label = getField(key).label[locale]
+              } catch {
+                // A key no longer in the field set: shown as it is.
+              }
+              return { key, label }
+            }),
+            deadlineAt: r.deadlineAt.toISOString(),
+            status: r.status,
+            resolvedAt: r.resolvedAt?.toISOString() ?? null,
+            replies: r.replies.map((p) => ({
+              id: p.id,
+              side: p.side,
+              authorName: p.authorName,
+              message: p.message,
+              createdAt: p.createdAt.toISOString(),
+            })),
+          }))}
+        />
       </PageSection>
     </>
   )

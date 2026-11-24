@@ -1,8 +1,10 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
 import { ProjectForm } from '@/components/ProjectForm/ProjectForm'
 import type { ProjectFormActions } from '@/components/ProjectForm/useProjectForm'
+import type { RequestActions, RequestBannerData } from '@/components/ProjectForm/RequestBanners'
 import type { BillingActions } from '@/components/ProjectForm/BillingSection'
 import {
   createBillingProfileAction,
@@ -21,6 +23,12 @@ import {
   setCategoriesAction,
   submitAction,
 } from './actions'
+import { markRequestDoneAction, replyToRequestAction } from './request-actions'
+
+const requestActions: RequestActions = {
+  reply: replyToRequestAction,
+  done: markRequestDoneAction,
+}
 
 /** Binds the project's server actions to the form, and the beacon that releases the lock on leave. */
 const billingActions: BillingActions = {
@@ -33,11 +41,14 @@ export function ProjectFormClient({
   initial,
   locale,
   billingProfiles,
+  requests,
 }: {
   initial: ProjectView
   locale: Locale
   billingProfiles: BillingProfileView[]
+  requests: RequestBannerData[]
 }) {
+  const router = useRouter()
   const actions = useMemo<ProjectFormActions>(
     () => ({
       load: () => loadProjectAction(initial.id),
@@ -60,6 +71,7 @@ export function ProjectFormClient({
       locale={locale}
       actions={actions}
       billing={{ initialProfiles: billingProfiles, actions: billingActions }}
+      requests={{ items: requests, actions: requestActions, onChanged: () => router.refresh() }}
     />
   )
 }

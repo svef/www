@@ -247,3 +247,141 @@ ${paragraph(c.editable)}
 </html>`
   return { subject: c.subject(input.projectTitle), text, html }
 }
+
+// ── Requests: opened, and the deadline reminder ─────────────────────────────
+
+export interface RequestEmailInput {
+  locale: Locale
+  name: string
+  projectTitle: string
+  /** The category the request is about, in the recipient's language. */
+  category: string
+  /** What staff wrote. */
+  message: string
+  /** Labels of the fields the request unlocks, in the recipient's language. */
+  fields: string[]
+  deadlineAt: Date
+  /** The project's page, where the request is answered. */
+  url: string
+}
+
+const requestCopy: Record<
+  Locale,
+  {
+    openedSubject: (title: string) => string
+    openedIntro: (title: string, category: string) => string
+    reminderSubject: (title: string) => string
+    reminderIntro: (title: string, category: string) => string
+    message: string
+    fields: string
+    deadline: string
+    deadlineNote: string
+    link: string
+    button: string
+  }
+> = {
+  is: {
+    openedSubject: (t) => `Beiðni frá SVEF: ${t}`,
+    openedIntro: (t, c) =>
+      `Starfsfólk SVEF hefur sent beiðni vegna innsendingarinnar „${t}“ (${c}).`,
+    reminderSubject: (t) => `Áminning: beiðni vegna ${t} rennur út á morgun`,
+    reminderIntro: (t, c) =>
+      `Frestur til að svara beiðni SVEF vegna innsendingarinnar „${t}“ (${c}) rennur út eftir um sólarhring.`,
+    message: 'Skilaboð frá SVEF',
+    fields: 'Reitir sem þú getur breytt',
+    deadline: 'Frestur',
+    deadlineNote:
+      'Reitirnir eru opnir til breytinga fram að fresti. Þegar þú ert búin(n) smellirðu á „Merkja sem lokið“ á síðu innsendingarinnar.',
+    link: 'Opna beiðnina:',
+    button: 'Opna beiðnina',
+  },
+  en: {
+    openedSubject: (t) => `A request from SVEF: ${t}`,
+    openedIntro: (t, c) =>
+      `SVEF staff have sent a request about your submission “${t}” (${c}).`,
+    reminderSubject: (t) => `Reminder: the request about ${t} is due tomorrow`,
+    reminderIntro: (t, c) =>
+      `The deadline to answer SVEF's request about your submission “${t}” (${c}) is in about 24 hours.`,
+    message: 'Message from SVEF',
+    fields: 'Fields you can change',
+    deadline: 'Deadline',
+    deadlineNote:
+      'The fields stay open for editing until the deadline. When you are done, press “Mark as done” on the submission page.',
+    link: 'Open the request:',
+    button: 'Open the request',
+  },
+}
+
+/** Iceland is UTC all year, so the zone is stated rather than guessed. */
+const deadlineText = (at: Date, locale: Locale) =>
+  `${new Intl.DateTimeFormat(locale === 'is' ? 'is-IS' : 'en-GB', {
+    dateStyle: 'long',
+    timeStyle: 'short',
+    timeZone: 'UTC',
+  }).format(at)} UTC`
+
+function renderRequest(
+  input: RequestEmailInput,
+  subject: string,
+  intro: string,
+): EmailContent {
+  const { locale } = input
+  const c = requestCopy[locale]
+  const g = copy[locale]
+  const when = deadlineText(input.deadlineAt, locale)
+  const text = [
+    g.greeting(input.name),
+    '',
+    intro,
+    '',
+    `${c.message}:`,
+    input.message,
+    '',
+    ...(input.fields.length ? [`${c.fields}: ${input.fields.join(', ')}`, ''] : []),
+    `${c.deadline}: ${when}`,
+    '',
+    c.deadlineNote,
+    '',
+    `${c.link} ${input.url}`,
+    '',
+    g.signoff,
+  ].join('\n')
+  const paragraph = (value: string) => `<p style="margin:0 0 16px">${escapeHtml(value)}</p>`
+  const html = `<!doctype html>
+<html lang="${locale}">
+<body style="margin:0;padding:24px;background:#fcfbfe;color:#09060c;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5">
+<div style="max-width:520px;margin:0 auto">
+${paragraph(g.greeting(input.name))}
+${paragraph(intro)}
+<h2 style="margin:24px 0 8px;font-size:18px">${escapeHtml(c.message)}</h2>
+<p style="margin:0 0 16px;padding:12px 16px;border-left:4px solid #8917e1;background:#f1ecf8;white-space:pre-line">${escapeHtml(input.message)}</p>
+${input.fields.length ? `<p style="margin:0 0 8px"><strong>${escapeHtml(c.fields)}:</strong> ${escapeHtml(input.fields.join(', '))}</p>` : ''}
+<p style="margin:0 0 16px"><strong>${escapeHtml(c.deadline)}:</strong> ${escapeHtml(when)}</p>
+${paragraph(c.deadlineNote)}
+<p style="margin:24px 0"><a href="${escapeHtml(input.url)}" style="display:inline-block;background:#8917e1;color:#fcfbfe;padding:12px 20px;text-decoration:none;font-weight:bold">${escapeHtml(c.button)}</a></p>
+<p style="margin:0;white-space:pre-line">${escapeHtml(g.signoff)}</p>
+</div>
+</body>
+</html>`
+  return { subject, text, html }
+}
+
+/** Email 4 (spec §7): a request was opened, with its message and deadline. */
+export function requestOpenedEmail(input: RequestEmailInput): EmailContent {
+  const c = requestCopy[input.locale]
+  return renderRequest(
+    input,
+    c.openedSubject(input.projectTitle),
+    c.openedIntro(input.projectTitle, input.category),
+  )
+}
+
+/** Email 5 (spec §7): the deadline is about 24 hours away. */
+export function requestReminderEmail(input: RequestEmailInput): EmailContent {
+  const c = requestCopy[input.locale]
+  return renderRequest(
+    input,
+    c.reminderSubject(input.projectTitle),
+    c.reminderIntro(input.projectTitle, input.category),
+  )
+}

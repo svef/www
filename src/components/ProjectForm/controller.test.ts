@@ -341,6 +341,29 @@ describe('ProjectFormController', () => {
     stop()
   })
 
+  it('refresh saves what was typed, then adopts the project as the server now has it (a request resolved)', async () => {
+    const order: string[] = []
+    const locked = { title: { editable: false, reason: 'intake_closed' } } as ProjectView['editability']
+    const { c } = setup({
+      save: vi.fn(async (p) => {
+        order.push('save')
+        return ok(saved(Object.keys(p.answers ?? {})))
+      }),
+      load: vi.fn(async () => {
+        order.push('load')
+        return ok(view({ editability: locked, answers: { title: 'Fixed' } }))
+      }),
+    })
+    const stop = c.start()
+    await settle()
+    c.setAnswer('title', 'Fixed')
+    await c.refresh()
+    expect(order.slice(-2)).toEqual(['save', 'load'])
+    expect(c.getSnapshot().view.editability).toEqual(locked)
+    expect(c.getSnapshot().answers.title).toBe('Fixed')
+    stop()
+  })
+
   it('shows a category choice at once, before the server has confirmed it', async () => {
     let confirm!: (r: ActionResult<ProjectView>) => void
     const { c } = setup({

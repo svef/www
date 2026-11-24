@@ -60,8 +60,9 @@ export const entryCopy = {
     credentialValue: 'Gildi',
     credentialNotes: 'Athugasemdir',
     requestsTitle: 'Beiðnir',
-    // Placeholder: opening a request is svef/www#169.
-    requestsSoon: 'Hér kemur að opna beiðni um úrbætur og sjá opnar og útrunnar beiðnir. Væntanlegt.',
+    requestDeadline: 'Frestur',
+    resolvedByStaff: 'Starfsfólk lokaði',
+    resolvedByEntrant: 'Þátttakandi merkti sem lokið',
     transferTitle: 'Flytja verkefni til annars skapara',
     transferLead:
       'Nýr skapari fær verkefnið á sínar síður og er sá eini sem getur dregið færslur til baka. Fyrri skapari heldur aðeins aðgangi ef hann er líka ritstjóri. Greiðandi breytist ekki.',
@@ -95,6 +96,10 @@ export const entryCopy = {
       billing_profile_changed: 'Greiðandi breyttur',
       category_removed: 'Flokkur fjarlægður',
       lock_released: 'Breytingalás losaður',
+      request_opened: 'Beiðni opnuð',
+      request_replied: 'Svar við beiðni',
+      request_resolved: 'Beiðni lokið',
+      request_reminder_sent: 'Áminning um frest send',
     } as Record<string, string>,
     status_: {
       draft: 'Drög',
@@ -162,7 +167,9 @@ export const entryCopy = {
     credentialValue: 'Value',
     credentialNotes: 'Notes',
     requestsTitle: 'Requests',
-    requestsSoon: 'Opening a request for fixes, and seeing open and overdue requests, will be here. Coming next.',
+    requestDeadline: 'Deadline',
+    resolvedByStaff: 'Closed by staff',
+    resolvedByEntrant: 'Marked as done by the entrant',
     transferTitle: 'Transfer the project to another creator',
     transferLead:
       'The new creator gets the project on their pages and is the only one who can withdraw entries. The previous creator keeps access only if they are also an editor. The payer does not change.',
@@ -196,6 +203,10 @@ export const entryCopy = {
       billing_profile_changed: 'Payer changed',
       category_removed: 'Category removed',
       lock_released: 'Edit lock released',
+      request_opened: 'Request opened',
+      request_replied: 'Request reply',
+      request_resolved: 'Request resolved',
+      request_reminder_sent: 'Deadline reminder sent',
     } as Record<string, string>,
     status_: {
       draft: 'Draft',

@@ -166,11 +166,14 @@ function Notes({
   c,
   locale,
   now,
+  requestHref,
 }: {
   entry: DashboardEntry
   c: DashboardCopy
   locale: Locale
   now: string
+  /** The project page's requests section, where a request is answered. */
+  requestHref: string
 }) {
   const missing = entry.missing
   return (
@@ -179,7 +182,9 @@ function Notes({
         const overdue = Date.parse(r.deadlineAt) <= Date.parse(now)
         return (
           <span key={r.id} className={styles.request} data-request={r.id}>
-            {overdue ? c.requestOverdue : c.requestAsked(formatDayMonth(r.deadlineAt, locale))}
+            <Link href={requestHref}>
+              {overdue ? c.requestOverdue : c.requestAsked(formatDayMonth(r.deadlineAt, locale))}
+            </Link>
             <span className={styles.requestMessage}>{r.message}</span>
           </span>
         )
@@ -261,7 +266,7 @@ function Cards({
                       <StatusBadge status={e.status} c={c} />
                       <PriceCell entry={e} c={c} locale={locale} />
                       <span className={styles.entryNotes}>
-                        <Notes entry={e} c={c} locale={locale} now={now} />
+                        <Notes entry={e} c={c} locale={locale} now={now} requestHref={`${localePath(`/innsendingar/${p.id}`, locale)}#requests`} />
                       </span>
                     </li>
                   ))}
@@ -451,7 +456,7 @@ function List({
                 <td data-label={c.list.colStatus}>{e && <StatusBadge status={e.status} c={c} />}</td>
                 <td data-label={c.list.colPrice}>{e && <PriceCell entry={e} c={c} locale={locale} />}</td>
                 <td data-label={c.list.colNotes}>
-                  {e && <Notes entry={e} c={c} locale={locale} now={now} />}
+                  {e && <Notes entry={e} c={c} locale={locale} now={now} requestHref={`${localePath(`/innsendingar/${p.id}`, locale)}#requests`} />}
                   {p.lock && !e?.requests.length && !e?.missing.length ? (
                     <span className={styles.missing}>
                       {c.locked(p.lock.holderName, formatClock(p.lock.since, locale), p.lock.heldByViewer)}

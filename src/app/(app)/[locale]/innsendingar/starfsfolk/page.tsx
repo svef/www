@@ -10,6 +10,7 @@ import {
   STATUS_FILTERS,
   type SortKey,
 } from '@/lib/awards/staff/entry-list'
+import { listStaffRequests } from '@/lib/awards/requests/queries'
 import { getStaffEdition, listStaffCategories } from '@/lib/awards/staff/queries'
 import type { EntryStatus } from '@/lib/awards/types'
 import { lastDayBefore } from '@/lib/awards/public-catalog'
@@ -18,6 +19,7 @@ import { formatLongDate } from '@/lib/dates'
 import { isLocale, localePath } from '@/lib/i18n'
 import { PageHead } from '@/components/PageHead/PageHead'
 import { PageSection } from '@/components/PageSection/PageSection'
+import { RequestsOverview, type RequestFilter } from './RequestsOverview'
 import { setEligibilityAction } from './actions'
 import { staffCopy } from './copy'
 import styles from './staff.module.scss'
@@ -48,6 +50,7 @@ type Search = {
   changed?: string
   result?: string
   skip?: string | string[]
+  requests?: string
 }
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)
@@ -97,6 +100,19 @@ export default async function StaffPage({
   })
   const titleById = new Map(rows.map((r) => [r.entryId, r.projectTitle]))
   const changed = Number(search.changed)
+
+  // Unresolved requests, judged on the staff clock; the filter narrows what is listed.
+  const allRequests = await listStaffRequests(db, { editionId: edition.id, now: serverNow() })
+  const requestFilter: RequestFilter =
+    one(search.requests) === 'open' || one(search.requests) === 'overdue'
+      ? (one(search.requests) as RequestFilter)
+      : 'all'
+  const shownRequests = allRequests.filter((r) => requestFilter === 'all' || r.status === requestFilter)
+  const requestsHref = (f: RequestFilter) => {
+    const qs = new URLSearchParams({ year: String(edition.year) })
+    if (f !== 'all') qs.set('requests', f)
+    return `${here}?${qs}#staff-requests`
+  }
 
   const exportHref = (format: 'csv' | 'xlsx') =>
     `/api/awards/staff/export?format=${format}&year=${edition.year}`
@@ -187,6 +203,16 @@ export default async function StaffPage({
           </a>
         </p>
         <p className={styles.note}>{c.exportCsvNote}</p>
+      </PageSection>
+
+      <PageSection aria-labelledby="staff-requests" data-testid="requests-overview-section">
+        <RequestsOverview
+          locale={locale}
+          rows={shownRequests}
+          overdueCount={allRequests.filter((r) => r.status === 'overdue').length}
+          filter={requestFilter}
+          baseHref={requestsHref}
+        />
       </PageSection>
 
       <PageSection aria-labelledby="staff-eligibility" last>

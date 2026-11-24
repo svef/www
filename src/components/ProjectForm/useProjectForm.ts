@@ -51,6 +51,7 @@ export function useProjectForm(initial: ProjectView, actions: ProjectFormActions
     markTouched: (key: string) => controller.markTouched(key),
     retrySave: controller.retrySave,
     checkLockAgain: controller.checkLockAgain,
+    refresh: () => controller.refresh(),
   }
 }
 

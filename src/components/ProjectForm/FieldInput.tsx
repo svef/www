@@ -35,6 +35,8 @@ export type FieldInputProps = {
   errors: readonly string[]
   /** The value is forced by the categories; the toggle can't be changed. */
   forced?: boolean
+  /** An open staff request asks for this field to be updated: highlighted. */
+  requested?: boolean
 }
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '')
@@ -248,6 +250,7 @@ export function FieldInput(props: FieldInputProps) {
       className={styles.field}
       data-field={field.key}
       data-locked={locked ? '' : undefined}
+      data-requested={props.requested ? '' : undefined}
     >
       {multi ? (
         <legend className={styles.label}>

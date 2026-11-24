@@ -51,6 +51,7 @@ export default defineConfig({
             AWARDS_TEST_SESSION: '1',
             AWARDS_CREDENTIAL_KEY: Buffer.alloc(32, 7).toString('base64'),
             AWARDS_CLOCK_NOW: '2027-03-01T00:00:00Z',
+            CRON_SECRET: 'e2e-cron-secret',
           },
         },
       }

@@ -31,10 +31,13 @@ export function QuestionsSection({
   form,
   locale,
   renderField,
+  requestedKeys,
 }: {
   form: ProjectFormApi
   locale: Locale
   renderField: (key: string) => React.ReactNode
+  /** Fields an open staff request asks to have updated. */
+  requestedKeys?: ReadonlySet<string>
 }) {
   const copy = getProjectFormCopy(locale)
   const { view } = form
@@ -72,6 +75,7 @@ export function QuestionsSection({
                 locale={locale}
                 field={pitch}
                 state={view.entryEditability[slug]?.categoryPitch}
+                requested={requestedKeys?.has('categoryPitch')}
               />
             )}
           </section>
@@ -88,6 +92,7 @@ function Pitch({
   locale,
   field,
   state,
+  requested,
 }: {
   slug: string
   name: string
@@ -95,13 +100,15 @@ function Pitch({
   locale: Locale
   field: (typeof ENTRY_FIELDS)[number]
   state: ProjectFormApi['view']['entryEditability'][string][string] | undefined
+  requested?: boolean
 }) {
   const copy = getProjectFormCopy(locale)
   const value = form.entryAnswers[slug]?.categoryPitch
   const id = `${slug}:categoryPitch`
   // Open from the start when there is already a note; then the person decides, so
   // clearing the text never folds the box away under the cursor.
-  const [open, setOpen] = useState(typeof value === 'string' && value !== '')
+  // A request that asks for the note opens it too, or the field it points to would be hidden.
+  const [open, setOpen] = useState((typeof value === 'string' && value !== '') || Boolean(requested))
   return (
     <details
       className={styles.pitch}
@@ -129,6 +136,7 @@ function Pitch({
         readOnly={form.readOnly}
         locked={state && !state.editable ? state : undefined}
         errors={(form.serverErrors[id] ?? []).map((x) => x.message[locale])}
+        requested={requested}
       />
     </details>
   )

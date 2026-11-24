@@ -11,7 +11,15 @@ vi.mock('resend', () => ({
   },
 }))
 
-import { OUTBOX_DIR, passwordResetEmail, receiptEmail, sendEmail, verificationEmail } from './index'
+import {
+  OUTBOX_DIR,
+  passwordResetEmail,
+  receiptEmail,
+  requestOpenedEmail,
+  requestReminderEmail,
+  sendEmail,
+  verificationEmail,
+} from './index'
 
 const URL_ = 'https://svef.is/api/account/verify-email?token=abc&callbackURL=%2Fis'
 
@@ -138,5 +146,57 @@ describe('sendEmail', () => {
     vi.stubEnv('AWARDS_EMAIL_FROM', 'x@svef.is')
     send.mockResolvedValue({ data: null, error: { message: 'nope' } })
     await expect(sendEmail(message)).rejects.toThrow(/nope/)
+  })
+})
+
+describe('request emails', () => {
+  const input = {
+    name: 'Anna',
+    projectTitle: 'Fjallavefur <b>',
+    category: 'Marketing Website',
+    message: 'Fix the <title> please',
+    fields: ['Project title', 'Project links'],
+    deadlineAt: new Date('2027-03-08T14:30:00Z'),
+    url: 'https://svef.is/en/submissions/abc#requests',
+  }
+
+  it('opened: message, fields, deadline in UTC and the link, in English', () => {
+    const mail = requestOpenedEmail({ ...input, locale: 'en' })
+    expect(mail.subject).toBe('A request from SVEF: Fjallavefur <b>')
+    expect(mail.text).toContain('Fix the <title> please')
+    expect(mail.text).toContain('Project title, Project links')
+    expect(mail.text).toContain('Deadline: 8 March 2027')
+    expect(mail.text).toContain('14:30 UTC')
+    expect(mail.text).toContain(input.url)
+    expect(mail.html).toContain('lang="en"')
+    expect(mail.html).toContain('href="https://svef.is/en/submissions/abc#requests"')
+  })
+
+  it('opened: Icelandic', () => {
+    const mail = requestOpenedEmail({ ...input, locale: 'is' })
+    expect(mail.subject).toMatch(/^Beiðni frá SVEF/)
+    expect(mail.text).toContain('Frestur: 8. mars 2027')
+    expect(mail.html).toContain('lang="is"')
+  })
+
+  it('escapes entrant and staff text in html', () => {
+    const mail = requestOpenedEmail({ ...input, locale: 'en' })
+    expect(mail.html).not.toContain('<title>')
+    expect(mail.html).not.toContain('<b>')
+    expect(mail.html).toContain('Fix the &lt;title&gt; please')
+  })
+
+  it('a question with no fields leaves the fields line out', () => {
+    const mail = requestOpenedEmail({ ...input, fields: [], locale: 'en' })
+    expect(mail.text).not.toContain('Fields you can change')
+  })
+
+  it('the reminder differs from the opening and says the deadline is near', () => {
+    const opened = requestOpenedEmail({ ...input, locale: 'en' })
+    const reminder = requestReminderEmail({ ...input, locale: 'en' })
+    expect(reminder.subject).not.toBe(opened.subject)
+    expect(reminder.subject).toMatch(/^Reminder/)
+    expect(reminder.text).toContain('24 hours')
+    expect(requestReminderEmail({ ...input, locale: 'is' }).subject).toMatch(/^Áminning/)
   })
 })

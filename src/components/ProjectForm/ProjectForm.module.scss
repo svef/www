@@ -150,6 +150,14 @@
   margin: 0;
   padding: 0;
   border: 0;
+
+  // A staff request asks for this one (svef/www#169): a quiet violet bar, not colour alone
+  // (the banner above names the field, and the label carries the same text for assistive tech).
+  &[data-requested] {
+    padding: 0.75rem 0.75rem 0.75rem 1rem;
+    border-left: 6px solid var(--color-violet-light);
+    background: var(--surface-3);
+  }
 }
 
 .label {
