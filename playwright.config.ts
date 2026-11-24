@@ -38,6 +38,10 @@ export default defineConfig({
           // Opt in explicitly with PLAYWRIGHT_REUSE_SERVER=1.
           reuseExistingServer: !process.env.CI && !!process.env.PLAYWRIGHT_REUSE_SERVER,
           timeout: 300_000,
+          // The account flows read their emails from the local outbox, and their
+          // tests share one IP, which Better Auth's production rate limiter would
+          // otherwise throttle.
+          env: { AWARDS_EMAIL_OUTBOX: '1', AWARDS_AUTH_RATE_LIMIT: 'off' },
         },
       }
     : {}),

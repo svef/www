@@ -1,6 +1,8 @@
 import {
+  bigint,
   boolean,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -88,3 +90,16 @@ export const verification = pgTable(
   },
   (t) => [index('verification_identifier_idx').on(t.identifier)],
 )
+
+/**
+ * Better Auth's rate-limit counters (`rateLimit.storage: 'database'`): on
+ * serverless the default in-memory store is per instance and so barely limits
+ * anything. `key` is hashed IP + path; `lastRequest` is epoch milliseconds.
+ * Not a record of anything, so no `deleted_at`; rows are overwritten in place.
+ */
+export const rateLimit = pgTable('rate_limit', {
+  id: id(),
+  key: text('key').notNull().unique(),
+  count: integer('count').notNull(),
+  lastRequest: bigint('last_request', { mode: 'number' }).notNull(),
+})
