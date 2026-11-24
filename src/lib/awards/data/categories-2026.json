@@ -1,0 +1,361 @@
+{
+  "edition": {
+    "intakeOpensAt": "2026-12-01T00:00:00Z",
+    "earlyBirdEndsBefore": "2027-01-05T00:00:00Z",
+    "intakeClosesBefore": "2027-02-02T00:00:00Z",
+    "earlyBirdDiscountPercent": 30,
+    "earlyBirdRounding": "nearest-900"
+  },
+  "_note": "Generated from \"Category descriptions - 2026.csv\". Prices are regular prices in ISK; early bird is a flat percentage off, set on the edition. Text is verbatim apart from typo/whitespace fixes.",
+  "groups": [
+    {
+      "slug": "company-website",
+      "sortOrder": 1,
+      "selectOne": true,
+      "name": {
+        "is": "Fyrirtækjavefur",
+        "en": "Company Website"
+      },
+      "description": {
+        "is": "Almennir vefir sem kynna fyrirtæki, vörur þess eða þjónustu. Flokkunum er skipt eftir veltu á verðlaunaárinu svo fyrirtæki með svipuð fjárráð keppi sín á milli. Veltumörkin eru til viðmiðunar.",
+        "en": "General websites presenting a company and its products or services. The category is divided into tiers by turnover in the award year so that companies with similar means compete against each other. The thresholds are a guide."
+      }
+    }
+  ],
+  "categories": [
+    {
+      "slug": "company-website-startup",
+      "group": "company-website",
+      "sortOrder": 1,
+      "name": {
+        "is": "Fyrirtækjavefur: sprotar",
+        "en": "Company Website: Startup"
+      },
+      "blurb": {
+        "is": "Fyrirtæki sem eru ekki enn farin að afla tekna",
+        "en": "Companies that are pre-revenue"
+      },
+      "description": null,
+      "price": 9900,
+      "tierLabel": {
+        "is": "sprotar",
+        "en": "Startup"
+      }
+    },
+    {
+      "slug": "company-website-small",
+      "group": "company-website",
+      "sortOrder": 2,
+      "name": {
+        "is": "Fyrirtækjavefur: lítil fyrirtæki",
+        "en": "Company Website: Small"
+      },
+      "blurb": {
+        "is": "Velta undir 250 m.kr.",
+        "en": "Turnover under ISK 250m"
+      },
+      "description": null,
+      "price": 14900,
+      "tierLabel": {
+        "is": "lítil fyrirtæki",
+        "en": "Small"
+      }
+    },
+    {
+      "slug": "company-website-medium",
+      "group": "company-website",
+      "sortOrder": 3,
+      "name": {
+        "is": "Fyrirtækjavefur: meðalstór fyrirtæki",
+        "en": "Company Website: Medium"
+      },
+      "blurb": {
+        "is": "Velta á bilinu 250 til 1.500 m.kr.",
+        "en": "Turnover of ISK 250m to 1,500m"
+      },
+      "description": null,
+      "price": 26900,
+      "tierLabel": {
+        "is": "meðalstór fyrirtæki",
+        "en": "Medium"
+      }
+    },
+    {
+      "slug": "company-website-large",
+      "group": "company-website",
+      "sortOrder": 4,
+      "name": {
+        "is": "Fyrirtækjavefur: stór fyrirtæki",
+        "en": "Company Website: Large"
+      },
+      "blurb": {
+        "is": "Velta yfir 1.500 m.kr.",
+        "en": "Turnover over ISK 1,500m"
+      },
+      "description": null,
+      "price": 38900,
+      "tierLabel": {
+        "is": "stór fyrirtæki",
+        "en": "Large"
+      }
+    },
+    {
+      "slug": "marketing-website",
+      "group": null,
+      "sortOrder": 5,
+      "name": {
+        "is": "Markaðsvefur",
+        "en": "Marketing Website"
+      },
+      "blurb": {
+        "is": "Herferðir, viðburðir og míkróvefir",
+        "en": "Campaigns, events and microsites"
+      },
+      "description": {
+        "is": "Vefir sem eru gerðir fyrir tiltekna markaðsherferð, viðburð eða kynningu og eru yfirleitt ekki hluti af aðalvef viðkomandi fyrirtækis eða stofnunar.",
+        "en": "Websites built for a specific marketing campaign, event or launch, usually separate from the organization’s main site."
+      },
+      "price": 26900
+    },
+    {
+      "slug": "ecommerce-website",
+      "group": null,
+      "sortOrder": 6,
+      "name": {
+        "is": "Söluvefur",
+        "en": "E-commerce Website"
+      },
+      "blurb": {
+        "is": "Vefir þar sem hægt er að ganga frá kaupum",
+        "en": "Websites where you can complete a purchase"
+      },
+      "description": {
+        "is": "Vefir sem selja vörur eða þjónustu, hvort sem um er að ræða eina vöru eða heilt vöruúrval. Leitað er að skýrri framsetningu og notendavænu kaupferli.",
+        "en": "Websites that sell products or services, whether a single item or a full range. We’re looking for clear presentation and a user-friendly purchase process."
+      },
+      "price": 26900
+    },
+    {
+      "slug": "public-sector-website",
+      "group": null,
+      "sortOrder": 7,
+      "name": {
+        "is": "Opinber vefur",
+        "en": "Public Sector Website"
+      },
+      "blurb": {
+        "is": "Vefir ríkis, sveitarfélaga og opinberra stofnana",
+        "en": "Websites of the state, municipalities and public institutions"
+      },
+      "description": {
+        "is": "Vefir opinberra aðila og eininga á þeirra vegum. Vefurinn þarf að vera fjármagnaður að mestu leyti af ríki eða sveitarfélagi.",
+        "en": "Websites of public bodies and the organizations they run. The website must be funded mainly by the state or a municipality."
+      },
+      "price": 26900
+    },
+    {
+      "slug": "community-website",
+      "group": null,
+      "sortOrder": 8,
+      "name": {
+        "is": "Samfélagsvefur",
+        "en": "Community Website"
+      },
+      "blurb": {
+        "is": "Vefir góðgerðamála, félagasamtaka og samfélagsverkefna",
+        "en": "Websites for charities, non-profits and community projects"
+      },
+      "description": {
+        "is": "Vefir sem miða að því að gera samfélaginu gagn, til dæmis með fræðslu, stuðningi eða aukinni þátttöku almennings.",
+        "en": "Websites that aim to benefit society, for example through education, support or public participation."
+      },
+      "price": 9900
+    },
+    {
+      "slug": "digital-solution",
+      "group": null,
+      "sortOrder": 9,
+      "name": {
+        "is": "Stafræn lausn",
+        "en": "Digital Solution"
+      },
+      "blurb": {
+        "is": "Stafrænar lausnir, metnar eftir því hvaða vanda þær leysa",
+        "en": "Digital solutions, judged on the problem they solve"
+      },
+      "description": {
+        "is": "Verkefni á breiðum skala, svo sem lausn sem bætist við eldra kerfi og gegnir þar sérstöku hlutverki, eða verkefni sem er hluti af stafrænni umbreytingu fyrirtækis eða stofnunar. Ef lausnin byggir á verkefni frá fyrri árum þarf nýjungin að vera sýnileg.",
+        "en": "A broad category, covering for example a solution added to an existing system where it serves a distinct purpose, or a project that is part of an organization’s digital transformation. If the solution builds on a project from a previous year, it must be clear what is new."
+      },
+      "price": 26900
+    },
+    {
+      "slug": "app",
+      "group": null,
+      "sortOrder": 10,
+      "name": {
+        "is": "App",
+        "en": "App"
+      },
+      "blurb": {
+        "is": "Lausnir smíðaðar sérstaklega fyrir snjalltæki",
+        "en": "Apps built specifically for smart devices"
+      },
+      "description": {
+        "is": "Öll smáforrit fyrir síma og spjaldtölvur, hvort sem um er að ræða leiki, þjónustu, upplýsingaveitur eða afþreyingu.",
+        "en": "Any app for smart devices, whether a game, a service, an information source or entertainment."
+      },
+      "price": 26900
+    },
+    {
+      "slug": "passion-project",
+      "group": null,
+      "sortOrder": 11,
+      "name": {
+        "is": "Gæluverkefni",
+        "en": "Passion Project"
+      },
+      "blurb": {
+        "is": "Verkefni unnin í frítíma fyrir lítið eða ekkert fjármagn",
+        "en": "Spare-time projects made with little or no budget"
+      },
+      "description": {
+        "is": "Vefur eða app sem var smíðað af eigin áhuga, utan vinnu og án viðskiptavinar. Verkefni sem voru unnin á námstíma en eru ekki skólaverkefni eiga líka heima hér.",
+        "en": "A website or app built out of personal interest, outside work and without a client. Projects made while studying that weren’t school assignments also belong here."
+      },
+      "price": 9900
+    },
+    {
+      "slug": "logged-in-platform",
+      "group": null,
+      "sortOrder": 12,
+      "name": {
+        "is": "Aðgangsstýrt verkefni",
+        "en": "Logged-In Platform"
+      },
+      "blurb": {
+        "is": "Verkefni sem krefjast innskráningar",
+        "en": "Projects that require login"
+      },
+      "description": {
+        "is": "Nýr flokkur fyrir verkefni sem krefjast innskráningar, til dæmis „mínar síður“, þjónustugáttir og innri vefir. Dómnefnd þarf að geta skráð sig inn, annaðhvort með almennum aðgangi eða prufuaðgangi sem fylgir innsendingu. Myndbönd eða skjáskot duga ekki.",
+        "en": "A new category for projects that require logins, for example \"my pages\", service portals and intranets. The jury must be able to log in, either with a regular account or a demo account included with the submission. Videos and screenshots aren’t enough."
+      },
+      "price": 38900
+    },
+    {
+      "slug": "ai-solution",
+      "group": null,
+      "sortOrder": 13,
+      "name": {
+        "is": "Gervigreindarlausn",
+        "en": "AI Solution"
+      },
+      "blurb": {
+        "is": "Lausnir með gervigreind í aðalhlutverki",
+        "en": "AI-first solutions"
+      },
+      "description": {
+        "is": "Lausnir þar sem gervigreind er kjarninn í upplifuninni og gjörbreytir því hvernig notandinn vinnur, leysir vandamál eða nálgast þjónustu. Lausnin getur verið ný eða viðbót við eldri lausn. Það eitt að lausnin hafi verið smíðuð með hjálp gervigreindar dugir ekki til.",
+        "en": "Solutions where AI is at the core of the experience and transforms how the user works, solves problems or accesses services. The solution can be new or an addition to an existing one. Being built with the help of AI is not enough on its own."
+      },
+      "price": 26900
+    },
+    {
+      "slug": "technical-achievement",
+      "group": null,
+      "sortOrder": 14,
+      "name": {
+        "is": "Tæknilausn",
+        "en": "Technical Achievement"
+      },
+      "blurb": {
+        "is": "Verkefni metin eftir því hvernig tæknin er nýtt",
+        "en": "Projects judged on how the technology is used"
+      },
+      "description": {
+        "is": "Verkefni sem skara fram úr í nýtingu tækni, hvort sem tæknin er ný eða eldri tækni er notuð á nýjan hátt. Í innsendingu þarf að lýsa í hverju tækninýtingin felst.",
+        "en": "Projects that stand out for their use of technology, whether that means new technology or older technology put to new use. The submission must explain what the technical achievement is."
+      },
+      "price": 26900
+    },
+    {
+      "slug": "tourism-website",
+      "group": null,
+      "sortOrder": 15,
+      "name": {
+        "is": "Ferðaþjónustuvefur",
+        "en": "Tourism Website"
+      },
+      "blurb": {
+        "is": "Vefir sem kynna ferðaþjónustu, áfangastaði og upplifanir",
+        "en": "Websites presenting travel services, destinations and experiences"
+      },
+      "description": {
+        "is": "Vefir sem beinast að ferðamönnum og eru á vegum fyrirtækja, opinberra aðila eða samtaka. Ekki skiptir máli hvort hægt sé að bóka upplifun eða aðra þjónustu á vefnum. Leitað er að vönduðu efni og skýrum upplýsingum sem hjálpa fólki að undirbúa ferðina og njóta hennar.",
+        "en": "Websites aimed at travelers, run by companies, public bodies or associations. It doesn’t matter whether experiences or other services can be booked on the site. We’re looking for quality content and clear information that help people plan their trip and enjoy it."
+      },
+      "price": 26900
+    },
+    {
+      "slug": "student-project",
+      "group": null,
+      "sortOrder": 16,
+      "name": {
+        "is": "Nemendaverkefni",
+        "en": "Student Project"
+      },
+      "blurb": {
+        "is": "Skólaverkefni nemenda",
+        "en": "School projects by students"
+      },
+      "description": {
+        "is": "Eingöngu fyrir verkefni sem voru unnin sem hluti af námi, hvort sem um er að ræða lokaverkefni eða annað skólaverkefni. Höfundur þarf ekki að vera í námi núna en þarf að hafa verið það þegar verkefnið var unnið. Verkefni fyrir viðskiptavini eru ekki gjaldgeng.",
+        "en": "Only for projects made as part of a course study, whether a final project or other coursework. The author doesn’t have to be a student now, only when the project was made. Client work is not eligible."
+      },
+      "price": 2900
+    },
+    {
+      "slug": "vibe-coded-project",
+      "group": null,
+      "sortOrder": 17,
+      "name": {
+        "is": "Væbkóðuð lausn",
+        "en": "Vibe-Coded Project"
+      },
+      "blurb": {
+        "is": "Alfarið væbkóðuð verkefni sem gervigreind dæmir",
+        "en": "Fully vibe-coded projects, judged by AI"
+      },
+      "description": {
+        "is": "Nýr flokkur fyrir verkefni sem urðu alfarið til með væbkóðun, þar sem gervigreind skrifar allan kóðann eftir lýsingu höfundar. Þetta er eini flokkurinn þar sem gervigreind dæmir verkefnin í stað hefðbundinnar dómnefndar.",
+        "en": "A new category for projects built entirely through vibe coding, where AI writes all the code from the author’s description. This is the only category judged by AI instead of a regular jury."
+      },
+      "price": 9900
+    },
+    {
+      "slug": "digital-report",
+      "group": null,
+      "sortOrder": 18,
+      "name": {
+        "is": "Stafræn skýrsla",
+        "en": "Digital Report"
+      },
+      "blurb": {
+        "is": "Ársskýrslur, sjálfbærniskýrslur og sambærilegar skýrslur á vefformi",
+        "en": "Annual, sustainability and similar reports published as websites"
+      },
+      "description": {
+        "is": "Nýr flokkur fyrir skýrslur sem eru settar fram sem vefur í stað PDF-skjals. Leitað er að skýrri framsetningu efnis og gagna sem nýtir möguleika vefsins umfram það sem PDF-skjal býður upp á.",
+        "en": "A new category for reports published as a website rather than a PDF. We’re looking for clear presentation of content and data that does things a PDF can’t."
+      },
+      "price": 38900
+    }
+  ],
+  "exclusions": [
+    [
+      "student-project",
+      "passion-project"
+    ]
+  ]
+}
