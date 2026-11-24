@@ -17,12 +17,28 @@ export const EDITION_YEAR = 2026
  * updates in place and never duplicates. `terms_version` is left alone: it is
  * set when the terms text exists, and a re-seed must not clear it.
  */
+/**
+ * A different opening instant for previews and dev.svef.is, so they can look and behave as the
+ * site will once intake is open, before it is. Set `AWARDS_INTAKE_OPENS_AT` (an ISO instant) on
+ * Vercel's Preview environment only. It is ignored in production, where the categories file is
+ * the only source, and an unparseable value is ignored rather than seeding a broken date.
+ */
+export function intakeOpensAtOverride(
+  env: Partial<Record<string, string>> = process.env,
+): Date | null {
+  if (env.VERCEL_ENV === 'production') return null
+  const raw = env.AWARDS_INTAKE_OPENS_AT?.trim()
+  if (!raw) return null
+  const at = new Date(raw)
+  return Number.isNaN(at.getTime()) ? null : at
+}
+
 export async function seedAwards(db: Db): Promise<{ editionId: string }> {
   const e = seedData.edition
   return db.transaction(async (tx) => {
     const editionValues = {
       year: EDITION_YEAR,
-      intakeOpensAt: new Date(e.intakeOpensAt),
+      intakeOpensAt: intakeOpensAtOverride() ?? new Date(e.intakeOpensAt),
       earlyBirdEndsBefore: new Date(e.earlyBirdEndsBefore),
       intakeClosesBefore: new Date(e.intakeClosesBefore),
       earlyBirdDiscountPercent: e.earlyBirdDiscountPercent,
