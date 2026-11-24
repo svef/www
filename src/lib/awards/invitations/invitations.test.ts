@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { releaseHeldLock } from '../bulk/test-helpers'
 import { and, eq, isNull } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
@@ -12,7 +13,6 @@ import {
   createProject,
   getRole,
   loadProject,
-  releaseEditLock,
   saveAnswers,
 } from '../projects/service'
 import {
@@ -169,7 +169,7 @@ describe.skipIf(!url)('invitations', () => {
       await collaborate(owner.id, [person()])
       const accepted = await acceptInvitation(db, { userId: bjarni.id, token: tokenOf(sent[0]), now: at(2) })
       expect(accepted).toMatchObject({ ok: true })
-      await releaseEditLock(db, { userId: owner.id, projectId: id, now: at(3) })
+      await releaseHeldLock(db, owner.id, id, at(3))
       await acquireEditLock(db, { userId: bjarni.id, projectId: id, now: at(3) })
       await collaborate(bjarni.id, [person(), person({ name: 'Cara', email: E('cara') })], at(4))
       expect(sent.at(-1)?.to).toBe(E('cara'))
@@ -328,7 +328,7 @@ describe.skipIf(!url)('invitations', () => {
         const b = await makeUser('Bjarni', { email: E('bjarni') })
         await collaborate(owner.id, [person()])
         await acceptInvitation(db, { userId: b.id, token: tokenOf(sent[0]), now: at(2) })
-        await releaseEditLock(db, { userId: owner.id, projectId: id, now: at(3) })
+        await releaseHeldLock(db, owner.id, id, at(3))
         await acquireEditLock(db, { userId: b.id, projectId: id, now: at(3) })
         expect(await getRole(db, b.id, id)).toBe('editor')
 
