@@ -293,7 +293,6 @@ export const is = {
     earlyBird: 'Snemmskráning',
     regular: 'Almennt verð',
     currency: 'kr.',
-    description: 'Lýsing á flokknum',
     tiersTitle: 'Veldu eina stærð',
     tiersNote:
       'Verkefni getur aðeins verið í einum af þessum flokkum. Veltumörkin eru til viðmiðunar.',

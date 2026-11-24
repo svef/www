@@ -1,118 +1,119 @@
+// The redesign's numbered category grid (the export's `.cats2` / `.cat2`): hairline cells,
+// a small number in the cell's accent, the stepped shape as a mark in the corner, a big
+// name. Here each cell also carries the blurb, the full description and the prices.
 @use '../../styles/breakpoints' as bp;
 
+// Cells draw their right and bottom hairlines and the list draws the top and left, so a
+// short last row leaves no filled gap.
 .list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  align-items: start;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
 
   @include bp.below(bp.$md) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-// The brand's violet block, as a marker above each name.
-.card {
+// The accents cycle as the export's chips do. Violet text is too dark on the canvas, so
+// the violet cell's number takes the light violet; its mark keeps the brand violet.
+.cell {
+  --c: var(--accent-pink);
+  --c-text: var(--c);
   position: relative;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 36px clamp(20px, 2.4vw, 32px) clamp(20px, 2.4vw, 28px);
-  background: var(--ink-2);
-  border: 1px solid var(--line);
+  gap: 18px;
+  padding: clamp(20px, 2.4vw, 36px) clamp(20px, 2.4vw, 36px) clamp(22px, 2.6vw, 36px);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 
-  &::before {
+  &:nth-child(4n + 2) {
+    --c: var(--accent-yellow);
+  }
+
+  &:nth-child(4n + 3) {
+    --c: var(--color-violet);
+    --c-text: var(--color-violet-light);
+  }
+
+  &:nth-child(4n + 4) {
+    --c: var(--accent-red);
+  }
+
+  // The stepped shape, the chips' notched block, as punctuation in the corner.
+  &::after {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    width: 56px;
-    height: 12px;
-    background: var(--color-violet);
+    right: 0;
+    width: clamp(40px, 4vw, 64px);
+    height: clamp(16px, 1.6vw, 24px);
+    background: var(--c);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 40% 100%, 40% 45%, 0 45%);
   }
 }
 
-.group {
-  grid-column: 1 / -1;
+.num {
+  color: var(--c-text);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: var(--stretch-row);
+  font-size: clamp(1rem, 1.2vw, 1.2rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.text {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  max-width: 62ch;
 }
 
 .name,
 .tierName,
 .tiersTitle {
   margin: 0;
-  overflow-wrap: anywhere;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .name {
-  font-size: var(--text-h3);
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.2vw, 2.1rem);
   font-stretch: var(--stretch-title);
-  font-weight: var(--weight-title);
+  font-weight: 750;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
 }
 
 .blurb {
   margin: 0;
-  color: var(--muted);
-  max-width: 60ch;
-}
-
-// ---- The description disclosure -------------------------------------------
-
-.details {
-  border-top: 1px solid var(--line);
-}
-
-.summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-block: 12px;
-  cursor: pointer;
-  list-style: none;
+  color: var(--color-lavender);
   font-family: var(--font-display);
-  font-weight: 600;
-
-  &::-webkit-details-marker {
-    display: none;
-  }
-
-  &:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
-}
-
-.plus {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  background: var(--color-violet);
-  color: var(--color-white);
-
-  svg {
-    transition: transform 0.2s ease;
-
-    @media (prefers-reduced-motion: reduce) {
-      transition: none;
-    }
-  }
-}
-
-details[open] > .summary .plus svg {
-  transform: rotate(45deg);
+  font-weight: var(--weight-semibold);
+  font-size: 1.05rem;
+  line-height: 1.35;
 }
 
 .prose {
-  padding-bottom: 8px;
-  max-width: 62ch;
+  color: var(--muted);
+  font-stretch: var(--stretch-body);
+  letter-spacing: var(--tracking-body);
+  line-height: 1.55;
 
   > * {
-    margin-block: 0 0.8em;
+    margin-block: 0 0.7em;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
   }
 
   a {
@@ -124,45 +125,80 @@ details[open] > .summary .plus svg {
 // ---- Prices ---------------------------------------------------------------
 
 .prices {
-  margin: auto 0 0;
-  padding-top: 6px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 32px;
+  align-items: flex-end;
+  gap: 10px 32px;
+  margin: auto 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 
 .price {
   min-width: 0;
 
   dt {
-    font-size: 0.85rem;
     color: var(--muted);
+    font-size: 0.85rem;
   }
 
   dd {
-    margin: 2px 0 0;
+    margin: 4px 0 0;
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 }
 
+// The early-bird price leads: bigger, and its label carries the cell's accent block.
 .early {
-  font-size: 1.5rem;
-  color: var(--color-white);
+  dt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-white);
+
+    &::before {
+      content: '';
+      flex: none;
+      width: 10px;
+      height: 10px;
+      background: var(--c);
+    }
+  }
+
+  dd {
+    font-size: clamp(1.4rem, 1.8vw, 1.75rem);
+    font-weight: 750;
+  }
 }
 
-// ---- The group's size tiers -----------------------------------------------
+// ---- The Company Website group: across the grid, its four sizes inside ----
+
+.group {
+  grid-column: 1 / -1;
+}
+
+.tiersBlock {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
 
 .tiersTitle {
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-stretch: var(--stretch-title);
+  font-weight: var(--weight-title);
+  font-size: clamp(1.15rem, 1.5vw, 1.4rem);
 }
 
 .tiersNote {
-  margin: -8px 0 0;
+  margin: 0 0 8px;
+  max-width: 62ch;
   color: var(--muted);
   font-size: 0.95rem;
 }
@@ -184,19 +220,36 @@ details[open] > .summary .plus svg {
   }
 }
 
+// One size: a raised panel with the group's accent down its left edge.
 .tier {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 16px;
-  background: var(--ink-3);
-  border-left: 4px solid var(--color-violet);
+  padding: 16px 18px 18px;
+  background: var(--ink-2);
+  border-left: 4px solid var(--c);
 }
 
 .tierName {
   font-family: var(--font-display);
+  font-stretch: var(--stretch-title);
   font-weight: 700;
-  font-size: 1.1rem;
-  text-transform: capitalize;
+  font-size: 1.15rem;
+}
+
+.tierBlurb {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.tier .prices {
+  gap: 8px 20px;
+  padding-top: 12px;
+}
+
+// The labels are lower case ("lítil fyrirtæki"); a heading starts with a capital.
+.tierName::first-letter {
+  text-transform: uppercase;
 }
