@@ -511,3 +511,32 @@ export const entryEvent = pgTable(
     index('entry_event_entry_idx').on(t.entryId, t.createdAt),
   ],
 )
+
+export const REMINDER_WAVES = ['early_bird', 'closing'] as const
+export type ReminderWave = (typeof REMINDER_WAVES)[number]
+
+/**
+ * Which draft reminders went out (spec §7, email 6): one row per (user, edition, wave). The row
+ * is inserted *before* sending, which is what makes the cron idempotent: the unique key lets
+ * exactly one of any number of overlapping runs claim it. It is deleted again only if the send
+ * fails, so the next run retries.
+ */
+export const reminderLog = pgTable(
+  'reminder_log',
+  {
+    id: id(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id),
+    editionId: uuid('edition_id')
+      .notNull()
+      .references(() => edition.id),
+    wave: text('wave').notNull(),
+    sentAt: timestamp('sent_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique('reminder_log_user_edition_wave_key').on(t.userId, t.editionId, t.wave),
+    check('reminder_log_wave_check', inList(t.wave, REMINDER_WAVES)),
+  ],
+)

@@ -385,3 +385,143 @@ export function requestReminderEmail(input: RequestEmailInput): EmailContent {
     c.reminderIntro(input.projectTitle, input.category),
   )
 }
+
+export interface DraftReminderInput {
+  locale: Locale
+  name: string
+  /** `early_bird`: the discount ends soon. `closing`: intake closes soon. */
+  wave: 'early_bird' | 'closing'
+  /** The wave's bound (exclusive); the email names the last day, one millisecond earlier. */
+  boundAt: Date
+  projects: {
+    title: string
+    entries: {
+      category: string
+      /** What submitting costs right now, ISK. */
+      price: number
+      /** The regular price, ISK (what it costs after the early-bird deadline). */
+      priceRegular: number
+      missing: string[]
+    }[]
+  }[]
+  url: string
+}
+
+const draftCopy: Record<
+  Locale,
+  {
+    subject: Record<'early_bird' | 'closing', string>
+    intro: Record<'early_bird' | 'closing', (lastDay: string) => string>
+    missing: string
+    nothingMissing: string
+    price: (now: string, after: string, lastDay: string) => string
+    closingPrice: (price: string) => string
+    link: string
+    button: string
+    untitled: string
+  }
+> = {
+  is: {
+    subject: {
+      early_bird: 'Snemmskráningarverðið rennur út – óinnsend drög hjá SVEF',
+      closing: 'Skilafrestur nálgast – óinnsend drög hjá SVEF',
+    },
+    intro: {
+      early_bird: (d) =>
+        `Þú átt drög að innsendingum sem hafa ekki verið send inn. Snemmskráningarverð gildir til og með ${d}.`,
+      closing: (d) =>
+        `Þú átt drög að innsendingum sem hafa ekki verið send inn. Síðasti skiladagur er ${d}.`,
+    },
+    missing: 'Vantar',
+    nothingMissing: 'Tilbúið til innsendingar',
+    price: (now, after, d) => `Verð núna: ${now} (${after} eftir ${d})`,
+    closingPrice: (p) => `Verð: ${p}`,
+    link: 'Opna yfirlitið:',
+    button: 'Opna yfirlitið',
+    untitled: 'Verkefni án titils',
+  },
+  en: {
+    subject: {
+      early_bird: 'The early-bird price is ending – unsubmitted drafts at SVEF',
+      closing: 'The deadline is coming up – unsubmitted drafts at SVEF',
+    },
+    intro: {
+      early_bird: (d) =>
+        `You have draft entries that have not been submitted. The early-bird price applies until ${d}.`,
+      closing: (d) =>
+        `You have draft entries that have not been submitted. The last day to submit is ${d}.`,
+    },
+    missing: 'Missing',
+    nothingMissing: 'Ready to submit',
+    price: (now, after, d) => `Price now: ${now} (${after} after ${d})`,
+    closingPrice: (p) => `Price: ${p}`,
+    link: 'Open your overview:',
+    button: 'Open your overview',
+    untitled: 'Untitled project',
+  },
+}
+
+const isk = (amount: number, locale: Locale) =>
+  `${new Intl.NumberFormat(locale === 'is' ? 'is-IS' : 'en-GB').format(amount)} kr.`
+
+/** Email 6 (spec §7): unsubmitted drafts, a few days before the early-bird deadline or the close. */
+export function draftReminderEmail(input: DraftReminderInput): EmailContent {
+  const { locale, wave } = input
+  const c = draftCopy[locale]
+  const g = copy[locale]
+  const lastDay = new Intl.DateTimeFormat(locale === 'is' ? 'is-IS' : 'en-GB', {
+    dateStyle: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(input.boundAt.getTime() - 1))
+  const intro = c.intro[wave](lastDay)
+  const subject = c.subject[wave]
+  const priceLine = (e: DraftReminderInput['projects'][number]['entries'][number]) =>
+    wave === 'early_bird'
+      ? c.price(isk(e.price, locale), isk(e.priceRegular, locale), lastDay)
+      : c.closingPrice(isk(e.price, locale))
+  const missingLine = (e: DraftReminderInput['projects'][number]['entries'][number]) =>
+    e.missing.length ? `${c.missing}: ${e.missing.join(', ')}` : c.nothingMissing
+
+  const text = [
+    g.greeting(input.name),
+    '',
+    intro,
+    '',
+    ...input.projects.flatMap((p) => [
+      p.title || c.untitled,
+      ...p.entries.flatMap((e) => [`  - ${e.category}`, `    ${priceLine(e)}`, `    ${missingLine(e)}`]),
+      '',
+    ]),
+    `${c.link} ${input.url}`,
+    '',
+    g.signoff,
+  ].join('\n')
+
+  const paragraph = (value: string) => `<p style="margin:0 0 16px">${escapeHtml(value)}</p>`
+  const projectsHtml = input.projects
+    .map(
+      (p) => `<h2 style="margin:24px 0 8px;font-size:18px">${escapeHtml(p.title || c.untitled)}</h2>
+<ul style="margin:0 0 16px;padding-left:20px">
+${p.entries
+  .map(
+    (e) =>
+      `<li style="margin:0 0 8px"><strong>${escapeHtml(e.category)}</strong><br>${escapeHtml(priceLine(e))}<br>${escapeHtml(missingLine(e))}</li>`,
+  )
+  .join('\n')}
+</ul>`,
+    )
+    .join('\n')
+  const html = `<!doctype html>
+<html lang="${locale}">
+<body style="margin:0;padding:24px;background:#fcfbfe;color:#09060c;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5">
+<div style="max-width:520px;margin:0 auto">
+${paragraph(g.greeting(input.name))}
+${paragraph(intro)}
+${projectsHtml}
+<p style="margin:24px 0"><a href="${escapeHtml(input.url)}" style="display:inline-block;background:#8917e1;color:#fcfbfe;padding:12px 20px;text-decoration:none;font-weight:bold">${escapeHtml(c.button)}</a></p>
+<p style="margin:0;white-space:pre-line">${escapeHtml(g.signoff)}</p>
+</div>
+</body>
+</html>`
+  return { subject, text, html }
+}

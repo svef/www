@@ -5,6 +5,8 @@ export {
   receiptEmail,
   requestOpenedEmail,
   requestReminderEmail,
+  draftReminderEmail,
+  type DraftReminderInput,
   type EmailContent,
   type ReceiptInput,
   type RequestEmailInput,
