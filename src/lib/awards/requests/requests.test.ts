@@ -174,9 +174,9 @@ describe.skipIf(!url)('requests', () => {
       expect(toOwner.subject).toMatch(/^A request from SVEF/)
       expect(toOwner.text).toContain('Lagaðu titilinn')
       expect(toOwner.text).toContain('25 January 2027')
-      expect(toOwner.text).toContain(`https://svef.test/en/submissions/${projectId}`)
+      expect(toOwner.text).toContain(`https://svef.test/en/my-pages/projects/${projectId}`)
       expect(toEditor.subject).toMatch(/^Beiðni frá SVEF/)
-      expect(toEditor.text).toContain(`https://svef.test/is/innsendingar/${projectId}`)
+      expect(toEditor.text).toContain(`https://svef.test/is/minar-sidur/verkefni/${projectId}`)
     })
 
     it('a failing mail server does not undo the request', async () => {

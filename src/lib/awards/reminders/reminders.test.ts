@@ -103,7 +103,7 @@ describe.skipIf(!url)('draft reminders', () => {
     expect(mails).toHaveLength(1)
     const m = mails[0]
     expect(m.subject).toMatch(/early-bird/i)
-    for (const t of ['Fjallavefur', 'Hafnarvefur', 'Marketing Website', 'E-commerce Website', 'Price now:', '4 January 2027', 'https://svef.test/en/submissions/mine'])
+    for (const t of ['Fjallavefur', 'Hafnarvefur', 'Marketing Website', 'E-commerce Website', 'Price now:', '4 January 2027', 'https://svef.test/en/my-pages/projects'])
       expect(m.text).toContain(t)
     expect(m.text).toMatch(/Missing:/)
 
@@ -114,7 +114,7 @@ describe.skipIf(!url)('draft reminders', () => {
     expect(e[0].text).not.toContain('Hafnarvefur')
     expect(e[0].text).toContain('Verð núna:')
     expect(e[0].text).toContain('4. janúar 2027')
-    expect(e[0].text).toContain('https://svef.test/is/innsendingar/minar')
+    expect(e[0].text).toContain('https://svef.test/is/minar-sidur/verkefni')
     expect(p2).toBeTruthy()
     expect((await logRows(anna.id)).map((r) => r.wave)).toEqual(['early_bird'])
   })
@@ -191,7 +191,7 @@ describe('draftReminderEmail', () => {
         ],
       },
     ],
-    url: 'https://svef.test/is/innsendingar/minar',
+    url: 'https://svef.test/is/minar-sidur/verkefni',
   }
 
   it('names the last day, both prices and what is missing, and escapes html', () => {

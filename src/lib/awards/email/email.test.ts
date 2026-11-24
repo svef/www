@@ -29,7 +29,7 @@ describe('invitation email', () => {
     name: 'Katrín',
     inviterName: 'Anna <b>',
     projectTitle: 'Vefurinn',
-    url: 'https://svef.is/en/submissions/invite/tok_en-1',
+    url: 'https://svef.is/en/my-pages/invite/tok_en-1',
     expiresAt: new Date('2026-12-15T12:00:00Z'),
   }
   it.each(['is', 'en'] as const)('(%s) names who, what and the link, and what accepting means', (locale) => {
@@ -83,7 +83,7 @@ describe('receipt', () => {
       { category: 'App', amount: 6900, early: false },
     ],
     billing: { companyName: 'Fjall ehf.', kennitala: '7106697169' },
-    url: 'https://svef.is/en/submissions/abc',
+    url: 'https://svef.is/en/my-pages/projects/abc',
   }
   it('lists the entries with their locked prices, the total, the billing profile and the invoice note', () => {
     const mail = receiptEmail({ ...input, locale: 'en' })
@@ -183,7 +183,7 @@ describe('request emails', () => {
     message: 'Fix the <title> please',
     fields: ['Project title', 'Project links'],
     deadlineAt: new Date('2027-03-08T14:30:00Z'),
-    url: 'https://svef.is/en/submissions/abc#requests',
+    url: 'https://svef.is/en/my-pages/projects/abc#requests',
   }
 
   it('opened: message, fields, deadline in UTC and the link, in English', () => {
@@ -195,7 +195,7 @@ describe('request emails', () => {
     expect(mail.text).toContain('14:30 UTC')
     expect(mail.text).toContain(input.url)
     expect(mail.html).toContain('lang="en"')
-    expect(mail.html).toContain('href="https://svef.is/en/submissions/abc#requests"')
+    expect(mail.html).toContain('href="https://svef.is/en/my-pages/projects/abc#requests"')
   })
 
   it('opened: Icelandic', () => {

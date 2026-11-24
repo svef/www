@@ -138,7 +138,7 @@ describe.skipIf(!url)('invitations', () => {
       expect(sent).toHaveLength(1)
       expect(sent[0].to).toBe(E('bjarni'))
       expect(sent[0].subject).toContain('Anna')
-      expect(sent[0].html).toContain('/en/submissions/invite/')
+      expect(sent[0].html).toContain('/en/my-pages/invite/')
       const token = tokenOf(sent[0])
 
       const [inv] = await db
