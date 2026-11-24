@@ -1,8 +1,14 @@
 import type { FieldDefinition } from '@/lib/awards/fields'
-import { defaultDeadline, MAX_MESSAGE_LENGTH, MAX_REPLY_LENGTH } from '@/lib/awards/requests/rules'
+import {
+  defaultDeadline,
+  MAX_MESSAGE_LENGTH,
+  MAX_REPLY_LENGTH,
+} from '@/lib/awards/requests/rules'
 import type { RequestView } from '@/lib/awards/requests/service'
 import type { Locale } from '@/lib/i18n'
 import { getField } from '@/lib/awards/fields'
+import { inputClass, textareaClass } from '@/components/FormParts/FormParts'
+import { GrowText } from '@/components/GrowText/GrowText'
 import { requestCopy } from '../request-copy'
 import styles from '../staff.module.scss'
 import { openRequestAction, resolveRequestAction, staffReplyAction } from './actions'
@@ -86,32 +92,37 @@ export function Requests({
               data-request-id={r.id}
               data-status={r.status}
             >
-              <h3 className={styles.subheading}>
-                <span className={styles.chip} data-status={r.status}>
+              <h3 className={styles.requestHead}>
+                <span className={styles.tag} data-status={r.status}>
                   {c.status[r.status]}
                 </span>{' '}
                 <span>
-                  {c.deadline}: <time dateTime={r.deadlineAt.toISOString()}>{stamp(r.deadlineAt)}</time>
+                  {c.deadline}:{' '}
+                  <time dateTime={r.deadlineAt.toISOString()}>{stamp(r.deadlineAt)}</time>
                 </span>
               </h3>
               <dl className={styles.facts}>
                 <dt>{c.opened}</dt>
                 <dd>
-                  <time dateTime={r.createdAt.toISOString()}>{stamp(r.createdAt)}</time> {c.by}{' '}
-                  {r.authorName}
+                  <time dateTime={r.createdAt.toISOString()}>{stamp(r.createdAt)}</time>{' '}
+                  {c.by} {r.authorName}
                 </dd>
                 <dt>{c.message}</dt>
                 <dd className={styles.pre}>{r.message}</dd>
                 <dt>{c.fieldsUnlocked}</dt>
                 <dd>
-                  {r.fieldKeys.length ? r.fieldKeys.map((k) => labelOf(k, locale)).join(', ') : c.noFields}
+                  {r.fieldKeys.length
+                    ? r.fieldKeys.map((k) => labelOf(k, locale)).join(', ')
+                    : c.noFields}
                 </dd>
                 {r.resolvedAt && r.resolvedByName && (
                   <>
                     <dt>{c.status.resolved}</dt>
                     <dd>
                       {c.resolvedBy(r.resolvedByName)},{' '}
-                      <time dateTime={r.resolvedAt.toISOString()}>{stamp(r.resolvedAt)}</time>
+                      <time dateTime={r.resolvedAt.toISOString()}>
+                        {stamp(r.resolvedAt)}
+                      </time>
                     </dd>
                   </>
                 )}
@@ -125,9 +136,12 @@ export function Requests({
                     {r.replies.map((p) => (
                       <li key={p.id} data-side={p.side}>
                         <strong>
-                          {p.side === 'staff' ? c.staffSide : c.entrantSide}: {p.authorName}
+                          {p.side === 'staff' ? c.staffSide : c.entrantSide}:{' '}
+                          {p.authorName}
                         </strong>{' '}
-                        <time dateTime={p.createdAt.toISOString()}>{stamp(p.createdAt)}</time>
+                        <time dateTime={p.createdAt.toISOString()}>
+                          {stamp(p.createdAt)}
+                        </time>
                         <span className={styles.pre}>{p.message}</span>
                       </li>
                     ))}
@@ -137,22 +151,28 @@ export function Requests({
 
               {r.status !== 'resolved' && (
                 <div className={styles.requestActions}>
-                  <form action={staffReplyAction} className={styles.filter}>
+                  <form action={staffReplyAction} className={styles.replyForm}>
                     {hidden}
                     <input type="hidden" name="requestId" value={r.id} />
-                    <label>
-                      {c.replyLabel}
-                      <textarea name="reply" rows={2} maxLength={MAX_REPLY_LENGTH} required />
+                    <label className={styles.field}>
+                      <span>{c.replyLabel}</span>
+                      <textarea
+                        name="reply"
+                        rows={2}
+                        maxLength={MAX_REPLY_LENGTH}
+                        required
+                        className={`${textareaClass} ${styles.shortTextarea}`}
+                      />
                     </label>
-                    <button type="submit" className={styles.small}>
-                      {c.replyButton}
+                    <button type="submit" className={`btn-grow ${styles.secondarySmall}`}>
+                      <GrowText>{c.replyButton}</GrowText>
                     </button>
                   </form>
                   <form action={resolveRequestAction}>
                     {hidden}
                     <input type="hidden" name="requestId" value={r.id} />
-                    <button type="submit" className={styles.small}>
-                      {c.resolveButton}
+                    <button type="submit" className={`btn-grow ${styles.secondarySmall}`}>
+                      <GrowText>{c.resolveButton}</GrowText>
                     </button>
                   </form>
                 </div>
@@ -164,7 +184,11 @@ export function Requests({
 
       <h3 className={styles.subheading}>{c.formTitle}</h3>
       {canOpen ? (
-        <form action={openRequestAction} className={styles.requestForm} data-testid="open-request">
+        <form
+          action={openRequestAction}
+          className={styles.requestForm}
+          data-testid="open-request"
+        >
           {hidden}
           <p className={styles.text}>{c.formLead}</p>
           <label className={styles.block} htmlFor="request-message">
@@ -175,6 +199,7 @@ export function Requests({
           </p>
           <textarea
             id="request-message"
+            className={textareaClass}
             name="message"
             rows={4}
             maxLength={MAX_MESSAGE_LENGTH}
@@ -204,15 +229,16 @@ export function Requests({
           </p>
           <input
             id="request-deadline"
+            className={`${inputClass} ${styles.dateInput}`}
             type="datetime-local"
             name="deadline"
             required
             defaultValue={defaultDeadline(now).toISOString().slice(0, 16)}
             aria-describedby="request-deadline-hint"
           />
-          <p>
-            <button type="submit" className={styles.button}>
-              {c.submit}
+          <p className={styles.actions}>
+            <button type="submit" className={`btn-grow ${styles.primary}`}>
+              <GrowText>{c.submit}</GrowText>
             </button>
           </p>
         </form>

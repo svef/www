@@ -6,6 +6,9 @@ import type { Locale } from '@/lib/i18n'
 export const staffCopy = {
   is: {
     title: 'Starfsfólk: innsendingar',
+    eyebrow: 'Starfsfólk',
+    heading: 'Innsendingar',
+    tableRegion: 'Færslur, hægt að fletta til hliðar',
     lede: (year: number) => `Íslensku vefverðlaunin ${year}`,
     editionLabel: 'Ár',
     exportTitle: 'Gögn fyrir reikninga',
@@ -86,6 +89,9 @@ export const staffCopy = {
   },
   en: {
     title: 'Staff: entries',
+    eyebrow: 'Staff',
+    heading: 'Entries',
+    tableRegion: 'Entries, scrolls sideways',
     lede: (year: number) => `Icelandic Web Awards ${year}`,
     editionLabel: 'Year',
     exportTitle: 'Invoicing data',

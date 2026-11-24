@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import type { DecryptedCredential } from '@/lib/awards/staff/credentials'
+import { GrowText } from '@/components/GrowText/GrowText'
 import { revealCredentialsAction } from './actions'
 import styles from '../staff.module.scss'
 
@@ -32,7 +33,9 @@ export function CredentialsViewer({ entryId, locale, count, copy }: Props) {
   const reveal = () =>
     start(async () => {
       setFailed(false)
-      const result = await revealCredentialsAction(entryId, locale).catch(() => ({ ok: false }) as const)
+      const result = await revealCredentialsAction(entryId, locale).catch(
+        () => ({ ok: false }) as const,
+      )
       if (result.ok) setItems(result.items)
       else setFailed(true)
     })
@@ -43,16 +46,16 @@ export function CredentialsViewer({ entryId, locale, count, copy }: Props) {
         {items === null ? (
           <button
             type="button"
-            className={styles.button}
+            className={`btn-grow ${styles.secondary}`}
             onClick={reveal}
             disabled={pending || count === 0}
             data-testid="reveal-credentials"
           >
-            {copy.show}
+            <GrowText>{copy.show}</GrowText>
           </button>
         ) : (
-          <button type="button" className={styles.button} onClick={() => setItems(null)}>
-            {copy.hide}
+          <button type="button" className={`btn-grow ${styles.secondary}`} onClick={() => setItems(null)}>
+            <GrowText>{copy.hide}</GrowText>
           </button>
         )}
       </p>
