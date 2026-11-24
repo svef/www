@@ -1,0 +1,403 @@
+import { HEARTBEAT_INTERVAL_MS } from '@/lib/awards/projects/lock-rules'
+import type { ActionResult, ErrorPayload, LockInfo } from '@/lib/awards/projects/errors'
+import type { ProjectView, SaveAnswersPatch, SaveResult } from '@/lib/awards/projects/types'
+import { wireValue } from './wire'
+
+/**
+ * The form's state logic — answers, autosave, the edit lock — as a plain class with no
+ * React in it. The component layer subscribes to snapshots (`useProjectForm`); the server
+ * calls are injected, so the whole thing can be driven by a test with fake actions and
+ * fake timers. Presentation can be redesigned without touching any of this.
+ *
+ * The rules it keeps:
+ *  - Autosave runs `AUTOSAVE_MS` after the last change. Only changed fields are sent.
+ *  - Opening the project takes the edit lock. Without it the form is read-only.
+ *  - Activity (typing, clicks) pings the server at most every 30 s while the lock is
+ *    held; every save counts as activity too.
+ *  - Leaving the page releases the lock, best effort (`sendBeacon` on `pagehide`).
+ *  - If a write finds the lock gone (it lapsed from inactivity), the form takes it again
+ *    and re-sends what has not been saved. If someone else has it by then, the form goes
+ *    read-only, keeps the unsaved changes, and keeps asking; once it gets the lock back
+ *    those changes are laid over the latest server state and saved.
+ */
+
+export const AUTOSAVE_MS = 1000
+export const POLL_OTHER_MS = 20_000
+export const RETRY_MS = 5000
+
+export type ProjectFormActions = {
+  load(): Promise<ActionResult<ProjectView>>
+  acquire(): Promise<ActionResult<{ held: boolean; lock: LockInfo }>>
+  heartbeat(): Promise<ActionResult<LockInfo>>
+  save(patch: SaveAnswersPatch): Promise<ActionResult<SaveResult>>
+  setCategories(categories: string[]): Promise<ActionResult<ProjectView>>
+  /** Release on leave. Fire-and-forget (a beacon). */
+  release(): void
+}
+
+export type LockState =
+  | { kind: 'acquiring' }
+  | { kind: 'held'; lock: LockInfo }
+  | { kind: 'other'; lock: LockInfo }
+  | { kind: 'unreachable' }
+
+export type SaveState = 'idle' | 'saving' | 'saved' | 'error'
+
+type Values = Record<string, unknown>
+type EntryValues = Record<string, Values>
+export type ServerFieldError = { code: string; message: { is: string; en: string } }
+
+export type Snapshot = {
+  view: ProjectView
+  answers: Values
+  entryAnswers: EntryValues
+  lockState: LockState
+  saveState: SaveState
+  touched: ReadonlySet<string>
+  serverErrors: Record<string, ServerFieldError[]>
+  categoryError: ErrorPayload | null
+  /** The categories as just chosen, until the server confirms them (so the checkbox answers at once). */
+  pendingCategories: string[] | null
+  /** The lock was lost while editing (shown with the banner if someone else has it). */
+  lostLock: boolean
+  /** The lock came back after being lost. Cleared by the next edit. */
+  recovered: boolean
+}
+
+const entryId = (slug: string, key: string) => `${slug}:${key}`
+const splitEntryId = (id: string): [string, string] => {
+  const i = id.indexOf(':')
+  return [id.slice(0, i), id.slice(i + 1)]
+}
+
+function entryAnswersOf(view: ProjectView): EntryValues {
+  return Object.fromEntries(view.entries.map((e) => [e.category, { ...e.answers }]))
+}
+
+const networkError = (): { ok: false; error: ErrorPayload } => ({
+  ok: false,
+  error: { code: 'unexpected', message: 'Network error.' },
+})
+
+export class ProjectFormController {
+  private snap: Snapshot
+  private listeners = new Set<() => void>()
+  private dirty = new Set<string>()
+  private dirtyEntry = new Set<string>()
+  private saving = false
+  private again = false
+  private acquiring = false
+  private lost = false
+  private stopped = false
+  private lastPing = 0
+  private saveTimer: ReturnType<typeof setTimeout> | undefined
+  private retryTimer: ReturnType<typeof setTimeout> | undefined
+  private pollTimer: ReturnType<typeof setInterval> | undefined
+  private stopListeners: (() => void) | undefined
+
+  constructor(
+    initial: ProjectView,
+    private readonly actions: ProjectFormActions,
+    private readonly clock: () => number = Date.now,
+  ) {
+    this.snap = {
+      view: initial,
+      answers: initial.answers,
+      entryAnswers: entryAnswersOf(initial),
+      lockState: { kind: 'acquiring' },
+      saveState: 'idle',
+      touched: new Set(),
+      serverErrors: {},
+      categoryError: null,
+      pendingCategories: null,
+      lostLock: false,
+      recovered: false,
+    }
+  }
+
+  // ---- store -----------------------------------------------------------------
+
+  subscribe = (listener: () => void) => {
+    this.listeners.add(listener)
+    return () => {
+      this.listeners.delete(listener)
+    }
+  }
+  getSnapshot = () => this.snap
+
+  private set(patch: Partial<Snapshot>) {
+    this.snap = { ...this.snap, ...patch }
+    for (const l of this.listeners) l()
+  }
+
+  get hasUnsaved() {
+    return this.dirty.size > 0 || this.dirtyEntry.size > 0
+  }
+  private get held() {
+    return this.snap.lockState.kind === 'held'
+  }
+
+  // ---- lifecycle -------------------------------------------------------------
+
+  /** Takes the lock and wires the page listeners. Returns the teardown (which also releases). */
+  start(): () => void {
+    this.stopped = false
+    void this.acquire()
+    const onActivity = () => this.activity()
+    const events = ['keydown', 'pointerdown', 'input'] as const
+    for (const e of events) document.addEventListener(e, onActivity, { capture: true, passive: true })
+    const release = () => {
+      if (this.held) this.actions.release()
+    }
+    const onShow = (e: PageTransitionEvent) => {
+      if (e.persisted) void this.acquire()
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden' && this.hasUnsaved) void this.flush()
+    }
+    window.addEventListener('pagehide', release)
+    window.addEventListener('pageshow', onShow)
+    document.addEventListener('visibilitychange', onVisibility)
+    this.pollTimer = setInterval(() => {
+      const k = this.snap.lockState.kind
+      if ((k === 'other' || k === 'unreachable') && document.visibilityState === 'visible')
+        void this.acquire()
+    }, POLL_OTHER_MS)
+
+    this.stopListeners = () => {
+      for (const e of events) document.removeEventListener(e, onActivity, { capture: true })
+      window.removeEventListener('pagehide', release)
+      window.removeEventListener('pageshow', onShow)
+      document.removeEventListener('visibilitychange', onVisibility)
+      clearInterval(this.pollTimer)
+      clearTimeout(this.saveTimer)
+      clearTimeout(this.retryTimer)
+      release()
+    }
+    return () => this.stop()
+  }
+
+  stop() {
+    this.stopped = true
+    this.stopListeners?.()
+    this.stopListeners = undefined
+  }
+
+  // ---- the lock --------------------------------------------------------------
+
+  /** Activity ping, at most every `HEARTBEAT_INTERVAL_MS`, only while the lock is held. */
+  private activity() {
+    if (!this.held) return
+    const now = this.clock()
+    if (now - this.lastPing < HEARTBEAT_INTERVAL_MS) return
+    this.lastPing = now
+    this.actions
+      .heartbeat()
+      .then((r) => {
+        if (r.ok) this.set({ lockState: { kind: 'held', lock: r.value } })
+        else if (r.error.code === 'lock_required') void this.acquire()
+      })
+      .catch(() => undefined)
+  }
+
+  async acquire(): Promise<void> {
+    if (this.acquiring) return
+    this.acquiring = true
+    try {
+      let r
+      try {
+        r = await this.actions.acquire()
+      } catch {
+        r = networkError()
+      }
+      if (!r.ok) {
+        if (!this.held) this.set({ lockState: { kind: 'unreachable' } })
+        return
+      }
+      if (!r.value.held) {
+        this.set({
+          lockState: { kind: 'other', lock: r.value.lock },
+          saveState: this.hasUnsaved ? 'error' : this.snap.saveState,
+        })
+        return
+      }
+      if (this.stopped) {
+        // Left the page while the request was in flight: don't sit on the lock.
+        this.actions.release()
+        return
+      }
+      const wasLost = this.lost
+      await this.reload()
+      this.lastPing = this.clock()
+      this.set({ lockState: { kind: 'held', lock: r.value.lock } })
+      if (this.hasUnsaved) void this.flush()
+      else if (wasLost) this.set({ saveState: 'saved' })
+      if (wasLost) {
+        this.lost = false
+        this.set({ lostLock: false, recovered: true })
+      }
+    } finally {
+      this.acquiring = false
+    }
+  }
+
+  private async loseLock() {
+    this.lost = true
+    this.set({ lostLock: true })
+    await this.acquire()
+  }
+
+  /** Fresh server state, with what the user has typed and not yet saved laid on top. */
+  private applyView(fresh: ProjectView) {
+    const answers = { ...fresh.answers }
+    for (const k of this.dirty) answers[k] = this.snap.answers[k]
+    const entryAnswers = entryAnswersOf(fresh)
+    for (const id of this.dirtyEntry) {
+      const [slug, key] = splitEntryId(id)
+      if (entryAnswers[slug])
+        entryAnswers[slug] = { ...entryAnswers[slug], [key]: this.snap.entryAnswers[slug]?.[key] }
+    }
+    this.set({ view: fresh, answers, entryAnswers, pendingCategories: null })
+  }
+
+  private async reload() {
+    const r = await this.actions.load().catch(networkError)
+    if (r.ok) this.applyView(r.value)
+  }
+
+  // ---- saving ----------------------------------------------------------------
+
+  private schedule() {
+    clearTimeout(this.saveTimer)
+    this.set({ saveState: 'saving', recovered: false })
+    this.saveTimer = setTimeout(() => void this.flush(), AUTOSAVE_MS)
+  }
+
+  async flush(): Promise<void> {
+    clearTimeout(this.saveTimer)
+    clearTimeout(this.retryTimer)
+    if (!this.hasUnsaved) return
+    if (!this.held) {
+      this.set({ saveState: 'error' })
+      return
+    }
+    if (this.saving) {
+      this.again = true
+      return
+    }
+    this.saving = true
+    this.set({ saveState: 'saving' })
+
+    const sent = new Map<string, unknown>()
+    const patch: SaveAnswersPatch = { answers: {} }
+    for (const k of this.dirty) {
+      sent.set(k, this.snap.answers[k])
+      patch.answers![k] = wireValue(this.snap.answers[k])
+    }
+    const sentEntry = new Map<string, unknown>()
+    for (const id of this.dirtyEntry) {
+      const [slug, key] = splitEntryId(id)
+      const v = this.snap.entryAnswers[slug]?.[key]
+      sentEntry.set(id, v)
+      ;((patch.entryAnswers ??= {})[slug] ??= {})[key] = wireValue(v)
+    }
+
+    let result
+    try {
+      result = await this.actions.save(patch)
+    } catch {
+      result = networkError()
+    }
+    this.saving = false
+
+    if (result.ok) {
+      this.lastPing = this.clock() // a save is activity
+      const done = new Set([
+        ...result.value.saved,
+        ...result.value.rejected.map((r) => r.fieldKey),
+        ...result.value.errors.map((e) => e.fieldKey),
+      ])
+      // Fields changed again while the save was in flight stay dirty.
+      for (const [k, v] of sent)
+        if (done.has(k) && Object.is(this.snap.answers[k], v)) this.dirty.delete(k)
+      for (const [id, v] of sentEntry) {
+        const [slug, key] = splitEntryId(id)
+        if (done.has(id) && Object.is(this.snap.entryAnswers[slug]?.[key], v)) this.dirtyEntry.delete(id)
+      }
+      const serverErrors = { ...this.snap.serverErrors }
+      for (const k of [...sent.keys(), ...sentEntry.keys()]) delete serverErrors[k]
+      for (const e of result.value.errors) (serverErrors[e.fieldKey] ??= []).push(e)
+      // The server may have set a forced value (requires-login) as a result of this save.
+      const forced = result.value.forced
+      this.set({
+        serverErrors,
+        lockState: { kind: 'held', lock: result.value.lock },
+        ...(Object.keys(forced).length ? { answers: { ...this.snap.answers, ...forced } } : {}),
+      })
+      if (this.hasUnsaved || this.again) {
+        this.again = false
+        void this.flush()
+      } else {
+        this.set({ saveState: 'saved' })
+      }
+      return
+    }
+
+    if (result.error.code === 'lock_required') {
+      await this.loseLock()
+      return
+    }
+    this.set({ saveState: 'error' })
+    this.retryTimer = setTimeout(() => void this.flush(), RETRY_MS)
+  }
+
+  // ---- editing ---------------------------------------------------------------
+
+  setAnswer(key: string, value: unknown) {
+    if (!this.held) return
+    this.dirty.add(key)
+    const serverErrors = { ...this.snap.serverErrors }
+    delete serverErrors[key]
+    this.set({ answers: { ...this.snap.answers, [key]: value }, serverErrors })
+    this.schedule()
+  }
+
+  setEntryAnswer(slug: string, key: string, value: unknown) {
+    if (!this.held) return
+    this.dirtyEntry.add(entryId(slug, key))
+    this.set({
+      entryAnswers: {
+        ...this.snap.entryAnswers,
+        [slug]: { ...this.snap.entryAnswers[slug], [key]: value },
+      },
+    })
+    this.schedule()
+  }
+
+  async changeCategories(next: string[]) {
+    if (!this.held) return
+    this.set({ categoryError: null, pendingCategories: next, saveState: 'saving' })
+    // What was typed goes first, so the server sees one consistent order.
+    await this.flush()
+    this.set({ saveState: 'saving' })
+    const r = await this.actions.setCategories(next).catch(networkError)
+    if (r.ok) {
+      this.applyView(r.value)
+      this.lastPing = this.clock()
+      this.set({ saveState: 'saved' })
+    } else if (r.error.code === 'lock_required') {
+      this.set({ pendingCategories: null })
+      await this.loseLock()
+    } else {
+      this.set({ categoryError: r.error, pendingCategories: null, saveState: 'error' })
+    }
+  }
+
+  markTouched(key: string) {
+    if (this.snap.touched.has(key)) return
+    this.set({ touched: new Set(this.snap.touched).add(key) })
+  }
+
+  retrySave = () => void this.flush()
+  checkLockAgain = () => void this.acquire()
+}
