@@ -276,18 +276,18 @@ export function SignUpForm({
     <>
       <FormHead id="account-heading" title={copy.heading} />
       <FormRoot labelledBy="account-heading" onSubmit={onSubmit} noValidate>
+        <Alert
+          alertRef={s.alertRef}
+          errors={s.errors}
+          formError={s.formError}
+          fields={[
+            ['name', ids.name, copy.name],
+            ['email', ids.email, copy.email],
+            ['password', ids.password, copy.password],
+          ]}
+          common={common}
+        />
         <Step num="01" title={copy.heading}>
-          <Alert
-            alertRef={s.alertRef}
-            errors={s.errors}
-            formError={s.formError}
-            fields={[
-              ['name', ids.name, copy.name],
-              ['email', ids.email, copy.email],
-              ['password', ids.password, copy.password],
-            ]}
-            common={common}
-          />
           <Fields>
             <TextField id={ids.name} name="name" label={copy.name} autoComplete="name" error={s.errors.name} />
             <TextField
@@ -381,17 +381,17 @@ export function SignInForm({
     <>
       <FormHead id="account-heading" title={copy.heading} />
       <FormRoot labelledBy="account-heading" onSubmit={onSubmit} noValidate>
+        <Alert
+          alertRef={s.alertRef}
+          errors={s.errors}
+          formError={s.formError}
+          fields={[
+            ['email', ids.email, copy.email],
+            ['password', ids.password, copy.password],
+          ]}
+          common={common}
+        />
         <Step num="01" title={copy.heading}>
-          <Alert
-            alertRef={s.alertRef}
-            errors={s.errors}
-            formError={s.formError}
-            fields={[
-              ['email', ids.email, copy.email],
-              ['password', ids.password, copy.password],
-            ]}
-            common={common}
-          />
           <Fields>
             <TextField
               id={ids.email}
@@ -478,14 +478,14 @@ export function ForgotPasswordForm({
     <>
       <FormHead id="account-heading" title={copy.heading} />
       <FormRoot labelledBy="account-heading" onSubmit={onSubmit} noValidate>
+        <Alert
+          alertRef={s.alertRef}
+          errors={s.errors}
+          formError={s.formError}
+          fields={[['email', emailId, copy.email]]}
+          common={common}
+        />
         <Step num="01" title={copy.heading}>
-          <Alert
-            alertRef={s.alertRef}
-            errors={s.errors}
-            formError={s.formError}
-            fields={[['email', emailId, copy.email]]}
-            common={common}
-          />
           <Fields>
             <TextField
               id={emailId}
@@ -562,14 +562,14 @@ export function ResetPasswordForm({
     <>
       <FormHead id="account-heading" title={copy.heading} />
       <FormRoot labelledBy="account-heading" onSubmit={onSubmit} noValidate>
+        <Alert
+          alertRef={s.alertRef}
+          errors={s.errors}
+          formError={s.formError}
+          fields={[['password', passwordId, copy.password]]}
+          common={common}
+        />
         <Step num="01" title={copy.heading}>
-          <Alert
-            alertRef={s.alertRef}
-            errors={s.errors}
-            formError={s.formError}
-            fields={[['password', passwordId, copy.password]]}
-            common={common}
-          />
           <Fields>
             <PasswordField
               id={passwordId}
