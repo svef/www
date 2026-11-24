@@ -1,5 +1,6 @@
 import type { Editability } from '../editability'
 import type { EntryStatus } from '../types'
+import type { InviteState } from '../invitations/types'
 import type { LockInfo } from './errors'
 
 /** Plain-data views, safe to hand to a client component. */
@@ -56,6 +57,8 @@ export type ProjectView = {
   viewer: { email: string; emailVerified: boolean }
   /** The terms in force, and whether this project already accepted that version. */
   terms: { version: string; accepted: boolean }
+  /** One per collaborator, in order: where each stands with the invitation to edit. */
+  invites: InviteState[]
   /** The server clock when this view was built. */
   serverNow: string
 }
@@ -92,4 +95,8 @@ export type SaveResult = {
   /** Fields the server set itself (a forced value), so the client can follow. */
   forced: Record<string, unknown>
   lock: LockInfo
+  /** Present when the collaborators were saved: their invitation states, in order. */
+  invites?: InviteState[]
+  /** Invitation emails that could not be sent in this save (the people can be re-invited). */
+  invitesFailed?: number
 }

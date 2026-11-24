@@ -190,6 +190,13 @@ export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
     name: 'project form',
     matches: (path) => /^\/innsendingar\/(?!(ny|new|minar|mine|starfsfolk|staff)$)[^/]+$/.test(path),
   },
+  // Accepting an invitation to edit (svef/www#165): the token is the segment, covered by
+  // `invitations.spec.ts`. `/en/submissions/invite/<token>` reaches it through the proxy.
+  {
+    pattern: '/innsendingar/bod/[token]',
+    name: 'invitation',
+    matches: (path) => /^\/(innsendingar\/bod|submissions\/invite)\/[^/]+$/.test(path),
+  },
   // The staff entry view (svef/www#168): staff only, covered by `staff-area.spec.ts`.
   // `/en/submissions/staff/<id>` reaches it through the proxy's nested-segment rewrite.
   {

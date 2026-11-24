@@ -293,6 +293,8 @@ test.describe('people and credit', () => {
     // Nothing red yet: the hint is neutral until the email field is left.
     await expect(collab.locator('[id$="-error"]')).toHaveCount(0)
     await c1.getByLabel('Email', { exact: true }).fill('katrin@example.is')
+    // Saved when the field is left: saving an editor's email sends the invitation.
+    await c1.getByLabel('Email', { exact: true }).press('Tab')
     await expect(c1).not.toContainText('An email is needed')
     await saved(page)
 

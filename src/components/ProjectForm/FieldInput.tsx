@@ -8,7 +8,7 @@ import type { Locale } from '@/lib/i18n'
 import type { ProjectFormCopy } from './copy'
 import { ImagePlaceholder } from './ImagePlaceholder'
 import { InfoTip } from './InfoTip'
-import { CredentialList, PersonList } from './lists'
+import { CredentialList, PersonList, type InviteProps } from './lists'
 import styles from './ProjectForm.module.scss'
 
 /**
@@ -37,6 +37,8 @@ export type FieldInputProps = {
   forced?: boolean
   /** An open staff request asks for this field to be updated: highlighted. */
   requested?: boolean
+  /** The collaborators list only: invitation states and "Resend invitation". */
+  invite?: InviteProps
 }
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '')
@@ -208,6 +210,7 @@ export function FieldInput(props: FieldInputProps) {
         return (
           <PersonList
             field={field as FieldDefinition & { key: 'owners' | 'collaborators' }}
+            invite={field.key === 'collaborators' ? props.invite : undefined}
             id={id}
             describedBy={described || undefined}
             value={props.value}

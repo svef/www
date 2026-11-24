@@ -12,6 +12,7 @@ vi.mock('resend', () => ({
 }))
 
 import {
+  invitationEmail,
   OUTBOX_DIR,
   passwordResetEmail,
   receiptEmail,
@@ -22,6 +23,31 @@ import {
 } from './index'
 
 const URL_ = 'https://svef.is/api/account/verify-email?token=abc&callbackURL=%2Fis'
+
+describe('invitation email', () => {
+  const input = {
+    name: 'Katrín',
+    inviterName: 'Anna <b>',
+    projectTitle: 'Vefurinn',
+    url: 'https://svef.is/en/submissions/invite/tok_en-1',
+    expiresAt: new Date('2026-12-15T12:00:00Z'),
+  }
+  it.each(['is', 'en'] as const)('(%s) names who, what and the link, and what accepting means', (locale) => {
+    const mail = invitationEmail({ locale, ...input })
+    expect(mail.subject).toContain('Vefurinn')
+    expect(mail.text).toContain(input.url)
+    expect(mail.text).toContain('Anna <b>')
+    expect(mail.text).toContain('15')
+    expect(mail.html).toContain(`lang="${locale}"`)
+    expect(mail.html).not.toContain('<b>')
+  })
+  it('is localised and copes with a missing title', () => {
+    const is = invitationEmail({ locale: 'is', ...input, projectTitle: '' })
+    const en = invitationEmail({ locale: 'en', ...input, projectTitle: '' })
+    expect(is.subject).not.toBe(en.subject)
+    expect(en.subject).toContain('Untitled submission')
+  })
+})
 
 describe('templates', () => {
   it.each(['is', 'en'] as const)('verification (%s) carries the link in text and html', (locale) => {

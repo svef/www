@@ -10,4 +10,6 @@ export {
   type EmailContent,
   type ReceiptInput,
   type RequestEmailInput,
+  invitationEmail,
+  type InvitationInput,
 } from './templates'

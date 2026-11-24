@@ -47,6 +47,8 @@ export const NESTED_SEGMENTS: Readonly<
     ny: { is: 'ny', en: 'new' },
     // The staff area (svef/www#168 builds it out; the invoicing export and eligibility list live here for now).
     starfsfolk: { is: 'starfsfolk', en: 'staff' },
+    // Accepting an invitation to edit a project (svef/www#165): `/is/innsendingar/bod/<token>`.
+    bod: { is: 'bod', en: 'invite' },
   },
 }
 

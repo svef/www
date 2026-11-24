@@ -78,6 +78,17 @@ type Strings = {
   moveDown: (label: string) => string
   moved: (label: string, pos: number, total: number) => string
   emailForEdit: string
+  /** Under the collaborators: what "Can edit" does. */
+  canEditHint: string
+  inviteWillSend: string
+  inviteInvited: (date: string) => string
+  inviteExpired: (date: string) => string
+  inviteAccepted: (date: string) => string
+  inviteResend: string
+  inviteResendFor: (who: string) => string
+  inviteSentNotice: (who: string) => string
+  inviteFailedNotice: string
+  inviteTooSoon: string
   // image
   imageComing: string
   imageRequirements: (w: number, h: number, types: string, mb: number) => string
@@ -273,6 +284,18 @@ const en: Strings = {
   moveDown: (l) => `Move ${l} down`,
   moved: (l, pos, total) => `${l} moved to position ${pos} of ${total}.`,
   emailForEdit: 'An email is needed to send the invitation.',
+  canEditHint:
+    '“Can edit” needs an email address and sends that person an invitation. Once they accept (with a new or existing SVEF account) they can open and edit this submission and send it in. Only you, who created it, can withdraw it. Unticking “Can edit” or removing the person cancels the invitation, and takes the access away if it was accepted.',
+  inviteWillSend: 'The invitation is sent when this is saved.',
+  inviteInvited: (d) => `Invited on ${d}. Waiting for them to accept.`,
+  inviteExpired: (d) => `Invited on ${d}. The invitation has expired.`,
+  inviteAccepted: (d) => `Accepted on ${d}. Can edit this submission.`,
+  inviteResend: 'Resend invitation',
+  inviteResendFor: (w) => `Resend the invitation to ${w}`,
+  inviteSentNotice: (w) => `A new invitation was sent to ${w}.`,
+  inviteFailedNotice:
+    'The invitation could not be emailed. Use “Resend invitation” to try again.',
+  inviteTooSoon: 'An invitation was just sent. Try again in a minute.',
   imageComing: 'Coming',
   imageRequirements: (w, h, t, mb) => `Square, ${w} × ${h} px, ${t}, up to ${mb} MB.`,
   imageNote:
@@ -519,6 +542,17 @@ const is: Strings = {
   moveDown: (l) => `Færa niður: ${l}`,
   moved: (l, pos, total) => `${l} er nú númer ${pos} af ${total}.`,
   emailForEdit: 'Netfang þarf til að senda boðið.',
+  canEditHint:
+    '„Má breyta“ þarf netfang og sendir viðkomandi boð. Þegar boðið er samþykkt (með nýjum eða eldri aðgangi hjá SVEF) getur hann eða hún opnað og breytt innsendingunni og sent hana inn. Aðeins þú, sem stofnaðir hana, getur dregið hana til baka. Ef þú tekur hakið af „Má breyta“ eða eyðir manneskjunni fellur boðið úr gildi og aðgangurinn líka ef boðið var samþykkt.',
+  inviteWillSend: 'Boðið er sent þegar þetta vistast.',
+  inviteInvited: (d) => `Boðið sent ${d}. Bíður eftir að það sé samþykkt.`,
+  inviteExpired: (d) => `Boðið sent ${d}. Það er runnið út.`,
+  inviteAccepted: (d) => `Samþykkt ${d}. Má breyta innsendingunni.`,
+  inviteResend: 'Senda boð aftur',
+  inviteResendFor: (w) => `Senda ${w} boðið aftur`,
+  inviteSentNotice: (w) => `Nýtt boð var sent til ${w}.`,
+  inviteFailedNotice: 'Ekki tókst að senda boðið í tölvupósti. Notaðu „Senda boð aftur“ til að reyna aftur.',
+  inviteTooSoon: 'Boð var rétt í þessu sent. Reyndu aftur eftir mínútu.',
   imageComing: 'Væntanlegt',
   imageRequirements: (w, h, t, mb) => `Ferningslaga, ${w} × ${h} px, ${t}, að hámarki ${mb} MB.`,
   imageNote:

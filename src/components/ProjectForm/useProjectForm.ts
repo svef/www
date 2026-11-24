@@ -50,6 +50,7 @@ export function useProjectForm(initial: ProjectView, actions: ProjectFormActions
     submit: (args: { entryId?: string; acceptTerms: boolean }) => controller.submit(args),
     withdraw: (entryId: string) => controller.withdraw(entryId),
     markTouched: (key: string) => controller.markTouched(key),
+    resendInvite: (personId: string) => controller.resendInvite(personId),
     retrySave: controller.retrySave,
     checkLockAgain: controller.checkLockAgain,
     refresh: () => controller.refresh(),

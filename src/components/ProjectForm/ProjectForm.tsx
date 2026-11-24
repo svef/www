@@ -118,6 +118,15 @@ export function ProjectForm({
         errors={messagesFor(key)}
         forced={forced}
         requested={requestedKeys.has(key)}
+        invite={
+          key === 'collaborators'
+            ? {
+                invites: form.invites,
+                notice: form.inviteNotice,
+                onResend: (personId) => void form.resendInvite(personId),
+              }
+            : undefined
+        }
       />
     )
   }

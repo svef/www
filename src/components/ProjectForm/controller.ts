@@ -2,6 +2,7 @@ import { HEARTBEAT_INTERVAL_MS } from '@/lib/awards/projects/lock-rules'
 import type { ActionResult, ErrorPayload, LockInfo } from '@/lib/awards/projects/errors'
 import type { SubmitResult } from '@/lib/awards/projects/submit'
 import type { WithdrawResult } from '@/lib/awards/projects/withdraw'
+import type { InviteState } from '@/lib/awards/invitations/types'
 import type { ProjectView, SaveAnswersPatch, SaveResult } from '@/lib/awards/projects/types'
 import { wireValue } from './wire'
 
@@ -42,6 +43,8 @@ export type ProjectFormActions = {
   }): Promise<ActionResult<{ result: SubmitResult; view: ProjectView }>>
   /** Withdraw one submitted entry (the creator only). Returns what was cleared and the refreshed project. */
   withdraw(entryId: string): Promise<ActionResult<{ result: WithdrawResult; view: ProjectView }>>
+  /** Send a collaborator a fresh invitation. Returns the invitation states and whether the mail went out. */
+  resendInvite(personId: string): Promise<ActionResult<{ invites: InviteState[]; delivered: boolean }>>
   /** Release on leave. Fire-and-forget (a beacon). */
   release(): void
 }
@@ -76,6 +79,10 @@ export type Snapshot = {
   lostLock: boolean
   /** The lock came back after being lost. Cleared by the next edit. */
   recovered: boolean
+  /** Where each collaborator stands with the invitation to edit, in order. */
+  invites: InviteState[]
+  /** The outcome of the last invitation action in this page, for the live region. */
+  inviteNotice: { kind: 'sent' | 'failed' | 'refused'; personId?: string; message?: string } | null
   /** A submit is in flight. */
   submitting: boolean
   /** What the last submit in this page did (the success summary), or why it was refused. */
@@ -133,6 +140,8 @@ export class ProjectFormController {
       lostLock: false,
       recovered: false,
       submitting: false,
+      invites: initial.invites,
+      inviteNotice: null,
       submitOutcome: null,
     }
   }
@@ -285,6 +294,7 @@ export class ProjectFormController {
     }
     this.set({
       view: fresh,
+      invites: fresh.invites,
       answers,
       entryAnswers,
       pendingCategories: null,
@@ -372,9 +382,12 @@ export class ProjectFormController {
       for (const e of result.value.errors) (serverErrors[e.fieldKey] ??= []).push(e)
       // The server may have set a forced value (requires-login) as a result of this save.
       const forced = result.value.forced
+      const { invites, invitesFailed } = result.value
       this.set({
         serverErrors,
         lockState: { kind: 'held', lock: result.value.lock },
+        ...(invites ? { invites } : {}),
+        ...(invitesFailed ? { inviteNotice: { kind: 'failed' as const } } : {}),
         ...(Object.keys(forced).length ? { answers: { ...this.snap.answers, ...forced } } : {}),
       })
       if (this.hasUnsaved || this.again) {
@@ -527,6 +540,20 @@ export class ProjectFormController {
     }
     if (r.error.code === 'lock_required') await this.loseLock()
     return r
+  }
+
+  /** "Resend invitation": needs no lock, so it works while someone else is editing too. */
+  async resendInvite(personId: string): Promise<void> {
+    this.set({ inviteNotice: null })
+    const r = await this.actions.resendInvite(personId).catch(networkError)
+    if (r.ok) {
+      this.set({
+        invites: r.value.invites,
+        inviteNotice: { kind: r.value.delivered ? 'sent' : 'failed', personId },
+      })
+    } else {
+      this.set({ inviteNotice: { kind: 'refused', personId, message: r.error.message } })
+    }
   }
 
   markTouched(key: string) {

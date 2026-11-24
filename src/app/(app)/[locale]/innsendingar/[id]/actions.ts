@@ -10,6 +10,8 @@ import {
   setCategories,
   setProjectBillingProfile,
 } from '@/lib/awards/projects/service'
+import { resendInvitation } from '@/lib/awards/invitations/service'
+import type { InviteState } from '@/lib/awards/invitations/types'
 import { submitEntries, type SubmitResult } from '@/lib/awards/projects/submit'
 import { withdrawEntry, type WithdrawResult } from '@/lib/awards/projects/withdraw'
 import type { ProjectView, SaveAnswersPatch, SaveResult } from '@/lib/awards/projects/types'
@@ -104,4 +106,12 @@ export async function withdrawAction(
     const result = await withdrawEntry(db, { userId, projectId, entryId, now })
     return { result, view: await loadProject(db, { userId, projectId, now }) }
   })
+}
+
+/** Sends a collaborator a fresh invitation to edit (owners and editors may). */
+export async function resendInvitationAction(
+  projectId: string,
+  personId: string,
+): Promise<ActionResult<{ invites: InviteState[]; delivered: boolean }>> {
+  return run((userId, now) => resendInvitation(getAwardsDb(), { userId, projectId, personId, now }))
 }

@@ -38,6 +38,7 @@ const view = (over: Partial<ProjectView> = {}): ProjectView => ({
     rounding: 'nearest-900',
   },
   billing: null,
+  invites: [],
   serverNow: '2026-12-01T14:00:00.000Z',
   ...over,
 })
@@ -67,6 +68,7 @@ function setup(over: Partial<ProjectFormActions> = {}) {
     withdraw: vi.fn(async (entryId: string) =>
       ok({ result: { entryId, category: 'app', clearedPrice: null }, view: view() }),
     ),
+    resendInvite: vi.fn(async () => ok({ invites: [], delivered: true })),
     release: vi.fn(),
     ...over,
   }

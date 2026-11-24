@@ -12,11 +12,12 @@ export default async function SignUpPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ next?: string }>
+  searchParams: Promise<{ next?: string; email?: string }>
 }) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
-  const { next } = await searchParams
+  const { next, email } = await searchParams
+  const defaultEmail = email && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : undefined
   const c = accountCopy[locale]
   const target = safeNext(next, dashboardPath(locale))
 
@@ -30,6 +31,7 @@ export default async function SignUpPage({
             copy={c.signUp}
             common={c.common}
             next={target}
+            defaultEmail={defaultEmail}
             links={{
               signIn: `${localePath('/innskraning', locale)}${next ? `?next=${encodeURIComponent(target)}` : ''}`,
               verified: `${localePath('/stadfesta-netfang', locale)}?status=verified`,

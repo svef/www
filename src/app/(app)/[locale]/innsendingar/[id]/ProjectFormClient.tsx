@@ -18,6 +18,7 @@ import {
   acquireLockAction,
   heartbeatAction,
   loadProjectAction,
+  resendInvitationAction,
   saveAnswersAction,
   setBillingProfileAction,
   setCategoriesAction,
@@ -60,6 +61,7 @@ export function ProjectFormClient({
       setBilling: (billingProfileId) => setBillingProfileAction(initial.id, billingProfileId),
       submit: (args) => submitAction(initial.id, args),
       withdraw: (entryId) => withdrawAction(initial.id, entryId),
+      resendInvite: (personId) => resendInvitationAction(initial.id, personId),
       release: () => {
         // sendBeacon survives the page going away; a server action would not.
         navigator.sendBeacon(`/api/awards/projects/${initial.id}/lock`)

@@ -3,6 +3,7 @@
 import { ArrowDown, ArrowUp } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
 import type { FieldDefinition } from '@/lib/awards/fields'
+import type { InviteState } from '@/lib/awards/invitations/types'
 import type { Locale } from '@/lib/i18n'
 import type { ProjectFormCopy } from './copy'
 import styles from './ProjectForm.module.scss'
@@ -22,6 +23,29 @@ type ListProps = {
   locale: Locale
 }
 
+/** The invitation side of the collaborators list; absent for owners. */
+export type InviteProps = {
+  invites: readonly InviteState[]
+  notice: {
+    kind: 'sent' | 'failed' | 'refused'
+    personId?: string
+    message?: string
+  } | null
+  onResend: (personId: string) => void
+}
+
+const dateOf = (iso: string | null, locale: Locale) =>
+  iso
+    ? new Intl.DateTimeFormat(locale === 'is' ? 'is-IS' : 'en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Atlantic/Reykjavik',
+      }).format(new Date(iso))
+    : ''
+
+const sameEmail = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
+
 /**
  * Owners and collaborators: rows of a few text inputs, added, removed and reordered with
  * buttons (no drag and drop, so a keyboard and a screen reader do everything a mouse does).
@@ -30,8 +54,12 @@ type ListProps = {
  */
 export function PersonList({
   field,
+  invite,
   ...p
-}: ListProps & { field: FieldDefinition & { key: 'owners' | 'collaborators' } }) {
+}: ListProps & {
+  field: FieldDefinition & { key: 'owners' | 'collaborators' }
+  invite?: InviteProps
+}) {
   const { copy, locale, disabled } = p
   const list = Array.isArray(p.value) ? (p.value as Row[]) : []
   // An owner is required, so one empty row is always there to fill in.
@@ -45,6 +73,9 @@ export function PersonList({
   const [announcement, setAnnouncement] = useState('')
   // Rows whose email has been left: the "email needed" note turns red for those.
   const [emailLeft, setEmailLeft] = useState<ReadonlySet<number>>(new Set())
+  // An editor's email is kept here while it is being typed and saved when the field is left:
+  // saving it sends an invitation, and a half-typed address must not get one.
+  const [emailDrafts, setEmailDrafts] = useState<Readonly<Record<number, string>>>({})
   const focusAfter = useRef<{ row: number; control: string } | null>(null)
   const root = useRef<HTMLUListElement>(null)
 
@@ -83,14 +114,26 @@ export function PersonList({
     p.onChange([...rows, {}])
   }
 
+  const noticed = invite?.notice?.personId
+  const noticedRow = rows.find((_, j) => invite?.invites[j]?.personId === noticed)
+  const noticeWho = str(noticedRow?.name).trim() || str(noticedRow?.email).trim()
+
   return (
     <>
       <ul className={styles.rows} ref={root} aria-describedby={p.describedBy}>
         {rows.map((person, i) => {
           const label = rowLabel(i + 1)
           const needsEmail =
-            field.key === 'collaborators' && person.canEdit === true && !str(person.email).trim()
+            field.key === 'collaborators' &&
+            person.canEdit === true &&
+            !(emailDrafts[i] ?? str(person.email)).trim()
           const emailHint = `${p.id}-${i}-email-hint`
+          const inviteHint = `${p.id}-invite-hint`
+          const email = (emailDrafts[i] ?? str(person.email)).trim()
+          const state = invite?.invites[i]
+          // What the server knows, unless the row was changed since (a new email is a new invitation).
+          const known = state && state.state !== 'none' && sameEmail(state.email, email) ? state : null
+          const who = str(person.name).trim() || email
           return (
             <li key={i} data-row={i}>
               <fieldset className={styles.group}>
@@ -103,16 +146,28 @@ export function PersonList({
                       data-control={k === 0 ? 'first' : undefined}
                       className={styles.input}
                       type={def.type === 'email' ? 'email' : 'text'}
-                      value={str(person[name])}
+                      value={name === 'email' ? (emailDrafts[i] ?? str(person[name])) : str(person[name])}
                       maxLength={def.maxLength}
                       readOnly={disabled}
                       autoComplete="off"
                       aria-describedby={name === 'email' && needsEmail ? emailHint : undefined}
                       onBlur={() => {
-                        if (name === 'email') setEmailLeft((s) => new Set(s).add(i))
+                        if (name === 'email') {
+                          setEmailLeft((s) => new Set(s).add(i))
+                          const draft = emailDrafts[i]
+                          if (draft !== undefined) {
+                            setEmailDrafts(({ [i]: _, ...rest }) => rest)
+                            set(i, { email: draft })
+                          }
+                        }
                         p.onBlur()
                       }}
-                      onChange={(e) => set(i, { [name]: e.target.value })}
+                      onChange={(e) => {
+                        const holdBack =
+                          name === 'email' && field.key === 'collaborators' && person.canEdit === true
+                        if (holdBack) setEmailDrafts((d) => ({ ...d, [i]: e.target.value }))
+                        else set(i, { [name]: e.target.value })
+                      }}
                     />
                   </label>
                 ))}
@@ -123,7 +178,15 @@ export function PersonList({
                         type="checkbox"
                         checked={person.canEdit === true}
                         disabled={disabled}
-                        onChange={(e) => set(i, { canEdit: e.target.checked })}
+                        aria-describedby={inviteHint}
+                        onChange={(e) => {
+                          const draft = emailDrafts[i]
+                          if (draft !== undefined) setEmailDrafts(({ [i]: _, ...rest }) => rest)
+                          set(i, {
+                            canEdit: e.target.checked,
+                            ...(draft !== undefined ? { email: draft } : {}),
+                          })
+                        }}
                       />
                       <span>{copy.canEdit}</span>
                     </label>
@@ -131,6 +194,31 @@ export function PersonList({
                       <p id={emailHint} className={emailLeft.has(i) ? styles.error : styles.hint}>
                         {copy.emailForEdit}
                       </p>
+                    )}
+                    {person.canEdit === true && email && (
+                      <div className={styles.invite} data-invite={known?.state ?? 'pending'}>
+                        <p className={styles.hint}>
+                          {known?.state === 'accepted'
+                            ? copy.inviteAccepted(dateOf(known.acceptedAt, locale))
+                            : known?.state === 'expired'
+                              ? copy.inviteExpired(dateOf(known.invitedAt, locale))
+                              : known?.state === 'invited'
+                                ? copy.inviteInvited(dateOf(known.invitedAt, locale))
+                                : copy.inviteWillSend}
+                        </p>
+                        {known && known.state !== 'accepted' && invite && (
+                          <button
+                            type="button"
+                            className={styles.small}
+                            data-control="resend"
+                            disabled={disabled}
+                            aria-label={copy.inviteResendFor(who)}
+                            onClick={() => invite.onResend(known.personId)}
+                          >
+                            {copy.inviteResend}
+                          </button>
+                        )}
+                      </div>
                     )}
                   </>
                 )}
@@ -182,9 +270,26 @@ export function PersonList({
           {copy.addRow[field.key]}
         </button>
       </div>
+      {field.key === 'collaborators' && (
+        <p id={`${p.id}-invite-hint`} className={styles.hint}>
+          {copy.canEditHint}
+        </p>
+      )}
       <p className={styles.srOnly} role="status" aria-live="polite">
         {announcement}
       </p>
+      {invite?.notice && (
+        <p
+          className={invite.notice.kind === 'sent' ? styles.hint : styles.error}
+          role={invite.notice.kind === 'sent' ? 'status' : 'alert'}
+        >
+          {invite.notice.kind === 'sent'
+            ? copy.inviteSentNotice(noticeWho)
+            : invite.notice.kind === 'failed'
+              ? copy.inviteFailedNotice
+              : (invite.notice.message ?? copy.inviteFailedNotice)}
+        </p>
+      )}
     </>
   )
 }

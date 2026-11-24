@@ -109,9 +109,11 @@ function TextField({
   optionalText,
   error,
   inputMode,
+  defaultValue,
 }: {
   id: string
   name: string
+  defaultValue?: string
   label: string
   type?: 'text' | 'email' | 'tel'
   autoComplete: string
@@ -129,6 +131,7 @@ function TextField({
         type={type}
         inputMode={inputMode}
         autoComplete={autoComplete}
+        defaultValue={defaultValue}
         className={inputClass}
         spellCheck={false}
         {...describe(id, error, hintId)}
@@ -201,8 +204,11 @@ export function SignUpForm({
   common,
   next,
   links,
+  defaultEmail,
 }: {
   locale: Locale
+  /** Prefilled address (an invitation was sent to it). */
+  defaultEmail?: string
   copy: AccountCopy['signUp']
   common: Common
   /** Where "Continue" leads once the account exists. */
@@ -291,6 +297,7 @@ export function SignUpForm({
               inputMode="email"
               label={copy.email}
               autoComplete="email"
+              defaultValue={defaultEmail}
               error={s.errors.email}
             />
             <TextField

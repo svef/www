@@ -21,6 +21,9 @@ import { assertSelectionAllowed, SelectionError } from '../selection'
 import type { EntryStatus } from '../types'
 import { validateEntryAnswers, validateProjectAnswers, type FieldError } from '../validation'
 import { forcedValue, resolveAnswers } from '../visibility'
+import { issueInvitation, revokeInvitation, type PendingInvite } from '../invitations/lifecycle'
+import { normalizeEmail } from '../invitations/token'
+import { deliverInvitations, inviteStates, type InvitationDeps } from '../invitations/service'
 import { decryptCredential, encryptCredential } from './crypto'
 import type { AwardsDb, Queryable, Tx } from './db-types'
 import { diffAnswers, redactChange, sameValue, type FieldChange } from './diff'
@@ -378,6 +381,7 @@ export async function loadProject(
       rounding: ctx.edition.earlyBirdRounding as 'nearest-900',
     },
     billing: ctx.billing,
+    invites: await inviteStates(db, args.projectId, now),
     serverNow: now.toISOString(),
   }
 }
@@ -472,11 +476,56 @@ async function writeEntryAnswer(tx: Tx, entryId: string, key: string, value: unk
     })
 }
 
+type PersonRow = typeof projectPerson.$inferSelect
+
 /**
- * Owners and collaborators, matched to existing rows by position so a row keeps
- * its account link and invitation state while its text is edited.
+ * Pairs each submitted person with the stored row it continues. Collaborators with an
+ * email keep the row that had the same email, wherever it moved to, so removing or
+ * reordering rows cannot hand one person's invitation (or accepted access) to another;
+ * everyone else takes the remaining rows in order, so a row keeps its text edits.
  */
-async function writePeople(tx: Tx, projectId: string, key: string, items: unknown) {
+function matchRows(
+  kind: 'owner' | 'collaborator',
+  list: PersonItem[],
+  existing: PersonRow[],
+): (PersonRow | undefined)[] {
+  const target: (PersonRow | undefined)[] = list.map(() => undefined)
+  const claimed = new Set<string>()
+  if (kind === 'collaborator') {
+    list.forEach((it, i) => {
+      const email = normalizeEmail(typeof it.email === 'string' ? it.email : '')
+      if (!email) return
+      const row = existing.find((r) => !claimed.has(r.id) && normalizeEmail(r.email) === email)
+      if (row) {
+        target[i] = row
+        claimed.add(row.id)
+      }
+    })
+  }
+  const free = existing.filter((r) => !claimed.has(r.id))
+  list.forEach((_, i) => {
+    if (!target[i]) {
+      const row = free.shift()
+      if (row) target[i] = row
+    }
+  })
+  return target
+}
+
+/**
+ * Owners and collaborators. A row keeps its account link and invitation state while its
+ * text is edited. For collaborators this is also where invitations follow the form:
+ * ticking "Can edit" with an email invites (the mail is queued in `invites`, to go out
+ * once the transaction commits); unticking, removing the row or changing its email
+ * revokes the old invitation, and with it any access an accepted editor had.
+ */
+async function writePeople(
+  tx: Tx,
+  projectId: string,
+  key: string,
+  items: unknown,
+  actor: { userId: string; now: Date; invites: PendingInvite[] },
+) {
   const kind = PERSON_KINDS[key]
   const list = Array.isArray(items) ? (items as PersonItem[]) : []
   const existing = await tx
@@ -491,6 +540,7 @@ async function writePeople(tx: Tx, projectId: string, key: string, items: unknow
     )
     .orderBy(asc(projectPerson.sortOrder), asc(projectPerson.createdAt))
   const str = (v: unknown) => (typeof v === 'string' && v !== '' ? v : null)
+  const target = matchRows(kind, list, existing)
   for (let i = 0; i < list.length; i++) {
     const it = list[i]
     const values = {
@@ -501,11 +551,51 @@ async function writePeople(tx: Tx, projectId: string, key: string, items: unknow
       canEdit: kind === 'collaborator' && it.canEdit === true,
       sortOrder: i,
     }
-    if (existing[i])
-      await tx.update(projectPerson).set(values).where(eq(projectPerson.id, existing[i].id))
-    else await tx.insert(projectPerson).values({ projectId, kind, ...values })
+    const row = target[i]
+    let id: string
+    let invited = false
+    if (row) {
+      id = row.id
+      invited = row.invitedAt !== null || row.acceptedAt !== null
+      const emailChanged = normalizeEmail(row.email) !== normalizeEmail(values.email)
+      if (kind === 'collaborator' && (!values.canEdit || !values.email || emailChanged)) {
+        await revokeInvitation(tx, {
+          projectId,
+          person: row,
+          actorUserId: actor.userId,
+          now: actor.now,
+          reason: !values.canEdit || !values.email ? 'unticked' : 'email_changed',
+        })
+        invited = false
+      }
+      await tx.update(projectPerson).set(values).where(eq(projectPerson.id, id))
+    } else {
+      const [inserted] = await tx
+        .insert(projectPerson)
+        .values({ projectId, kind, ...values })
+        .returning({ id: projectPerson.id })
+      id = inserted.id
+    }
+    if (kind === 'collaborator' && values.canEdit && values.email && !invited) {
+      actor.invites.push(
+        await issueInvitation(tx, {
+          projectId,
+          person: { id, name: values.name, email: values.email },
+          invitedBy: actor.userId,
+          now: actor.now,
+        }),
+      )
+    }
   }
-  for (const extra of existing.slice(list.length)) {
+  for (const extra of existing.filter((r) => !target.includes(r))) {
+    if (kind === 'collaborator')
+      await revokeInvitation(tx, {
+        projectId,
+        person: extra,
+        actorUserId: actor.userId,
+        now: actor.now,
+        reason: 'removed',
+      })
     await tx
       .update(projectPerson)
       .set({ deletedAt: new Date() })
@@ -566,12 +656,15 @@ function validateDroppingErrors(
 export async function saveAnswers(
   db: AwardsDb,
   args: { userId: string; projectId: string; patch: SaveAnswersPatch } & Clock,
+  deps: InvitationDeps = {},
 ): Promise<SaveResult> {
   const { userId, projectId, patch } = args
   const now = args.now ?? new Date()
   await requireRole(db, userId, projectId)
 
-  return db.transaction(async (tx) => {
+  // Invitations ticked in this save: written in the transaction, mailed after it commits.
+  const invites: PendingInvite[] = []
+  const result = await db.transaction(async (tx) => {
     const lock = await requireLock(tx, { projectId, userId, now, ttlMs: args.ttlMs })
     const ctx = await loadContext(tx, projectId)
     const categories = activeCategories(ctx)
@@ -655,7 +748,8 @@ export async function saveAnswers(
     const changedKeys = new Set(changes.map((c) => c.fieldKey))
     for (const w of writes) {
       if (!changedKeys.has(w.key)) continue
-      if (w.key in PERSON_KINDS) await writePeople(tx, projectId, w.key, w.value)
+      if (w.key in PERSON_KINDS)
+        await writePeople(tx, projectId, w.key, w.value, { userId, now, invites })
       else if (w.key === CREDENTIAL_KEY) await writeCredentials(tx, projectId, w.value)
       else await writeProjectAnswer(tx, projectId, w.key, w.value)
       saved.push(w.key)
@@ -728,8 +822,16 @@ export async function saveAnswers(
     if (saved.length) {
       await tx.update(project).set({ updatedAt: now }).where(eq(project.id, projectId))
     }
-    return { saved, rejected, errors, forced, lock }
+    return { saved, rejected, errors, forced, lock } as SaveResult
   })
+
+  if (result.saved.includes('collaborators')) {
+    result.invites = await inviteStates(db, projectId, now)
+    // After the commit: a failing mail server must not undo a save. The person shows as
+    // invited either way, and "Resend invitation" is there for a message that never arrived.
+    result.invitesFailed = await deliverInvitations(invites, deps)
+  }
+  return result
 }
 
 // ── Categories ──────────────────────────────────────────────────────────────

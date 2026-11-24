@@ -283,6 +283,43 @@ export const projectPerson = pgTable(
   ],
 )
 
+/**
+ * An invitation to edit a project, one per (collaborator, send). Only the SHA-256 of
+ * the token is stored (the raw token exists in the email alone). Single use
+ * (`used_at`), expiring (`expires_at`), and revocable (`revoked_at`: unticking "Can
+ * edit", removing the row, changing the email, or a newer invitation replacing it).
+ * Never deleted: the rows are the record of who was invited when.
+ */
+export const projectInvitation = pgTable(
+  'project_invitation',
+  {
+    id: id(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => project.id),
+    personId: uuid('person_id')
+      .notNull()
+      .references(() => projectPerson.id),
+    // The address the invitation was sent to.
+    email: text('email').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    invitedBy: userRef('invited_by').notNull(),
+    // The language of the email, and so of the page it links to.
+    locale: text('locale').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    usedBy: userRef('used_by'),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    ...auditTimestamps,
+  },
+  (t) => [
+    unique('project_invitation_token_hash_key').on(t.tokenHash),
+    check('project_invitation_locale_check', inList(t.locale, LOCALES)),
+    index('project_invitation_person_idx').on(t.personId),
+    index('project_invitation_project_idx').on(t.projectId),
+  ],
+)
+
 /** One row per (project, category). Withdrawn rows stay, so re-submitting reuses the row. */
 export const entry = pgTable(
   'entry',

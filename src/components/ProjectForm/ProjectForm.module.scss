@@ -415,6 +415,19 @@
   font-weight: 600;
 }
 
+.invite {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  min-width: 0;
+
+  p {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
 .rowActions {
   display: flex;
   flex-wrap: wrap;

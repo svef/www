@@ -525,3 +525,101 @@ ${projectsHtml}
 </html>`
   return { subject, text, html }
 }
+
+// ── Invitation to edit a project ────────────────────────────────────────────
+
+export interface InvitationInput {
+  locale: Locale
+  /** The invitee, as the inviter wrote it; may be empty. */
+  name: string
+  inviterName: string
+  projectTitle: string
+  /** The accept page, carrying the single-use token. */
+  url: string
+  /** When the link stops working. */
+  expiresAt: Date
+}
+
+const invitationCopy: Record<
+  Locale,
+  {
+    subject: (inviter: string, title: string) => string
+    intro: (inviter: string, title: string) => string
+    meaning: string
+    account: string
+    button: string
+    expiry: (date: string) => string
+    untitled: string
+  }
+> = {
+  is: {
+    subject: (i, t) => `${i} bauð þér að breyta innsendingu: ${t} – Íslensku vefverðlaunin`,
+    intro: (i, t) =>
+      `${i} hefur boðið þér að breyta innsendingunni „${t}“ í Íslensku vefverðlaununum.`,
+    meaning:
+      'Ef þú samþykkir geturðu opnað innsendinguna, breytt henni og sent hana inn með þeim sem eru á henni. Þú getur ekki dregið innsendingu til baka, það getur aðeins sá sem stofnaði hana. Þú þarft aðgang hjá SVEF, og getur stofnað hann þegar þú opnar tengilinn.',
+    account:
+      'Tengillinn er persónulegur. Ekki áframsenda hann nema þú viljir að sá sem fær hann geti breytt innsendingunni.',
+    button: 'Skoða boðið',
+    expiry: (d) => `Tengillinn gildir til ${d} og aðeins einu sinni.`,
+    untitled: 'Innsending án titils',
+  },
+  en: {
+    subject: (i, t) => `${i} invited you to edit a submission: ${t} – Icelandic Web Awards`,
+    intro: (i, t) =>
+      `${i} has invited you to edit the submission “${t}” in the Icelandic Web Awards.`,
+    meaning:
+      'If you accept, you can open the submission, edit it and submit it together with the others on it. You cannot withdraw a submission; only the person who created it can. You need an account with SVEF, and you can create one when you open the link.',
+    account:
+      'The link is personal. Do not forward it unless you want whoever receives it to be able to edit the submission.',
+    button: 'View the invitation',
+    expiry: (d) => `The link is valid until ${d}, and works once.`,
+    untitled: 'Untitled submission',
+  },
+}
+
+export function invitationEmail(input: InvitationInput): EmailContent {
+  const { locale } = input
+  const c = invitationCopy[locale]
+  const g = copy[locale]
+  const title = input.projectTitle.trim() || c.untitled
+  const inviter = input.inviterName.trim() || 'SVEF'
+  const date = new Intl.DateTimeFormat(locale === 'is' ? 'is-IS' : 'en-GB', {
+    dateStyle: 'long',
+    timeZone: 'Atlantic/Reykjavik',
+  }).format(input.expiresAt)
+  const text = [
+    g.greeting(input.name),
+    '',
+    c.intro(inviter, title),
+    '',
+    c.meaning,
+    '',
+    input.url,
+    '',
+    c.expiry(date),
+    c.account,
+    g.ignore,
+    '',
+    g.signoff,
+  ].join('\n')
+  const paragraph = (value: string) => `<p style="margin:0 0 16px">${escapeHtml(value)}</p>`
+  const html = `<!doctype html>
+<html lang="${locale}">
+<body style="margin:0;padding:24px;background:#fcfbfe;color:#09060c;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5">
+<div style="max-width:520px;margin:0 auto">
+${paragraph(g.greeting(input.name))}
+${paragraph(c.intro(inviter, title))}
+${paragraph(c.meaning)}
+<p style="margin:24px 0"><a href="${escapeHtml(input.url)}" style="display:inline-block;background:#8917e1;color:#fcfbfe;padding:12px 20px;text-decoration:none;font-weight:bold">${escapeHtml(c.button)}</a></p>
+${paragraph(c.expiry(date))}
+<p style="margin:0 0 4px;font-size:14px">${escapeHtml(g.linkFallback)}</p>
+<p style="margin:0 0 24px;font-size:14px;word-break:break-all"><a href="${escapeHtml(input.url)}" style="color:#8917e1">${escapeHtml(input.url)}</a></p>
+${paragraph(c.account)}
+${paragraph(g.ignore)}
+<p style="margin:0;white-space:pre-line">${escapeHtml(g.signoff)}</p>
+</div>
+</body>
+</html>`
+  return { subject: c.subject(inviter, title), text, html }
+}
