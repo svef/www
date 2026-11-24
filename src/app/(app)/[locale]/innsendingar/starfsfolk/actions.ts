@@ -21,7 +21,7 @@ export async function setEligibilityAction(form: FormData): Promise<void> {
   const localeValue = text(form, 'locale')
   const locale: Locale = isLocale(localeValue) ? localeValue : DEFAULT_LOCALE
   const back = new URLSearchParams()
-  for (const key of ['year', 'category', 'status']) {
+  for (const key of ['year', 'category', 'status', 'q', 'sort', 'dir', 'page']) {
     const v = text(form, key)
     if (v) back.set(key, v)
   }

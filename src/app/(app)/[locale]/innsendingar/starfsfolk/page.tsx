@@ -5,11 +5,13 @@ import { requireStaff } from '@/lib/awards/auth/session'
 import { serverNow } from '@/lib/awards/staff/clock'
 import { ELIGIBILITY_TARGETS } from '@/lib/awards/staff/eligibility'
 import {
-  getStaffEdition,
-  listEligibilityRows,
-  listStaffCategories,
-} from '@/lib/awards/staff/queries'
-import { ENTRY_STATUSES, type EntryStatus } from '@/lib/awards/types'
+  listStaffEntries,
+  parseListSearch,
+  STATUS_FILTERS,
+  type SortKey,
+} from '@/lib/awards/staff/entry-list'
+import { getStaffEdition, listStaffCategories } from '@/lib/awards/staff/queries'
+import type { EntryStatus } from '@/lib/awards/types'
 import { lastDayBefore } from '@/lib/awards/public-catalog'
 import { allowedTransitions } from '@/lib/awards/status'
 import { formatLongDate } from '@/lib/dates'
@@ -39,6 +41,10 @@ type Search = {
   year?: string
   category?: string
   status?: string
+  q?: string
+  sort?: string
+  dir?: string
+  page?: string
   changed?: string
   result?: string
   skip?: string | string[]
@@ -66,13 +72,18 @@ export default async function StaffPage({
   if (!edition) notFound()
 
   const categories = await listStaffCategories(db, edition.id)
-  const categoryId = categories.some((x) => x.id === one(search.category))
-    ? one(search.category)
-    : undefined
-  const status = (ENTRY_STATUSES as readonly string[]).includes(one(search.status) ?? '')
-    ? (one(search.status) as EntryStatus)
-    : undefined
-  const rows = await listEligibilityRows(db, { editionId: edition.id, categoryId, status })
+  const list = parseListSearch(search)
+  const categoryId = categories.some((x) => x.id === list.categoryId) ? list.categoryId : undefined
+  const result = await listStaffEntries(db, {
+    editionId: edition.id,
+    categoryId,
+    status: list.status,
+    search: list.q,
+    sort: list.sort,
+    dir: list.dir,
+    page: list.page,
+  })
+  const rows = result.rows
 
   // The server clock, the one the rules use (the window is exclusive: closes *before*).
   const closed = serverNow() >= edition.intakeClosesBefore
@@ -94,9 +105,39 @@ export default async function StaffPage({
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="year" value={edition.year} />
       {categoryId && <input type="hidden" name="category" value={categoryId} />}
-      {status && <input type="hidden" name="status" value={status} />}
+      <input type="hidden" name="status" value={list.status} />
+      {list.q && <input type="hidden" name="q" value={list.q} />}
+      <input type="hidden" name="sort" value={list.sort} />
+      <input type="hidden" name="dir" value={list.dir} />
+      <input type="hidden" name="page" value={result.page} />
     </>
   )
+  /** The list's own query string, with some parts replaced (sorting, paging). */
+  const listHref = (over: { sort?: SortKey; dir?: 'asc' | 'desc'; page?: number }) => {
+    const qs = new URLSearchParams({ year: String(edition.year) })
+    if (categoryId) qs.set('category', categoryId)
+    qs.set('status', list.status)
+    if (list.q) qs.set('q', list.q)
+    qs.set('sort', over.sort ?? list.sort)
+    qs.set('dir', over.dir ?? list.dir)
+    qs.set('page', String(over.page ?? result.page))
+    return `${here}?${qs}`
+  }
+  const sortHeader = (key: SortKey, label: string) => {
+    const active = list.sort === key
+    return (
+      <th scope="col" aria-sort={active ? (list.dir === 'asc' ? 'ascending' : 'descending') : undefined}>
+        <a
+          className={styles.sortLink}
+          href={listHref({ sort: key, dir: active && list.dir === 'asc' ? 'desc' : 'asc', page: 1 })}
+          aria-label={c.sortBy(label)}
+        >
+          {label}
+        </a>
+      </th>
+    )
+  }
+  const entryHref = (id: string) => localePath(`/innsendingar/starfsfolk/${id}`, locale)
   const targetsFor = (from: EntryStatus) =>
     ELIGIBILITY_TARGETS.filter((to) =>
       allowedTransitions(from).some((t) => t.to === to && t.actors.includes('staff')),
@@ -154,8 +195,10 @@ export default async function StaffPage({
         </h2>
         <p className={styles.text}>{closed ? c.closedNote(lastDayText) : c.notClosed(lastDayText)}</p>
 
-        <form method="get" action={here} className={styles.filter}>
+        <form method="get" action={here} className={styles.filter} role="search">
           <input type="hidden" name="year" value={edition.year} />
+          <input type="hidden" name="sort" value={list.sort} />
+          <input type="hidden" name="dir" value={list.dir} />
           <label>
             {c.filterCategory}
             <select name="category" defaultValue={categoryId ?? ''}>
@@ -169,19 +212,30 @@ export default async function StaffPage({
           </label>
           <label>
             {c.filterStatus}
-            <select name="status" defaultValue={status ?? ''}>
-              <option value="">{c.all}</option>
-              {ENTRY_STATUSES.filter((s) => s !== 'draft' && s !== 'withdrawn').map((s) => (
+            <select name="status" defaultValue={list.status}>
+              {STATUS_FILTERS.map((s) => (
                 <option key={s} value={s}>
-                  {c.status[s]}
+                  {s === 'submitted' ? c.statusSubmitted : s === 'all' ? c.statusAll : c.status[s]}
                 </option>
               ))}
             </select>
+          </label>
+          <label>
+            {c.search}
+            <input type="search" name="q" defaultValue={list.q} maxLength={100} />
           </label>
           <button type="submit" className={styles.button}>
             {c.filter}
           </button>
         </form>
+
+        <p className={styles.text} role="status" data-testid="list-summary">
+          {c.summary(
+            (result.page - 1) * result.pageSize + 1,
+            (result.page - 1) * result.pageSize + rows.length,
+            result.total,
+          )}
+        </p>
 
         {rows.length === 0 ? (
           <p className={styles.text}>{c.empty}</p>
@@ -196,11 +250,11 @@ export default async function StaffPage({
                     <th scope="col">
                       <span className={styles.srOnly}>{c.select}</span>
                     </th>
-                    <th scope="col">{c.colProject}</th>
-                    <th scope="col">{c.colCategory}</th>
-                    <th scope="col">{c.colCompany}</th>
-                    <th scope="col">{c.colSubmitted}</th>
-                    <th scope="col">{c.colStatus}</th>
+                    {sortHeader('title', c.colProject)}
+                    {sortHeader('category', c.colCategory)}
+                    {sortHeader('company', c.colCompany)}
+                    {sortHeader('submitted', c.colSubmitted)}
+                    {sortHeader('status', c.colStatus)}
                     <th scope="col">{c.colAction}</th>
                   </tr>
                 </thead>
@@ -215,7 +269,9 @@ export default async function StaffPage({
                           aria-label={`${c.select}: ${r.projectTitle}, ${r.categoryName}`}
                         />
                       </td>
-                      <th scope="row">{r.projectTitle || '–'}</th>
+                      <th scope="row">
+                        <a href={entryHref(r.entryId)}>{r.projectTitle || '–'}</a>
+                      </th>
                       <td>{r.categoryName}</td>
                       <td>{r.company ?? c.noCompany}</td>
                       <td>
@@ -267,6 +323,22 @@ export default async function StaffPage({
               </button>
             </div>
           </form>
+        )}
+
+        {result.pageCount > 1 && (
+          <nav className={styles.pager} aria-label={c.pageNav}>
+            {result.page > 1 ? (
+              <a className={styles.button} href={listHref({ page: result.page - 1 })} rel="prev">
+                {c.prev}
+              </a>
+            ) : null}
+            <span aria-current="page">{c.pageOf(result.page, result.pageCount)}</span>
+            {result.page < result.pageCount ? (
+              <a className={styles.button} href={listHref({ page: result.page + 1 })} rel="next">
+                {c.next}
+              </a>
+            ) : null}
+          </nav>
         )}
       </PageSection>
     </>
