@@ -42,7 +42,11 @@ export const ROUTE_SEGMENTS = {
 export const NESTED_SEGMENTS: Readonly<
   Partial<Record<RouteKey, Readonly<Record<string, { is: string; en: string }>>>>
 > = {
-  innsendingar: { minar: { is: 'minar', en: 'mine' } },
+  innsendingar: {
+    minar: { is: 'minar', en: 'mine' },
+    // The staff area (svef/www#168 builds it out; the invoicing export and eligibility list live here for now).
+    starfsfolk: { is: 'starfsfolk', en: 'staff' },
+  },
 }
 
 /**

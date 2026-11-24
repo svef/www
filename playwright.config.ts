@@ -41,7 +41,14 @@ export default defineConfig({
           // The account flows read their emails from the local outbox, and their
           // tests share one IP, which Better Auth's production rate limiter would
           // otherwise throttle.
-          env: { AWARDS_EMAIL_OUTBOX: '1', AWARDS_AUTH_RATE_LIMIT: 'off' },
+          //
+          // The staff area reads `AWARDS_CLOCK_NOW` instead of the real time, so its
+          // after-close flows can run: 1 March 2027 is past the 2026 edition's close.
+          env: {
+            AWARDS_EMAIL_OUTBOX: '1',
+            AWARDS_AUTH_RATE_LIMIT: 'off',
+            AWARDS_CLOCK_NOW: '2027-03-01T00:00:00Z',
+          },
         },
       }
     : {}),

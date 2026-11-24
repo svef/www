@@ -158,6 +158,16 @@ export interface DynamicRoute {
   matches: (path: string) => boolean
 }
 
+/**
+ * Pages that exist on disk but are not public: they answer an anonymous visitor with a
+ * redirect or a 404, so the sweeps (which visit as an anonymous reader and expect an `<h1>`)
+ * cannot cover them. Each has a spec of its own that signs in and checks it, axe included.
+ */
+export const GATED_ROUTES: readonly { path: string; spec: string }[] = [
+  // Staff only (svef/www#170): eligibility list and invoicing export.
+  { path: '/innsendingar/starfsfolk', spec: 'staff-export.spec.ts' },
+]
+
 export const DYNAMIC_ROUTES: readonly DynamicRoute[] = [
   {
     pattern: '/frettir/[slug]',
