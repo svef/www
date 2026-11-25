@@ -29,6 +29,7 @@ const baseURL = () => test.info().project.use.baseURL as string
 const RUN = `zadm${uniqueKennitala().slice(0, 6)}`
 const projects: string[] = []
 const entries: { paid: string[]; unpaid: string[] } = { paid: [], unpaid: [] }
+let noCategoryProject = ''
 
 test.beforeAll(async () => {
   const ed = await seededEdition(db)
@@ -47,6 +48,9 @@ test.beforeAll(async () => {
     const entryId = await createEntry(db, { projectId, categoryId: ed.categories[i % 2].id, status: 'submitted' })
     ;(withPayer ? entries.paid : entries.unpaid).push(entryId)
   }
+  // And one project with no category yet: it has no entry, but the admin must still see it.
+  noCategoryProject = await createProject(db, { editionId: ed.editionId, userId: owner, title: `${RUN} Zeta án flokks` })
+  projects.push(noCategoryProject)
 })
 
 test.afterAll(async () => {
@@ -118,6 +122,34 @@ test('the projects list searches, filters on billing, sorts and pages, all in th
   await expect(summary).toHaveText('Færslur 1–24 af 24')
   await page.getByRole('link', { name: 'Hreinsa síur' }).click()
   await expect(page).not.toHaveURL(/q=/)
+  await context.close()
+})
+
+test('projects with no category yet are rows of their own, counted on the overview, never selectable', async ({ browser }) => {
+  const { context, page } = await admin(browser)
+  await page.goto(urlFor('is', '/stjornbord'))
+  const none = page.getByTestId('overview-counts').locator('tr[data-category="none"]')
+  await expect(none.getByRole('rowheader')).toHaveText('Enginn flokkur')
+  await none.getByRole('link').click()
+  await expect(page).toHaveURL(/status=no_category/)
+  await expect(page.locator('select[name="status"]')).toHaveValue('no_category')
+
+  // This run's: the one project, with no checkbox and no actions.
+  const base = urlFor('is', '/stjornbord/verkefni')
+  await page.goto(`${base}?status=no_category&q=${RUN}`)
+  await expect(page.getByTestId('list-summary')).toHaveText('Færslur 1–1 af 1')
+  const row = page.locator(`tr[data-project="${noCategoryProject}"]`)
+  await expect(row.getByRole('rowheader')).toContainText(`${RUN} Zeta án flokks`)
+  await expect(row).toContainText('Enginn flokkur')
+  await expect(row.locator('input[type="checkbox"], button')).toHaveCount(0)
+
+  // "All" includes it alongside the 27 entries; the default (submitted) view does not.
+  await page.goto(`${base}?status=all&q=${RUN}&sort=title&dir=desc`)
+  await expect(page.getByTestId('list-summary')).toHaveText('Færslur 1–25 af 28')
+  await expect(page.locator('tbody tr').first()).toHaveAttribute('data-project', noCategoryProject)
+  await expect(page.locator('tbody input[name="entry"]')).toHaveCount(24)
+  await page.goto(`${base}?q=${RUN}`)
+  await expect(page.locator(`tr[data-project="${noCategoryProject}"]`)).toHaveCount(0)
   await context.close()
 })
 

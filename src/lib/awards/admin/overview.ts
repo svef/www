@@ -24,6 +24,11 @@ export type EditionCounts = {
   entries: number
   /** Live projects in the edition, including ones with no category yet. */
   projects: number
+  /**
+   * Live projects with no live entry, i.e. no category chosen yet. Each is one row in the
+   * projects list (`no_category`), so `entries + noCategory` is what its `all` view counts.
+   */
+  noCategory: number
 }
 
 export const emptyCounts = (): StatusCounts =>
@@ -66,11 +71,14 @@ export async function countEdition(db: AwardsDb, editionId: string): Promise<Edi
     .innerJoin(project, eq(project.id, entry.projectId))
     .where(and(eq(project.editionId, editionId), isNull(project.deletedAt), isNull(entry.deletedAt)))
     .groupBy(entry.categoryId, entry.status)
-  const [{ projects }] = await db
-    .select({ projects: count() })
+  const [{ projects, noCategory }] = await db
+    .select({
+      projects: count(),
+      noCategory: sql<number>`count(*) filter (where not exists (select 1 from "entry" where "entry"."project_id" = "project"."id" and "entry"."deleted_at" is null))`.mapWith(Number),
+    })
     .from(project)
     .where(and(eq(project.editionId, editionId), isNull(project.deletedAt)))
-  return { ...foldCounts(categories, rows), projects }
+  return { ...foldCounts(categories, rows), projects, noCategory }
 }
 
 export type ActivityItem = {

@@ -4,7 +4,9 @@ import { billingProfile, category, entry, entryEvent, project, projectAnswer, us
 import { ENTRY_STATUSES, SUBMITTED_LIKE_STATUSES, type EntryStatus } from '../types'
 
 /**
- * The admin's entries list (Stjórnborð → Verkefni): filtered by category, status and
+ * The admin's entries list (Stjórnborð → Verkefni), one row per entry (project × category),
+ * plus one row for each project that has no category yet, so no project is invisible here.
+ * Filtered by category, status and
  * billing, searched on the project title, the payer and the creator, sorted, and paginated
  * in the database, so it holds up at hundreds of entries. Plain query; the page only renders
  * what comes back, and every view is a URL (`parseListSearch`).
@@ -17,11 +19,12 @@ export type SortDir = 'asc' | 'desc'
 
 /**
  * `submitted` (the default) is every entry that was submitted and not withdrawn, the set
- * the eligibility work and the export are about. `all` adds drafts and withdrawn ones;
- * any single status shows just that.
+ * the eligibility work and the export are about. `all` adds drafts and withdrawn ones, and
+ * the projects with no category yet; `no_category` is only those; any single status shows
+ * just that.
  */
-export type StatusFilter = 'submitted' | 'all' | EntryStatus
-export const STATUS_FILTERS: readonly StatusFilter[] = ['submitted', 'all', ...ENTRY_STATUSES]
+export type StatusFilter = 'submitted' | 'all' | 'no_category' | EntryStatus
+export const STATUS_FILTERS: readonly StatusFilter[] = ['submitted', 'all', 'no_category', ...ENTRY_STATUSES]
 
 /**
  * Billing and invoicing, as far as the database knows it: whether the project has a billing
@@ -45,14 +48,19 @@ export type ListParams = {
   pageSize?: number
 }
 
+/**
+ * A row of the list. A project with no category yet has no entry, so `entryId`, `status` and
+ * `categoryName` are null on its row: there is nothing to open or to set eligibility on.
+ */
 export type StaffEntryRow = {
-  entryId: string
+  entryId: string | null
   projectId: string
-  status: EntryStatus
+  status: EntryStatus | null
   projectTitle: string
-  categoryName: string
+  categoryName: string | null
   submittedAt: Date | null
   company: string | null
+  creatorId: string
   creatorName: string
   creatorEmail: string
   /** Has been in at least one invoicing export. */
@@ -107,6 +115,8 @@ const titleText = sql<string>`(${projectAnswer.value} #>> '{}')`
 
 function statusCondition(status: StatusFilter): SQL | undefined {
   if (status === 'all') return undefined
+  // The project's row with no entry joined: it has no live entry at all.
+  if (status === 'no_category') return isNull(entry.id)
   if (status === 'submitted') return inArray(entry.status, [...SUBMITTED_LIKE_STATUSES])
   return eq(entry.status, status)
 }
@@ -155,15 +165,17 @@ function orderBy(sort: SortKey, dir: SortDir): SQL[] {
           : sort === 'status'
             ? d(entry.status)
             : d(entry.submittedAt)
-  return [key, asc(entry.id)]
+  // A row with no entry has a null entry id; the project id settles those.
+  return [key, asc(entry.id), asc(project.id)]
 }
 
 export async function listStaffEntries(db: AwardsDb, params: ListParams): Promise<StaffEntryPage> {
   const pageSize = Math.max(1, params.pageSize ?? PAGE_SIZE)
+  // From the project, with its live entries left-joined: a project with none still gives one
+  // row (entry columns null), which only `all` and `no_category` keep.
   const where = and(
     eq(project.editionId, params.editionId),
     isNull(project.deletedAt),
-    isNull(entry.deletedAt),
     params.categoryId ? eq(entry.categoryId, params.categoryId) : undefined,
     statusCondition(params.status ?? 'submitted'),
     billingCondition(db, params.billing ?? 'any'),
@@ -171,8 +183,8 @@ export async function listStaffEntries(db: AwardsDb, params: ListParams): Promis
   )
   const [{ total }] = await db
     .select({ total: count() })
-    .from(entry)
-    .innerJoin(project, eq(project.id, entry.projectId))
+    .from(project)
+    .leftJoin(entry, and(eq(entry.projectId, project.id), isNull(entry.deletedAt)))
     .innerJoin(user, eq(user.id, project.createdBy))
     .leftJoin(billingProfile, eq(billingProfile.id, project.billingProfileId))
     .leftJoin(
@@ -192,20 +204,21 @@ export async function listStaffEntries(db: AwardsDb, params: ListParams): Promis
   const rows = await db
     .select({
       entryId: entry.id,
-      projectId: entry.projectId,
+      projectId: project.id,
       status: entry.status,
       submittedAt: entry.submittedAt,
       title: titleText,
       categoryName: category.name,
       company: billingProfile.companyName,
+      creatorId: user.id,
       creatorName: user.name,
       creatorEmail: user.email,
       exported: sql<boolean>`exists (select 1 from "entry_event" where ${exportedEntry})`,
     })
-    .from(entry)
-    .innerJoin(project, eq(project.id, entry.projectId))
+    .from(project)
+    .leftJoin(entry, and(eq(entry.projectId, project.id), isNull(entry.deletedAt)))
     .innerJoin(user, eq(user.id, project.createdBy))
-    .innerJoin(category, eq(category.id, entry.categoryId))
+    .leftJoin(category, eq(category.id, entry.categoryId))
     .leftJoin(billingProfile, eq(billingProfile.id, project.billingProfileId))
     .leftJoin(
       projectAnswer,
@@ -224,11 +237,12 @@ export async function listStaffEntries(db: AwardsDb, params: ListParams): Promis
     rows: rows.map((r) => ({
       entryId: r.entryId,
       projectId: r.projectId,
-      status: r.status as EntryStatus,
+      status: (r.status as EntryStatus | null) ?? null,
       projectTitle: r.title ?? '',
-      categoryName: r.categoryName.is,
+      categoryName: r.categoryName?.is ?? null,
       submittedAt: r.submittedAt,
       company: r.company ?? null,
+      creatorId: r.creatorId,
       creatorName: r.creatorName,
       creatorEmail: r.creatorEmail,
       exported: r.exported === true,

@@ -68,7 +68,10 @@ export const adminCopy = {
     nothing: 'Engar færslur voru valdar.',
     search: 'Leita',
     statusSubmitted: 'Innsendar (ekki drög eða dregnar til baka)',
-    statusAll: 'Allar, líka drög',
+    statusAll: 'Allar, líka drög og verkefni án flokks',
+    statusNoCategory: 'Enginn flokkur (verkefni án færslu)',
+    noCategory: 'Enginn flokkur',
+    noCategoryNote: 'Ekkert að opna eða meta fyrr en flokkur er valinn.',
     open: 'Opna',
     sortBy: (col: string) => `Raða eftir: ${col}`,
     summary: (from: number, to: number, total: number) =>
@@ -168,7 +171,10 @@ export const adminCopy = {
     nothing: 'No entries were selected.',
     search: 'Search',
     statusSubmitted: 'Submitted (not drafts or withdrawn)',
-    statusAll: 'All, including drafts',
+    statusAll: 'All, including drafts and projects with no category',
+    statusNoCategory: 'No category (projects with no entry)',
+    noCategory: 'No category',
+    noCategoryNote: 'Nothing to open or assess until a category is chosen.',
     open: 'Open',
     sortBy: (col: string) => `Sort by: ${col}`,
     summary: (from: number, to: number, total: number) =>

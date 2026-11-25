@@ -10,6 +10,7 @@ import {
   parseListSearch,
   STATUS_FILTERS,
   type SortKey,
+  type StaffEntryRow,
 } from '@/lib/awards/staff/entry-list'
 import { getStaffEdition, listStaffCategories } from '@/lib/awards/staff/queries'
 import type { EntryStatus } from '@/lib/awards/types'
@@ -90,7 +91,7 @@ export default async function AdminProjectsPage({
     const [id, reason = ''] = s.split(':')
     return { id, reason }
   })
-  const titleById = new Map(rows.map((r) => [r.entryId, r.projectTitle]))
+  const titleById = new Map(rows.flatMap((r) => (r.entryId ? [[r.entryId, r.projectTitle] as const] : [])))
   const changed = Number(one(search.changed))
 
   const keep = (
@@ -137,6 +138,59 @@ export default async function AdminProjectsPage({
     ELIGIBILITY_TARGETS.filter((to) =>
       allowedTransitions(from).some((t) => t.to === to && t.actors.includes('staff')),
     )
+  /** A row for an entry: select, open, and set eligibility. */
+  const entryRow = (r: StaffEntryRow, entryId: string, status: EntryStatus) => (
+    <tr key={entryId} data-entry={entryId}>
+      <td className={styles.checkCol}>
+        <input
+          type="checkbox"
+          name="entry"
+          value={entryId}
+          aria-label={`${c.select}: ${r.projectTitle}, ${r.categoryName}`}
+        />
+      </td>
+      <th scope="row">
+        <a href={entryHref(entryId)}>{r.projectTitle || '–'}</a>
+        <span className={styles.cellNote}>{r.creatorEmail}</span>
+      </th>
+      <td>{r.categoryName}</td>
+      <td>
+        {r.company ?? <span className={styles.muted}>{c.noCompany}</span>}
+        {r.exported && <span className={styles.cellNote}>{c.exportedTag}</span>}
+      </td>
+      <td className={styles.nowrap}>
+        {r.submittedAt ? (
+          <time dateTime={r.submittedAt.toISOString()}>
+            {r.submittedAt.toISOString().slice(0, 10)}
+          </time>
+        ) : (
+          '–'
+        )}
+      </td>
+      <td>
+        <span className={styles.tag} data-status={status}>
+          {c.status[status]}
+        </span>
+      </td>
+      <td>
+        <span className={styles.rowActions}>
+          {targetsFor(status).map((to) => (
+            <button
+              key={to}
+              type="submit"
+              name="single"
+              value={`${entryId}:${to}`}
+              className={styles.small}
+              disabled={!closed}
+              aria-label={`${c.target[to]}: ${r.projectTitle}, ${r.categoryName}`}
+            >
+              {c.target[to]}
+            </button>
+          ))}
+        </span>
+      </td>
+    </tr>
+  )
   const filtered =
     !!categoryId || list.status !== 'submitted' || list.billing !== 'any' || list.q !== ''
 
@@ -209,7 +263,13 @@ export default async function AdminProjectsPage({
               <select name="status" defaultValue={list.status} className={inputClass}>
                 {STATUS_FILTERS.map((s) => (
                   <option key={s} value={s}>
-                    {s === 'submitted' ? c.statusSubmitted : s === 'all' ? c.statusAll : c.status[s]}
+                    {s === 'submitted'
+                      ? c.statusSubmitted
+                      : s === 'all'
+                        ? c.statusAll
+                        : s === 'no_category'
+                          ? c.statusNoCategory
+                          : c.status[s]}
                   </option>
                 ))}
               </select>
@@ -268,58 +328,37 @@ export default async function AdminProjectsPage({
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((r) => (
-                      <tr key={r.entryId} data-entry={r.entryId}>
-                        <td className={styles.checkCol}>
-                          <input
-                            type="checkbox"
-                            name="entry"
-                            value={r.entryId}
-                            aria-label={`${c.select}: ${r.projectTitle}, ${r.categoryName}`}
-                          />
-                        </td>
-                        <th scope="row">
-                          <a href={entryHref(r.entryId)}>{r.projectTitle || '–'}</a>
-                          <span className={styles.cellNote}>{r.creatorEmail}</span>
-                        </th>
-                        <td>{r.categoryName}</td>
-                        <td>
-                          {r.company ?? <span className={styles.muted}>{c.noCompany}</span>}
-                          {r.exported && <span className={styles.cellNote}>{c.exportedTag}</span>}
-                        </td>
-                        <td className={styles.nowrap}>
-                          {r.submittedAt ? (
-                            <time dateTime={r.submittedAt.toISOString()}>
-                              {r.submittedAt.toISOString().slice(0, 10)}
-                            </time>
-                          ) : (
-                            '–'
-                          )}
-                        </td>
-                        <td>
-                          <span className={styles.tag} data-status={r.status}>
-                            {c.status[r.status]}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={styles.rowActions}>
-                            {targetsFor(r.status).map((to) => (
-                              <button
-                                key={to}
-                                type="submit"
-                                name="single"
-                                value={`${r.entryId}:${to}`}
-                                className={styles.small}
-                                disabled={!closed}
-                                aria-label={`${c.target[to]}: ${r.projectTitle}, ${r.categoryName}`}
-                              >
-                                {c.target[to]}
-                              </button>
-                            ))}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {rows.map((r) =>
+                      r.entryId === null || r.status === null ? (
+                        // A project with no category yet: no entry to open, select or assess.
+                        <tr key={`project-${r.projectId}`} data-project={r.projectId} data-no-category>
+                          <td className={styles.checkCol} />
+                          <th scope="row">
+                            {r.projectTitle || '–'}
+                            <span className={styles.cellNote}>
+                              <a href={localePath(ADMIN.user(r.creatorId), locale)}>{r.creatorEmail}</a>
+                            </span>
+                          </th>
+                          <td>
+                            <span className={styles.muted}>{c.noCategory}</span>
+                          </td>
+                          <td>
+                            {r.company ?? <span className={styles.muted}>{c.noCompany}</span>}
+                          </td>
+                          <td className={styles.nowrap}>–</td>
+                          <td>
+                            <span className={styles.tag} data-status="no_category">
+                              {c.noCategory}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={styles.cellNote}>{c.noCategoryNote}</span>
+                          </td>
+                        </tr>
+                      ) : (
+                        entryRow(r, r.entryId, r.status)
+                      ),
+                    )}
                   </tbody>
                 </table>
               </div>

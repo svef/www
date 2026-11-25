@@ -33,6 +33,7 @@ describe('parseListSearch (pure)', () => {
     expect(
       parseListSearch({ status: 'eligible', q: '  vefur ', sort: 'title', dir: 'desc', page: '3', category: 'c1' }),
     ).toEqual({ categoryId: 'c1', status: 'eligible', billing: 'any', q: 'vefur', sort: 'title', dir: 'desc', page: 3 })
+    expect(parseListSearch({ status: 'no_category' }).status).toBe('no_category')
     const bad = parseListSearch({ status: 'bogus', sort: 'password', dir: 'sideways', page: '-2', billing: 'free' })
     expect(bad).toMatchObject({ status: 'submitted', billing: 'any', sort: 'submitted', dir: 'asc', page: 1 })
     expect(parseListSearch({ billing: 'missing' }).billing).toBe('missing')
@@ -174,6 +175,49 @@ describe.skipIf(!url)('listStaffEntries', () => {
       const rows = (await listStaffEntries(tx, { editionId: ed.editionId, search: t, sort: 'title' })).rows
       expect(rows.find((r) => r.entryId === paid)).toMatchObject({ exported: true, creatorEmail: creator.email })
       expect(rows.find((r) => r.entryId === unpaid)).toMatchObject({ exported: false, company: null })
+    })
+  })
+
+  it('shows projects with no category yet as rows of their own, only in all and no_category', async () => {
+    await withRollback(db, async (tx) => {
+      const t = tag()
+      const u = await createUser(tx, 'nocat')
+      const withEntry = await make(tx, u, `${t} Beta`, 'submitted')
+      const bare = await createProject(tx, { editionId: ed.editionId, userId: u, title: `${t} Alfa` })
+      // A project whose only entry was removed has no category either.
+      const emptied = await createProject(tx, { editionId: ed.editionId, userId: u, title: `${t} Gamma` })
+      const gone = await createEntry(tx, { projectId: emptied, categoryId: ed.categories[0].id, status: 'draft' })
+      await tx.update(schema.entry).set({ deletedAt: new Date() }).where(eq(schema.entry.id, gone))
+      const list = (p: Partial<Parameters<typeof listStaffEntries>[1]>) =>
+        listStaffEntries(tx, { editionId: ed.editionId, search: t, sort: 'title', ...p })
+
+      expect((await list({})).rows.map((r) => r.entryId)).toEqual([withEntry])
+      const all = await list({ status: 'all' })
+      expect(all.total).toBe(3)
+      expect(all.rows.map((r) => [r.projectTitle, r.entryId === null])).toEqual([
+        [`${t} Alfa`, true],
+        [`${t} Beta`, false],
+        [`${t} Gamma`, true],
+      ])
+      const none = await list({ status: 'no_category' })
+      expect(none.rows.map((r) => r.projectId)).toEqual([bare, emptied])
+      expect(none.rows[0]).toMatchObject({ entryId: null, status: null, categoryName: null, creatorId: u })
+      // Any filter that is about an entry leaves them out.
+      expect((await list({ status: 'all', categoryId: ed.categories[0].id })).rows.map((r) => r.entryId)).toEqual([withEntry])
+      expect((await list({ status: 'draft' })).rows).toEqual([])
+      expect((await list({ status: 'all', billing: 'exported' })).rows).toEqual([])
+      // Every sort holds them, and paging stays stable (the project id breaks ties).
+      for (const sort of ['title', 'category', 'company', 'submitted', 'status'] as const) {
+        for (const dir of ['asc', 'desc'] as const) {
+          const rows = (await list({ status: 'all', sort, dir })).rows
+          expect(rows, `${sort} ${dir}`).toHaveLength(3)
+          const paged = [
+            ...(await list({ status: 'all', sort, dir, pageSize: 2, page: 1 })).rows,
+            ...(await list({ status: 'all', sort, dir, pageSize: 2, page: 2 })).rows,
+          ]
+          expect(paged.map((r) => r.projectId)).toEqual(rows.map((r) => r.projectId))
+        }
+      }
     })
   })
 

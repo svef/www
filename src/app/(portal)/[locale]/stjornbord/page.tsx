@@ -82,7 +82,13 @@ export default async function AdminOverviewPage({ params }: { params: Promise<{ 
         <section aria-label={c.statsLabel}>
           <ul className={styles.stats}>
             {[
-              { key: 'projects', label: c.stats.projects, value: counts.projects, href: projectsHref() },
+              {
+                key: 'projects',
+                label: c.stats.projects,
+                value: counts.projects,
+                note: counts.noCategory > 0 ? c.noCategory(counts.noCategory) : undefined,
+                href: projectsHref(),
+              },
               { key: 'submitted', label: c.stats.submitted, value: submitted, href: projectsHref({ status: 'submitted' }) },
               { key: 'drafts', label: c.stats.drafts, value: counts.totals.draft, href: projectsHref({ status: 'draft' }) },
               {
@@ -211,6 +217,25 @@ export default async function AdminOverviewPage({ params }: { params: Promise<{ 
                     </td>
                   </tr>
                 ))}
+                {counts.noCategory > 0 && (
+                  // Projects with no category yet have no entry, so no status either.
+                  <tr data-category="none">
+                    <th scope="row">{c.noCategoryRow}</th>
+                    {columns.map((s) => (
+                      <td key={s} className={styles.num}>
+                        <span className={styles.muted}>–</span>
+                      </td>
+                    ))}
+                    <td className={styles.num}>
+                      <a
+                        href={projectsHref({ status: 'no_category' })}
+                        aria-label={c.noCategoryLink(counts.noCategory)}
+                      >
+                        {num(counts.noCategory)}
+                      </a>
+                    </td>
+                  </tr>
+                )}
               </tbody>
               <tfoot>
                 <tr>
@@ -220,7 +245,8 @@ export default async function AdminOverviewPage({ params }: { params: Promise<{ 
                       {num(counts.totals[s])}
                     </td>
                   ))}
-                  <td className={styles.num}>{num(counts.entries)}</td>
+                  {/* Every row of the projects list's "all" view, which this footer links to. */}
+                  <td className={styles.num}>{num(counts.entries + counts.noCategory)}</td>
                 </tr>
               </tfoot>
             </table>

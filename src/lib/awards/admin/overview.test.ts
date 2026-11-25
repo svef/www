@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { emptyCounts, foldCounts } from './overview'
 
@@ -27,5 +28,41 @@ describe('foldCounts', () => {
     ])
     expect(out.categories.every((c) => c.total === 0)).toBe(true)
     expect(out.entries).toBe(0)
+  })
+})
+
+const url = process.env.AWARDS_DATABASE_URL_UNPOOLED ?? process.env.AWARDS_DATABASE_URL
+
+describe.skipIf(!url)('countEdition', () => {
+  it('counts projects with no category, matching the rows the projects list adds for them', async () => {
+    const { openFixtureDb, seededEdition, createUser, createProject, createEntry } = await import(
+      '../staff/test-fixtures'
+    )
+    const { withRollback } = await import('../staff/rollback')
+    const { listStaffEntries } = await import('../staff/entry-list')
+    const { countEdition } = await import('./overview')
+    const { db, close } = openFixtureDb()
+    try {
+      const ed = await seededEdition(db)
+      await withRollback(db, async (tx) => {
+        const before = await countEdition(tx, ed.editionId)
+        const u = await createUser(tx, 'count-nocat')
+        await createProject(tx, { editionId: ed.editionId, userId: u, title: 'Án flokks' })
+        const p = await createProject(tx, { editionId: ed.editionId, userId: u, title: 'Með flokk' })
+        await createEntry(tx, { projectId: p, categoryId: ed.categories[0].id, status: 'draft' })
+        const after = await countEdition(tx, ed.editionId)
+        expect(after.projects - before.projects).toBe(2)
+        expect(after.noCategory - before.noCategory).toBe(1)
+        expect(after.entries - before.entries).toBe(1)
+
+        // The footer's total is exactly what the list's "all" and "no_category" views hold.
+        const all = await listStaffEntries(tx, { editionId: ed.editionId, status: 'all', pageSize: 1 })
+        expect(all.total).toBe(after.entries + after.noCategory)
+        const none = await listStaffEntries(tx, { editionId: ed.editionId, status: 'no_category', pageSize: 1 })
+        expect(none.total).toBe(after.noCategory)
+      })
+    } finally {
+      await close()
+    }
   })
 })
