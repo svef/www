@@ -19,6 +19,13 @@ describe('legacyPortalPath', () => {
     expect(legacyPortalPath(['submissions', 'staff', id])).toBe(`/stjornbord/verkefni/${id}`)
   })
 
+  it('reads an address with a trailing slash as the same address', () => {
+    expect(legacyPortalPath(['innsendingar', 'minar', ''])).toBe('/minar-sidur')
+    expect(legacyPortalPath(['innsendingar', 'bod', 'tok', ''])).toBe('/minar-sidur/bod/tok')
+    expect(legacyPortalPath(['submissions', 'staff', id, ''])).toBe(`/stjornbord/verkefni/${id}`)
+    expect(legacyPortalPath(['innsendingar', 'bod', ''])).toBeNull()
+  })
+
   it('leaves the public page and everything else alone', () => {
     expect(legacyPortalPath(['innsendingar'])).toBeNull()
     expect(legacyPortalPath(['submissions'])).toBeNull()

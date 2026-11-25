@@ -20,7 +20,11 @@ import { ADMIN, PORTAL } from './paths'
  * | /innsendingar/starfsfolk/<entryId>    | /stjornbord/verkefni/<entryId>     |
  */
 export function legacyPortalPath(segments: readonly string[]): string | null {
-  const [head, second, third, ...rest] = segments
+  // A trailing slash leaves an empty last segment. Next normally strips the slash before the
+  // proxy runs, but the answer should not depend on it: `/innsendingar/bod/<token>/` is the
+  // same old address as `/innsendingar/bod/<token>`.
+  const parts = segments.at(-1) === '' ? segments.slice(0, -1) : segments
+  const [head, second, third, ...rest] = parts
   if (head !== 'innsendingar' && head !== 'submissions') return null
   if (second === undefined || second === '' || rest.length > 0) return null
   const one = third === undefined || third === ''
