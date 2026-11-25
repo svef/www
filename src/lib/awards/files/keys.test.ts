@@ -20,6 +20,9 @@ describe('object keys', () => {
 
   it('refuses a type it has no extension for', () => {
     expect(extensionFor('image/gif')).toBeNull()
+    // Not an inherited property either: a crafted content type cannot pass as accepted.
+    for (const t of ['__proto__', 'constructor', 'toString']) expect(extensionFor(t)).toBeNull()
+    expect(() => newObjectKey({ editionYear: 1, projectId: 'p', contentType: '__proto__' })).toThrow()
     expect(() => newObjectKey({ editionYear: 1, projectId: 'p', contentType: 'image/gif' })).toThrow()
   })
 

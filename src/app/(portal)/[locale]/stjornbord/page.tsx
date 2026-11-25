@@ -19,6 +19,7 @@ import { entryCopy } from './entry-copy'
 import { overviewCopy } from './overview-copy'
 import { requestCopy } from './request-copy'
 import styles from './admin.module.scss'
+import { ownValue } from '@/lib/own-key'
 
 /**
  * Stjórnborð → Staðan, the admin's landing page: the edition in numbers, its deadlines and the
@@ -244,7 +245,7 @@ export default async function AdminOverviewPage({ params }: { params: Promise<{ 
                   </time>
                   {a.kind === 'entry' ? (
                     <span>
-                      <strong>{a.actorName ?? c.system}</strong>: {events[a.type] ?? a.type}{' '}
+                      <strong>{a.actorName ?? c.system}</strong>: {ownValue(events, a.type) ?? a.type}{' '}
                       {a.entryId ? (
                         <a href={localePath(ADMIN.entry(a.entryId), locale)}>{a.subject || c.untitled}</a>
                       ) : (
@@ -254,7 +255,7 @@ export default async function AdminOverviewPage({ params }: { params: Promise<{ 
                     </span>
                   ) : (
                     <span>
-                      <strong>{a.actorName ?? c.system}</strong> {c.userEvents[userEventKey(a.type, a.data)] ?? a.type}{' '}
+                      <strong>{a.actorName ?? c.system}</strong> {ownValue(c.userEvents, userEventKey(a.type, a.data)) ?? a.type}{' '}
                       {a.userId ? <a href={localePath(ADMIN.user(a.userId), locale)}>{a.subject}</a> : a.subject}
                     </span>
                   )}

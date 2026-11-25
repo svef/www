@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto'
+import { ownValue } from '@/lib/own-key'
 
 const EXTENSIONS: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg' }
 
 /** The file extension stored for a content type, or null when the type is not accepted. */
 export function extensionFor(contentType: string): string | null {
-  return EXTENSIONS[contentType] ?? null
+  return ownValue(EXTENSIONS, contentType) ?? null
 }
 
 /**

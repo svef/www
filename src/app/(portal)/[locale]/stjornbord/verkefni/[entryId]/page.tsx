@@ -19,6 +19,7 @@ import styles from '../../admin.module.scss'
 import { transferProjectAction } from './actions'
 import { CredentialsViewer } from './CredentialsViewer'
 import { Requests } from './Requests'
+import { ownValue } from '@/lib/own-key'
 
 /**
  * The admin's entry view (svef/www#168): the admin-only fields first, then what the
@@ -64,10 +65,10 @@ function describe(e: StaffEntryEvent, c: (typeof entryCopy)[Locale]): string {
     after &&
     typeof after.status === 'string'
   ) {
-    const to = c.status_[after.status as keyof typeof c.status_] ?? after.status
+    const to = ownValue(c.status_, after.status) ?? after.status
     const from =
       before && typeof before.status === 'string'
-        ? (c.status_[before.status as keyof typeof c.status_] ?? before.status)
+        ? (ownValue(c.status_, before.status) ?? before.status)
         : '?'
     return `${from} → ${to}`
   }
@@ -236,9 +237,7 @@ export default async function StaffEntryPage({
               <p>{c.transferDone(search.transferred)}</p>
             ) : (
               <p>
-                {c.transferErrors[
-                  search.transfer_error as keyof typeof c.transferErrors
-                ] ?? c.transferErrors.invalid_email}
+                {ownValue(c.transferErrors, search.transfer_error) ?? c.transferErrors.invalid_email}
               </p>
             )}
           </div>
@@ -463,7 +462,7 @@ export default async function StaffEntryPage({
                           {stamp(e.createdAt)}
                         </time>
                       </td>
-                      <td>{c.events[e.type] ?? e.type}</td>
+                      <td>{ownValue(c.events, e.type) ?? e.type}</td>
                       <td>
                         {e.actorName ? `${e.actorName} <${e.actorEmail}>` : c.system}
                       </td>

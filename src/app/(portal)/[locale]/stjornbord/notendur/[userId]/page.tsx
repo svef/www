@@ -12,6 +12,7 @@ import { adminCopy } from '../../copy'
 import { usersCopy } from '../copy'
 import { setRoleAction } from '../actions'
 import styles from '../../admin.module.scss'
+import { ownValue } from '@/lib/own-key'
 
 /**
  * A user in the admin: their account details, whether they are an admin (with the button to
@@ -66,8 +67,7 @@ export default async function AdminUserPage({
   const self = viewer.id === u.id
   const outcome = one((await searchParams).role)
   const done = outcome === 'granted' || outcome === 'removed' ? c.roleDone[outcome] : null
-  const errorKey = outcome?.startsWith('error:') ? (outcome.slice(6) as keyof typeof c.roleError) : null
-  const error = errorKey ? (c.roleError[errorKey] ?? null) : null
+  const error = outcome?.startsWith('error:') ? (ownValue(c.roleError, outcome.slice(6)) ?? null) : null
   const date = (d: Date) => formatDate(d.toISOString(), locale)
   const title = (p: UserProject) => p.title || c.untitled
 
@@ -244,7 +244,7 @@ export default async function AdminUserPage({
                         </time>
                       </td>
                       <td>{e.actorName ?? c.system}</td>
-                      <th scope="row">{c.events[userEventKey(e.type, e.data)] ?? e.type}</th>
+                      <th scope="row">{ownValue(c.events, userEventKey(e.type, e.data)) ?? e.type}</th>
                     </tr>
                   ))}
                 </tbody>

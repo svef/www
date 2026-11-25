@@ -44,7 +44,7 @@ export function foldCounts(
   let entries = 0
   for (const r of rows) {
     const row = byId.get(r.categoryId)
-    if (!row || !(r.status in totals)) continue
+    if (!row || !Object.hasOwn(totals, r.status)) continue
     const s = r.status as EntryStatus
     row.counts[s] += r.n
     row.total += r.n

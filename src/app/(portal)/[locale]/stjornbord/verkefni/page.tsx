@@ -25,6 +25,7 @@ import { Pager } from '../Pager'
 import { setEligibilityAction } from './actions'
 import { adminCopy } from '../copy'
 import styles from '../admin.module.scss'
+import { ownValue } from '@/lib/own-key'
 
 /**
  * Stjórnborð → Verkefni: every entry of an edition, one row per (project, category). Search,
@@ -86,8 +87,8 @@ export default async function AdminProjectsPage({
   // What the last action did, from the redirect's query string.
   const skippedRaw = Array.isArray(search.skip) ? search.skip : search.skip ? [search.skip] : []
   const skipped = skippedRaw.map((s) => {
-    const [id, reason] = s.split(':')
-    return { id, reason: reason as keyof typeof c.reason }
+    const [id, reason = ''] = s.split(':')
+    return { id, reason }
   })
   const titleById = new Map(rows.map((r) => [r.entryId, r.projectTitle]))
   const changed = Number(one(search.changed))
@@ -157,7 +158,7 @@ export default async function AdminProjectsPage({
                     <ul>
                       {skipped.map((s) => (
                         <li key={s.id}>
-                          {titleById.get(s.id) ?? s.id}: {c.reason[s.reason] ?? s.reason}
+                          {titleById.get(s.id) ?? s.id}: {ownValue(c.reason, s.reason) ?? s.reason}
                         </li>
                       ))}
                     </ul>

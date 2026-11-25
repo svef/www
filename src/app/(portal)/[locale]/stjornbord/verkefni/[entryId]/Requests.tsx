@@ -12,6 +12,7 @@ import { GrowText } from '@/components/GrowText/GrowText'
 import { requestCopy } from '../../request-copy'
 import styles from '../../admin.module.scss'
 import { openRequestAction, resolveRequestAction, staffReplyAction } from './actions'
+import { ownValue } from '@/lib/own-key'
 
 const stamp = (d: Date) => d.toISOString().slice(0, 16).replace('T', ' ') + ' UTC'
 
@@ -55,10 +56,10 @@ export function Requests({
   const errors = (outcome.request_error ?? '')
     .split(',')
     .filter(Boolean)
-    .map((e) => c.errors[e] ?? c.errors.invalid)
+    .map((e) => ownValue(c.errors, e) ?? c.errors.invalid)
   const done =
     outcome.request === 'opened'
-      ? `${c.opened_} ${c.mail[(outcome.mail ?? 'none') as keyof typeof c.mail] ?? ''}`
+      ? `${c.opened_} ${ownValue(c.mail, outcome.mail ?? 'none') ?? ''}`
       : outcome.request === 'replied'
         ? c.replied
         : outcome.request === 'resolved'

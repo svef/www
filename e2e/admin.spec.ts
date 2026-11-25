@@ -202,3 +202,17 @@ test('a super admin opens the admin and grants the admin role like any admin', a
   await expect(page.getByTestId('role-result')).toHaveText('Notandinn er nú stjórnandi.')
   await context.close()
 })
+
+test('outcome messages in the query string cannot name an inherited property', async ({ browser }) => {
+  const { context, id, page } = await admin(browser)
+  for (const path of [
+    `/stjornbord/notendur/${id}?role=error:__proto__`,
+    `/stjornbord/notendur/${id}?role=error:constructor`,
+    `/stjornbord/verkefni?changed=0&skip=x:__proto__&skip=y:constructor`,
+  ]) {
+    const res = await page.goto(urlFor('is', path))
+    expect(res?.status(), path).toBe(200)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  }
+  await context.close()
+})
