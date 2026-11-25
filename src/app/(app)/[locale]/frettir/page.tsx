@@ -9,6 +9,9 @@ import { PageSection } from '@/components/PageSection/PageSection'
 import { NewsGrid } from '@/components/NewsGrid/NewsGrid'
 import { NewsCard } from '@/components/NewsCard/NewsCard'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('frettir')
 
 /**
  * Statically prerendered for both locales (`generateStaticParams` lives in the

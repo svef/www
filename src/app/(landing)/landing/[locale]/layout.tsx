@@ -10,6 +10,7 @@ import {
 import { theme } from '@/lib/theme'
 import { isLocale } from '@/lib/i18n'
 import { getSiteUrl } from '@/lib/site-url'
+import { socialMetadata } from '@/lib/og/metadata'
 import { Analytics } from '@/components/Analytics/Analytics'
 import { getLandingCopy } from '../../content'
 import '@mantine/core/styles.css'
@@ -43,6 +44,14 @@ export async function generateMetadata({
       canonical: `/${locale}`,
       languages: { is: '/is', en: '/en' },
     },
+    // The front page's card, at `/og/<locale>/forsida.png`. Not the `opengraph-image` file
+    // convention, which would put it under `/landing/<locale>/`, an internal path the proxy
+    // redirects away (see `src/app/og/[locale]/[card]/route.tsx`).
+    ...socialMetadata({
+      locale,
+      card: 'forsida',
+      path: `/${locale}`,
+    }),
   }
 }
 

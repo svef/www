@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Fragment } from 'react'
 import Link from 'next/link'
@@ -15,6 +16,7 @@ import { ButtonLink } from '@/components/ButtonLink/ButtonLink'
 import { EventPoster } from '@/components/EventPoster/EventPoster'
 import { EventZigzag } from '@/components/EventPoster/EventZigzag'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
+import { socialMetadata } from '@/lib/og/metadata'
 import styles from './home.module.scss'
 
 /**
@@ -28,6 +30,17 @@ import styles from './home.module.scss'
  * plus the one request that finds the page stale and is served it anyway.
  */
 export const revalidate = 300
+
+/** The layout's title and description stand; this adds the page's own URL to its card. */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  if (!isLocale(locale)) return {}
+  return socialMetadata({ locale, card: 'forsida', path: `/${locale}` })
+}
 
 /**
  * The export's `forsida`: the hero and the intro band, the Web Awards section, the events

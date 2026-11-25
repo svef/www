@@ -7,6 +7,9 @@ import { PageHead } from '@/components/PageHead/PageHead'
 import { PageSection } from '@/components/PageSection/PageSection'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { FaqAccordion } from '@/components/FaqAccordion/FaqAccordion'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('spurt-og-svarad')
 
 /**
  * Statically prerendered for both locales and refreshed by ISR.

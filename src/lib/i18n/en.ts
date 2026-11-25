@@ -1,6 +1,11 @@
 // English UI microcopy. Mirrors the shape of `is.ts`.
 export const en = {
   languageName: 'English',
+  meta: {
+    title: 'SVEF — the Icelandic Web Industry Association',
+    description:
+      'SVEF is the professional association for the people who build the web in Iceland.',
+  },
   switchLanguage: 'Switch to Icelandic',
   skipToContent: 'Skip to content',
   close: 'Close',

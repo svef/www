@@ -9,6 +9,9 @@ import { EventPoster } from '@/components/EventPoster/EventPoster'
 import { EventGrid } from '@/components/EventPoster/EventGrid'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import styles from './events.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('vidburdir')
 
 /**
  * Statically prerendered for both locales (`generateStaticParams` lives in the

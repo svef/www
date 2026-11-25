@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { socialMetadata } from '@/lib/og/metadata'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
@@ -85,10 +86,18 @@ async function loadEvent(params: Params) {
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { event } = await loadEvent(params)
+  const { event, locale } = await loadEvent(params)
+  const description = event.summary ?? event.meta ?? undefined
   return {
     title: event.title,
-    description: event.summary ?? event.meta ?? undefined,
+    description,
+    ...socialMetadata({
+      locale,
+      card: 'vidburdir',
+      title: event.title,
+      description,
+      path: event.href,
+    }),
   }
 }
 

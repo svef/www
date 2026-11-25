@@ -5,6 +5,9 @@ import { PageSection } from '@/components/PageSection/PageSection'
 import { ForgotPasswordForm } from '@/components/AccountForms/AccountForms'
 import { accountCopy } from '@/components/AccountForms/copy'
 import page from '../form-page.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('gleymt-lykilord')
 
 export default async function ForgotPasswordPage({
   params,

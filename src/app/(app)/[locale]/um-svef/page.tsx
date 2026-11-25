@@ -14,6 +14,9 @@ import { PressList } from '@/components/PressList/PressList'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { BrandKit } from '@/components/BrandKit/BrandKit'
 import styles from './about.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('um-svef')
 
 /**
  * Statically prerendered for both locales and refreshed by ISR.

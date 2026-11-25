@@ -14,6 +14,7 @@ import { getDictionary, isLocale, localePath, LOCALES } from '@/lib/i18n'
 import { buildNavItems, visibleFooterColumns } from '@/lib/nav'
 import { getSiteChrome } from '@/lib/content/site-settings'
 import { getSiteUrl } from '@/lib/site-url'
+import { socialMetadata } from '@/lib/og/metadata'
 import { Analytics } from '@/components/Analytics/Analytics'
 import { NavigationProgress } from '@/components/NavigationProgress/NavigationProgress'
 import { fontClassName, fontStyle } from '@/lib/fonts'
@@ -27,10 +28,23 @@ import '@mantine/core/styles/global.css'
 import '@mantine/core/styles/VisuallyHidden.css'
 import '@/styles/globals.scss'
 
-export const metadata: Metadata = {
-  title: { default: 'SVEF — Samtök vefiðnaðarins', template: '%s | SVEF' },
-  description: 'Samtök vefiðnaðarins — fagfélag fólksins sem býr til vefinn á Íslandi.',
-  metadataBase: new URL(getSiteUrl()),
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  if (!isLocale(locale)) return {}
+  const meta = getDictionary(locale).meta
+  return {
+    title: { default: meta.title, template: '%s | SVEF' },
+    description: meta.description,
+    metadataBase: new URL(getSiteUrl()),
+    // The front page's card, as the fallback for a page that does not name its own. Every
+    // page in this layout does (`cardMetadata`, `socialMetadata`); the signed-in portal and
+    // the admin have root layouts of their own and get no card at all.
+    ...socialMetadata({ locale, card: 'forsida' }),
+  }
 }
 
 // The layout reads the `site-settings` global for the footer, so it is a route

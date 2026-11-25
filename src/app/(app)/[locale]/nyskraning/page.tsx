@@ -6,6 +6,9 @@ import { SignUpForm } from '@/components/AccountForms/AccountForms'
 import { accountCopy } from '@/components/AccountForms/copy'
 import { dashboardPath, safeNext } from '@/lib/awards/auth/roles'
 import page from '../form-page.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('nyskraning')
 
 export default async function SignUpPage({
   params,

@@ -7,6 +7,9 @@ import { ResetPasswordForm } from '@/components/AccountForms/AccountForms'
 import { accountCopy } from '@/components/AccountForms/copy'
 import styles from '@/components/AccountForms/AccountForms.module.scss'
 import page from '../form-page.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('endurstilla-lykilord')
 
 // Where the link in the password-reset email lands: `?token=…` when the token
 // was valid, `?error=INVALID_TOKEN` when Better Auth rejected it.

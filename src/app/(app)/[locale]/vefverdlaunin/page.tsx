@@ -12,6 +12,9 @@ import { CategoryGrid } from '@/components/CategoryGrid/CategoryGrid'
 import { CeremonyBlock } from './CeremonyBlock'
 import { WinnersArchive, type ArchiveYear } from './WinnersArchive'
 import styles from './awards.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('vefverdlaunin')
 
 /**
  * Statically prerendered for both locales and refreshed by ISR.

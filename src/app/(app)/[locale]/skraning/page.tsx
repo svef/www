@@ -9,6 +9,9 @@ import { TierCard } from '@/components/TierCard/TierCard'
 import { MembershipForm } from '@/components/MembershipForm/MembershipForm'
 import { membershipLocales } from '@/lib/content/membership-mapping'
 import styles from './membership.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('skraning')
 
 /**
  * Statically prerendered for both locales (`generateStaticParams` lives in the

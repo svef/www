@@ -8,6 +8,9 @@ import { PageSection } from '@/components/PageSection/PageSection'
 import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { BoardCard, type Accent } from '@/components/BoardCard/BoardCard'
 import { BoardGrid } from '@/components/BoardCard/BoardGrid'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('stjorn')
 
 /**
  * Statically prerendered for both locales and refreshed by ISR.

@@ -8,6 +8,9 @@ import { SocialIcon } from '@/components/SocialIcon/SocialIcon'
 import { getSiteChrome } from '@/lib/content/site-settings'
 import styles from './contact.module.scss'
 import page from '../form-page.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('hafa-samband')
 
 const content: Record<
   Locale,

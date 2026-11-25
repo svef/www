@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { socialMetadata } from '@/lib/og/metadata'
 import Image from 'next/image'
 import { notFound, redirect } from 'next/navigation'
 import { getDictionary, isLocale, localePath, type Locale } from '@/lib/i18n'
@@ -89,10 +90,20 @@ export async function generateMetadata({
 }: {
   params: Params
 }): Promise<Metadata> {
-  const { article } = await loadArticle(params)
+  const { article, locale } = await loadArticle(params)
+  const description = article.excerpt ?? undefined
   return {
     title: article.title,
-    description: article.excerpt ?? undefined,
+    description,
+    // The article's cover when it has one; otherwise the news page's card.
+    ...socialMetadata({
+      locale,
+      card: 'frettir',
+      title: article.title,
+      description,
+      path: article.href,
+      image: article.cover ?? undefined,
+    }),
   }
 }
 

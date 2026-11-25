@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import { cardMetadata } from '@/lib/og/metadata'
 import { notFound } from 'next/navigation'
 import { getDictionary, isLocale } from '@/lib/i18n'
 import { PageHead } from '@/components/PageHead/PageHead'
@@ -6,15 +6,7 @@ import { PageSection } from '@/components/PageSection/PageSection'
 import styles from '../form-page.module.scss'
 import { TalkProposalForm } from '@/components/TalkProposalForm/TalkProposalForm'
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>
-}): Promise<Metadata> {
-  const { locale } = await params
-  if (!isLocale(locale)) return {}
-  return { title: getDictionary(locale).forms.talk.title }
-}
+export const generateMetadata = cardMetadata('erindi')
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params

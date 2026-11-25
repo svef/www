@@ -11,6 +11,9 @@ import { EmptyState } from '@/components/EmptyState/EmptyState'
 import { PhotoAlbum } from '@/components/PhotoAlbum/PhotoAlbum'
 import Link from 'next/link'
 import styles from './photos.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('myndir')
 
 /**
  * Statically prerendered for both locales (`generateStaticParams` lives in the

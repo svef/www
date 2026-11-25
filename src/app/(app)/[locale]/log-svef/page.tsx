@@ -8,6 +8,9 @@ import { BylawsText } from '@/components/Bylaws/BylawsText'
 import { BylawsNote } from '@/components/Bylaws/BylawsNote'
 import { getSiteChrome } from '@/lib/content/site-settings'
 import styles from './bylaws.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('log-svef')
 
 /**
  * Statically prerendered for both locales and refreshed by ISR.

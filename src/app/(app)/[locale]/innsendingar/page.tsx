@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import { cardMetadata } from '@/lib/og/metadata'
 import { notFound } from 'next/navigation'
 import { getDictionary, isLocale, localePath } from '@/lib/i18n'
 import { formatLongDate } from '@/lib/dates'
@@ -30,15 +30,7 @@ import { PORTAL } from '@/lib/portal/paths'
  */
 export const revalidate = 60
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>
-}): Promise<Metadata> {
-  const { locale } = await params
-  if (!isLocale(locale)) return {}
-  return { title: getDictionary(locale).submissions.title }
-}
+export const generateMetadata = cardMetadata('innsendingar')
 
 export default async function SubmissionsPage({
   params,

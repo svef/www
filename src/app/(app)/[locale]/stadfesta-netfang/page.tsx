@@ -9,6 +9,9 @@ import styles from '@/components/AccountForms/AccountForms.module.scss'
 import { dashboardPath } from '@/lib/awards/auth/roles'
 import { getUser } from '@/lib/awards/auth/session'
 import page from '../form-page.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('stadfesta-netfang')
 
 // Where the link in the verification email lands. Better Auth verifies the
 // token at /api/account/verify-email and redirects here: `?status=verified`

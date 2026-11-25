@@ -7,6 +7,9 @@ import { accountCopy } from '@/components/AccountForms/copy'
 import { dashboardPath, safeNext } from '@/lib/awards/auth/roles'
 import { getUser } from '@/lib/awards/auth/session'
 import page from '../form-page.module.scss'
+import { cardMetadata } from '@/lib/og/metadata'
+
+export const generateMetadata = cardMetadata('innskraning')
 
 export default async function SignInPage({
   params,
