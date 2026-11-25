@@ -1,12 +1,16 @@
 import { expect, type Page } from '@playwright/test'
 
-/** Mouse-clicks the first internal link that is fully on screen, without scrolling. */
-export async function clickVisibleLink(page: Page) {
-  const hit = await page.evaluate(() => {
+/**
+ * Mouse-clicks the first internal link matching `selector` that is fully on screen, without
+ * scrolling, and waits for its page. Returns the path it went to.
+ */
+export async function clickVisibleLink(
+  page: Page,
+  selector = 'main a[href^="/"], footer a[href^="/"]',
+) {
+  const hit = await page.evaluate((selector) => {
     const here = location.pathname
-    for (const a of document.querySelectorAll<HTMLAnchorElement>(
-      'main a[href^="/"], footer a[href^="/"]',
-    )) {
+    for (const a of document.querySelectorAll<HTMLAnchorElement>(selector)) {
       const r = a.getBoundingClientRect()
       if (
         r.top > 80 &&
@@ -19,7 +23,7 @@ export async function clickVisibleLink(page: Page) {
       }
     }
     return null
-  })
+  }, selector)
   expect(hit, 'a link in the viewport to follow').not.toBeNull()
   await page.mouse.click(hit!.x, hit!.y)
   await page.waitForFunction((p) => location.pathname === p, hit!.path)
