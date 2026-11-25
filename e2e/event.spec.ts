@@ -93,10 +93,10 @@ async function checkEventPage(page: Page, url: string, locale: (typeof LOCALES)[
   const skips = levels.filter((level, i) => i > 0 && level > levels[i - 1] + 1)
   expect(skips, `skipped heading levels on ${url}`).toEqual([])
 
-  // The console must be clean, with nothing waved through. `KNOWN_CONSOLE_ERRORS`
-  // is empty since #69 turned off `experimental.optimisticRouting` and closed
-  // svef/www#60, so there is no tracked exception left to allow for: anything
-  // this route logs is a defect on this route.
+  // The console and the network must be clean, with nothing waved through.
+  // `KNOWN_CONSOLE_ERRORS` is empty, so there is no tracked exception left to
+  // allow for: anything this route logs, and any response of 400 or above it
+  // receives, is a defect on this route.
   expect(errors.map(describeProblem), `console errors on ${url}`).toEqual([])
 
   const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()

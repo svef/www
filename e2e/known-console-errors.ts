@@ -26,7 +26,10 @@ export interface KnownConsoleError {
 // The one entry this list ever held was svef/www#60: every English page logged
 // a 404 for the RSC prefetch of its own language toggle. Turning off
 // `experimental.optimisticRouting` fixed it, the guard test below went red, and
-// the entry was deleted — which is the whole point of the guard.
+// the entry was deleted — which is the whole point of the guard. The flag came
+// back on once every page had an explicit locale prefix (svef/www#108); what
+// guards against the 404 returning now is that `collectPageErrors` records
+// failed responses directly, not only what reaches the console.
 
 export const KNOWN_CONSOLE_ERRORS: readonly KnownConsoleError[] = []
 

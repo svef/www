@@ -83,12 +83,11 @@ test.describe('news article route', () => {
       const skips = levels.filter((level, i) => i > 0 && level > levels[i - 1] + 1)
       expect(skips, `skipped heading levels on ${url}`).toEqual([])
 
-      // The console must be clean, with nothing waved through. This route was
-      // never subject to svef/www#60: measured, its toggle prefetch of
-      // `/frettir/<slug>?_rsc=…` came back 200 where the index's
-      // `/frettir?_rsc=…` came back 404. #60 is fixed now in any case
-      // (`experimental.optimisticRouting` is off), so there is nothing left to
-      // exempt and the assertion is the plain one.
+      // The console and the network must be clean, with nothing waved through.
+      // `collectPageErrors` also records any response of 400 or above, so a
+      // prefetch that 404s (svef/www#60, and the reason optimistic routing was
+      // once switched off — svef/www#108) fails here whether or not Chromium
+      // logs it.
       expect(errors.map(describeProblem), `console errors on ${url}`).toEqual([])
 
       const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
