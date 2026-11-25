@@ -17,6 +17,7 @@ import {
 } from '@/components/FormParts/FormParts'
 import { authClient } from '@/lib/awards/auth/client'
 import type { Locale } from '@/lib/i18n'
+import { parseProfile } from '@/lib/portal/profile'
 import type { AccountCopy } from './copy'
 import styles from './AccountForms.module.scss'
 
@@ -240,7 +241,12 @@ export function SignUpForm({
     const password = String(data.get('password') ?? '')
 
     const errors: Errors = {}
-    if (!name) errors.name = common.errors.required
+    // The account page's rules; the server applies the same ones on sign-up.
+    const profile = parseProfile({ name, phone, preferredLocale: locale })
+    if (!profile.ok) {
+      if (profile.errors.name) errors.name = common.errors[profile.errors.name === 'nameLong' ? 'nameLong' : 'required']
+      if (profile.errors.phone) errors.phone = common.errors.phone
+    }
     if (!email) errors.email = common.errors.required
     else if (!EMAIL.test(email)) errors.email = common.errors.email
     if (!password) errors.password = common.errors.required
@@ -264,6 +270,10 @@ export function SignUpForm({
         s.setErrors({ email: common.errors.exists })
       } else if (error.code === 'PASSWORD_TOO_SHORT') {
         s.setErrors({ password: common.errors.passwordShort })
+      } else if (error.code === 'NAME_REQUIRED' || error.code === 'NAME_TOO_LONG') {
+        s.setErrors({ name: common.errors[error.code === 'NAME_TOO_LONG' ? 'nameLong' : 'required'] })
+      } else if (error.code === 'INVALID_PHONE') {
+        s.setErrors({ phone: common.errors.phone })
       } else {
         s.setFormError(messageFor(error, common))
       }
@@ -282,6 +292,7 @@ export function SignUpForm({
           formError={s.formError}
           fields={[
             ['name', ids.name, copy.name],
+            ['phone', ids.phone, copy.phone],
             ['email', ids.email, copy.email],
             ['password', ids.password, copy.password],
           ]}

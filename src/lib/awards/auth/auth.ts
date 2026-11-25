@@ -1,11 +1,13 @@
 import 'server-only'
 import { betterAuth } from 'better-auth'
+import { APIError, createAuthMiddleware } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { uuidv7 } from 'uuidv7'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import { account, rateLimit, session, user, verification } from '@/lib/awards/db/auth-tables'
 import { passwordResetEmail, sendEmail, verificationEmail } from '@/lib/awards/email'
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/lib/i18n'
+import { parseSignUpProfile } from '@/lib/portal/profile'
 import { AUTH_BASE_PATH } from './paths'
 
 function localeOf(value: unknown): Locale {
@@ -45,7 +47,30 @@ function createAuth() {
         '/send-verification-email': { window: 3600, max: 5 },
       },
     },
+    // The account page saves name, phone and language through its own validated server action
+    // (`updateProfileAction`), so Better Auth's generic update endpoint is switched off: it
+    // would store whatever a client posts in the extra fields below.
+    disabledPaths: ['/update-user'],
+    hooks: {
+      // Sign-up is the other way those fields are written. Validate them with the account
+      // page's rules (`parseSignUpProfile`) and write the tidied values back into the body, so
+      // a hand-made request cannot store an over-long name, a junk phone or any language but
+      // `is` / `en`.
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== '/sign-up/email') return
+        const parsed = parseSignUpProfile(ctx.body)
+        if (!parsed.ok) throw APIError.from('BAD_REQUEST', { code: parsed.code, message: parsed.code })
+        const body = ctx.body as Record<string, unknown>
+        body.name = parsed.value.name
+        body.preferredLocale = parsed.value.preferredLocale
+        if (parsed.value.phone) body.phone = parsed.value.phone
+        else delete body.phone
+        return { context: { body } }
+      }),
+    },
     user: {
+      // `input: true` so sign-up accepts them; the hook above validates them there, and the
+      // update endpoint is disabled.
       additionalFields: {
         phone: { type: 'string', required: false, input: true },
         preferredLocale: { type: 'string', required: false, input: true },

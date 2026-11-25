@@ -23,3 +23,24 @@ export function parseProfile(
   if (Object.keys(errors).length > 0) return { ok: false, errors }
   return { ok: true, value: { name, phone: phone || null, preferredLocale } }
 }
+
+/** What sign-up refuses, as Better Auth error codes (the form maps them to its own copy). */
+export type SignUpProfileCode = 'NAME_REQUIRED' | 'NAME_TOO_LONG' | 'INVALID_PHONE'
+
+/**
+ * The same rules for Better Auth's sign-up body, which arrives as untrusted JSON: fields that
+ * are not strings count as empty, and the language is `is` unless it is exactly `en`. Used by
+ * the sign-up hook in `auth.ts`, which writes the tidied values back before the user is
+ * created, so sign-up and the account page store the same shapes.
+ */
+export function parseSignUpProfile(
+  body: unknown,
+): { ok: true; value: Profile } | { ok: false; code: SignUpProfileCode } {
+  const b = body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
+  const str = (v: unknown) => (typeof v === 'string' ? v : '')
+  const parsed = parseProfile({ name: str(b.name), phone: str(b.phone), preferredLocale: str(b.preferredLocale) })
+  if (parsed.ok) return parsed
+  if (parsed.errors.name === 'required') return { ok: false, code: 'NAME_REQUIRED' }
+  if (parsed.errors.name === 'nameLong') return { ok: false, code: 'NAME_TOO_LONG' }
+  return { ok: false, code: 'INVALID_PHONE' }
+}

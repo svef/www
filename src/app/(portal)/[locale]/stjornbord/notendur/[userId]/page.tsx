@@ -98,7 +98,7 @@ export default async function AdminUserPage({
             </div>
             <div className={styles.fact}>
               <dt>{c.language}</dt>
-              <dd>{u.preferredLocale ? (c.languages[u.preferredLocale] ?? u.preferredLocale) : c.none}</dd>
+              <dd>{u.preferredLocale ? (isLocale(u.preferredLocale) ? c.languages[u.preferredLocale] : u.preferredLocale) : c.none}</dd>
             </div>
             <div className={styles.fact}>
               <dt>{c.created}</dt>

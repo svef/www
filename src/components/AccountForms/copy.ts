@@ -91,6 +91,8 @@ export interface AccountCopy {
     errorSummary: string
     errors: {
       required: string
+      nameLong: string
+      phone: string
       email: string
       passwordShort: string
       credentials: string
@@ -193,6 +195,8 @@ export const accountCopy: Record<Locale, AccountCopy> = {
       errorSummary: 'Eitthvað vantar eða er rangt:',
       errors: {
         required: 'Þetta þarf að fylla út.',
+        nameLong: 'Nafnið má vera í mesta lagi 200 stafir.',
+        phone: 'Sláðu inn símanúmer, til dæmis 555 1234 eða +354 555 1234.',
         email: 'Þetta netfang lítur ekki rétt út.',
         passwordShort: 'Lykilorðið þarf að vera að minnsta kosti 10 stafir.',
         credentials: 'Netfang eða lykilorð er rangt.',
@@ -293,6 +297,8 @@ export const accountCopy: Record<Locale, AccountCopy> = {
       errorSummary: 'Something is missing or wrong:',
       errors: {
         required: 'This field is required.',
+        nameLong: 'The name can be at most 200 characters.',
+        phone: 'Enter a phone number, for example 555 1234 or +354 555 1234.',
         email: 'That email address does not look right.',
         passwordShort: 'The password needs at least 10 characters.',
         credentials: 'The email or password is wrong.',

@@ -91,3 +91,39 @@ test('changes the password, then signs out from the avatar menu and back in with
   await page.waitForURL('**/en/my-pages')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Overview')
 })
+
+test('profile fields are validated on every write path Better Auth exposes', async ({ page }) => {
+  const unique = () => `profile-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.is`
+  // A junk phone or an over-long name is refused, and no account is made. (These go first,
+  // while the request context has no session: Better Auth origin-checks requests with one.)
+  for (const [data, code] of [
+    [{ name: 'A', phone: 'call me maybe' }, 'INVALID_PHONE'],
+    [{ name: 'x'.repeat(201) }, 'NAME_TOO_LONG'],
+  ] as const) {
+    const bad = unique()
+    const res = await page.request.post('/api/account/sign-up/email', { data: { ...data, email: bad, password: PASSWORD } })
+    expect(res.status()).toBe(400)
+    expect((await res.json()).code).toBe(code)
+    expect(await db.select().from(schema.user).where(eq(schema.user.email, bad))).toEqual([])
+  }
+
+  // Sign-up tidies and narrows: a prototype key as the language is stored as Icelandic.
+  const email = unique()
+  const ok = await page.request.post('/api/account/sign-up/email', {
+    data: { name: '  Anna   B ', email, password: PASSWORD, phone: ' 555 1234 ', preferredLocale: '__proto__' },
+  })
+  expect(ok.ok(), await ok.text()).toBe(true)
+  const [row] = await db.select().from(schema.user).where(eq(schema.user.email, email))
+  expect([row.name, row.phone, row.preferredLocale]).toEqual(['Anna B', '555 1234', 'is'])
+
+  // The generic update endpoint is off: the account page's own action is the only way to edit.
+  // Signed in now (sign-up signs in), with a same-origin Origin, so only the disabled path can refuse it.
+  const origin = new URL(test.info().project.use.baseURL!).origin
+  const update = await page.request.post('/api/account/update-user', {
+    data: { preferredLocale: '__proto__' },
+    headers: { Origin: origin },
+  })
+  expect(update.status()).toBe(404)
+  const [after] = await db.select().from(schema.user).where(eq(schema.user.email, email))
+  expect(after.preferredLocale).toBe('is')
+})
