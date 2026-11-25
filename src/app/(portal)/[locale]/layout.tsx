@@ -5,6 +5,7 @@ import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/c
 import { theme } from '@/lib/theme'
 import { isLocale } from '@/lib/i18n'
 import { getSiteUrl } from '@/lib/site-url'
+import { NOINDEX } from '@/lib/seo/private-pages'
 import { fontClassName, fontStyle } from '@/lib/fonts'
 import { getViewer } from '@/lib/awards/auth/viewer'
 import { portalCopy } from '@/lib/portal/copy'
@@ -38,7 +39,7 @@ export async function generateMetadata({
   return {
     title: { default: `${name} | SVEF`, template: `%s | ${name} | SVEF` },
     metadataBase: new URL(getSiteUrl()),
-    robots: { index: false, follow: false },
+    robots: NOINDEX,
   }
 }
 

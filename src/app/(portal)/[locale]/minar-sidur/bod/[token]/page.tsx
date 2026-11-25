@@ -22,10 +22,9 @@ import styles from './invite.module.scss'
  * Accepting an invitation to edit a project (`/is/minar-sidur/bod/<token>` ·
  * `/en/my-pages/invite/<token>`, svef/www#165). The link only ever *shows* the
  * invitation (a mail scanner or a prefetch must not use it up); accepting is a button, a
- * POST. Per request, never indexed, and the token never leaves the path.
+ * POST. Per request, never indexed (the layout), and the token never leaves the path.
  */
 export const metadata: Metadata = {
-  robots: { index: false, follow: false },
   referrer: 'no-referrer',
 }
 

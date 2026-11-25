@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { AppHead } from '@/components/AppHead/AppHead'
 import { PageSection } from '@/components/PageSection/PageSection'
@@ -23,12 +22,10 @@ import { signInPath } from '@/lib/awards/auth/roles'
 /**
  * The project form (`/is/minar-sidur/verkefni/<id>` · `/en/my-pages/projects/<id>`). It is about one
  * signed-in person's data, so it is rendered per request: it reads the session cookie,
- * which opts the route out of prerendering without any `force-dynamic`. Not indexable.
+ * which opts the route out of prerendering without any `force-dynamic`. Not indexable (the layout says so).
  * Opening it does not take the edit lock (a GET must not have side effects, and
  * prefetching would take it): the client takes it once the page is on screen.
  */
-export const metadata: Metadata = { robots: { index: false, follow: false } }
-
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export default async function ProjectPage({

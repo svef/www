@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { requireAdmin } from '@/lib/awards/auth/viewer'
 import { getAwardsDb } from '@/lib/awards/db/client'
@@ -27,8 +26,6 @@ import { ownValue } from '@/lib/own-key'
  * history, and the transfer. Rendered per request: it reads the session. A non-staff visitor
  * gets a 404 (`requireAdmin`), and so does an id that matches no entry.
  */
-export const metadata: Metadata = { robots: { index: false, follow: false } }
-
 type Search = {
   transferred?: string
   transfer_error?: string

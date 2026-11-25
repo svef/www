@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { isLocale, localePath } from '@/lib/i18n'
 import { PageHead } from '@/components/PageHead/PageHead'
@@ -10,8 +11,16 @@ import { dashboardPath } from '@/lib/awards/auth/roles'
 import { getUser } from '@/lib/awards/auth/session'
 import page from '../form-page.module.scss'
 import { cardMetadata } from '@/lib/og/metadata'
+import { NOINDEX } from '@/lib/seo/private-pages'
 
-export const generateMetadata = cardMetadata('stadfesta-netfang')
+// The page's own title and card, but a step in an account flow, not a page to find in
+// search results (see `ACCOUNT_ROUTES`).
+const card = cardMetadata('stadfesta-netfang')
+export async function generateMetadata(props: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  return { ...(await card(props)), robots: NOINDEX }
+}
 
 // Where the link in the verification email lands. Better Auth verifies the
 // token at /api/account/verify-email and redirects here: `?status=verified`

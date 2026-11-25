@@ -1,5 +1,6 @@
 import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
+import { PORTAL_ROUTES, ACCOUNT_ROUTES, publicPrefixes } from './src/lib/seo/private-pages'
 
 const nextConfig: NextConfig = {
   // Don't auto-generate AGENTS.md/CLAUDE.md in the repo.
@@ -76,9 +77,23 @@ const nextConfig: NextConfig = {
       headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
     }
 
-    if (!process.env.VERCEL_ENV || process.env.VERCEL_ENV === 'production') return [screens]
+    /**
+     * The signed-in portal and the account flows (`src/lib/seo/private-pages.ts`), at their
+     * visible addresses in both languages. Their pages already say `noindex` in a `<meta>`;
+     * the header also covers the responses that have no page to carry one, such as the
+     * redirect a signed-out visitor gets from the portal to sign-in.
+     */
+    const privatePages = publicPrefixes([...PORTAL_ROUTES, ...ACCOUNT_ROUTES]).map((prefix) => ({
+      source: `${prefix}/:path*`,
+      headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+    }))
+
+    if (!process.env.VERCEL_ENV || process.env.VERCEL_ENV === 'production') {
+      return [screens, ...privatePages]
+    }
     return [
       screens,
+      ...privatePages,
       {
         source: '/:path*',
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],

@@ -3,6 +3,7 @@ import { LOCALES, localePath, isHiddenPage, ROUTE_SEGMENTS, type Locale, type Ro
 import { getSiteUrl } from '@/lib/site-url'
 import { listEventSlugs } from '@/lib/content/events'
 import { listNewsSlugs } from '@/lib/content/news'
+import { isPrivatePage } from '@/lib/seo/private-pages'
 
 /**
  * The sitemap, with every page in both languages.
@@ -16,13 +17,24 @@ import { listNewsSlugs } from '@/lib/content/news'
  *
  * Every entry declares the other language as an alternate, which is what tells
  * a search engine the two are the same page rather than duplicates.
+ *
+ * Only public pages are listed: not the signed-in portal or the admin, and not the
+ * account flows (sign-in, sign-up and the rest), which are all `noindex`
+ * (`src/lib/seo/private-pages.ts`). A sitemap that lists a `noindex` page contradicts
+ * itself.
  */
 export const revalidate = 300
 
 /** Pages with fixed names, written as the route keys the segment map is keyed by. */
 const STATIC_ROUTES = (Object.keys(ROUTE_SEGMENTS) as RouteKey[]).filter(
-  (route) => !isHiddenPage(route),
+  (route) => !isHiddenPage(route) && !isPrivatePage(route),
 )
+
+/**
+ * The two public forms, linked from the footer. They have no entry in `ROUTE_SEGMENTS`, so
+ * their name is the same in both languages (`/en/abendingar`).
+ */
+const FORM_PAGES = ['abendingar', 'erindi'] as const
 
 /** `{ is: '…', en: '…' }` for one path, for the `alternates` field. */
 function languages(path: string): Record<Locale, string> {
@@ -74,6 +86,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // The front page. `localePath('/')` gives `/is` and `/en`.
     ...entry('/', { priority: 1 }),
     ...STATIC_ROUTES.flatMap((route) => entry(`/${route}`)),
+    ...FORM_PAGES.flatMap((page) => entry(`/${page}`)),
     ...documents('vidburdir', eventSlugs),
     // News is already filtered to what has actually been published — a
     // scheduled article must not appear here before its date, for the same

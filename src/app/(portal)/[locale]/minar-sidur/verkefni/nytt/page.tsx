@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { desc, isNull } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
 import { AppHead } from '@/components/AppHead/AppHead'
@@ -20,8 +19,6 @@ import { CreateButton } from './CreateButton'
  * prefetch or a crawler can't make projects. Per request, like the form itself. The page
  * says what the form will ask, step by step, in the form's own words.
  */
-export const metadata: Metadata = { robots: { index: false, follow: false } }
-
 export default async function NewSubmissionPage({
   params,
 }: {
