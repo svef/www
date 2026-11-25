@@ -42,6 +42,7 @@ changing a collection or a global.
 | `seed:dev` | Fill a **local** database with development fixtures (see below) |
 | `awards:bucket` | Create the awards uploads bucket if missing and apply its CORS rule (see "Awards uploads") |
 | `awards:generate` / `awards:migrate` / `awards:seed` | Awards submission database: generate SQL from the schema / apply it / upsert the 2026 edition and categories (see below) |
+| `awards:seed-volume` | Fill a separate local database, `svef_awards_volume`, with a realistic awards volume (about 300 projects, 150 accounts) for timing pages (see "Awards database") |
 | `awards:grant-superadmin -- <email>` | Make an existing account a super admin in whatever `AWARDS_DATABASE_URL_UNPOOLED` points at (see "Admin roles") |
 
 ## Awards database
@@ -71,6 +72,28 @@ the next deploy puts the file's value back. Prices already locked on submitted e
 stored on the entry and are not touched. `terms_version` is left alone. The
 smoke test `src/lib/awards/db/db.test.ts` migrates and seeds whatever
 `AWARDS_DATABASE_URL` points at, and skips when it is unset.
+
+### A realistic volume, for timing
+
+`npm run awards:seed-volume` drops and recreates a database of its own on the same local
+server, `svef_awards_volume`, migrates and seeds it, and fills it with about 300 projects
+across every category and status (20 of them with no category yet), 150 accounts,
+collaborators, answers, open requests and some 3,000 events. It never writes to the database
+`AWARDS_DATABASE_URL` names, so the unit tests and the e2e suite are unaffected, and it
+refuses to run on Vercel or against a host that is not this machine. `AWARDS_VOLUME_SCALE=10`
+multiplies everything, for a headroom check. Serve a production build against it:
+
+```bash
+npm run awards:seed-volume
+npm run build
+AWARDS_DATABASE_URL=postgresql://svef:svef@localhost:5433/svef_awards_volume \
+  AWARDS_TEST_SESSION=1 npx next start --port 3200
+# act as its super admin with the cookie awards-test-user=<id of vol-000@example.test>
+docker exec svef-pg psql -U svef -d postgres -c 'drop database svef_awards_volume'  # when done
+```
+
+At this volume (and at ten times it) every admin and portal query runs in well under
+20 ms, and every page answers in under 70 ms locally (November 2026).
 
 ## Admin roles
 
