@@ -84,6 +84,8 @@ test('changes the password, then signs out from the avatar menu and back in with
   await page.locator('[data-user-menu]').click()
   await page.getByRole('complementary').getByRole('button', { name: 'Sign out', exact: true }).click()
   await expect(page).toHaveURL(/\/en\/sign-in$/)
+  // Wait for the form to hydrate: filled too early, it submits as a plain GET.
+  await settle(page)
 
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password', { exact: true }).fill(NEW_PASSWORD)
