@@ -82,3 +82,13 @@ export function initialsOf(name: string, email: string): string {
         : [words[0][0], words[words.length - 1][0]]
   return letters.join('').toLocaleUpperCase('is')
 }
+
+/**
+ * The language link: the same page in the other locale, with the query string kept, so
+ * switching language on a filtered, sorted or paged admin list stays on that view.
+ * `search` is the query as `useSearchParams().toString()` gives it (no leading `?`).
+ */
+export function otherLanguageHref(pathname: string, search: string, locale: Locale): string {
+  const query = search.replace(/^\?/, '')
+  return localePath(`${pathname}${query ? `?${query}` : ''}`, locale === 'is' ? 'en' : 'is')
+}

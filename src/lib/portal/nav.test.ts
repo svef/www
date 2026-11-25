@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildPortalNav, currentNavItem, initialsOf } from './nav'
+import { buildPortalNav, currentNavItem, initialsOf, otherLanguageHref } from './nav'
 
 describe('buildPortalNav', () => {
   it('shows the awards to everyone and the admin only to admins', () => {
@@ -67,5 +67,18 @@ describe('initialsOf', () => {
     expect(initialsOf('Anna Sigríður Jónsdóttir', 'a@example.is')).toBe('AJ')
     expect(initialsOf('  þórir ', 't@example.is')).toBe('Þ')
     expect(initialsOf('', 'gudrun@example.is')).toBe('G')
+  })
+})
+
+describe('otherLanguageHref', () => {
+  it('translates the page and keeps the query', () => {
+    expect(otherLanguageHref('/is/stjornbord/verkefni', 'status=all&page=2', 'is')).toBe(
+      '/en/admin/projects?status=all&page=2',
+    )
+    expect(otherLanguageHref('/en/admin/projects', '?q=vefur', 'en')).toBe('/is/stjornbord/verkefni?q=vefur')
+  })
+
+  it('adds no question mark when there is no query', () => {
+    expect(otherLanguageHref('/is/stjornbord/notendur', '', 'is')).toBe('/en/admin/users')
   })
 })

@@ -155,6 +155,11 @@ test.describe('desktop', () => {
     await page.getByRole('link', { name: 'English' }).click()
     await expect(page).toHaveURL(/\/en\/admin\/users$/)
     await expect(nav(page).getByRole('link', { name: 'Users' })).toHaveAttribute('aria-current', 'page')
+
+    // A filtered view keeps its query string across the switch.
+    await page.goto(`${urlFor('is', '/stjornbord/notendur')}?role=admin&sort=name`)
+    await page.getByRole('link', { name: 'English' }).click()
+    await expect(page).toHaveURL(/\/en\/admin\/users\?role=admin&sort=name$/)
     await context.close()
   })
 

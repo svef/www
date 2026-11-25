@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import clsx from 'clsx'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { Logo } from '@/components/Logo/Logo'
 import { localePath, type Locale } from '@/lib/i18n'
 import type { PortalCopy } from '@/lib/portal/copy'
-import { currentNavItem, type PortalNavGroup } from '@/lib/portal/nav'
+import { currentNavItem, otherLanguageHref, type PortalNavGroup } from '@/lib/portal/nav'
 import { UserMenu } from './UserMenu'
 import styles from './PortalShell.module.scss'
 
@@ -35,6 +35,9 @@ export function PortalNav({
   copy: PortalCopy
 }) {
   const pathname = usePathname() ?? ''
+  // Every portal page renders per request (the layout reads the session), so this needs no
+  // Suspense boundary and the server-rendered link already carries the query.
+  const searchParams = useSearchParams()
   const current = currentNavItem(groups, pathname, locale)
   const accountCurrent = localePath(pathname, locale) === links.account
   const [open, setOpen] = useState(false)
@@ -107,7 +110,7 @@ export function PortalNav({
     }
   }, [open, close])
 
-  const languageHref = localePath(pathname, locale === 'is' ? 'en' : 'is')
+  const languageHref = otherLanguageHref(pathname, searchParams?.toString() ?? '', locale)
 
   return (
     <>
