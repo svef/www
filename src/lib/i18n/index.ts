@@ -28,8 +28,10 @@ const LOCALE_PREFIX = /^\/(is|en)(?=\/|$)/
  * than appended, so this accepts an already-localised path and is idempotent.
  *
  * The page's own name is translated with it: `/is/vidburdir` becomes
- * `/en/events`, not `/en/vidburdir`. So is a known sub-page name
- * (`/is/innsendingar/minar` becomes `/en/submissions/mine`). Anything else after
+ * `/en/events`, not `/en/vidburdir`. So is a known sub-page name, at any depth
+ * (`/is/minar-sidur/adgangur` becomes `/en/my-pages/account`, and
+ * `/is/minar-sidur/verkefni/nytt` becomes `/en/my-pages/projects/new`; the map is
+ * `NESTED_SEGMENTS` in `./routes`). Anything else after
  * the page name — a news or event slug, a project id — is carried across
  * unchanged, because those are not localized yet (svef/www#98).
  *
