@@ -53,8 +53,10 @@ export const revalidate = 300
  * The same is true in reverse, which matters more: an article whose date is
  * moved back into the future keeps serving 200 — and keeps appearing on the
  * index — for that same window plus a request. `publishedAt` schedules; it does
- * not embargo and it does not take down. On-demand revalidation (svef/www#67)
- * is what makes either direction immediate.
+ * not embargo and it does not take down — unless an editor *saves* the change:
+ * on-demand revalidation (svef/www#67) flushes this route on every save, so
+ * moving a date into the future or deleting an article takes effect on the next
+ * request. A date that simply arrives still waits for the window.
  */
 // Next calls this once per parent param set and passes those params in, so the
 // slugs are the ones for the locale being built. They differ per locale now

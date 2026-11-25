@@ -1,8 +1,13 @@
 import type { GlobalConfig } from 'payload'
+import { revalidateGlobal } from '@/payload/hooks/revalidate'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
   access: { read: () => true },
+  // An editor's save shows up on the next request rather than within the
+  // five-minute window (svef/www#67). It can appear on any page, so this flushes
+  // the whole site; see `hooks/paths.ts`.
+  hooks: revalidateGlobal('site-settings'),
   fields: [
     { name: 'tagline', type: 'text', localized: true },
     { name: 'footerBlurb', type: 'textarea', localized: true },

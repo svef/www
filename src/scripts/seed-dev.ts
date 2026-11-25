@@ -27,6 +27,7 @@ import { getPayload } from 'payload'
 import type { CollectionSlug, Payload, Where } from 'payload'
 
 import config from '../payload.config'
+import { SKIP_REVALIDATE } from '../payload/hooks/revalidate'
 import {
   aboutStats,
   aboutStory,
@@ -52,6 +53,13 @@ import {
 } from './seed-data'
 
 type Data = Record<string, unknown>
+
+/**
+ * Passed to every write. The content collections revalidate the site's cached
+ * pages on save (svef/www#67), but this script runs outside Next, so there is no
+ * page cache here to flush — without it every write would log a failure.
+ */
+const SEED_CONTEXT = { [SKIP_REVALIDATE]: true }
 
 /**
  * Guards against pointing the fixtures at a real database by accident. Local
@@ -110,15 +118,27 @@ async function upsert(
   const current = existing.docs[0]
   const saved = current
     ? await payload.update({
+        context: SEED_CONTEXT,
         collection,
         data: is as never,
         id: current.id,
         locale: 'is',
       })
-    : await payload.create({ collection, data: is as never, locale: 'is' })
+    : await payload.create({
+        context: SEED_CONTEXT,
+        collection,
+        data: is as never,
+        locale: 'is',
+      })
 
   if (en) {
-    await payload.update({ collection, data: en as never, id: saved.id, locale: 'en' })
+    await payload.update({
+      context: SEED_CONTEXT,
+      collection,
+      data: en as never,
+      id: saved.id,
+      locale: 'en',
+    })
   }
 
   return saved.id
@@ -239,6 +259,7 @@ async function seed(payload: Payload): Promise<void> {
     if (event.sponsors?.some((sponsor) => sponsor.labelEn)) {
       const saved = await payload.findByID({ collection: 'events', id, depth: 0, locale: 'is' })
       await payload.update({
+        context: SEED_CONTEXT,
         collection: 'events',
         id,
         locale: 'en',
@@ -370,6 +391,7 @@ async function seed(payload: Payload): Promise<void> {
 
   // --- Globals ------------------------------------------------------------
   await payload.updateGlobal({
+    context: SEED_CONTEXT,
     data: siteSettings as never,
     locale: 'is',
     slug: 'site-settings',
@@ -379,15 +401,27 @@ async function seed(payload: Payload): Promise<void> {
   // languages rather than left to fall back. No row ids to read back first —
   // unlike `membership-page` this global has no arrays.
   await payload.updateGlobal({
+    context: SEED_CONTEXT,
     data: siteSettingsEn as never,
     locale: 'en',
     slug: 'site-settings',
   })
 
-  await payload.updateGlobal({ data: homePage as never, locale: 'is', slug: 'home-page' })
-  await payload.updateGlobal({ data: homePageEn as never, locale: 'en', slug: 'home-page' })
+  await payload.updateGlobal({
+    context: SEED_CONTEXT,
+    data: homePage as never,
+    locale: 'is',
+    slug: 'home-page',
+  })
+  await payload.updateGlobal({
+    context: SEED_CONTEXT,
+    data: homePageEn as never,
+    locale: 'en',
+    slug: 'home-page',
+  })
 
   await payload.updateGlobal({
+    context: SEED_CONTEXT,
     data: {
       faq,
       press,
@@ -402,6 +436,7 @@ async function seed(payload: Payload): Promise<void> {
   // rather than replacing them (see the membership page below).
   const aboutIs = await payload.findGlobal({ slug: 'about-page', locale: 'is', depth: 0 })
   await payload.updateGlobal({
+    context: SEED_CONTEXT,
     data: {
       stats: (aboutIs.stats ?? []).map((row, index) => ({
         id: row.id,
@@ -414,6 +449,7 @@ async function seed(payload: Payload): Promise<void> {
   })
 
   await payload.updateGlobal({
+    context: SEED_CONTEXT,
     data: {
       intro: membership.intro,
       signupCtaLabel: membership.signupCtaLabel,
@@ -439,6 +475,7 @@ async function seed(payload: Payload): Promise<void> {
     depth: 0,
   })
   await payload.updateGlobal({
+    context: SEED_CONTEXT,
     data: {
       intro: membershipEn.intro,
       signupCtaLabel: membershipEn.signupCtaLabel,
@@ -457,11 +494,13 @@ async function seed(payload: Payload): Promise<void> {
   })
 
   await payload.updateGlobal({
+    context: SEED_CONTEXT,
     data: { intro: richText(awardsIntro) } as never,
     locale: 'is',
     slug: 'awards-page',
   })
   await payload.updateGlobal({
+    context: SEED_CONTEXT,
     data: { intro: richText(awardsIntroEn) } as never,
     locale: 'en',
     slug: 'awards-page',

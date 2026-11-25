@@ -1,4 +1,5 @@
 import type { GlobalConfig } from 'payload'
+import { revalidateGlobal } from '@/payload/hooks/revalidate'
 
 /**
  * The home page's copy and switches.
@@ -16,6 +17,9 @@ import type { GlobalConfig } from 'payload'
 export const HomePage: GlobalConfig = {
   slug: 'home-page',
   access: { read: () => true },
+  // An editor's save shows up on the next request rather than within the
+  // five-minute window (svef/www#67). Which pages it reaches: `hooks/paths.ts`.
+  hooks: revalidateGlobal('home-page'),
   fields: [
     {
       name: 'heroLines',

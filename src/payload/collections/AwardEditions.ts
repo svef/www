@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateCollection } from '@/payload/hooks/revalidate'
 
 // One per awards year. Winners relate to an edition. Historical data import is
 // a separate side project (site-plan.md) — editions can be created ahead of data.
@@ -10,6 +11,9 @@ import type { CollectionConfig } from 'payload'
 export const AwardEditions: CollectionConfig = {
   slug: 'award-editions',
   access: { read: () => true },
+  // An editor's save shows up on the next request rather than within the
+  // five-minute window (svef/www#67). Which pages it reaches: `hooks/paths.ts`.
+  hooks: revalidateCollection('award-editions'),
   admin: { useAsTitle: 'year', defaultColumns: ['year', 'ceremonyDate', 'venue'] },
   fields: [
     { name: 'year', type: 'number', required: true, unique: true, index: true },

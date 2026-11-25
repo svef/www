@@ -211,9 +211,24 @@ This cuts both ways, and the second direction is the one to worry about:
   otherwise pulled — **stays publicly readable, and stays listed on the index**, for the
   window plus a request. `publishedAt` is not an embargo and not a takedown.
 
-On-demand revalidation from a Payload `afterChange` hook (svef/www#67) is what makes
-either direction immediate. Until it lands, do not lean on `publishedAt` for anything
-that has to happen at a particular moment.
+On-demand revalidation (svef/www#67) fixes the half of this that involves a save:
+every collection and global that feeds a public page has `afterChange`/`afterDelete`
+hooks (`src/payload/hooks/`) that flush the pages it appears on, so **an editor's save —
+including moving a date into the future, or deleting — is live on the next request.**
+It cannot help with a date that simply *arrives*: no hook fires then, so a scheduled
+article still appears one window plus a request after its date. Do not lean on
+`publishedAt` for anything that has to go live at a particular moment.
+
+Two rules for keeping the hooks honest:
+
+- **A page that starts reading a collection or global must be added to its entry in
+  `src/payload/hooks/paths.ts`**, and a new collection must go in that map or in its
+  `NOT_PUBLIC` list (a test enforces the second half, not the first). A missing entry
+  fails silently: the save works and the page stays stale for the window.
+- **Revalidate the directory path, never the public one.** The cache is keyed on the
+  path a page was rendered at, which is the Icelandic directory: the English news index
+  is cached as `/en/frettir`, and `/en/news` (a proxy rewrite) has no entry to flush.
+  This is the one place `localePath()` is wrong, and a test rejects English page names.
 
 ## The local gate
 

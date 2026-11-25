@@ -1,8 +1,12 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateCollection } from '@/payload/hooks/revalidate'
 
 export const Events: CollectionConfig = {
   slug: 'events',
   access: { read: () => true },
+  // An editor's save shows up on the next request rather than within the
+  // five-minute window (svef/www#67). Which pages it reaches: `hooks/paths.ts`.
+  hooks: revalidateCollection('events'),
   admin: { useAsTitle: 'title', defaultColumns: ['title', 'startDate', 'location'] },
   fields: [
     { name: 'title', type: 'text', required: true, localized: true },
