@@ -7,6 +7,8 @@ import { s3Storage } from '@payloadcms/storage-s3'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import sharp from 'sharp'
 
+import { getTrustedOrigins } from '@/lib/site-url'
+
 import { Users } from './payload/collections/Users'
 import { Feedback, TalkProposals } from '@/payload/collections/Submissions'
 import { Media } from './payload/collections/Media'
@@ -26,9 +28,18 @@ import { AwardsPage } from './payload/globals/pages/AwardsPage'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-
+// No `serverURL`, deliberately. Payload's admin builds its API and admin links from it, so a
+// fixed value would send the admin on dev.svef.is or a preview to production's API
+// (cross-origin, and a different branch's code); unset, those links stay relative and work on
+// whichever host the admin is opened at. Where Payload needs an absolute origin (a password
+// reset email), it takes the request's Host, but only if that host is in `csrf` below, which
+// is why the list names every host a deployment answers on (`getTrustedOrigins`).
+//
+// The old `NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'` here was never used, and could
+// not have worked: that variable is Sensitive on Vercel, so the build would have baked
+// localhost.
 export default buildConfig({
+  csrf: getTrustedOrigins(),
   admin: {
     user: Users.slug,
     meta: { titleSuffix: ' | SVEF' },

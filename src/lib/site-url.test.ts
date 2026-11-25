@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import { getSiteUrl } from './site-url'
+import { getSiteUrl, getTrustedOrigins } from './site-url'
 
 const saved = { ...process.env }
 afterEach(() => {
@@ -36,5 +36,40 @@ describe('getSiteUrl', () => {
     delete process.env.NEXT_PUBLIC_SITE_URL
     delete process.env.VERCEL_PROJECT_PRODUCTION_URL
     expect(getSiteUrl()).toBe('http://localhost:3000')
+  })
+})
+
+describe('getTrustedOrigins', () => {
+  it('is empty off Vercel, so a local server on any port is not locked out', () => {
+    delete process.env.VERCEL
+    process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000'
+    expect(getTrustedOrigins()).toEqual([])
+  })
+
+  it('on a preview, lets in the site’s domains and the deployment’s own URLs', () => {
+    process.env.VERCEL = '1'
+    delete process.env.NEXT_PUBLIC_SITE_URL // Sensitive: unreadable at build
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = 'svef.is'
+    process.env.VERCEL_URL = 'www-abc123.vercel.app'
+    process.env.VERCEL_BRANCH_URL = 'www-git-dev-team.vercel.app'
+    expect(getTrustedOrigins()).toEqual([
+      'https://svef.is',
+      'https://www.svef.is',
+      'https://dev.svef.is',
+      'https://www-abc123.vercel.app',
+      'https://www-git-dev-team.vercel.app',
+    ])
+  })
+
+  it('never contains localhost on Vercel, and puts an explicit site URL first', () => {
+    process.env.VERCEL = '1'
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://svef.is/'
+    delete process.env.VERCEL_URL
+    delete process.env.VERCEL_BRANCH_URL
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL
+    const origins = getTrustedOrigins()
+    expect(origins[0]).toBe('https://svef.is')
+    expect(origins).toContain('https://dev.svef.is')
+    expect(origins.some((o) => o.includes('localhost'))).toBe(false)
   })
 })
