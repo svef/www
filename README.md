@@ -42,6 +42,7 @@ changing a collection or a global.
 | `seed:dev` | Fill a **local** database with development fixtures (see below) |
 | `awards:bucket` | Create the awards uploads bucket if missing and apply its CORS rule (see "Awards uploads") |
 | `awards:generate` / `awards:migrate` / `awards:seed` | Awards submission database: generate SQL from the schema / apply it / upsert the 2026 edition and categories (see below) |
+| `awards:grant-superadmin -- <email>` | Make an existing account a super admin in whatever `AWARDS_DATABASE_URL_UNPOOLED` points at (see "Admin roles") |
 
 ## Awards database
 
@@ -70,6 +71,25 @@ the next deploy puts the file's value back. Prices already locked on submitted e
 stored on the entry and are not touched. `terms_version` is left alone. The
 smoke test `src/lib/awards/db/db.test.ts` migrates and seeds whatever
 `AWARDS_DATABASE_URL` points at, and skips when it is unset.
+
+## Admin roles
+
+Two roles open the admin (Stjórnborð): `admin` and `superadmin`. A super admin can do
+everything an admin can; the difference is that admins cannot manage super admins. An admin
+cannot change a super admin's roles and cannot grant super admin, and nothing in the
+interface grants or removes it. So there is always someone admins cannot demote, and the
+admin cannot end up with nobody in it. Admins grant and remove the regular `admin` role on a
+user's page; nobody can remove their own.
+
+Super admin is set from the command line, for an account that already exists (sign up
+first). It is idempotent and logs a `role_granted` event with no actor:
+
+```bash
+npm run awards:grant-superadmin -- someone@example.com
+```
+
+It writes to whatever `AWARDS_DATABASE_URL_UNPOOLED` (or `AWARDS_DATABASE_URL`) points at,
+and prints the host it used.
 
 ## Awards uploads
 

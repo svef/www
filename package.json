@@ -24,6 +24,7 @@
     "awards:generate": "drizzle-kit generate --config drizzle.awards.config.ts",
     "awards:migrate": "tsx --env-file-if-exists=.env.local src/lib/awards/db/migrate.ts",
     "awards:seed": "tsx --env-file-if-exists=.env.local src/lib/awards/db/seed.ts",
+    "awards:grant-superadmin": "tsx --env-file-if-exists=.env.local src/lib/awards/admin/superadmin.ts",
     "awards:bucket": "tsx --env-file-if-exists=.env.local src/lib/awards/files/ensure-bucket.ts"
   },
   "dependencies": {

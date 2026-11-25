@@ -10,7 +10,7 @@ import {
   user,
   userEvent,
 } from '../db/schema'
-import { ADMIN_ROLE } from '../auth/roles'
+import { ADMIN_ROLES, SUPERADMIN_ROLE } from '../auth/roles'
 import { escapeLike } from '../staff/entry-list'
 import type { EntryStatus } from '../types'
 
@@ -31,6 +31,15 @@ export type UserListParams = {
   sort: UserSortKey
   dir: 'asc' | 'desc'
   page: number
+}
+
+/**
+ * The copy key for a `user_event`: its type, with `_superadmin` added when the event is about
+ * the super admin role, so "made a super admin" does not read as "made an admin".
+ */
+export function userEventKey(type: string, data: unknown): string {
+  const role = data && typeof data === 'object' ? (data as { role?: unknown }).role : undefined
+  return role === SUPERADMIN_ROLE ? `${type}_superadmin` : type
 }
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)
@@ -59,7 +68,9 @@ export type UserRow = {
   email: string
   emailVerified: boolean
   createdAt: Date
+  /** Admin or super admin. */
   isAdmin: boolean
+  isSuperAdmin: boolean
   /** Live projects the user created, in any edition. */
   projects: number
 }
@@ -75,7 +86,14 @@ export type UserPage = {
 // Correlated subqueries name the outer row in full: in a single-table select Drizzle writes
 // its columns unqualified, and an unqualified "id" inside the subquery would be the inner one.
 const outerUserId = sql.raw('"user"."id"')
-const isAdminSql = sql<boolean>`exists (select 1 from "user_role" where "user_role"."user_id" = ${outerUserId} and "user_role"."role" = ${ADMIN_ROLE} and "user_role"."deleted_at" is null)`
+const roleIn = (roles: readonly string[]) =>
+  sql<boolean>`exists (select 1 from "user_role" where "user_role"."user_id" = ${outerUserId} and "user_role"."role" in (${sql.join(
+    roles.map((r) => sql`${r}`),
+    sql`, `,
+  )}) and "user_role"."deleted_at" is null)`
+/** Admin or super admin: anyone the admin opens for. */
+const isAdminSql = roleIn(ADMIN_ROLES)
+const isSuperAdminSql = roleIn([SUPERADMIN_ROLE])
 const projectCountSql = sql<number>`(select count(*)::int from "project" where "project"."created_by" = ${outerUserId} and "project"."deleted_at" is null)`
 
 function orderBy(sort: UserSortKey, dir: 'asc' | 'desc'): SQL[] {
@@ -113,6 +131,7 @@ export async function listUsers(
       emailVerified: user.emailVerified,
       createdAt: user.createdAt,
       isAdmin: isAdminSql,
+      isSuperAdmin: isSuperAdminSql,
       projects: projectCountSql,
     })
     .from(user)
@@ -121,7 +140,12 @@ export async function listUsers(
     .limit(pageSize)
     .offset((page - 1) * pageSize)
   return {
-    rows: rows.map((r) => ({ ...r, isAdmin: r.isAdmin === true, projects: Number(r.projects) })),
+    rows: rows.map((r) => ({
+      ...r,
+      isAdmin: r.isAdmin === true,
+      isSuperAdmin: r.isSuperAdmin === true,
+      projects: Number(r.projects),
+    })),
     total,
     page,
     pageSize,
@@ -166,7 +190,10 @@ export type UserDetail = {
   emailVerified: boolean
   preferredLocale: string | null
   createdAt: Date
+  /** Admin or super admin. */
   isAdmin: boolean
+  /** A super admin, whom the admin cannot manage. */
+  isSuperAdmin: boolean
   projects: UserProject[]
   memberships: UserMembership[]
   events: UserEventRow[]
@@ -228,6 +255,7 @@ export async function getUserDetail(db: AwardsDb, userId: string): Promise<UserD
       preferredLocale: user.preferredLocale,
       createdAt: user.createdAt,
       isAdmin: isAdminSql,
+      isSuperAdmin: isSuperAdminSql,
     })
     .from(user)
     .where(and(eq(user.id, userId), isNull(user.deletedAt)))
@@ -269,6 +297,7 @@ export async function getUserDetail(db: AwardsDb, userId: string): Promise<UserD
   return {
     ...u,
     isAdmin: u.isAdmin === true,
+    isSuperAdmin: u.isSuperAdmin === true,
     projects: [...all.values()].filter((p) => createdIds.has(p.projectId)),
     memberships: people.flatMap((p) => {
       const proj = all.get(p.projectId)

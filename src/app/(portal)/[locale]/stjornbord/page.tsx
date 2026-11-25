@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { desc, isNull } from 'drizzle-orm'
 import { countEdition, recentActivity } from '@/lib/awards/admin/overview'
+import { userEventKey } from '@/lib/awards/admin/users'
 import { requireAdmin } from '@/lib/awards/auth/viewer'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import { edition as editionTable } from '@/lib/awards/db/schema'
@@ -253,7 +254,7 @@ export default async function AdminOverviewPage({ params }: { params: Promise<{ 
                     </span>
                   ) : (
                     <span>
-                      <strong>{a.actorName ?? c.system}</strong> {c.userEvents[a.type] ?? a.type}{' '}
+                      <strong>{a.actorName ?? c.system}</strong> {c.userEvents[userEventKey(a.type, a.data)] ?? a.type}{' '}
                       {a.userId ? <a href={localePath(ADMIN.user(a.userId), locale)}>{a.subject}</a> : a.subject}
                     </span>
                   )}

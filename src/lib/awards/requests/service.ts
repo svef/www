@@ -1,5 +1,5 @@
 import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm'
-import { ADMIN_ROLE } from '../auth/roles'
+import { ADMIN_ROLES } from '../auth/roles'
 import { appendEntryEvent } from '../db/entry-event'
 import {
   edition,
@@ -442,7 +442,7 @@ async function loadViews(
             .where(
               and(
                 inArray(userRole.userId, userIds),
-                eq(userRole.role, ADMIN_ROLE),
+                inArray(userRole.role, [...ADMIN_ROLES]),
                 isNull(userRole.deletedAt),
               ),
             )

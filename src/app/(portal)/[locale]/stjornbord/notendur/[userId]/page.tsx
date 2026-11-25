@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getUserDetail, type UserProject } from '@/lib/awards/admin/users'
+import { getUserDetail, userEventKey, type UserProject } from '@/lib/awards/admin/users'
 import { requireAdmin } from '@/lib/awards/auth/viewer'
 import { getAwardsDb } from '@/lib/awards/db/client'
 import { formatDate } from '@/lib/locale-format'
@@ -119,10 +119,15 @@ export default async function AdminUserPage({
             </p>
           )}
           <p className={styles.text}>
-            {u.isAdmin && <span className={styles.roleTag}>{c.adminTag}</span>} {u.isAdmin ? c.isAdmin : c.notAdmin}
+            {u.isAdmin && <span className={styles.roleTag}>{u.isSuperAdmin ? c.superAdminTag : c.adminTag}</span>}{' '}
+            {u.isSuperAdmin ? c.isSuperAdmin : u.isAdmin ? c.isAdmin : c.notAdmin}
           </p>
           {u.isAdmin && self ? (
             <p className={styles.note}>{c.selfNote}</p>
+          ) : u.isSuperAdmin ? (
+            <p className={styles.note} data-testid="superadmin-note">
+              {c.superAdminNote}
+            </p>
           ) : (
             <form action={setRoleAction} className={styles.actions}>
               <input type="hidden" name="locale" value={locale} />
@@ -239,7 +244,7 @@ export default async function AdminUserPage({
                         </time>
                       </td>
                       <td>{e.actorName ?? c.system}</td>
-                      <th scope="row">{c.events[e.type] ?? e.type}</th>
+                      <th scope="row">{c.events[userEventKey(e.type, e.data)] ?? e.type}</th>
                     </tr>
                   ))}
                 </tbody>

@@ -28,12 +28,13 @@ import { auditTimestamps, bytea, id, localizedText, timestamps } from './columns
 /**
  * Allowed values, shared by the CHECK constraints and the application.
  *
- * `admin` is the only role the application grants or reads. `staff` is its old name: a data
+ * `admin` is the role the application grants; `superadmin` is an admin that admins cannot
+ * manage, set only in the database (src/lib/awards/auth/roles.ts). `staff` is admin's old name: a data
  * migration (0007) renamed the rows, and the CHECK still accepts it so that code from before
  * the rename, running against the same database, does not fail on a write. Drop it at the
  * cutover, with the other held-back removals (#35).
  */
-export const ROLES = ['admin', 'staff'] as const
+export const ROLES = ['admin', 'superadmin', 'staff'] as const
 export const LOCALES = ['is', 'en'] as const
 export const PERSON_KINDS = ['owner', 'collaborator'] as const
 export const ENTRY_STATUSES = [

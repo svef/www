@@ -146,7 +146,7 @@ export default async function AdminUsersPage({
                       <td className={styles.nowrap}>
                         <time dateTime={u.createdAt.toISOString()}>{formatDate(u.createdAt.toISOString(), locale)}</time>
                       </td>
-                      <td>{u.isAdmin && <span className={styles.roleTag}>{c.adminTag}</span>}</td>
+                      <td>{u.isAdmin && <span className={styles.roleTag}>{u.isSuperAdmin ? c.superAdminTag : c.adminTag}</span>}</td>
                     </tr>
                   ))}
                 </tbody>

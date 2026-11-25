@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dashboardPath, hasAdminRole, safeNext, signInPath } from './roles'
+import { dashboardPath, hasAdminRole, hasSuperAdminRole, safeNext, signInPath } from './roles'
 
 describe('hasAdminRole', () => {
   it('is true only when admin is held', () => {
@@ -11,6 +11,19 @@ describe('hasAdminRole', () => {
 
   it('does not treat the retired staff value as admin', () => {
     expect(hasAdminRole(['staff'])).toBe(false)
+  })
+
+  it('gives a super admin every admin permission', () => {
+    expect(hasAdminRole(['superadmin'])).toBe(true)
+  })
+})
+
+describe('hasSuperAdminRole', () => {
+  it('is true only for superadmin, never for admin', () => {
+    expect(hasSuperAdminRole(['superadmin'])).toBe(true)
+    expect(hasSuperAdminRole(['admin', 'superadmin'])).toBe(true)
+    expect(hasSuperAdminRole(['admin'])).toBe(false)
+    expect(hasSuperAdminRole([])).toBe(false)
   })
 })
 

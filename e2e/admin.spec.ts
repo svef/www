@@ -54,11 +54,11 @@ test.afterAll(async () => {
   await close()
 })
 
-async function admin(browser: Browser, name = `${RUN} Stjórnandi`) {
+async function admin(browser: Browser, name = `${RUN} Stjórnandi`, role: 'admin' | 'superadmin' = 'admin') {
   const context = await browser.newContext({ baseURL: baseURL() })
   const id = await createUser(db, `${RUN}-admin`)
   await db.update(schema.user).set({ name }).where(eq(schema.user.id, id))
-  await db.insert(schema.userRole).values({ userId: id, role: 'admin' })
+  await db.insert(schema.userRole).values({ userId: id, role })
   await actAs(context, baseURL(), id)
   return { context, id, page: await context.newPage() }
 }
@@ -174,5 +174,31 @@ test('an admin cannot remove their own admin role', async ({ browser }) => {
   const role = page.getByTestId('user-role')
   await expect(role).toContainText('You cannot remove your own admin access.')
   await expect(role.getByRole('button')).toHaveCount(0)
+  await context.close()
+})
+
+test('a super admin is labelled, and an admin cannot change their access', async ({ browser }) => {
+  const sup = await createUser(db, `${RUN}-super`)
+  await db.update(schema.user).set({ name: `${RUN} Yfirmaður` }).where(eq(schema.user.id, sup))
+  await db.insert(schema.userRole).values({ userId: sup, role: 'superadmin' })
+
+  const { context, page } = await admin(browser)
+  await page.goto(`${urlFor('is', '/stjornbord/notendur')}?role=admin&q=${encodeURIComponent(`${RUN} Yfirmaður`)}`)
+  await expect(page.locator(`tr[data-user="${sup}"]`)).toContainText('Yfirstjórnandi')
+
+  await page.goto(urlFor('is', `/stjornbord/notendur/${sup}`))
+  const role = page.getByTestId('user-role')
+  await expect(role).toContainText('Er yfirstjórnandi')
+  await expect(page.getByTestId('superadmin-note')).toHaveText('Aðgangi yfirstjórnanda er ekki hægt að breyta hér.')
+  await expect(role.getByRole('button')).toHaveCount(0)
+  await context.close()
+})
+
+test('a super admin opens the admin and grants the admin role like any admin', async ({ browser }) => {
+  const { context, page } = await admin(browser, `${RUN} Yfir`, 'superadmin')
+  const target = await createUser(db, `${RUN}-target2`)
+  await page.goto(urlFor('is', `/stjornbord/notendur/${target}`))
+  await page.getByRole('button', { name: 'Gera að stjórnanda' }).click()
+  await expect(page.getByTestId('role-result')).toHaveText('Notandinn er nú stjórnandi.')
   await context.close()
 })
